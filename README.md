@@ -30,20 +30,6 @@ The project follows professional development practices and is designed for long-
 
 ---
 
-## 📁 Project Structure
-
-src/
-├── assets/            # Static assets
-├── components/        # Reusable UI components
-├── pages/             # Page-level components
-├── hooks/             # Custom React hooks
-├── services/          # API calls & business logic
-├── utils/             # Utility functions
-├── types/             # TypeScript interfaces
-├── App.tsx            # Root component
-└── main.tsx           # Application entry point
-
----
 
 ## ⚙️ Prerequisites
 
@@ -112,7 +98,6 @@ Do **NOT** commit `.env` files to the repository.
 ### Branching Strategy
 
 * main → Stable and production-ready code
-* dev → Active development
 * feature/feature-name → New features
 * fix/issue-name → Bug fixes
 
@@ -125,17 +110,6 @@ Do **NOT** commit `.env` files to the repository.
 
 ---
 
-## 🧾 Commit Message Convention
-
-type(scope): short description
-
-Examples:
-feat(auth): add login page
-fix(ui): fix navbar overflow issue
-chore: update dependencies
-docs: update README
-
----
 
 ## 📌 Future Enhancements
 
