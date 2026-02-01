@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   ResponsiveContainer, Tooltip as ChartTooltip 
 } from "recharts";
+
 import StatCard from "../../../../components/ui/StatCard";
 import { useDashboard } from "../../hooks/useDashboard";
-import { dashboardService } from "../../services/dashboardService";
 import type { DashboardStats, ChartData } from "../../types";
-
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -17,35 +15,40 @@ const containerVariants = {
 };
 
 const DashboardView: React.FC = () => {
-  // Destructure setError correctly from your hook
-  const { setError } = useDashboard();
+  // 1. Only use the hook. The hook handles the "Mock vs Real" switch.
+  const { fetchStats, setError } = useDashboard();
+  
   const [stats, setStats] = useState<DashboardStats[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [fetching, setFetching] = useState(true);
 
+  const loadDashboardData = useCallback(async (isMounted: boolean) => {
+    try {
+      setFetching(true);
+      // This calls the mock service automatically if USE_MOCK is true in the hook
+      const data = await fetchStats(); 
+      
+      if (isMounted && data) {
+        // Mapping the response to your state
+        setStats(data.summaryStats || []);
+        setChartData(data.historyData || []);
+      }
+    } catch (error: any) {
+      if (isMounted) {
+        setError(error.message || "Failed to load dashboard data");
+      }
+    } finally {
+      if (isMounted) setFetching(false);
+    }
+  }, [fetchStats, setError]);
+
   useEffect(() => {
     let isMounted = true;
-    const loadData = async () => {
-      try {
-        setFetching(true);
-        const data = await dashboardService.getLeaveSummary();
-        if (isMounted) {
-          setStats(data.summaryStats || []);
-          setChartData(data.historyData || []);
-        }
-      } catch (error: any) {
-        if (isMounted) {
-          setError(error.message || "Failed to load dashboard data");
-        }
-      } finally {
-        if (isMounted) setFetching(false);
-      }
-    };
-
-    loadData();
+    loadDashboardData(isMounted);
     return () => { isMounted = false; };
-  }, [setError]);
+  }, [loadDashboardData]);
 
+  // Loading State
   if (fetching) {
     return (
       <div className="flex flex-col items-center justify-center h-96">
@@ -54,7 +57,9 @@ const DashboardView: React.FC = () => {
           transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           className="w-12 h-12 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full"
         />
-        <p className="mt-4 text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">Assembling Dashboard...</p>
+        <p className="mt-4 text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">
+          Assembling Dashboard...
+        </p>
       </div>
     );
   }
@@ -68,30 +73,41 @@ const DashboardView: React.FC = () => {
     >
       {/* 1. STATS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <StatCard 
-            key={index} 
-            title={stat.title}
-            used={stat.used}
-            total={stat.total}
-            color={stat.color}
-          />
-        ))}
+        {stats.length > 0 ? (
+          stats.map((stat, index) => (
+            <StatCard 
+              key={index} 
+              title={stat.title}
+              used={stat.used}
+              total={stat.total}
+              color={stat.color}
+            />
+          ))
+        ) : (
+          <div className="col-span-full p-8 text-center border-2 border-dashed border-slate-200 rounded-[2rem] text-slate-400">
+            No statistics available.
+          </div>
+        )}
       </div>
 
       {/* 2. ANALYTICS SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Leave Utilization</h3>
+            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">
+              Leave Utilization
+            </h3>
             <div className="flex gap-4 text-[10px] font-bold uppercase text-slate-400">
-              <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-indigo-500"/> Casual</span>
-              <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-rose-500"/> Sick</span>
+              <span className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-indigo-500"/> Casual
+              </span>
+              <span className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-rose-500"/> Sick
+              </span>
             </div>
           </div>
           
           <div className="h-64 w-full">
-            {/* FIXED: Removed backslashes from width and height strings */}
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -104,7 +120,11 @@ const DashboardView: React.FC = () => {
                 <YAxis hide />
                 <ChartTooltip 
                   cursor={{fill: '#f8fafc'}}
-                  contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                  contentStyle={{
+                    borderRadius: '16px', 
+                    border: 'none', 
+                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+                  }}
                 />
                 <Bar dataKey="Casual" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={12} />
                 <Bar dataKey="Sick" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={12} />
@@ -128,6 +148,7 @@ const DashboardView: React.FC = () => {
               View Detailed Policy
             </button>
           </div>
+          {/* Decorative Glow */}
           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-600/20 rounded-full blur-3xl" />
         </div>
       </div>

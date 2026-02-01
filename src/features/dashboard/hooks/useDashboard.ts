@@ -1,6 +1,11 @@
 import { useState, useCallback } from 'react';
 import { dashboardService } from '../services/dashboardService';
+import { dashboardMockService } from '../services/dashboardMockService'; // Import mock
 import type { ApprovalRequest, LeaveRecord, Employee, Notification, AuditLog } from '../types';
+
+// toggle this to false when the API is ready
+const USE_MOCK = true; 
+const service = USE_MOCK ? dashboardMockService : dashboardService;
 
 export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -9,7 +14,7 @@ export const useDashboard = () => {
   const fetchApprovals = useCallback(async (): Promise<ApprovalRequest[]> => {
     setLoading(true);
     try {
-      return await dashboardService.getPendingApprovals();
+      return await service.getPendingApprovals();
     } catch (err: any) {
       setError(err.message || 'Failed to fetch approvals');
       return [];
@@ -21,7 +26,7 @@ export const useDashboard = () => {
   const processApproval = async (id: number, status: 'Approved' | 'Rejected'): Promise<boolean> => {
     setLoading(true);
     try {
-      await dashboardService.updateApprovalStatus(id, status);
+      await service.updateApprovalStatus(id, status);
       return true;
     } catch (err: any) {
       setError(err.message || 'Action failed');
@@ -34,7 +39,7 @@ export const useDashboard = () => {
   const fetchEmployees = async (): Promise<Employee[]> => {
     setLoading(true);
     try {
-      return await dashboardService.getAllEmployees();
+      return await service.getAllEmployees();
     } catch (err: any) {
       setError(err.message || 'Failed to fetch employees');
       return [];
@@ -46,7 +51,7 @@ export const useDashboard = () => {
   const fetchMyLeaves = async (): Promise<LeaveRecord[]> => {
     setLoading(true);
     try {
-      return await dashboardService.getMyLeaveHistory();
+      return await service.getMyLeaveHistory();
     } catch (err: any) {
       setError(err.message || "Failed to fetch leave history");
       return [];
@@ -55,12 +60,12 @@ export const useDashboard = () => {
     }
   };
 
-  // ANALYTICS & UTILITY METHODS
-
-  const fetchStats = useCallback(async () => {
+const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
-      return await dashboardService.getHRStats();
+      // This calls dashboardMockService.getHRStats() when USE_MOCK is true
+      const data = await service.getHRStats(); 
+      return data; 
     } catch (err: any) {
       setError(err.message || "Failed to fetch HR analytics");
       return null;
@@ -72,7 +77,7 @@ export const useDashboard = () => {
   const fetchDeptDistribution = useCallback(async () => {
     setLoading(true);
     try {
-      return await dashboardService.getDeptDistribution();
+      return await service.getDeptDistribution();
     } catch (err: any) {
       setError(err.message || "Failed to fetch department distribution");
       return [];
@@ -84,7 +89,7 @@ export const useDashboard = () => {
   const fetchNotifications = useCallback(async (): Promise<Notification[]> => {
     setLoading(true);
     try {
-      return await dashboardService.getNotifications();
+      return await service.getNotifications();
     } catch (err: any) {
       setError(err.message || "Failed to fetch notifications");
       return [];
@@ -96,7 +101,7 @@ export const useDashboard = () => {
   const fetchAuditLogs = useCallback(async (): Promise<AuditLog[]> => {
     setLoading(true);
     try {
-      return await dashboardService.getAuditLogs();
+      return await service.getAuditLogs();
     } catch (err: any) {
       setError(err.message || "Failed to fetch audit logs");
       return [];
@@ -106,36 +111,36 @@ export const useDashboard = () => {
   }, []);
 
   const fetchCalendar = useCallback(async (year: number, month: number) => {
-  setLoading(true);
-  try {
-    return await dashboardService.getCalendarLeaves(year, month);
-  } catch (err: any) {
-    setError(err.message || "Failed to load calendar data");
-    return {};
-  } finally {
-    setLoading(false);
-  }
-}, []);
+    setLoading(true);
+    try {
+      return await service.getCalendarLeaves(year, month);
+    } catch (err: any) {
+      setError(err.message || "Failed to load calendar data");
+      return {};
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-const applyLeave = async (formData: any) => {
-  setLoading(true);
-  setError(null); // Clear previous errors
-  try {
-    const result = await dashboardService.submitLeaveRequest(formData);
-    return result; // Return the response so the component can handle success
-  } catch (err: any) {
-    setError(err.message || "Failed to submit leave request");
-    return null;
-  } finally {
-    setLoading(false);
-  }
-};
-
-const fetchLeaveTypes = useCallback(async () => {
+  const applyLeave = async (formData: any) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await dashboardService.getLeaveTypes();
+      const result = await service.submitLeaveRequest(formData);
+      return result;
+    } catch (err: any) {
+      setError(err.message || "Failed to submit leave request");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchLeaveTypes = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await service.getLeaveTypes();
       return data;
     } catch (err: any) {
       setError(err.message || "Failed to fetch leave types");
@@ -148,7 +153,7 @@ const fetchLeaveTypes = useCallback(async () => {
   const addLeaveType = async (data: any) => {
     setLoading(true);
     try {
-      const result = await dashboardService.createLeaveType(data);
+      const result = await service.createLeaveType(data);
       return result;
     } catch (err: any) {
       setError(err.message || "Failed to create leave type");
@@ -161,7 +166,7 @@ const fetchLeaveTypes = useCallback(async () => {
   const removeLeaveType = async (id: number) => {
     setLoading(true);
     try {
-      await dashboardService.deleteLeaveType(id);
+      await service.deleteLeaveType(id);
       return true;
     } catch (err: any) {
       setError(err.message || "Failed to delete");
@@ -172,21 +177,20 @@ const fetchLeaveTypes = useCallback(async () => {
   };
 
   const fetchTeamSchedule = useCallback(async (year: number, month: number) => {
-  setLoading(true);
-  try {
-    // Fetches both the leave days and the current team member statuses
-    const [calendar, members] = await Promise.all([
-      dashboardService.getCalendarLeaves(year, month),
-      dashboardService.getAllEmployees() 
-    ]);
-    return { calendar, members };
-  } catch (err: any) {
-    setError(err.message || "Failed to sync team schedule");
-    return null;
-  } finally {
-    setLoading(false);
-  }
-}, []);
+    setLoading(true);
+    try {
+      const [calendar, members] = await Promise.all([
+        service.getCalendarLeaves(year, month),
+        service.getAllEmployees() 
+      ]);
+      return { calendar, members };
+    } catch (err: any) {
+      setError(err.message || "Failed to sync team schedule");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return {
     loading,
@@ -206,7 +210,5 @@ const fetchLeaveTypes = useCallback(async () => {
     addLeaveType,
     removeLeaveType,
     fetchTeamSchedule,
-    
-
   };
 };

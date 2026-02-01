@@ -9,7 +9,6 @@ import ProtectedRoute from "./ProtectedRoute";
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Important: Show a loader while checking localStorage on initial boot
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -24,14 +23,14 @@ const AppRoutes: React.FC = () => {
         path="/login" 
         element={
           !isAuthenticated ? (
-            <AuthPage /> // onLogin prop is no longer needed
+            <AuthPage />
           ) : (
             <Navigate to="/dashboard" replace />
           )
         } 
       />
 
-      {/* Protected Routes: No props needed here either */}
+      
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard/*" element={<DashboardLayout />} />
       </Route>
