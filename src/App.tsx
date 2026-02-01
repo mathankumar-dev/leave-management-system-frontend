@@ -18,7 +18,7 @@ const App: React.FC = () => {
 
   return (
     <div className="antialiased text-slate-900">
-      {/* Remove the <Router> from here! */}
+      
       <AppRoutes 
         isAuthenticated={isAuthenticated} 
         userRole={userRole} 
