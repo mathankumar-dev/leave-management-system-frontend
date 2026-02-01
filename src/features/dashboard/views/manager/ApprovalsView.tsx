@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCheck, FaTimes, FaUserAlt } from "react-icons/fa";
-import { useDashboard } from "../hooks/useDashboard";
-import type { ApprovalRequest } from "../types";
+import FailureModal from "../../../../components/ui/FailureModal";
+import SuccessModal from "../../../../components/ui/SuccessModal";
+import { useDashboard } from "../../hooks/useDashboard";
+import type { ApprovalRequest } from "../../types";
 
-import SuccessModal from "../../../components/ui/SuccessModal";
-import FailureModal from "../../../components/ui/FailureModal";
 
 const ApprovalsView: React.FC = () => {
   const { loading, error, fetchApprovals, processApproval, setError } = useDashboard();

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { dashboardService } from "../services/dashboardService";
-import { useDashboard } from "../hooks/useDashboard";
+
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   ResponsiveContainer, Tooltip as ChartTooltip 
 } from "recharts";
-import type { DashboardStats, ChartData } from "../types";
-import StatCard from "../../../components/ui/StatCard";
+import StatCard from "../../../../components/ui/StatCard";
+import { useDashboard } from "../../hooks/useDashboard";
+import { dashboardService } from "../../services/dashboardService";
+import type { DashboardStats, ChartData } from "../../types";
+
 
 const containerVariants = {
   hidden: { opacity: 0 },
