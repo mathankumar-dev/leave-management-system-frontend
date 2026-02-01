@@ -1,17 +1,16 @@
-
+// src/routes/ProtectedRoute.tsx
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../features/auth/hooks/useAuth";
 
-interface ProtectedRouteProps {
-  isAuthenticated: boolean;
-}
+const ProtectedRoute: React.FC = () => {
+  const { isAuthenticated } = useAuth();
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ isAuthenticated }) => {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />; // This will render the Dashboard components
+  return <Outlet />;
 };
 
 export default ProtectedRoute;
