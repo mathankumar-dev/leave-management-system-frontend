@@ -46,13 +46,18 @@ Make sure you have the following installed:
 ### Clone the Repository
 
 git clone [https://github.com/mathankumar-dev/leave-management-system-frontend.git](https://github.com/mathankumar-dev/leave-management-system-frontend.git)
+
+
 cd leave-management-system-frontend
 
 ---
 
 ### Install Dependencies
 
+```bash
 npm install
+```
+
 
 ---
 
@@ -69,7 +74,10 @@ The application will be available at:
 
 Run ESLint to ensure code quality:
 
+```bash
 npm run lint
+```
+
 
 Fix all lint issues before pushing code.
 
@@ -77,7 +85,10 @@ Fix all lint issues before pushing code.
 
 ## 🏗️ Build for Production
 
+```bash
 npm run build
+```
+
 
 The production-ready files will be generated in the `dist` directory.
 
