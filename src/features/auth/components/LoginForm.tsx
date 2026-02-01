@@ -11,7 +11,7 @@ const LoginForm: React.FC = () => {
   
   const { login } = useAuth(); 
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsLoading(true);
 

@@ -20,7 +20,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onToggle }) => {
     joiningDate: new Date().toISOString().split('T')[0] // Formats as YYYY-MM-DD
   });
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
