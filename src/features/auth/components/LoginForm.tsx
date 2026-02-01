@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
 import { loginUser } from "../services/AuthService";
+import { useAuth } from "../hooks/useAuth"; //
 import type { LoginCredentials } from "../types";
 
-interface LoginFormProps {
-  onLogin: (role: string) => void;
-}
-
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
+const LoginForm: React.FC = () => {
   const [email, setEmail] = useState<string>("employee@company.com");
   const [password, setPassword] = useState<string>("password123");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  const { login } = useAuth(); 
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,15 +19,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
       const credentials: LoginCredentials = { email, password };
       const response = await loginUser(credentials);
       
-      // Pass the role from API to the App state
-      onLogin(response.user.role); 
+      /** * login(response) will:
+       * 1. Save the token to localStorage
+       * 2. Save the user object to localStorage
+       * 3. Update the global state so Sidebar/Topbar re-render
+       */
+      login(response); 
     } catch (error) {
       console.error("Login failed:", error);
-      // Fallback for your current mock testing
-      let mockRole = "Employee";
-      if (email === "admin@company.com") mockRole = "HR Admin";
-      else if (email === "manager@company.com") mockRole = "Manager";
-      onLogin(mockRole);
+      alert("Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -38,9 +37,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
     <form onSubmit={handleLogin} className="space-y-6">
       <header className="mb-10">
         <h3 className="text-4xl font-black text-slate-900 tracking-tight mb-2">Sign In</h3>
-        <p className="text-slate-500 font-medium text-sm">Welcome to your employee portal.</p>
+        <p className="text-slate-500 font-medium text-sm">Welcome back to your portal.</p>
       </header>
 
+      {/* Email Field */}
       <div className="space-y-2">
         <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
           Company Email
@@ -57,11 +57,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         </div>
       </div>
 
+      {/* Password Field */}
       <div className="space-y-2">
         <div className="flex justify-between items-center ml-1">
           <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Password</label>
           <button type="button" className="text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-700">
-            Forgot Password?
+            Forgot?
           </button>
         </div>
         <div className="relative group">
@@ -84,7 +85,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         {isLoading ? (
           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         ) : (
-          <>Login <FaArrowRight className="group-hover:translate-x-1 transition-transform" /></>
+          <>Sign In <FaArrowRight className="group-hover:translate-x-1 transition-transform" /></>
         )}
       </button>
     </form>

@@ -4,11 +4,7 @@ import { FaFingerprint, FaQuoteLeft } from "react-icons/fa";
 import LoginForm from "../components/LoginForm";
 import RegisterForm from "../components/RegisterForm";
 
-interface AuthPageProps {
-  onLogin: (role: string) => void;
-}
-
-const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
+const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
 
   return (
@@ -16,16 +12,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
       <motion.div 
         layout
         transition={{ type: "spring", stiffness: 40, damping: 15 }}
-        className={`flex min-h-screen w-full ${isLogin ? "flex-row" : "flex-row-reverse"}`}
+        className={`flex min-h-screen w-full transition-all duration-700 ${isLogin ? "flex-row" : "flex-row-reverse"}`}
       >
         {/* BRANDING PANEL */}
         <motion.div
           layout
           className="hidden lg:flex w-1/2 bg-slate-900 relative overflow-hidden items-center justify-center p-16"
         >
+          {/* Animated Background Blobs */}
           <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-[-10%] left-[-10%] w-150 h-150 bg-indigo-600 rounded-full blur-[140px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-125 h-125 bg-blue-500 rounded-full blur-[120px]" />
+            <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-600 rounded-full blur-[140px]" />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-500 rounded-full blur-[120px]" />
           </div>
 
           <motion.div layout className="relative z-10 max-w-lg">
@@ -55,19 +52,20 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={isLogin ? "login" : "register"}
-                initial={{ opacity: 0, x: isLogin ? 20 : -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: isLogin ? -20 : 20 }}
-                transition={{ duration: 0.4 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
               >
                 {isLogin ? (
                   <>
-                    <LoginForm onLogin={onLogin} />
+                    {/* LoginForm no longer needs props as it uses useAuth() internally */}
+                    <LoginForm /> 
                     <p className="mt-8 text-center text-sm font-bold text-slate-500">
                       Don't have an account?{" "}
                       <button 
                         onClick={() => setIsLogin(false)}
-                        className="text-indigo-600 font-black uppercase tracking-widest text-[11px] hover:underline"
+                        className="text-indigo-600 font-black uppercase tracking-widest text-[11px] hover:underline transition-all"
                       >
                         Sign Up
                       </button>
@@ -80,7 +78,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
                       Already have an account?{" "}
                       <button 
                         onClick={() => setIsLogin(true)}
-                        className="text-indigo-600 font-black uppercase tracking-widest text-[11px] hover:underline"
+                        className="text-indigo-600 font-black uppercase tracking-widest text-[11px] hover:underline transition-all"
                       >
                         Sign In
                       </button>
