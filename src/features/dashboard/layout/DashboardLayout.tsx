@@ -14,6 +14,7 @@ import EmployeesView from "../views/admin/EmployeesView";
 import DashboardView from "../views/employee/DashboardView";
 import LeaveApplicationForm from "../views/LeaveApplicationForm";
 import MyLeavesView from "../views/MyLeavesView";
+import NotificationsView from "../views/NotificationsView";
 
 const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -44,6 +45,9 @@ const DashboardLayout: React.FC = () => {
 
       case "My Leaves":
         return <MyLeavesView />;
+        
+      case "Notifications":
+        return <NotificationsView />;
 
       default:
         return userRole === "Manager" ? <ManagerDashboardView /> : <DashboardView />;
