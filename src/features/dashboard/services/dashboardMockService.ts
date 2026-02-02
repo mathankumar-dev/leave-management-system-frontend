@@ -8,7 +8,7 @@ import {
   MOCK_AUDIT_LOGS,
   MOCK_DASHBOARD_STATS,
   MOCK_CHART_DATA
-} from "../../../mockData"; 
+} from "../mockData"; 
 
 import type { 
   ApprovalRequest, 

@@ -7,7 +7,7 @@ import type {
   AuditLog,
   DashboardStats,
   ChartData
-} from "../features/dashboard/types";
+} from "../types/index";
 import { 
   FaCheckCircle, 
   FaTimesCircle, 
