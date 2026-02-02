@@ -1,71 +1,84 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-// import Sidebar from "./components/Sidebar";
-// import Topbar from "./components/Topbar";
-import type { UserRole } from "../../auth/types";
+import { useAuth } from "../../auth/hooks/useAuth";
+import Sidebar from "../components/Sidebar";
+import Topbar from "../components/Topbar";
 
-// // Import your views
-// import EmployeeDashboard from "./views/EmployeeDashboard";
-// import ManagerDashboard from "./views/ManagerDashboard";
-// import LeaveApplicationForm from "./views/LeaveApplicationForm";
-// import ApprovalsView from "./views/ApprovalsView";
+// Existing Views
 
-interface DashboardLayoutProps {
-  role: UserRole | string | null;
-  onLogout: () => void;
-}
+import ManagerDashboardView from "../views/manager/ManagerDashboardView";
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ role, onLogout }) => {
-  // Local state to handle navigation within the dashboard
-  const [activeTab, setActiveTab] = useState("overview");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+// New Views
+import LeaveTypesView from "../views/admin/LeaveTypesView";
+import TeamCalendarView from "../views/manager/TeamCalendarView";
+import EmployeesView from "../views/admin/EmployeesView";
+import DashboardView from "../views/employee/DashboardView";
+import LeaveApplicationForm from "../views/LeaveApplicationForm";
+import MyLeavesView from "../views/MyLeavesView";
+import NotificationsView from "../views/NotificationsView";
 
-  // Helper to render the correct view based on navigation and role
+const DashboardLayout: React.FC = () => {
+  const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const userRole = user?.role || "Employee";
+
   const renderView = () => {
-    // switch (activeTab) {
-    //   case "apply":
-    //     return <LeaveApplicationForm />;
-    //   case "approvals":
-    //     return role === "Manager" || role === "HR Admin" ? <ApprovalsView /> : <EmployeeDashboard />;
-    //   case "overview":
-    //   default:
-    //     return role === "Manager" ? <ManagerDashboard /> : <EmployeeDashboard />;
-    // }
+    switch (activeTab) {
+      case "Dashboard":
+        return userRole === "Manager" ? <ManagerDashboardView /> : <DashboardView />;
+
+      case "Employees":
+        // Usually only managers see the employee list
+        return <EmployeesView />;
+
+      case "Team Calendar":
+        // New Manager view for team oversight
+        return <TeamCalendarView />;
+
+      case "Leave Config":
+        // New Manager view for setting up leave types
+        return <LeaveTypesView />;
+
+      case "Apply Leave":
+        return <LeaveApplicationForm />;
+
+      case "My Leaves":
+        return <MyLeavesView />;
+        
+      case "Notifications":
+        return <NotificationsView />;
+
+      default:
+        return userRole === "Manager" ? <ManagerDashboardView /> : <DashboardView />;
+    }
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] overflow-hidden">
-      {/* Sidebar Navigation */}
-      {/* <Sidebar 
-        role={role as UserRole} 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        isOpen={isSidebarOpen}
-      /> */}
+    <div className="flex min-h-screen bg-[#F8FAFC]">
+      {/* Sidebar needs the same activeTab keys used in the switch above */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        user={user}
+        isOpen={sidebarOpen}
+        setIsOpen={setSidebarOpen}
+        onLogout={logout}
+      />
 
-      <div className="flex-1 flex flex-col relative overflow-hidden">
-        {/* Top Header Section */}
-        {/* <Topbar 
-          onLogout={onLogout} 
-          role={role} 
-          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
-        /> */}
+      <div className="flex-1 flex flex-col md:ml-64 min-h-screen">
+        <Topbar
+          activeTab={activeTab}
+          user={user}
+          onMenuClick={() => setSidebarOpen(true)}
+          onLogout={logout}
+        />
 
-        {/* Dynamic Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-10">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="max-w-7xl mx-auto"
-            >
-              {/* {renderView()} */}.
-              <div></div>
-            </motion.div>
-          </AnimatePresence>
+        <main className="p-4 md:p-8 flex-1 overflow-y-auto">
+          {/* Transition wrapper for smooth view changes */}
+          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500">
+            {renderView()}
+          </div>
         </main>
       </div>
     </div>
