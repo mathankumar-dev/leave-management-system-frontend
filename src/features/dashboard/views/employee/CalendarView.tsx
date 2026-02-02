@@ -37,108 +37,108 @@ const CalendarView: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col xl:flex-row gap-6 p-4 bg-slate-50 min-h-screen pb-24 md:pb-4"
+      className="flex flex-col xl:flex-row gap-6 p-4 bg-slate-50 min-h-screen"
     >
-      {/* 1. PROFESSIONAL CALENDAR GRID */}
+      {/* 1. LEFT COLUMN: NOTE + CALENDAR */}
+      <div className="flex-1 flex flex-col gap-4 min-w-0">
+        {/* Developmental Note: Moved here so it doesn't break the flex-row layout */}
+        {/* <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+          System Note: Mapping real-time leave data to calendar grid...
+        </div> */}
 
-      
-      <div>
-          Note: here leaves are need to be mapped in calendar for now it's only the clone of teamcalendar
-      </div>
-      <div className="flex-1 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden relative h-fit">
-        {loading && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center">
-            <FaSpinner className="animate-spin text-indigo-600 text-2xl" />
-          </div>
-        )}
-
-        {/* Structured Header */}
-        <div className="flex justify-between items-center p-5 md:p-6 border-b border-slate-100 bg-white">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-              {monthName} {year}
-            </h2>
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Availability Overview</p>
-          </div>
-          <div className="flex bg-slate-100 p-1 rounded-lg">
-            <button onClick={prevMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-md text-slate-600 transition-all">
-              <FaChevronLeft size={12} />
-            </button>
-            <button onClick={() => setCurrentDate(new Date())} className="px-4 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">
-              Today
-            </button>
-            <button onClick={nextMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-md text-slate-600 transition-all">
-              <FaChevronRight size={12} />
-            </button>
-          </div>
-        </div>
-
-        {/* Day Labels Row */}
-        <div className="grid grid-cols-7 gap-px bg-slate-200 border-b border-slate-200">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <div key={d} className="bg-slate-50 py-3 text-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-              {d.charAt(0)}
-              <span className="hidden md:inline">{d.slice(1)}</span>
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden relative">
+          {loading && (
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center">
+              <FaSpinner className="animate-spin text-indigo-600 text-2xl" />
             </div>
-          ))}
-        </div>
+          )}
 
-        {/* Calendar Cells */}
-        <div className="grid grid-cols-7 gap-px bg-slate-200">
-          {/* Spacers - Dynamic Height to prevent mobile stretching */}
-          {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-16 md:h-28 bg-slate-50/50" />
-          ))}
-
-          {/* Active Days */}
-          {daysArray.map((day) => {
-            const isSelected = selectedDate === day;
-            const dailyLeaves = leaveData[day] || [];
-            const isToday = new Date().getDate() === day && new Date().getMonth() === month;
-
-            return (
-              <button
-                key={day}
-                onClick={() => setSelectedDate(day)}
-                className={`h-16 md:h-28 p-1.5 md:p-2 text-left flex flex-col transition-all relative group bg-white
-                  ${isSelected ? "ring-2 ring-inset ring-indigo-500 z-10 bg-indigo-50/20" : "hover:bg-slate-50"}
-                `}
-              >
-                <span className={`text-[11px] md:text-xs font-bold w-6 h-6 flex items-center justify-center rounded transition-all
-                  ${isToday ? "bg-indigo-600 text-white shadow-sm" : isSelected ? "text-indigo-600" : "text-slate-700"}
-                `}>
-                  {day}
-                </span>
-                
-                {/* Dots for Mobile View */}
-                <div className="mt-auto flex flex-wrap gap-0.5 justify-center pb-1 md:hidden">
-                  {dailyLeaves.slice(0, 3).map((l, i) => (
-                    <div key={i} className={`w-1 h-1 rounded-full ${l.color?.replace('text-', 'bg-') || 'bg-indigo-500'}`} />
-                  ))}
-                </div>
-
-                {/* Tags for Desktop View */}
-                <div className="mt-2 space-y-1 hidden md:block overflow-hidden">
-                  {dailyLeaves.slice(0, 2).map((leave, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5 px-1.5 py-0.5 rounded border border-slate-100 bg-slate-50/80">
-                      <div className={`w-1 h-3 rounded-full ${leave.color?.replace('text-', 'bg-') || 'bg-indigo-500'}`} />
-                      <span className="text-[10px] font-semibold text-slate-600 truncate">{leave.name}</span>
-                    </div>
-                  ))}
-                  {dailyLeaves.length > 2 && (
-                    <p className="text-[9px] text-slate-400 font-bold pl-1 uppercase tracking-tighter">
-                      + {dailyLeaves.length - 2} more
-                    </p>
-                  )}
-                </div>
+          {/* Structured Header */}
+          <div className="flex justify-between items-center p-5 md:p-6 border-b border-slate-100 bg-white">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                {monthName} {year}
+              </h2>
+              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Availability Overview</p>
+            </div>
+            <div className="flex bg-slate-100 p-1 rounded-lg">
+              <button onClick={prevMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-md text-slate-600 transition-all">
+                <FaChevronLeft size={12} />
               </button>
-            );
-          })}
+              <button onClick={() => setCurrentDate(new Date())} className="px-4 py-1 text-xs font-bold text-slate-600 hover:text-slate-900">
+                Today
+              </button>
+              <button onClick={nextMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-md text-slate-600 transition-all">
+                <FaChevronRight size={12} />
+              </button>
+            </div>
+          </div>
+
+          {/* Day Labels Row */}
+          <div className="grid grid-cols-7 gap-px bg-slate-200 border-b border-slate-200">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+              <div key={d} className="bg-slate-50 py-3 text-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                {d.charAt(0)}
+                <span className="hidden md:inline">{d.slice(1)}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar Cells */}
+          <div className="grid grid-cols-7 gap-px bg-slate-200">
+            {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+              <div key={`empty-${i}`} className="h-16 md:h-28 bg-slate-50/50" />
+            ))}
+
+            {daysArray.map((day) => {
+              const isSelected = selectedDate === day;
+              const dailyLeaves = leaveData[day] || [];
+              const isToday = new Date().getDate() === day && new Date().getMonth() === month;
+
+              return (
+                <button
+                  key={day}
+                  onClick={() => setSelectedDate(day)}
+                  className={`h-16 md:h-28 p-1.5 md:p-2 text-left flex flex-col transition-all relative group bg-white
+                    ${isSelected ? "ring-2 ring-inset ring-indigo-500 z-10 bg-indigo-50/20" : "hover:bg-slate-50"}
+                  `}
+                >
+                  <span className={`text-[11px] md:text-xs font-bold w-6 h-6 flex items-center justify-center rounded transition-all
+                    ${isToday ? "bg-indigo-600 text-white shadow-sm" : isSelected ? "text-indigo-600" : "text-slate-700"}
+                  `}>
+                    {day}
+                  </span>
+                  
+                  {/* Mobile Dots */}
+                  <div className="mt-auto flex flex-wrap gap-0.5 justify-center pb-1 md:hidden">
+                    {dailyLeaves.slice(0, 3).map((l, i) => (
+                      <div key={i} className={`w-1 h-1 rounded-full ${l.color?.replace('text-', 'bg-') || 'bg-indigo-500'}`} />
+                    ))}
+                  </div>
+
+                  {/* Desktop Tags */}
+                  <div className="mt-2 space-y-1 hidden md:block overflow-hidden">
+                    {dailyLeaves.slice(0, 2).map((leave, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5 px-1.5 py-0.5 rounded border border-slate-100 bg-slate-50/80">
+                        <div className={`w-1 h-3 rounded-full ${leave.color?.replace('text-', 'bg-') || 'bg-indigo-500'}`} />
+                        <span className="text-[10px] font-semibold text-slate-600 truncate">{leave.name}</span>
+                      </div>
+                    ))}
+                    {dailyLeaves.length > 2 && (
+                      <p className="text-[9px] text-slate-400 font-bold pl-1 uppercase tracking-tighter">
+                        + {dailyLeaves.length - 2} more
+                      </p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* 2. SIDEBAR DETAILS */}
-      <aside className="w-full xl:w-80 space-y-5">
+      {/* 2. RIGHT COLUMN: SIDEBAR */}
+      <aside className="w-full xl:w-80 space-y-5 shrink-0">
         <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
             <h3 className="font-bold text-slate-800 text-sm">Attendance List</h3>
