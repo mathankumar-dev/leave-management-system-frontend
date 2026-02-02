@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { 
-  FaBars, FaBell, FaUserCircle, FaSignOutAlt, 
-  FaUserCog, FaChevronDown, FaCheckDouble, FaCircle 
+import {
+  FaBars, FaBell, FaUserCircle, FaSignOutAlt,
+  FaUserCog, FaChevronDown, FaCheckDouble, FaCircle
 } from "react-icons/fa";
 import { useDashboard } from "../hooks/useDashboard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -29,11 +29,11 @@ const Topbar: React.FC<TopbarProps> = ({ activeTab, user, onMenuClick, onLogout 
 
   return (
     <div className="flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 md:py-4 border-b border-slate-100 sticky top-0 z-40 shrink-0">
-      
+
       {/* Left: Menu & Title */}
       <div className="flex items-center gap-2 md:gap-4 min-w-0">
-        <button 
-          onClick={onMenuClick} 
+        <button
+          onClick={onMenuClick}
           className="md:hidden p-2.5 active:bg-slate-100 rounded-lg text-slate-500 shrink-0"
         >
           <FaBars size={18} />
@@ -50,14 +50,13 @@ const Topbar: React.FC<TopbarProps> = ({ activeTab, user, onMenuClick, onLogout 
 
       {/* Right: Actions */}
       <div className="flex items-center gap-1 sm:gap-4 shrink-0">
-        
+
         {/* Notifications */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => { setIsNotifOpen(!isNotifOpen); setIsProfileOpen(false); }}
-            className={`p-2.5 rounded-xl transition-all active:scale-95 ${
-              isNotifOpen ? "bg-indigo-50 text-indigo-600" : "text-slate-400"
-            }`}
+            className={`p-2.5 rounded-xl transition-all active:scale-95 ${isNotifOpen ? "bg-indigo-50 text-indigo-600" : "text-slate-400"
+              }`}
           >
             <FaBell className="w-4 h-4" />
             <span className="absolute top-2.5 right-2.5 flex h-2 w-2">
@@ -69,19 +68,36 @@ const Topbar: React.FC<TopbarProps> = ({ activeTab, user, onMenuClick, onLogout 
           <AnimatePresence>
             {isNotifOpen && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setIsNotifOpen(false)} />
-                <motion.div 
-                  initial={{ opacity: 0, y: 10, x: 20 }} // Slide from right on mobile
-                  animate={{ opacity: 1, y: 0, x: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  // Responsive width: nearly full screen on mobile, 320px on desktop
-                  className="absolute right-[-10px] sm:right-0 mt-3 w-[calc(100vw-32px)] sm:w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl z-20 overflow-hidden"
+                {/* 1. Backdrop: Essential for focus and closing on mobile */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 sm:z-10"
+                  onClick={() => setIsNotifOpen(false)}
+                />
+
+                {/* 2. Responsive Notification Panel */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className={`
+          /* Mobile: Centered card with padding */
+          fixed top-20 left-4 right-4 z-[60] 
+          /* Desktop: Reset to standard dropdown */
+          sm:absolute sm:top-full sm:right-0 sm:left-auto sm:mt-3 
+          sm:w-80 sm:z-20
+          bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden
+        `}
                 >
                   <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <span className="text-xs font-bold text-slate-800">Recent Updates</span>
                     <button className="text-[10px] font-bold text-indigo-600">Mark all read</button>
                   </div>
-                  <div className="max-h-[60vh] md:max-h-[350px] overflow-y-auto">
+
+                  {/* Adjust max-height for mobile screens */}
+                  <div className="max-h-[60vh] sm:max-h-[350px] overflow-y-auto">
                     {recentNotifs.length > 0 ? (
                       recentNotifs.map((n) => (
                         <div key={n.id} className="p-4 active:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors">
@@ -98,6 +114,11 @@ const Topbar: React.FC<TopbarProps> = ({ activeTab, user, onMenuClick, onLogout 
                       <div className="p-10 text-center text-slate-400 text-xs">No updates</div>
                     )}
                   </div>
+
+                  {/* Mobile-only footer to "View All" as per specs */}
+                  <button className="w-full py-3 text-center text-[11px] font-bold text-slate-500 border-t border-slate-50 sm:hidden">
+                    View All Notifications
+                  </button>
                 </motion.div>
               </>
             )}
@@ -106,7 +127,7 @@ const Topbar: React.FC<TopbarProps> = ({ activeTab, user, onMenuClick, onLogout 
 
         {/* Profile */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => { setIsProfileOpen(!isProfileOpen); setIsNotifOpen(false); }}
             className="flex items-center gap-2 p-1 rounded-full md:rounded-xl active:bg-slate-100 transition-all"
           >
@@ -120,7 +141,7 @@ const Topbar: React.FC<TopbarProps> = ({ activeTab, user, onMenuClick, onLogout 
             {isProfileOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setIsProfileOpen(false)} />
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
