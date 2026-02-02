@@ -154,8 +154,8 @@ const DashboardLayout: React.FC = () => {
 
         {/* FIX: Set p-4 for mobile and p-8 for desktop. 
             Removed potential width conflicts. */}
-        <main className="p-4 md:p-8 flex-1 overflow-y-auto w-full">
-          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500 w-full">
+        <main className="p-4 md:p-6 flex-1 overflow-y-auto w-full">
+          <div className="max-w-400 mx-auto animate-in fade-in duration-500 w-full">
             {renderView()}
           </div>
         </main>
