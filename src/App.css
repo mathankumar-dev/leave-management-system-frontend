@@ -1,0 +1,20 @@
+/* Container class for the scrollable area */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px; /* Slimmer look */
+}
+
+/* The background of the scrollbar */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+/* The actual draggable handle */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #6366f1; /* Indigo-500 from your theme */
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #4f46e5; /* Indigo-600 */
+}
