@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaPlus, FaTrash, FaEdit, FaSpinner } from "react-icons/fa";
+import { FaPlus, FaTrash, FaEdit, FaSpinner, FaShieldAlt } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 
 interface LeaveType {
@@ -14,7 +14,6 @@ const LeaveTypesView: React.FC = () => {
   const { fetchLeaveTypes, removeLeaveType, loading, error } = useDashboard();
   const [types, setTypes] = useState<LeaveType[]>([]);
 
-  // Load data on component mount
   useEffect(() => {
     const loadData = async () => {
       const data = await fetchLeaveTypes();
@@ -33,33 +32,34 @@ const LeaveTypesView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 p-4 md:p-0">
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Leave Configuration</h2>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-            Define policies and limits
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Leave Configuration</h2>
+          <p className="text-xs font-medium text-slate-500 mt-1">
+            Define organizational policies and yearly limits
           </p>
         </div>
-        <button className="flex items-center gap-3 px-6 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 active:scale-95">
-          <FaPlus /> New Leave Type
+        <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+          <FaPlus size={12} /> New Leave Type
         </button>
       </div>
 
       {/* ERROR DISPLAY */}
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-[10px] font-black uppercase tracking-tight">
+        <div className="p-4 bg-rose-50 border border-rose-100 rounded-lg flex items-center gap-3 text-rose-700 text-xs font-semibold">
+          <FaShieldAlt className="shrink-0" />
           {error}
         </div>
       )}
 
       {/* GRID SECTION */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {loading && types.length === 0 ? (
-          <div className="col-span-full py-20 flex flex-col items-center justify-center space-y-4">
+          <div className="col-span-full py-20 flex flex-col items-center justify-center space-y-3">
             <FaSpinner className="animate-spin text-indigo-500 text-2xl" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
               Fetching Policies...
             </span>
           </div>
@@ -68,46 +68,47 @@ const LeaveTypesView: React.FC = () => {
             {types.map((t) => (
               <motion.div
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 key={t.id}
-                className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative group overflow-hidden"
+                className="bg-white rounded-xl border border-slate-200 shadow-sm relative group overflow-hidden flex"
               >
-                {/* Decorative Pattern */}
-                <div className={`absolute top-0 right-0 w-24 h-24 ${t.color || 'bg-slate-500'} opacity-5 -mr-8 -mt-8 rounded-full`} />
+                {/* Side Accent Bar */}
+                <div className={`w-1.5 shrink-0 ${t.color || 'bg-slate-400'}`} />
 
-                <div className="flex justify-between items-start relative z-10">
-                  <div className={`w-3 h-3 rounded-full ${t.color || 'bg-slate-500'} shadow-lg`} />
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors">
-                      <FaEdit size={12} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(t.id)}
-                      disabled={loading}
-                      className="p-2 text-slate-400 hover:text-rose-500 transition-colors disabled:opacity-30"
-                    >
-                      <FaTrash size={12} />
-                    </button>
+                <div className="flex-1 p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 tracking-tight">{t.name}</h3>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">Annual Allocation</p>
+                    </div>
+                    
+                    <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                      <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-all">
+                        <FaEdit size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(t.id)}
+                        disabled={loading}
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-all disabled:opacity-30"
+                      >
+                        <FaTrash size={14} />
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="mt-6">
-                  <h3 className="text-xl font-black text-slate-900 tracking-tight">{t.name}</h3>
-                  <div className="flex items-end gap-2 mt-2">
-                    <span className="text-4xl font-black text-slate-800">{t.days}</span>
-                    <span className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">
-                      Days / Year
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="text-4xl font-extrabold text-slate-800 tracking-tighter">{t.days}</span>
+                    <span className="text-xs font-bold text-slate-500">Days</span>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
+                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded uppercase tracking-wide">
+                      Active Policy
                     </span>
+                    {loading && <FaSpinner className="animate-spin text-slate-200" size={12} />}
                   </div>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-slate-50 flex justify-between items-center">
-                  <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-3 py-1.5 rounded-lg uppercase tracking-tight">
-                    Standard Policy
-                  </span>
-                  {loading && <FaSpinner className="animate-spin text-slate-200" size={12} />}
                 </div>
               </motion.div>
             ))}

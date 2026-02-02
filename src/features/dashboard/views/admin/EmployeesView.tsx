@@ -4,16 +4,6 @@ import { FaSearch, FaUserPlus, FaEllipsisV, FaFilter, FaBuilding, FaEnvelope } f
 import { useDashboard } from "../../hooks/useDashboard";
 import type { Employee } from "../../types";
 
-const containerVars = {
-  animate: { transition: { staggerChildren: 0.05 } }
-};
-
-const rowVars = {
-  initial: { opacity: 0, x: -10 },
-  animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, scale: 0.95 }
-};
-
 const EmployeesView: React.FC = () => {
   const { fetchEmployees, loading } = useDashboard();
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -27,7 +17,6 @@ const EmployeesView: React.FC = () => {
     return () => { isMounted = false; };
   }, [fetchEmployees]);
 
-  // FIXED: Using 'dept' to match your Interface and added null-checks
   const filteredEmployees = useMemo(() => {
     return employees.filter(emp =>
       emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,132 +28,136 @@ const EmployeesView: React.FC = () => {
   if (loading && employees.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full"
-        />
+        <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
         <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Loading Directory...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-0">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Employee Directory</h2>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Employee Directory</h2>
+          <p className="text-xs font-medium text-slate-500 mt-1">
             Total Workspace Members: {employees.length}
           </p>
         </div>
-        <button className="flex items-center justify-center gap-3 px-6 py-3.5 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] shadow-xl shadow-slate-200 active:scale-95 transition-all">
-          <FaUserPlus className="text-indigo-400" /> Add Employee
+        <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+          <FaUserPlus /> Add Employee
         </button>
       </div>
 
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative group">
-          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
+          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
           <input
             type="text"
-            placeholder="Search by name, email or department..."
+            placeholder="Search name, email or department..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border border-slate-100 pl-12 pr-4 py-4 rounded-[1.5rem] text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/20 transition-all outline-none"
+            className="w-full bg-white border border-slate-200 pl-11 pr-4 py-3 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
           />
         </div>
-        <button className="px-6 py-4 bg-white border border-slate-100 rounded-[1.5rem] text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-2 font-bold text-xs">
-          <FaFilter /> Filters
+        <button className="px-5 py-3 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 font-bold text-xs shadow-sm">
+          <FaFilter className="text-slate-400" /> Filters
         </button>
       </div>
 
-      {/* Directory Table */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm">
+      {/* Directory Container */}
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50/50 border-b border-slate-100">
+            <thead className="hidden md:table-header-group bg-slate-50/80 border-b border-slate-200">
               <tr>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Department & Role</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-                <th className="px-8 py-5"></th>
+                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Employee</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Department & Role</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
+                <th className="px-6 py-4"></th>
               </tr>
             </thead>
-            <motion.tbody
-              variants={containerVars}
-              initial="initial"
-              animate="animate"
-            >
+            <tbody className="divide-y divide-slate-100">
               <AnimatePresence mode="popLayout">
                 {filteredEmployees.map((emp) => (
                   <motion.tr
                     key={emp.id}
-                    variants={rowVars}
                     layout
-                    className="group border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col md:table-row hover:bg-slate-50/50 transition-colors"
                   >
-                    <td className="px-8 py-5">
+                    {/* Employee Profile Cell */}
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className={`w-11 h-11 shrink-0 ${emp.color || 'bg-indigo-600'} rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-sm group-hover:scale-105 transition-transform uppercase`}>
+                        <div className={`w-10 h-10 shrink-0 ${emp.color || 'bg-indigo-600'} rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
                           {emp.initial || emp.name.charAt(0)}
                         </div>
                         <div className="min-w-0">
                           <p className="font-bold text-slate-900 text-sm truncate">{emp.name}</p>
-                          <div className="flex items-center gap-1.5 text-slate-400 mt-0.5">
+                          <div className="flex items-center gap-1.5 text-slate-400">
                             <FaEnvelope size={10} />
-                            <p className="text-[10px] font-bold truncate">{emp.email}</p>
+                            <p className="text-xs font-medium truncate">{emp.email}</p>
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-5">
-                      <div className="flex flex-col gap-1">
+
+                    {/* Dept & Role Cell */}
+                    <td className="px-6 py-2 md:py-4">
+                      <div className="flex flex-col">
                         <div className="flex items-center gap-1.5 text-slate-700">
-                          <FaBuilding size={10} className="text-slate-300" />
-                          <span className="text-xs font-bold">{emp.dept}</span>
+                          <FaBuilding size={10} className="text-slate-300 md:hidden" />
+                          <span className="text-xs font-semibold">{emp.dept}</span>
                         </div>
-                        <span className="text-[10px] font-black text-indigo-500 uppercase tracking-tighter">{emp.role}</span>
+                        <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-tight">{emp.role}</span>
                       </div>
                     </td>
-                    <td className="px-8 py-5 text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black tracking-widest border transition-colors ${emp.status === 'ACTIVE'
-                          ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                          : 'bg-amber-50 text-amber-600 border-amber-100'
-                        }`}>
+
+                    {/* Status Cell */}
+                    <td className="px-6 py-2 md:py-4 md:text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold border ${
+                        emp.status === 'ACTIVE'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                          : 'bg-amber-50 text-amber-700 border-amber-100'
+                      }`}>
                         <div className={`w-1.5 h-1.5 rounded-full bg-current ${emp.status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
                         {emp.status}
                       </span>
                     </td>
-                    <td className="px-8 py-5 text-right">
-                      <button className="p-2 text-slate-300 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
-                        <FaEllipsisV size={12} />
-                      </button>
+
+                    {/* Actions Cell */}
+                    <td className="px-6 py-4 md:text-right">
+                      <div className="flex justify-between items-center md:justify-end">
+                        <span className="md:hidden text-xs text-slate-400 font-medium italic">Employee ID: #{emp.id}</span>
+                        <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all">
+                          <FaEllipsisV size={12} />
+                        </button>
+                      </div>
                     </td>
                   </motion.tr>
                 ))}
               </AnimatePresence>
-            </motion.tbody>
+            </tbody>
           </table>
         </div>
 
-        {/* Empty State */}
+        {/* Empty & Footer */}
         {filteredEmployees.length === 0 && !loading && (
-          <div className="py-20 text-center bg-slate-50/20">
-            <p className="text-slate-400 font-bold italic text-sm">No team members found matching "{searchTerm}"</p>
+          <div className="py-16 text-center text-slate-500 text-sm font-medium">
+            No team members found matching "{searchTerm}"
           </div>
         )}
 
-        {/* Footer */}
-        <div className="p-5 border-t border-slate-50 bg-slate-50/30 flex justify-between items-center">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-            Showing {filteredEmployees.length} Members
+        <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            {filteredEmployees.length} Members listed
           </span>
           <div className="flex gap-2">
-            <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 hover:bg-slate-50 transition-all disabled:opacity-50">PREV</button>
-            <button className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-900 hover:bg-slate-50 transition-all shadow-sm">NEXT</button>
+            <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-400 hover:bg-slate-50 transition-all">Previous</button>
+            <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900 hover:bg-slate-50 transition-all shadow-sm">Next Page</button>
           </div>
         </div>
       </div>
