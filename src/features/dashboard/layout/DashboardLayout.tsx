@@ -30,7 +30,7 @@ const DashboardLayout: React.FC = () => {
       case "Dashboard":
         return userRole === "Manager"
           ? <ManagerDashboardView />
-          : <DashboardView />;
+          : userRole === "Employee"? <DashboardView /> : <EmployeesView/>;
 
       case "Employees":
         return <EmployeesView />;
