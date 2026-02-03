@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -22,7 +22,11 @@ const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
+  useEffect(() => {
+    if (user?.role === "HR Admin" && activeTab === "Dashboard") {
+      setActiveTab("Employees");
+    }
+  }, [user, activeTab]);
   let userRole = user?.role || "Employee";
 
   const renderView = () => {
@@ -30,7 +34,7 @@ const DashboardLayout: React.FC = () => {
       case "Dashboard":
         return userRole === "Manager"
           ? <ManagerDashboardView />
-          : <DashboardView />;
+          : userRole === "Employee" ? <DashboardView /> : <EmployeesView />;
 
       case "Employees":
         return <EmployeesView />;
@@ -56,10 +60,10 @@ const DashboardLayout: React.FC = () => {
       case "Notifications":
         return <NotificationsView />;
       case "Profile":
-        
-        if(userRole === "Manager") return <ManagerProfile/>;
-        if (userRole === "HR Admin") return <HRProfile/>;
-        return <EmployeeProfile/>;
+
+        if (userRole === "Manager") return <ManagerProfile />;
+        if (userRole === "HR Admin") return <HRProfile />;
+        return <EmployeeProfile />;
 
       default:
         return userRole === "Manager"
