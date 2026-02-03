@@ -20,6 +20,19 @@ export interface Employee {
   color: string;
 }
 
+// export interface ApprovalRequest {
+//   id: number;
+//   initial: string;
+//   employee: string;
+//   dept: string;
+//   type: string;
+//   range: string;
+//   days: number;
+//   avatarColor?: string;
+//   appliedOn: string;
+// }
+
+
 export interface ApprovalRequest {
   id: number;
   initial: string;
@@ -30,8 +43,10 @@ export interface ApprovalRequest {
   days: number;
   avatarColor?: string;
   appliedOn: string;
+  // --- ADD THESE ---
+  balance: number; // Mandatory: To show "Days Left" in UI
+  reason: string;  // Mandatory: To show "Reason" snippet in table
 }
-
 export interface DashboardStats {
   title: string;
   used: number;
