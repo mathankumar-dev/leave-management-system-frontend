@@ -7,7 +7,7 @@ import type {
   AuditLog,
   DashboardStats,
   ChartData
-} from "../types/index";
+} from "../features/dashboard/types";
 import { 
   FaCheckCircle, 
   FaTimesCircle, 
@@ -23,8 +23,16 @@ export const MOCK_TEAM_MEMBERS: Employee[] = [
 ];
 
 export const MOCK_PENDING_REQUESTS: ApprovalRequest[] = [
-  { id: 101, initial: "MC", employee: "Michael Chen", dept: "Engineering", type: "WFH", range: "Feb 05 - Feb 06", days: 2, appliedOn: "2026-01-30", avatarColor: "bg-indigo-500" },
-  { id: 102, initial: "AR", employee: "Alex Rivera", dept: "Operations", type: "Annual Leave", range: "Feb 10 - Feb 15", days: 5, appliedOn: "2026-01-28", avatarColor: "bg-emerald-500" },
+  {
+    id: 101, initial: "MC", employee: "Michael Chen", dept: "Engineering", type: "WFH", range: "Feb 05 - Feb 06", days: 2, appliedOn: "2026-01-30", avatarColor: "bg-indigo-500",
+    balance: 0,
+    reason: 'okay'
+  },
+  {
+    id: 102, initial: "AR", employee: "Alex Rivera", dept: "Operations", type: "Annual Leave", range: "Feb 10 - Feb 15", days: 5, appliedOn: "2026-01-28", avatarColor: "bg-emerald-500",
+    balance: 0,
+    reason: 'no idea'
+  },
 ];
 
 export const MOCK_LEAVE_HISTORY: LeaveRecord[] = [

@@ -1,4 +1,33 @@
+<<<<<<< HEAD
 @import "tailwindcss";
+
+/* Target the scrollbar globally or add .custom-scrollbar to a specific div */
+::-webkit-scrollbar {
+  width: 5px;               /* Slims down the width significantly */
+  height: 5px;              /* Slims down the height for horizontal scrollbars */
+}
+
+/* The background area of the scrollbar */
+::-webkit-scrollbar-track {
+  background: transparent;  /* Keeps the UI clean by hiding the track */
+}
+
+/* The draggable handle */
+::-webkit-scrollbar-thumb {
+  background: #6366f1;      /* Indigo-500: Change this hex to your preferred color */
+  border-radius: 20px;      /* Makes the handle rounded/pill-shaped */
+}
+
+/* Handle color change on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #4f46e5;      /* Indigo-600: A slightly darker shade on hover */
+}
+
+/* For Firefox (Limited customization) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #6366f1 transparent;
+}
 
 @keyframes slide-down {
   0% {
@@ -14,3 +43,6 @@
 .animate-slide-down {
   animation: slide-down 0.6s ease-out;
 }
+=======
+@import "tailwindcss";
+>>>>>>> parent of 4153667 (pop up message added)

@@ -3,18 +3,17 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
-// Existing Views
-
-import ManagerDashboardView from "../views/manager/ManagerDashboardView";
-
-// New Views
-import LeaveTypesView from "../views/admin/LeaveTypesView";
-import TeamCalendarView from "../views/manager/TeamCalendarView";
+// Views
 import EmployeesView from "../views/admin/EmployeesView";
+import LeaveTypesView from "../views/admin/LeaveTypesView";
+import CalendarView from "../views/employee/CalendarView";
 import DashboardView from "../views/employee/DashboardView";
 import LeaveApplicationForm from "../views/LeaveApplicationForm";
+import ManagerDashboardView from "../views/manager/ManagerDashboardView";
+import TeamCalendarView from "../views/manager/TeamCalendarView";
 import MyLeavesView from "../views/MyLeavesView";
 import NotificationsView from "../views/NotificationsView";
+import ApprovalsView from "../views/manager/ApprovalsView";
 
 const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -26,18 +25,20 @@ const DashboardLayout: React.FC = () => {
   const renderView = () => {
     switch (activeTab) {
       case "Dashboard":
-        return userRole === "Manager" ? <ManagerDashboardView /> : <DashboardView />;
+        return userRole === "Manager"
+          ? <ManagerDashboardView />
+          : <DashboardView />;
 
       case "Employees":
-        // Usually only managers see the employee list
         return <EmployeesView />;
 
+      case "Calendar":
+        return <CalendarView />;
+
       case "Team Calendar":
-        // New Manager view for team oversight
         return <TeamCalendarView />;
 
       case "Leave Config":
-        // New Manager view for setting up leave types
         return <LeaveTypesView />;
 
       case "Apply Leave":
@@ -45,18 +46,23 @@ const DashboardLayout: React.FC = () => {
 
       case "My Leaves":
         return <MyLeavesView />;
-        
+
+      case "Pending Requests":
+        return <ApprovalsView />;
+
       case "Notifications":
         return <NotificationsView />;
 
       default:
-        return userRole === "Manager" ? <ManagerDashboardView /> : <DashboardView />;
+        return userRole === "Manager"
+          ? <ManagerDashboardView />
+          : <DashboardView />;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
-      {/* Sidebar needs the same activeTab keys used in the switch above */}
+    <div className="flex min-h-screen bg-[#F8FAFC] overflow-x-hidden">
+      {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -66,17 +72,18 @@ const DashboardLayout: React.FC = () => {
         onLogout={logout}
       />
 
-      <div className="flex-1 flex flex-col md:ml-64 min-h-screen">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col md:ml-64 min-h-screen w-full overflow-x-hidden">
         <Topbar
           activeTab={activeTab}
           user={user}
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={logout}
+          setActiveTab={setActiveTab}
         />
 
-        <main className="p-4 md:p-8 flex-1 overflow-y-auto">
-          {/* Transition wrapper for smooth view changes */}
-          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500">
+        <main className="p-4 md:p-6 flex-1 overflow-y-auto w-full">
+          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500 w-full">
             {renderView()}
           </div>
         </main>

@@ -18,10 +18,18 @@ export const dashboardService = {
   },
 
   // FIXED: Added this missing method to solve your TS error
-  updateApprovalStatus: async (id: number, status: 'Approved' | 'Rejected') => {
-    const response = await api.put(`/leaves/approvals/${id}`, { status });
-    return response.data;
-  },
+  // updateApprovalStatus: async (id: number, status: 'Approved' | 'Rejected') => {
+  //   const response = await api.put(`/leaves/approvals/${id}`, { status });
+  //   return response.data;
+  // },
+
+  updateApprovalStatus: async (id: number, status: 'Approved' | 'Rejected', comment?: string) => {
+  const response = await api.put(`/leaves/approvals/${id}`, { 
+    status, 
+    comment // This is the mandatory "Action Comment" for the Audit Log
+  });
+  return response.data;
+},
 
   getMyLeaveHistory: async () => {
     const response = await api.get<LeaveRecord[]>('/leaves/my-history');
