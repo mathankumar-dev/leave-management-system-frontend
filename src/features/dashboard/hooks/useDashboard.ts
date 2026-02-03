@@ -23,18 +23,38 @@ export const useDashboard = () => {
     }
   }, []);
 
-  const processApproval = async (id: number, status: 'Approved' | 'Rejected'): Promise<boolean> => {
-    setLoading(true);
-    try {
-      await service.updateApprovalStatus(id, status);
-      return true;
-    } catch (err: any) {
-      setError(err.message || 'Action failed');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const processApproval = async (id: number, status: 'Approved' | 'Rejected'): Promise<boolean> => {
+  //   setLoading(true);
+  //   try {
+  //     await service.updateApprovalStatus(id, status);
+  //     return true;
+  //   } catch (err: any) {
+  //     setError(err.message || 'Action failed');
+  //     return false;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+  // Added 'comment' parameter
+const processApproval = async (
+  id: number, 
+  status: 'Approved' | 'Rejected', 
+  comment?: string // New parameter
+): Promise<boolean> => {
+  setLoading(true);
+  try {
+    // Pass the comment to your service layer
+    await service.updateApprovalStatus(id, status, comment);
+    return true;
+  } catch (err: any) {
+    setError(err.message || 'Action failed');
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchEmployees = async (): Promise<Employee[]> => {
     setLoading(true);

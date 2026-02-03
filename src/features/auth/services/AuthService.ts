@@ -39,8 +39,7 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
       token: "mock-token-123"
     };
   }
-
-   if (credentials.email === "admin@company.com") {
+    if (credentials.email === "admin@company.com") {
     return {
       user: { id: "1", name: "Admin User", email: credentials.email, role: "HR Admin",department:"IT" },
       token: "mock-token-123"
