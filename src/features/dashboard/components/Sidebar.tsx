@@ -33,6 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { name: "Notifications", icon: <FaBell />, roles: ["Employee", "Manager"] },
     { name: "Employees", icon: <FaUsers />, roles: ["Manager", "HR Admin"] },
     { name: "Leave Config", icon: <FaCog />, roles: ["HR Admin"] },
+    { name: "Pending Requests", icon: <FaCog />, roles: ["Manager"] },
   ];
 
   const visibleTabs = tabs.filter((tab) => tab.roles.includes(role));

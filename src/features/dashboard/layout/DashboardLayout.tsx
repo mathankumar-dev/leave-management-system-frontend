@@ -106,8 +106,9 @@ import ManagerDashboardView from "../views/manager/ManagerDashboardView";
 import TeamCalendarView from "../views/manager/TeamCalendarView";
 import MyLeavesView from "../views/MyLeavesView";
 import NotificationsView from "../views/NotificationsView";
+import ApprovalsView from "../views/manager/ApprovalsView";
 
-// Existing Views imports...
+
 
 const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuth();
@@ -124,6 +125,7 @@ const DashboardLayout: React.FC = () => {
       case "Leave Config": return <LeaveTypesView />;
       case "Apply Leave": return <LeaveApplicationForm />;
       case "My Leaves": return <MyLeavesView />;
+      case "Pending Requests": return <ApprovalsView />;
       case "Notifications": return <NotificationsView />;
       default: return userRole === "Manager" ? <ManagerDashboardView /> : <DashboardView />;
     }
