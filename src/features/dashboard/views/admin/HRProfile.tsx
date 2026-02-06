@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import BaseProfile from "../../layout/BaseProfile";
-import type { ProfileData } from "../../layout/BaseProfile";
+import type { ProfileData } from "../../types";
+import { MOCK_PROFILE } from "../../../../mockData";
+// import type { ProfileData } from "../../layout/BaseProfile";
 
 const HRProfile: React.FC = () => {
   const [profile, setProfile] = useState<ProfileData>({
+    ...MOCK_PROFILE,
     name: "Alice HR",
     role: "HR",
     email: "alice@company.com",
