@@ -12,6 +12,7 @@ import LeaveDetailsDrawer from "../../components/LeaveDetailsDrawer";
 // Custom Hooks/Mocks
 import { useDashboard } from "../../hooks/useDashboard";
 import { MOCK_CHART_DATA, MOCK_DASHBOARD_STATS, MOCK_LEAVE_HISTORY } from "../../../../mockData";
+import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -58,6 +59,10 @@ const DashboardView: React.FC = () => {
     );
   }
 
+  function handleFABClick(): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <motion.div
       initial="hidden"
@@ -68,36 +73,13 @@ const DashboardView: React.FC = () => {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-6 gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Employee Dashboard</h2>
-          <p className="text-sm text-slate-500">Overview of your leave balances and application status.</p>
+          {/* <h2 className="text-xl font-bold tracking-tight text-slate-900">Employee Dashboard</h2> */}
+          {/* <p className="text-sm text-slate-500">Overview of your leave balances and application status.</p> */}
         </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700 transition-all shadow-sm">
           <FaBolt /> New Leave Request
         </button>
       </div>
-
-      {/* STATS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => (
-          <motion.div key={i} variants={itemVariants} onClick={() => setSelectedCard(stat.title)}>
-            <StatCard
-              title={stat.title}
-              used={stat.used}
-              total={stat.total}
-              color={stat.color} 
-              period="ANNUAL CYCLE 2026"
-            />
-          </motion.div>
-        ))}
-        {/* Comp-Off Manual Card */}
-        <motion.div variants={itemVariants} className="bg-emerald-50 border border-emerald-100 rounded-md p-5 shadow-sm">
-          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Comp-Off Balance</p>
-          <h3 className="text-2xl font-bold text-emerald-700 mt-2">02 Days</h3>
-          <p className="text-[10px] font-medium text-emerald-500 mt-1 italic">Expires in 45 days</p>
-        </motion.div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* REQUEST LIST */}
         <div className="lg:col-span-8 space-y-4">
           <div className="flex items-center gap-2 mb-2">
@@ -127,6 +109,29 @@ const DashboardView: React.FC = () => {
           </div>
         </div>
 
+      {/* STATS GRID */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat, i) => (
+          <motion.div key={i} variants={itemVariants} onClick={() => setSelectedCard(stat.title)}>
+            <StatCard
+              title={stat.title}
+              used={stat.used}
+              total={stat.total}
+              color={stat.color} 
+              period="ANNUAL CYCLE 2026"
+            />
+          </motion.div>
+        ))}
+        {/* Comp-Off Manual Card */}
+        <motion.div variants={itemVariants} className="bg-emerald-50 border border-emerald-100 rounded-md p-5 shadow-sm">
+          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Comp-Off Balance</p>
+          <h3 className="text-2xl font-bold text-emerald-700 mt-2">02 Days</h3>
+          <p className="text-[10px] font-medium text-emerald-500 mt-1 italic">Expires in 45 days</p>
+        </motion.div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
         {/* SIDEBAR ANALYTICS */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
@@ -154,6 +159,11 @@ const DashboardView: React.FC = () => {
 
       <LeaveDetailsDrawer open={!!selectedCard} title={selectedCard} onClose={() => setSelectedCard(null)} />
       <RecentLeavePopup latestLeave={MOCK_LEAVE_HISTORY[0]} />
+
+      <MyFloatingActionButton 
+        onClick={handleFABClick} 
+        label="Quick Action" 
+      />
     </motion.div>
   );
 };

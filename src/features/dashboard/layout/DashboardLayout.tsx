@@ -73,9 +73,9 @@ const DashboardLayout: React.FC = () => {
   };
 
   return (
-    
-    <div className="flex min-h-screen bg-neutral-50 overflow-x-hidden"> 
-      
+
+    <div className="flex min-h-screen bg-neutral-50 overflow-x-hidden">
+
       {/* Sidebar - Internal width should be w-80 */}
       <Sidebar
         activeTab={activeTab}
@@ -89,7 +89,7 @@ const DashboardLayout: React.FC = () => {
       {/* Main Content Wrapper */}
       {/* FIX: Change md:ml-64 to md:ml-80 to match the sidebar width exactly */}
       <div className="flex-1 flex flex-col md:ml-80 min-h-screen w-full transition-all duration-300">
-        
+
         <Topbar
           activeTab={activeTab}
           user={user}
@@ -98,8 +98,8 @@ const DashboardLayout: React.FC = () => {
           setActiveTab={setActiveTab}
         />
 
-        <main className="p-4 md:p-8 flex-1 overflow-y-auto w-full">
-          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500 w-full">
+        <main className="p-6 flex-1 overflow-y-auto w-full">
+          <div className="max-w-400 mx-auto animate-in fade-in duration-500 w-full">
             {renderView()}
           </div>
         </main>
