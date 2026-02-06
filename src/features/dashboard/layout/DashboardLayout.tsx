@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -14,20 +14,27 @@ import TeamCalendarView from "../views/manager/TeamCalendarView";
 import MyLeavesView from "../views/MyLeavesView";
 import NotificationsView from "../views/NotificationsView";
 import ApprovalsView from "../views/manager/ApprovalsView";
+import ManagerProfile from "../views/manager/ManagerProfile";
+import EmployeeProfile from "../views/employee/EmployeeProfile";
+import HRProfile from "../views/admin/HRProfile";
 
 const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const userRole = user?.role || "Employee";
+  useEffect(() => {
+    if (user?.role === "HR Admin" && activeTab === "Dashboard") {
+      setActiveTab("Employees");
+    }
+  }, [user, activeTab]);
+  let userRole = user?.role || "Employee";
 
   const renderView = () => {
     switch (activeTab) {
       case "Dashboard":
         return userRole === "Manager"
           ? <ManagerDashboardView />
-          : <DashboardView />;
+          : userRole === "Employee" ? <DashboardView /> : <EmployeesView />;
 
       case "Employees":
         return <EmployeesView />;
@@ -52,6 +59,11 @@ const DashboardLayout: React.FC = () => {
 
       case "Notifications":
         return <NotificationsView />;
+      case "Profile":
+
+        if (userRole === "Manager") return <ManagerProfile />;
+        if (userRole === "HR Admin") return <HRProfile />;
+        return <EmployeeProfile />;
 
       default:
         return userRole === "Manager"
