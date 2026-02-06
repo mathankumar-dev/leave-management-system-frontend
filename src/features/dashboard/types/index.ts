@@ -85,3 +85,32 @@ export interface AuditLog {
   icon: React.ReactNode;
 }
 
+export interface ProfileData {
+  // Identity & Basic Info
+  name: string;
+  role: string;
+  email: string;
+  phone: string;
+  employeeId: string;
+  photo: string;
+  
+  // Work Information
+  department: string;
+  designation: string;
+  joiningDate: string;
+  workLocation: string;
+  managerName: string;
+  employmentType: 'Full-time' | 'Contract' | 'Intern';
+  
+  // Personal Details
+  dob: string;
+  gender: string;
+  bloodGroup?: string;
+  nationality: string;
+  address: string;
+  
+  // Social & Professional
+  linkedin?: string;
+  github?: string;
+  skills: string[];
+}
