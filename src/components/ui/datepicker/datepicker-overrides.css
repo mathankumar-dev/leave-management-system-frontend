@@ -80,3 +80,58 @@
 .react-datepicker__day--outside-month {
   color: var(--color-neutral-200) !important;
 }
+
+#datepicker-portal {
+  position: relative;
+  z-index: 9999;
+}
+
+.react-datepicker-popper {
+  z-index: 9999 !important;
+  padding-top: 8px !important;
+}
+
+.react-datepicker {
+  background-color: white !important;
+  border: 1px solid var(--color-neutral-200) !important;
+  /* REDUCED CORNERS */
+  border-radius: 0.5rem !important; 
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  font-family: var(--font-internal) !important;
+  padding: 0.5rem;
+}
+
+.react-datepicker__header {
+  background-color: white !important;
+  border-bottom: 1px solid var(--color-neutral-100) !important;
+  /* REDUCED CORNERS */
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+  padding-top: 1rem !important;
+}
+
+.react-datepicker__header__dropdown select {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px; /* Matches 4-5px range */
+  border: 1px solid var(--color-neutral-200);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-900);
+  font-weight: 600;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.react-datepicker__day {
+  width: 2.2rem !important;
+  line-height: 2.2rem !important;
+  margin: 0.1rem !important;
+  /* REDUCED CORNERS */
+  border-radius: 4px !important; 
+}
+
+.react-datepicker__day--selected {
+  background-color: var(--color-primary-500) !important;
+  border-radius: 4px !important;
+}
+
+/* ... keep other cleanup styles ... */

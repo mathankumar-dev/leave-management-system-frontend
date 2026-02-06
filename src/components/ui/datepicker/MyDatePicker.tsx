@@ -16,13 +16,15 @@ interface DatePickerProps {
  * Custom Input Component
  * Uses forwardRef to allow the DatePicker to control the button's focus/click
  */
+/* ... imports ... */
+
 const CustomInput = forwardRef<HTMLButtonElement, { value?: string; onClick?: () => void; placeholder?: string }>(
   ({ value, onClick, placeholder }, ref) => (
     <button
       type="button"
       onClick={onClick}
       ref={ref}
-      className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-neutral-200 bg-white text-left outline-none focus:ring-2 focus:ring-primary-500 transition-all group"
+      className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-neutral-200 bg-white text-left outline-none focus:ring-2 focus:ring-primary-500 transition-all group"
     >
       <span className={`${value ? "text-neutral-900" : "text-neutral-500"} font-medium`}>
         {value || placeholder}
@@ -31,6 +33,7 @@ const CustomInput = forwardRef<HTMLButtonElement, { value?: string; onClick?: ()
     </button>
   )
 );
+
 
 const MyDatePicker: React.FC<DatePickerProps> = ({
   selected,
