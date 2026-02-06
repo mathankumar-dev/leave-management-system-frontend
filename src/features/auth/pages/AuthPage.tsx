@@ -1,95 +1,52 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { FaFingerprint, FaQuoteLeft } from "react-icons/fa";
+import React from "react";
+import { motion } from "framer-motion";
 import LoginForm from "../components/LoginForm";
-import RegisterForm from "../components/RegisterForm";
 
 const AuthPage: React.FC = () => {
-  const [isLogin, setIsLogin] = useState<boolean>(true);
-
   return (
-    <div className="min-h-screen bg-[#F8FAFC] overflow-hidden flex items-center justify-center">
-      <motion.div 
-        layout
-        transition={{ type: "spring", stiffness: 40, damping: 15 }}
-        className={`flex min-h-screen w-full transition-all duration-700 ${isLogin ? "flex-row" : "flex-row-reverse"}`}
-      >
+    <div className="min-h-screen bg-primary-50 overflow-hidden flex items-center justify-center">
+      <div className="flex min-h-screen w-full">
+        
         {/* BRANDING PANEL */}
-        <motion.div
-          layout
-          className="hidden lg:flex w-1/2 bg-slate-900 relative overflow-hidden items-center justify-center p-16"
-        >
-          {/* Animated Background Blobs */}
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-600 rounded-full blur-[140px]" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-500 rounded-full blur-[120px]" />
+        <div className="hidden lg:flex w-1/2 bg-neutral-950 relative overflow-hidden items-center justify-center p-16">
+          
+          {/* VIBRANT GRADIENT BLOBS - Increased size and opacity */}
+          <div className="absolute inset-0 pointer-events-none">
+            {/* Top-left glow - Your Base Blue #0066ff */}
+            <div className="absolute top-[-20%] left-[-20%] w-200 h-200 bg-primary-500 rounded-full blur-[150px] opacity-40 animate-pulse" />
+            
+            {/* Bottom-right glow - Darker Blue #0052cc */}
+            <div className="absolute bottom-[-10%] right-[-10%] w-150 h-150 bg-primary-700 rounded-full blur-[130px] opacity-30" />
           </div>
 
-          <motion.div layout className="relative z-10 max-w-lg">
-            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-2xl mb-12">
-              <FaFingerprint className="text-slate-900 text-3xl" />
-            </div>
-            <h2 className="text-5xl font-black text-white leading-tight mb-8">
-              {isLogin ? "Leave Management System" : "Employee Registration"}
+          <div className="relative z-10 max-w-lg">
+
+            
+            <h2 className="text-6xl font-black text-white leading-[1.1] mb-8">
+              Employee Leave <br /> 
+              <span className="text-primary-500">Application</span>
             </h2>
-            <div className="pt-8 border-t border-white/10">
-              <FaQuoteLeft className="text-indigo-500 text-3xl mb-4 opacity-50" />
-              <p className="text-slate-300 text-xl font-medium italic">
-                {isLogin 
-                  ? "Rest is not idleness... it is by no means a waste of time."
-                  : "Maintain core employee details for seamless reporting."}
-              </p>
-            </div>
-          </motion.div>
-        </motion.div>
+            
+            <p className="text-white text-lg font-medium leading-relaxed max-w-md">
+              A centralized system to manage your leave requests, track balances, and stay updated with team availability.
+            </p>
+          </div>
+        </div>
 
         {/* FORM PANEL */}
-        <motion.div 
-          layout
-          className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white"
-        >
-          <div className="w-full max-w-md">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={isLogin ? "login" : "register"}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-              >
-                {isLogin ? (
-                  <>
-                    {/* LoginForm no longer needs props as it uses useAuth() internally */}
-                    <LoginForm /> 
-                    <p className="mt-8 text-center text-sm font-bold text-slate-500">
-                      Don't have an account?{" "}
-                      <button 
-                        onClick={() => setIsLogin(false)}
-                        className="text-indigo-600 font-black uppercase tracking-widest text-[11px] hover:underline transition-all"
-                      >
-                        Sign Up
-                      </button>
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <RegisterForm onToggle={() => setIsLogin(true)} />
-                    <p className="mt-8 text-center text-sm font-bold text-slate-500">
-                      Already have an account?{" "}
-                      <button 
-                        onClick={() => setIsLogin(true)}
-                        className="text-indigo-600 font-black uppercase tracking-widest text-[11px] hover:underline transition-all"
-                      >
-                        Sign In
-                      </button>
-                    </p>
-                  </>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </motion.div>
-      </motion.div>
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-primary-50 relative">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} // Professional "Spring" ease
+            className="w-full max-w-md"
+          >
+            <LoginForm /> 
+
+          </motion.div>
+        </div>
+
+      </div>
     </div>
   );
 };
