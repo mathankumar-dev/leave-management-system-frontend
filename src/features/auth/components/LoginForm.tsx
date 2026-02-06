@@ -60,7 +60,7 @@ const LoginForm: React.FC = () => {
       {/* Password Field */}
       <div className="space-y-2">
         <div className="flex justify-between items-center ml-1">
-          <label className="text-[11px] font-bold uppercase tracking-[0.1em] text-neutral-700">Password</label>
+          <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700">Password</label>
           <button type="button" className="text-[11px] font-bold text-primary-600 hover:text-primary-700 hover:underline">
             Forgot?
           </button>

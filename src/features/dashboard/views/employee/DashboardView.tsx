@@ -27,6 +27,7 @@ import {
   MOCK_DASHBOARD_STATS,
   MOCK_LEAVE_HISTORY,
 } from "../../../../mockData";
+import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
 
 /* ================= TYPES ================= */
 
@@ -96,13 +97,18 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     );
   }
 
+// function to redirect to apply leaves page
+  function handleAdd(): void {
+    throw new Error("Function not implemented.");
+  }
+
   /* ---------- UI ---------- */
   return (
     <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-6 p-4 max-w-7xl mx-auto text-slate-900"
+      className="space-y-6  max-w-7xl mx-auto text-slate-900"
     >
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-6 gap-4">
@@ -182,11 +188,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             >
               <div className="flex gap-4">
                 <div
-                  className={`w-10 h-10 rounded flex items-center justify-center ${
-                    req.status === "Approved"
+                  className={`w-10 h-10 rounded flex items-center justify-center ${req.status === "Approved"
                       ? "bg-emerald-50 text-emerald-600"
                       : "bg-rose-50 text-rose-600"
-                  }`}
+                    }`}
                 >
                   {req.status === "Approved" ? (
                     <FaCheckCircle />
@@ -200,11 +205,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               </div>
               <span
-                className={`text-[10px] font-black uppercase px-2 py-1 rounded ${
-                  req.status === "Approved"
+                className={`text-[10px] font-black uppercase px-2 py-1 rounded ${req.status === "Approved"
                     ? "bg-emerald-100 text-emerald-700"
                     : "bg-rose-100 text-rose-700"
-                }`}
+                  }`}
               >
                 {req.status}
               </span>
@@ -248,9 +252,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       <RecentLeavePopup latestLeave={MOCK_LEAVE_HISTORY[0]} />
 
-      <MyFloatingActionButton 
-        onClick={handleFABClick} 
-        label="Quick Action" 
+      <MyFloatingActionButton
+        onClick={handleAdd}
+        title="New Leave Request"
+        tooltipLabel="Apply for leave"
       />
     </motion.div>
   );

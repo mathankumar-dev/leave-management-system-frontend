@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
@@ -32,6 +32,7 @@ const DashboardLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const userRole = user?.role || "Employee";
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   /* ---------------- HR DEFAULT REDIRECT ---------------- */
   useEffect(() => {
@@ -40,65 +41,74 @@ const DashboardLayout: React.FC = () => {
     }
   }, [userRole, activeTab]);
 
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: 0,
+        behavior: "instant" // Use "smooth" if you want a sliding effect, but "instant" is standard for tab changes
+      });
+    }
+  }, [activeTab]);
+
   /* ---------------- VIEW RENDERER ---------------- */
   const renderView = () => {
-  switch (activeTab) {
+    switch (activeTab) {
 
-    case "Reports":
-      if (userRole === "HR Admin") {
-        return <LeaveReportDashboard  />;
-      }
-      if (userRole === "Manager") {
-        return <LeaveReportDashboard />;
-      }
-      return null;
+      case "Reports":
+        if (userRole === "HR Admin") {
+          return <LeaveReportDashboard />;
+        }
+        if (userRole === "Manager") {
+          return <LeaveReportDashboard />;
+        }
+        return null;
 
-    case "Dashboard":
-      return userRole === "Manager"
-        ? <ManagerDashboardView />
-        : userRole === "Employee"
-        ? <DashboardView />
-        : <EmployeesView />;
+      case "Dashboard":
+        return userRole === "Manager"
+          ? <ManagerDashboardView />
+          : userRole === "Employee"
+            ? <DashboardView />
+            : <EmployeesView />;
 
-    case "Employees":
-      return <EmployeesView />;
+      case "Employees":
+        return <EmployeesView />;
 
-    case "Calendar":
-      return <CalendarView />;
+      case "Calendar":
+        return <CalendarView />;
 
-    case "Team Calendar":
-      return <TeamCalendarView />;
+      case "Team Calendar":
+        return <TeamCalendarView />;
 
-    case "Leave Config":
-      return <LeaveTypesView />;
+      case "Leave Config":
+        return <LeaveTypesView />;
 
-    case "Apply Leave":
-      return <LeaveApplicationForm />;
+      case "Apply Leave":
+        return <LeaveApplicationForm />;
 
-    case "My Leaves":
-      return <MyLeavesView />;
+      case "My Leaves":
+        return <MyLeavesView />;
 
-    case "Pending Requests":
-      return <ApprovalsView />;
+      case "Pending Requests":
+        return <ApprovalsView />;
 
-    case "Notifications":
-      return <NotificationsView />;
+      case "Notifications":
+        return <NotificationsView />;
 
-    case "Profile":
-      if (userRole === "Manager") return <ManagerProfile />;
-      if (userRole === "HR Admin") return <HRProfile />;
-      return <EmployeeProfile />;
+      case "Profile":
+        if (userRole === "Manager") return <ManagerProfile />;
+        if (userRole === "HR Admin") return <HRProfile />;
+        return <EmployeeProfile />;
 
-    default:
-      return <DashboardView />;
-  }
-};
+      default:
+        return <DashboardView />;
+    }
+  };
 
 
   /* ---------------- LAYOUT ---------------- */
   return (
 
-    <div className="flex min-h-screen bg-neutral-50 overflow-x-hidden">
+    <div className="flex h-screen bg-neutral-50 overflow-hidden">
 
       {/* Sidebar - Internal width should be w-80 */}
       <Sidebar
@@ -112,8 +122,7 @@ const DashboardLayout: React.FC = () => {
 
       {/* Main Content Wrapper */}
       {/* FIX: Change md:ml-64 to md:ml-80 to match the sidebar width exactly */}
-      <div className="flex-1 flex flex-col md:ml-80 min-h-screen w-full transition-all duration-300">
-
+      <div className="flex-1 flex flex-col md:ml-80 h-full min-w-0 transition-all duration-300">
         <Topbar
           activeTab={activeTab}
           user={user}
@@ -122,7 +131,7 @@ const DashboardLayout: React.FC = () => {
           setActiveTab={setActiveTab}
         />
 
-        <main className="p-6 flex-1 overflow-y-auto w-full">
+        <main ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-6">
           <div className="max-w-400 mx-auto animate-in fade-in duration-500 w-full">
             {renderView()}
           </div>
