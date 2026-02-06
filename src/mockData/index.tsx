@@ -6,7 +6,8 @@ import type {
   Notification, 
   AuditLog,
   DashboardStats,
-  ChartData
+  ChartData,
+  ProfileData
 } from "../features/dashboard/types";
 import { 
   FaCheckCircle, 
@@ -23,8 +24,16 @@ export const MOCK_TEAM_MEMBERS: Employee[] = [
 ];
 
 export const MOCK_PENDING_REQUESTS: ApprovalRequest[] = [
-  { id: 101, initial: "MC", employee: "Michael Chen", dept: "Engineering", type: "WFH", range: "Feb 05 - Feb 06", days: 2, appliedOn: "2026-01-30", avatarColor: "bg-indigo-500" },
-  { id: 102, initial: "AR", employee: "Alex Rivera", dept: "Operations", type: "Annual Leave", range: "Feb 10 - Feb 15", days: 5, appliedOn: "2026-01-28", avatarColor: "bg-emerald-500" },
+  {
+    id: 101, initial: "MC", employee: "Michael Chen", dept: "Engineering", type: "WFH", range: "Feb 05 - Feb 06", days: 2, appliedOn: "2026-01-30", avatarColor: "bg-indigo-500",
+    balance: 0,
+    reason: 'okay'
+  },
+  {
+    id: 102, initial: "AR", employee: "Alex Rivera", dept: "Operations", type: "Annual Leave", range: "Feb 10 - Feb 15", days: 5, appliedOn: "2026-01-28", avatarColor: "bg-emerald-500",
+    balance: 0,
+    reason: 'no idea'
+  },
 ];
 
 export const MOCK_LEAVE_HISTORY: LeaveRecord[] = [
@@ -34,10 +43,34 @@ export const MOCK_LEAVE_HISTORY: LeaveRecord[] = [
 
 // DATA FOR DASHBOARD STAT CARDS
 export const MOCK_DASHBOARD_STATS: DashboardStats[] = [
-  { title: "Annual Leave", used: 8, total: 20, color: "bg-emerald-500", icon: "plane" },
-  { title: "Sick Leave", used: 2, total: 10, color: "bg-rose-500", icon: "medical" },
-  { title: "Casual Leave", used: 3, total: 7, color: "bg-amber-500", icon: "clock" },
-  { title: "WFH Quota", used: 12, total: 24, color: "bg-indigo-500", icon: "home" },
+  { 
+    title: "Annual Leave", 
+    used: 8, 
+    total: 20, 
+    color: "#6366f1", // Indigo 500
+    icon: "plane" 
+  },
+  { 
+    title: "Sick Leave", 
+    used: 2, 
+    total: 10, 
+    color: "#f43f5e", // Rose 500
+    icon: "medical" 
+  },
+  { 
+    title: "Casual Leave", 
+    used: 3, 
+    total: 7, 
+    color: "#f59e0b", // Amber 500
+    icon: "clock" 
+  },
+  { 
+    title: "WFH Quota", 
+    used: 12, 
+    total: 24, 
+    color: "#8b5cf6", // Violet 500
+    icon: "home" 
+  },
 ];
 
 // DATA FOR DASHBOARD CHART
@@ -69,3 +102,35 @@ export const MOCK_LEAVE_TYPES = [
   { id: 1, name: "Annual Leave", total: 20, used: 5, color: "bg-emerald-500" },
   { id: 2, name: "Sick Leave", total: 10, used: 2, color: "bg-rose-500" },
 ];
+
+
+
+export const MOCK_PROFILE: ProfileData = {
+  // Identity
+  name: "Johnathan Wick",
+  role: "Lead Software Architect",
+  email: "j.wick@continental.com",
+  phone: "+1 (555) 042-9901",
+  employeeId: "EMP-2026-0402",
+  photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&auto=format&fit=crop",
+
+  // Work Information
+  department: "Product Engineering",
+  designation: "Lead Architect",
+  joiningDate: "2023-03-15",
+  workLocation: "New York Hub (Hybrid)",
+  managerName: "Winston Scott",
+  employmentType: 'Full-time',
+
+  // Personal Details
+  dob: "1990-09-12",
+  gender: "Male",
+  bloodGroup: "A-",
+  nationality: "American",
+  address: "420 Park Avenue, Suite 10, New York, NY 10022",
+
+  // Social & Professional
+  linkedin: "linkedin.com/in/johnwick",
+  github: "github.com/johnwick-dev",
+  skills: ["React", "TypeScript", "Node.js", "Kubernetes", "AWS"]
+};

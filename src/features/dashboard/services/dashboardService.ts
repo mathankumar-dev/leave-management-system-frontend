@@ -18,10 +18,18 @@ export const dashboardService = {
   },
 
   // FIXED: Added this missing method to solve your TS error
-  updateApprovalStatus: async (id: number, status: 'Approved' | 'Rejected') => {
-    const response = await api.put(`/leaves/approvals/${id}`, { status });
-    return response.data;
-  },
+  // updateApprovalStatus: async (id: number, status: 'Approved' | 'Rejected') => {
+  //   const response = await api.put(`/leaves/approvals/${id}`, { status });
+  //   return response.data;
+  // },
+
+  updateApprovalStatus: async (id: number, status: 'Approved' | 'Rejected', comment?: string) => {
+  const response = await api.put(`/leaves/approvals/${id}`, { 
+    status, 
+    comment // This is the mandatory "Action Comment" for the Audit Log
+  });
+  return response.data;
+},
 
   getMyLeaveHistory: async () => {
     const response = await api.get<LeaveRecord[]>('/leaves/my-history');
@@ -45,7 +53,7 @@ export const dashboardService = {
     color: emp.role === 'Manager' ? 'bg-indigo-600' : 'bg-slate-500'
   }));
 },
-getHRStats: async () => {
+getHRStats: async (scope: string) => {
     const response = await api.get('/reports/stats');
     return response.data; 
   },
@@ -65,7 +73,7 @@ getHRStats: async () => {
     return response.data;
   },
 
-  getCalendarLeaves: async (year: number, month: number) => {
+  getCalendarLeaves: async (year: number, month: number, scope: string) => {
   const response = await api.get(`/leaves/calendar?year=${year}&month=${month}`);
   // Expected response: Record<number, { name: string, type: string, color: string }[]>
   return response.data;

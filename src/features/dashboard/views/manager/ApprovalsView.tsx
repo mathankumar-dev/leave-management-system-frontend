@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaCheck, FaTimes, FaUserAlt } from "react-icons/fa";
+import { FaCheck, FaTimes, FaInbox, FaInfoCircle } from "react-icons/fa";
 import FailureModal from "../../../../components/ui/FailureModal";
 import SuccessModal from "../../../../components/ui/SuccessModal";
 import { useDashboard } from "../../hooks/useDashboard";
 import type { ApprovalRequest } from "../../types";
-
 
 const ApprovalsView: React.FC = () => {
   const { loading, error, fetchApprovals, processApproval, setError } = useDashboard();
   const [list, setList] = useState<ApprovalRequest[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Initial Data Fetch
   useEffect(() => {
     let isMounted = true;
     fetchApprovals().then((data) => {
@@ -23,7 +21,6 @@ const ApprovalsView: React.FC = () => {
 
   const handleAction = async (id: number, status: 'Approved' | 'Rejected') => {
     const success = await processApproval(id, status);
-    
     if (success) {
       setList((prev) => prev.filter((item) => item.id !== id));
       setShowSuccess(true);
@@ -32,67 +29,80 @@ const ApprovalsView: React.FC = () => {
 
   if (loading && list.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full"
-        />
-        <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Syncing Queue...</p>
+      <div className="flex flex-col items-center justify-center py-24">
+        <div className="w-8 h-8 border-2 border-slate-200 border-t-indigo-600 rounded-full animate-spin" />
+        <p className="mt-4 text-slate-500 font-bold uppercase tracking-widest text-[10px]">Updating Queue...</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col">
-        <h2 className="text-2xl font-black text-slate-900">Pending Approvals</h2>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-          {list.length} Requests requiring action
-        </p>
+      {/* SECTION HEADER */}
+      <div className="border-b border-slate-200 pb-5 flex justify-between items-end">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Pending Requests</h2>
+          <p className="text-xs font-medium text-slate-500 mt-1">
+            There are {list.length} leave applications awaiting your decision.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-sm border border-indigo-100 uppercase tracking-wider">
+          <FaInfoCircle /> Manager View
+        </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* GRID CONTAINER */}
+      <div className="grid grid-cols-1 gap-1">
         <AnimatePresence mode="popLayout">
           {list.length > 0 ? (
             list.map((req) => (
               <motion.div
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -10 }}
                 key={req.id}
-                className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center gap-6"
+                className="bg-white border border-slate-200 p-4 hover:border-indigo-300 hover:shadow-sm transition-all flex items-center gap-6 group rounded-sm"
               >
-                {/* Avatar */}
-                <div className={`w-14 h-14 shrink-0 ${req.avatarColor || 'bg-indigo-50 text-indigo-600'} rounded-2xl flex items-center justify-center font-black text-lg`}>
-                  {req.initial}
+                {/* Employee Signature Square with Tiny Corners */}
+                <div className={`w-12 h-12 shrink-0 ${req.avatarColor || 'bg-slate-50 text-slate-600'} border border-slate-200 rounded-md flex items-center justify-center font-bold text-sm`}>
+                  {req.initial || req.employee.charAt(0)}
                 </div>
                 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-black text-slate-900 leading-tight truncate">{req.employee}</h4>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-tighter truncate">
-                    {req.dept} • {req.type}
-                  </p>
-                  <p className="text-xs font-black text-indigo-600 mt-1">{req.range} ({req.days} days)</p>
+                {/* Details Section */}
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-slate-900 text-sm truncate">{req.employee}</h4>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{req.dept}</p>
+                  </div>
+
+                  <div className="flex flex-col justify-center">
+                    <span className="text-xs font-bold text-slate-700">{req.type}</span>
+                    <p className="text-[11px] text-slate-500 font-medium">{req.range}</p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded-sm text-[10px] font-black text-slate-600 uppercase tracking-tighter">
+                      {req.days} Working Days
+                    </span>
+                  </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
+                {/* Professional Action Buttons with Tiny Corners */}
+                <div className="flex gap-2 shrink-0 border-l border-slate-100 pl-6">
                   <button 
                     disabled={loading}
                     onClick={() => handleAction(req.id, 'Rejected')}
-                    className="p-3 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all disabled:opacity-50"
+                    className="h-9 px-4 border border-slate-200 rounded-md text-slate-500 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all disabled:opacity-50 text-xs font-bold"
                   >
-                    <FaTimes />
+                    Deny
                   </button>
                   <button 
                     disabled={loading}
                     onClick={() => handleAction(req.id, 'Approved')}
-                    className="p-3 bg-emerald-50 text-emerald-500 rounded-xl hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
+                    className="h-9 px-4 bg-slate-900 text-white rounded-md hover:bg-indigo-600 transition-all disabled:opacity-50 text-xs font-bold shadow-sm"
                   >
-                    <FaCheck />
+                    Approve
                   </button>
                 </div>
               </motion.div>
@@ -101,10 +111,11 @@ const ApprovalsView: React.FC = () => {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="col-span-full py-20 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200"
+              className="py-20 text-center bg-slate-50 border border-dashed border-slate-200 rounded-md"
             >
-              <FaUserAlt className="mx-auto text-slate-200 mb-4" size={30} />
-              <p className="text-slate-400 font-bold italic">No pending requests in your queue.</p>
+              <FaInbox className="mx-auto text-slate-200 mb-3" size={32} />
+              <p className="text-sm font-bold text-slate-500 tracking-tight">Queue Cleared</p>
+              <p className="text-xs text-slate-400 mt-1">All employee requests have been processed.</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -114,8 +125,8 @@ const ApprovalsView: React.FC = () => {
       <AnimatePresence>
         {showSuccess && (
           <SuccessModal 
-            title="Action Confirmed"
-            message="The leave status has been updated and the employee has been notified."
+            title="Update Successful"
+            message="The request has been processed and logs have been updated."
             onClose={() => setShowSuccess(false)}
           />
         )}

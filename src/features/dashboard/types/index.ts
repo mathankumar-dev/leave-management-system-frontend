@@ -20,6 +20,19 @@ export interface Employee {
   color: string;
 }
 
+// export interface ApprovalRequest {
+//   id: number;
+//   initial: string;
+//   employee: string;
+//   dept: string;
+//   type: string;
+//   range: string;
+//   days: number;
+//   avatarColor?: string;
+//   appliedOn: string;
+// }
+
+
 export interface ApprovalRequest {
   id: number;
   initial: string;
@@ -30,8 +43,10 @@ export interface ApprovalRequest {
   days: number;
   avatarColor?: string;
   appliedOn: string;
+  // --- ADD THESE ---
+  balance: number; // Mandatory: To show "Days Left" in UI
+  reason: string;  // Mandatory: To show "Reason" snippet in table
 }
-
 export interface DashboardStats {
   title: string;
   used: number;
@@ -70,3 +85,32 @@ export interface AuditLog {
   icon: React.ReactNode;
 }
 
+export interface ProfileData {
+  // Identity & Basic Info
+  name: string;
+  role: string;
+  email: string;
+  phone: string;
+  employeeId: string;
+  photo: string;
+  
+  // Work Information
+  department: string;
+  designation: string;
+  joiningDate: string;
+  workLocation: string;
+  managerName: string;
+  employmentType: 'Full-time' | 'Contract' | 'Intern';
+  
+  // Personal Details
+  dob: string;
+  gender: string;
+  bloodGroup?: string;
+  nationality: string;
+  address: string;
+  
+  // Social & Professional
+  linkedin?: string;
+  github?: string;
+  skills: string[];
+}
