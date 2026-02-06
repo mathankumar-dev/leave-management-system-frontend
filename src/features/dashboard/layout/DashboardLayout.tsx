@@ -3,78 +3,102 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
-// Views
+// Admin Views
 import EmployeesView from "../views/admin/EmployeesView";
 import LeaveTypesView from "../views/admin/LeaveTypesView";
-import CalendarView from "../views/employee/CalendarView";
+import HRProfile from "../views/admin/HRProfile";
+
+// Employee Views
 import DashboardView from "../views/employee/DashboardView";
+import CalendarView from "../views/employee/CalendarView";
 import LeaveApplicationForm from "../views/LeaveApplicationForm";
-import ManagerDashboardView from "../views/manager/ManagerDashboardView";
-import TeamCalendarView from "../views/manager/TeamCalendarView";
 import MyLeavesView from "../views/MyLeavesView";
 import NotificationsView from "../views/NotificationsView";
+import EmployeeProfile from "../views/employee/EmployeeProfile";
+import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
+
+
+
+// Manager Views
+import ManagerDashboardView from "../views/manager/ManagerDashboardView";
+import TeamCalendarView from "../views/manager/TeamCalendarView";
 import ApprovalsView from "../views/manager/ApprovalsView";
 import ManagerProfile from "../views/manager/ManagerProfile";
-import EmployeeProfile from "../views/employee/EmployeeProfile";
-import HRProfile from "../views/admin/HRProfile";
 
 const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuth();
+
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const userRole = user?.role || "Employee";
+
+  /* ---------------- HR DEFAULT REDIRECT ---------------- */
   useEffect(() => {
-    if (user?.role === "HR Admin" && activeTab === "Dashboard") {
+    if (userRole === "HR Admin" && activeTab === "Dashboard") {
       setActiveTab("Employees");
     }
-  }, [user, activeTab]);
-  let userRole = user?.role || "Employee";
+  }, [userRole, activeTab]);
 
+  /* ---------------- VIEW RENDERER ---------------- */
   const renderView = () => {
-    switch (activeTab) {
-      case "Dashboard":
-        return userRole === "Manager"
-          ? <ManagerDashboardView />
-          : userRole === "Employee" ? <DashboardView /> : <EmployeesView />;
+  switch (activeTab) {
 
-      case "Employees":
-        return <EmployeesView />;
+    case "Reports":
+      if (userRole === "HR Admin") {
+        return <LeaveReportDashboard  />;
+      }
+      if (userRole === "Manager") {
+        return <LeaveReportDashboard />;
+      }
+      return null;
 
-      case "Calendar":
-        return <CalendarView />;
+    case "Dashboard":
+      return userRole === "Manager"
+        ? <ManagerDashboardView />
+        : userRole === "Employee"
+        ? <DashboardView />
+        : <EmployeesView />;
 
-      case "Team Calendar":
-        return <TeamCalendarView />;
+    case "Employees":
+      return <EmployeesView />;
 
-      case "Leave Config":
-        return <LeaveTypesView />;
+    case "Calendar":
+      return <CalendarView />;
 
-      case "Apply Leave":
-        return <LeaveApplicationForm />;
+    case "Team Calendar":
+      return <TeamCalendarView />;
 
-      case "My Leaves":
-        return <MyLeavesView />;
+    case "Leave Config":
+      return <LeaveTypesView />;
 
-      case "Pending Requests":
-        return <ApprovalsView />;
+    case "Apply Leave":
+      return <LeaveApplicationForm />;
 
-      case "Notifications":
-        return <NotificationsView />;
-      case "Profile":
+    case "My Leaves":
+      return <MyLeavesView />;
 
-        if (userRole === "Manager") return <ManagerProfile />;
-        if (userRole === "HR Admin") return <HRProfile />;
-        return <EmployeeProfile />;
+    case "Pending Requests":
+      return <ApprovalsView />;
 
-      default:
-        return userRole === "Manager"
-          ? <ManagerDashboardView />
-          : <DashboardView />;
-    }
-  };
+    case "Notifications":
+      return <NotificationsView />;
 
+    case "Profile":
+      if (userRole === "Manager") return <ManagerProfile />;
+      if (userRole === "HR Admin") return <HRProfile />;
+      return <EmployeeProfile />;
+
+    default:
+      return <DashboardView />;
+  }
+};
+
+
+  /* ---------------- LAYOUT ---------------- */
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] overflow-x-hidden">
-      {/* Sidebar */}
+      {/* SIDEBAR */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -84,8 +108,8 @@ const DashboardLayout: React.FC = () => {
         onLogout={logout}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col md:ml-64 min-h-screen w-full overflow-x-hidden">
+      {/* MAIN CONTENT */}
+      <div className="flex-1 flex flex-col md:ml-64 min-h-screen w-full">
         <Topbar
           activeTab={activeTab}
           user={user}
@@ -95,7 +119,7 @@ const DashboardLayout: React.FC = () => {
         />
 
         <main className="p-4 md:p-6 flex-1 overflow-y-auto w-full">
-          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500 w-full">
+          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500">
             {renderView()}
           </div>
         </main>

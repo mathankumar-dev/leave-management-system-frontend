@@ -9,6 +9,8 @@ import { useDashboard } from "../../hooks/useDashboard";
 import type { ApprovalRequest } from "../../types";
 
 const ManagerDashboardView: React.FC = () => {
+  
+  
   const { fetchApprovals, processApproval } = useDashboard();
   const [approvals, setApprovals] = useState<ApprovalRequest[]>([]);
 
