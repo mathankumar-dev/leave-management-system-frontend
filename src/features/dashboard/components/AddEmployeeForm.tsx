@@ -117,7 +117,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose }) => {
             </div>
 
             {/* Content Area */}
-            <div className="p-10 min-h-[420px]">
+            <div className="p-10 min-h-105">
               <AnimatePresence mode="wait">
                 {step === 1 && (
                   <motion.div key="step1" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }} className="space-y-6">
@@ -242,7 +242,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose }) => {
 //   </div>
 // );
 
-const SectionHeader = ({ icon, title, optional }: any) => (
+const SectionHeader = ({ icon, title }: any) => (
   <div className="flex items-center gap-3">
     <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">{icon}</div>
     <h4 className="text-sm font-bold uppercase tracking-widest">{title} ...</h4>
