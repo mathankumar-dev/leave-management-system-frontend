@@ -45,7 +45,7 @@ const DashboardLayout: React.FC = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({
         top: 0,
-        behavior: "instant" // Use "smooth" if you want a sliding effect, but "instant" is standard for tab changes
+        behavior: "instant" 
       });
     }
   }, [activeTab]);
@@ -59,7 +59,7 @@ const DashboardLayout: React.FC = () => {
           return <LeaveReportDashboard />;
         }
         if (userRole === "Manager") {
-          return <LeaveReportDashboard />;
+          return <ManagerDashboardView />;
         }
         return null;
 

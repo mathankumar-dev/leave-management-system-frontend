@@ -4,6 +4,7 @@ import {
   FaTimes, FaLinkedin, FaGithub, FaUser, FaBriefcase,
   FaShareAlt, FaArrowLeft, FaCheckCircle,
 } from "react-icons/fa";
+import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
 
 interface Props {
   open: boolean;
@@ -113,7 +114,16 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose }) => {
                       <FormInput label="Employee ID" name="empId" value={formData.empId} onChange={handleInputChange} placeholder="e.g. EMP-101" required />
                       <FormInput label="Designation" name="designation" value={formData.designation} onChange={handleInputChange} placeholder="e.g. Lead Designer" required />
                       <FormInput label="Reporting Manager" name="manager" value={formData.manager} onChange={handleInputChange} placeholder="Manager Name" required />
-                      <FormInput label="Joining Date" name="joiningDate" type="date" value={formData.joiningDate} onChange={handleInputChange} required />
+                      {/* <FormInput label="Joining Date" name="joiningDate" type="date" value={formData.joiningDate} onChange={handleInputChange} required /> */}
+                      <MyDatePicker
+                        label="Joining Date"
+                        required
+                        selected={formData.joiningDate ? new Date(formData.joiningDate) : null}
+                        onChange={(date: Date | null) =>
+                          setFormData({ ...formData, joiningDate: date ? date.toISOString() : "" })
+                        }
+                        placeholder="Select Joining Date"
+                      />
                       <FormInput label="Core Skills" name="skills" value={formData.skills} onChange={handleInputChange} placeholder="React, Figma, Node..." className="md:col-span-2" />
                     </div>
                   </motion.div>
@@ -145,9 +155,8 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose }) => {
                   <button
                     onClick={() => canProceed() && setStep(step + 1)}
                     disabled={!canProceed()}
-                    className={`px-10 py-2.5 rounded-xl font-bold transition-all ${
-                      canProceed() ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    }`}
+                    className={`px-10 py-2.5 rounded-xl font-bold transition-all ${canProceed() ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                      }`}
                   >
                     Continue
                   </button>
@@ -179,9 +188,9 @@ const FormInput = ({ label, required, className = "", ...props }: any) => (
     <label className="text-xs font-bold text-slate-500 uppercase ml-1">
       {label} {required && <span className="text-rose-500">*</span>}
     </label>
-    <input 
-      {...props} 
-      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white outline-none focus:border-indigo-500 transition-all placeholder:text-slate-300" 
+    <input
+      {...props}
+      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white outline-none focus:border-indigo-500 transition-all placeholder:text-slate-300"
     />
   </div>
 );
