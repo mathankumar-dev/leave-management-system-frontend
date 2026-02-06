@@ -40,8 +40,10 @@ const Topbar: React.FC<TopbarProps> = ({
   }, [isNotifOpen, fetchNotifications]);
 
   return (
-    <div className="sticky top-0 z-40 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 md:py-4 border-b border-slate-100">
-
+    // <div className="sticky top-0 z-40 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 md:py-4 border-b border-slate-100">
+<div className="sticky top-0 z-30 flex items-center justify-between 
+                bg-white/80 backdrop-blur-md px-4 md:px-8 py-4 
+                border-b border-neutral-200 w-full transition-all duration-300">
       {/* LEFT */}
       <div className="flex items-center gap-3 min-w-0">
         <button
