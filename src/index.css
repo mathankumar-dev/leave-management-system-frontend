@@ -1,29 +1,62 @@
 @import "tailwindcss";
 
-/* Target the scrollbar globally or add .custom-scrollbar to a specific div */
+:root {
+  --font-internal: "Inter", "Figtree", "SF Pro Display", "Roboto", system-ui, sans-serif;
+}
+
+@theme {
+  /* ACCESSIBILITY SIZES */
+  --font-size-base: 1rem; 
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+
+  /* PRIMARY BLUE SCALING */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-500: #0066ff;
+  --color-primary-700: #0052cc;
+  --color-primary-900: #1e3a8a;
+
+  /* THE COLOR FIX: Mapping Alice Blue to the background */
+  --color-neutral-50: #F0F8FF;  /* Alice Blue: High comfort, low glare */
+  --color-neutral-100: #E1EFFE; /* Light Blue tint for sections */
+  --color-neutral-200: #D1E1F0; /* Visible borders on Alice Blue */
+  --color-neutral-500: #475569; /* Slate-ish gray for secondary text */
+  --color-neutral-900: #0F172A; /* Deep Navy-Black for maximum contrast */
+  --color-neutral-950: #020617;
+  
+  /* SEMANTIC STATUSES */
+  --color-success: #059669;
+  --color-danger: #dc2626;
+  --color-warning: #d97706;
+}
+
+body {
+  font-family: var(--font-internal);
+  font-size: var(--font-size-base);
+  line-height: 1.6rem;
+  /* Using neutral-900 on neutral-50 (Alice Blue) provides a 15:1 contrast ratio */
+  color: var(--color-neutral-900);
+  background-color: var(--color-neutral-50);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* THICK ACCESSIBLE SCROLLBAR */
 ::-webkit-scrollbar {
-  width: 5px;               /* Slims down the width significantly */
-  height: 5px;              /* Slims down the height for horizontal scrollbars */
+  width: 10px;
 }
 
-/* The background area of the scrollbar */
 ::-webkit-scrollbar-track {
-  background: transparent;  /* Keeps the UI clean by hiding the track */
+  background: var(--color-neutral-50);
 }
 
-/* The draggable handle */
 ::-webkit-scrollbar-thumb {
-  background: #6366f1;      /* Indigo-500: Change this hex to your preferred color */
-  border-radius: 20px;      /* Makes the handle rounded/pill-shaped */
+  background: var(--color-primary-500);
+  border-radius: 10px;
+  /* Creating a gap effect for easier eye tracking */
+  border: 3px solid var(--color-neutral-50);
 }
 
-/* Handle color change on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #4f46e5;      /* Indigo-600: A slightly darker shade on hover */
-}
-
-/* For Firefox (Limited customization) */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #6366f1 transparent;
+  background: var(--color-primary-700);
 }
