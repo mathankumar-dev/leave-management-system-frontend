@@ -35,6 +35,7 @@ export type DashboardScope = "SELF" | "TEAM" | "ALL";
 
 interface DashboardViewProps {
   scope?: DashboardScope;
+  onNavigate?: (tab: string) => void;
 }
 
 /* ================= ANIMATIONS ================= */
@@ -56,6 +57,7 @@ const itemVariants = {
 
 const DashboardView: React.FC<DashboardViewProps> = ({
   scope = "SELF",
+  onNavigate,
 }) => {
   const { fetchStats, setError } = useDashboard();
 
@@ -98,9 +100,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   }
 
 // function to redirect to apply leaves page
-  function handleAdd(): void {
-    throw new Error("Function not implemented.");
-  }
+const handleAdd = () => {
+    if (onNavigate) {
+      onNavigate("Apply Leave");
+    }
+  };
 
   /* ---------- UI ---------- */
   return (
@@ -110,20 +114,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       variants={containerVariants}
       className="space-y-6  max-w-7xl mx-auto text-slate-900"
     >
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-6 gap-4">
-        <div>
-          <h2 className="text-xl font-bold">
-            {scope === "ALL" ? "Organization Dashboard" : "Employee Dashboard"}
-          </h2>
-          <p className="text-sm text-slate-500">
-            Leave overview and utilization summary.
-          </p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700 transition-all shadow-sm">
-          <FaBolt /> New Leave Request
-        </button>
-      </div>
+
 
       {/* STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

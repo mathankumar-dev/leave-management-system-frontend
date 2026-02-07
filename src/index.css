@@ -18,6 +18,8 @@
   --color-primary-900: #1e3a8a;
 
   /* NEUTRALS (COMPLETE SCALE) */
+  
+  --color-neutral-25:  #F7FBFF;
   --color-neutral-50:  #F0F8FF; /* Alice Blue */
   --color-neutral-100: #E1EFFE;
   --color-neutral-200: #D1E1F0;
@@ -36,7 +38,11 @@
   --color-warning: #d97706;
 
 
-  --color-sidebar-bg: #1e293b; /* Blue-gray slate */
+  --color-sidebar-bg: var(--color-neutral-900); 
+
+  /* Add these for clear contrast on dark backgrounds */
+  --color-on-dark-inactive: var(--color-neutral-300); /* High enough contrast */
+  --color-on-dark-hover: var(--color-neutral-100);
 
 }
 
@@ -58,7 +64,7 @@ body {
   line-height: 1.6rem;
   /* Using neutral-900 on neutral-50 (Alice Blue) provides a 15:1 contrast ratio */
   color: var(--color-neutral-900);
-  background-color: var(--color-neutral-50);
+  background-color: var(--color-neutral-25);
   -webkit-font-smoothing: antialiased;
 
 }

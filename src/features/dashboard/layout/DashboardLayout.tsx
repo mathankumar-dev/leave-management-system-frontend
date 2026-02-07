@@ -67,7 +67,7 @@ const DashboardLayout: React.FC = () => {
         return userRole === "Manager"
           ? <ManagerDashboardView />
           : userRole === "Employee"
-            ? <DashboardView />
+            ? <DashboardView onNavigate={setActiveTab} />
             : <EmployeesView />;
 
       case "Employees":
@@ -108,7 +108,7 @@ const DashboardLayout: React.FC = () => {
   /* ---------------- LAYOUT ---------------- */
   return (
 
-    <div className="flex h-screen bg-neutral-50 overflow-hidden">
+    <div className="flex h-screen bg-neutral-25 overflow-hidden">
 
       {/* Sidebar - Internal width should be w-80 */}
       <Sidebar

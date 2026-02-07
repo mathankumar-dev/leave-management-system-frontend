@@ -58,7 +58,7 @@ function Sidebar({
 
       {/* Sidebar - Using Neutral 900 for a deep professional navy */}
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen w-80 bg-neutral-900
+        className={`fixed top-0 left-0 z-40 h-screen w-80 bg-neutral-800
         p-6 border-r border-neutral-800 flex flex-col
         transition-transform duration-300 ease-in-out
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
@@ -98,7 +98,7 @@ function Sidebar({
             <p className="text-sm font-bold text-white truncate">
               {user?.name || "User"}
             </p>
-            <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">
+            <p className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest">
               {role}
             </p>
           </div>
@@ -114,21 +114,18 @@ function Sidebar({
             {visibleTabs.map((tab) => {
               const isActive = activeTab === tab.name;
               return (
+                // Inside your sidebar visibleTabs.map...
                 <li
                   key={tab.name}
-                  onClick={() => {
-                    setActiveTab(tab.name);
-                    if (window.innerWidth < 768) setIsOpen(false);
-                  }}
-                  className={`flex items-center gap-3 px-4 py-3
-                  rounded-lg cursor-pointer transition-all duration-200
-                  ${
-                    isActive
-                      ? "bg-primary-500 text-white shadow-lg shadow-primary-500/20"
-                      : "text-neutral-400 hover:bg-neutral-800 hover:text-neutral-100 hover:translate-x-0.5"
-                  }`}
+                  onClick={() => setActiveTab(tab.name)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${activeTab === tab.name
+                      ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25"
+                      // CHANGED: text-neutral-300 provides much better contrast than 400/500
+                      : "text-neutral-300 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
+                    }`}
                 >
-                  <span className={`text-lg ${isActive ? "text-white" : "text-neutral-500"}`}>
+                  {/* icon contrast fix */}
+                  <span className={`text-lg ${activeTab === tab.name ? "text-white" : "text-neutral-400"}`}>
                     {tab.icon}
                   </span>
                   <span className="text-sm font-bold">{tab.name}</span>
@@ -143,7 +140,7 @@ function Sidebar({
           <button
             onClick={onLogout}
             className="flex items-center gap-3 px-4 py-3
-            w-full rounded-lg text-neutral-500
+            w-full rounded-lg text-neutral-300
             hover:bg-danger/10 hover:text-danger transition-colors"
           >
             <FaSignOutAlt className="text-lg" />
