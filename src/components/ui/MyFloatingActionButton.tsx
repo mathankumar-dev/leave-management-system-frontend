@@ -1,22 +1,19 @@
 import React from "react";
-import { Fab, Tooltip, Zoom } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import { Tooltip, Zoom } from "@mui/material"; // Keeping MUI Tooltip for the nice logic
 import { FaBolt } from "react-icons/fa";
 
 interface MyFABProps {
   onClick?: () => void;
   icon?: React.ReactNode;
-  title?: string; // The text shown on the button
-  tooltipLabel?: string; // Label for the hover tooltip
-  color?: "primary" | "secondary" | "error" | "info" | "success" | "warning";
+  title?: string;
+  tooltipLabel?: string;
 }
 
 const MyFloatingActionButton: React.FC<MyFABProps> = ({
   onClick,
-  icon = <FaBolt className="mr-2" />, // Default icon with margin-right
-  title, // Optional title
+  icon = <FaBolt />, 
+  title,
   tooltipLabel = "New Action",
-  color = "primary",
 }) => {
   return (
     <Tooltip 
@@ -25,35 +22,36 @@ const MyFloatingActionButton: React.FC<MyFABProps> = ({
       arrow 
       TransitionComponent={Zoom}
     >
-      <Fab
-        variant={title ? "extended" : "circular"} // If title exists, use pill shape
-        color={color}
-        aria-label={title || tooltipLabel}
+      <button
         onClick={onClick}
-        sx={{
-          position: "fixed",
-          bottom: 32,
-          right: 32,
-          zIndex: 1000,
-          // Customizing colors to match your reference image (Indigo/Violet)
-          backgroundColor: "#6366f1", 
-          textTransform: "none", // Keeps text from being all caps
-          fontWeight: 700,
-          fontSize: "0.85rem",
-          letterSpacing: "0.025em",
-          px: title ? 3 : 0, // Extra padding if text is present
-          boxShadow: "0 10px 15px -3px rgba(99, 102, 241, 0.3)",
-          transition: "all 0.2s ease-in-out",
-          "&:hover": {
-            backgroundColor: "#4f46e5",
-            transform: "scale(1.05) translateY(-2px)",
-            boxShadow: "0 20px 25px -5px rgba(99, 102, 241, 0.4)",
-          },
-        }}
+        className={`
+          /* Positioning & Z-Index */
+          fixed bottom-8 right-8 z-[1000]
+          
+          /* Flexbox & Alignment */
+          flex items-center justify-center gap-2
+          
+          /* Colors & Typography */
+          bg-primary-500 text-white
+          font-bold text-[0.85rem] tracking-wide normal-case
+          
+          /* Shape & Sizing */
+          ${title ? "px-6 py-3.5 rounded-xl" : "p-4 rounded-full"}
+          
+          /* Shadow (Industry standard colored shadow) */
+          shadow-[0_10px_15px_-3px_rgba(99,102,241,0.3)]
+          
+          /* Transitions & Hover Effects */
+          transition-all duration-200 ease-in-out
+          hover:bg-[#4f46e5]
+          hover:scale-105 hover:-translate-y-1
+          hover:shadow-[0_20px_25px_-5px_rgba(99,102,241,0.4)]
+          active:scale-95
+        `}
       >
-        {icon}
-        {title}
-      </Fab>
+        <span className="text-sm">{icon}</span>
+        {title && <span>{title}</span>}
+      </button>
     </Tooltip>
   );
 };
