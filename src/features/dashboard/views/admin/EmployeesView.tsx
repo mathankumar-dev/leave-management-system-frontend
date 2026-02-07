@@ -10,9 +10,11 @@ import {
   FaUserCheck,
   FaSyncAlt,
   FaTrash,
+  FaFilter,
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import type { Employee } from "../../types";
+import AddEmployeeForm from "../../components/AddEmployeeForm";
 
 const EmployeesView = () => {
   const { fetchEmployees, loading } = useDashboard();
