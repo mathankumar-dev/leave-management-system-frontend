@@ -9,14 +9,17 @@ import {
   LabelList,
 } from "recharts";
 import {
-  FaCheckCircle,
-  FaTimesCircle,
-  FaBolt,
   FaChartLine,
+  FaCheckCircle,
+  FaChevronRight,
+  FaClock,
+  FaPlus,
+  FaRegCalendarAlt,
+  FaTimesCircle,
 } from "react-icons/fa";
 
 // UI Components
-import StatCard from "../../../../components/ui/StatCard";
+import StatCard from "../../components/StatCard";
 import RecentLeavePopup from "../../components/popup";
 import LeaveDetailsDrawer from "../../components/LeaveDetailsDrawer";
 
@@ -28,6 +31,7 @@ import {
   MOCK_LEAVE_HISTORY,
 } from "../../../../mockData";
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
+import ActivityCard from "../../../../components/ui/ActivityCard";
 
 /* ================= TYPES ================= */
 
@@ -35,6 +39,7 @@ export type DashboardScope = "SELF" | "TEAM" | "ALL";
 
 interface DashboardViewProps {
   scope?: DashboardScope;
+  onNavigate?: (tab: string) => void;
 }
 
 /* ================= ANIMATIONS ================= */
@@ -52,10 +57,17 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+
+const statusConfig: Record<string, { type: "success" | "warning" | "danger"; icon: React.ReactNode }> = {
+  Approved: { type: "success", icon: <FaCheckCircle /> },
+  Pending: { type: "warning", icon: <FaClock /> }, // You'll need to import FaClock
+  Rejected: { type: "danger", icon: <FaTimesCircle /> },
+};
 /* ================= COMPONENT ================= */
 
 const DashboardView: React.FC<DashboardViewProps> = ({
   scope = "SELF",
+  onNavigate,
 }) => {
   const { fetchStats, setError } = useDashboard();
 
@@ -97,9 +109,17 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     );
   }
 
-// function to redirect to apply leaves page
-  function handleAdd(): void {
-    throw new Error("Function not implemented.");
+  // function to redirect to apply leaves page
+  const handleAdd = () => {
+    if (onNavigate) {
+      onNavigate("Apply Leave");
+    }
+  };
+
+  const handleViewAll=() => {
+        if (onNavigate) {
+      onNavigate("My Leaves");
+    }
   }
 
   /* ---------- UI ---------- */
@@ -110,20 +130,46 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       variants={containerVariants}
       className="space-y-6  max-w-7xl mx-auto text-slate-900"
     >
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-6 gap-4">
-        <div>
-          <h2 className="text-xl font-bold">
-            {scope === "ALL" ? "Organization Dashboard" : "Employee Dashboard"}
-          </h2>
-          <p className="text-sm text-slate-500">
-            Leave overview and utilization summary.
-          </p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700 transition-all shadow-sm">
-          <FaBolt /> New Leave Request
-        </button>
-      </div>
+
+      {[
+  {
+    id: 101,
+    type: "Annual Leave",
+    range: "Oct 12 - Oct 15",
+    status: "Approved", // Matches your type
+    comment: "Enjoy your vacation!",
+    days: 4
+  },
+  {
+    id: 102,
+    type: "Sick Leave",
+    range: "Sep 05",
+    status: "Rejected", // Matches your type
+    comment: "Urgent client deadline.",
+    days: 1
+  }
+].map((req) => {
+  // Get the configuration based on the status string
+  const config = statusConfig[req.status];
+
+  function handleSelectLeave(id: number): void {
+    throw new Error("Function not implemented.");
+  }
+
+  return (
+    <ActivityCard
+      key={req.id}
+      title={req.type}
+      subtitle={req.range}
+      label={`${req.days} ${req.days > 1 ? "Days" : "Day"}`}
+      statusText={req.status}
+      statusType={config.type} // "success", "warning", or "danger"
+      icon={config.icon} // Automatically uses the right icon
+      description={req.comment}
+      onClick={() => handleSelectLeave(req.id)}
+    />
+  );
+})}
 
       {/* STATS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -160,89 +206,33 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         </motion.div>
       </div>
 
-      {/* CONTENT */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* LEAVE LIST */}
-        <div className="lg:col-span-8 space-y-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-            Leave Status
-          </h3>
+      {/* CHART */}
+      <div className="lg:col-span-4">
+        <div className="bg-white border rounded-md p-5 shadow-sm">
+          <div className="flex justify-between mb-4">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Monthly Utilization
+            </h4>
+            <FaChartLine className="text-slate-300" />
+          </div>
 
-          {[
-            {
-              id: 101,
-              type: "Annual",
-              range: "Oct 12 - Oct 15",
-              status: "Approved",
-            },
-            {
-              id: 102,
-              type: "Sick",
-              range: "Sep 05",
-              status: "Rejected",
-            },
-          ].map((req) => (
-            <div
-              key={req.id}
-              className="bg-white border rounded-md p-4 flex justify-between items-center shadow-sm"
-            >
-              <div className="flex gap-4">
-                <div
-                  className={`w-10 h-10 rounded flex items-center justify-center ${req.status === "Approved"
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-rose-50 text-rose-600"
-                    }`}
-                >
-                  {req.status === "Approved" ? (
-                    <FaCheckCircle />
-                  ) : (
-                    <FaTimesCircle />
-                  )}
-                </div>
-                <div>
-                  <p className="font-bold text-sm">{req.type} Leave</p>
-                  <p className="text-xs text-slate-500">{req.range}</p>
-                </div>
-              </div>
-              <span
-                className={`text-[10px] font-black uppercase px-2 py-1 rounded ${req.status === "Approved"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-rose-100 text-rose-700"
-                  }`}
-              >
-                {req.status}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* CHART */}
-        <div className="lg:col-span-4">
-          <div className="bg-white border rounded-md p-5 shadow-sm">
-            <div className="flex justify-between mb-4">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Monthly Utilization
-              </h4>
-              <FaChartLine className="text-slate-300" />
-            </div>
-
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={MOCK_CHART_DATA}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                  <Bar dataKey="Casual" fill="#6366f1" barSize={12}>
-                    <LabelList dataKey="Casual" position="top" fontSize={8} />
-                  </Bar>
-                  <Bar dataKey="Sick" fill="#f43f5e" barSize={12}>
-                    <LabelList dataKey="Sick" position="top" fontSize={8} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={MOCK_CHART_DATA}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                <Bar dataKey="Casual" fill="#6366f1" barSize={12}>
+                  <LabelList dataKey="Casual" position="top" fontSize={8} />
+                </Bar>
+                <Bar dataKey="Sick" fill="#f43f5e" barSize={12}>
+                  <LabelList dataKey="Sick" position="top" fontSize={8} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
+
 
       <LeaveDetailsDrawer
         open={!!selectedCard}
@@ -253,6 +243,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       <RecentLeavePopup latestLeave={MOCK_LEAVE_HISTORY[0]} />
 
       <MyFloatingActionButton
+      icon = {<FaPlus />}
         onClick={handleAdd}
         title="New Leave Request"
         tooltipLabel="Apply for leave"
