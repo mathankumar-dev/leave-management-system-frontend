@@ -42,7 +42,7 @@ const Topbar: React.FC<TopbarProps> = ({
   return (
     // <div className="sticky top-0 z-40 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 md:py-4 border-b border-slate-100">
     <div className="sticky top-0 z-30 flex items-center justify-between 
-                bg-white/80 backdrop-blur-md px-4 md:px-8 py-4 
+                bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 
                 border-b border-neutral-200 w-full transition-all duration-300">
       {/* LEFT */}
       <div className="flex items-center gap-3 min-w-0">
@@ -54,12 +54,12 @@ const Topbar: React.FC<TopbarProps> = ({
         </button>
 
         <div className="min-w-0">
-          <h1 className="text-xl md:text-xl font-bold text-slate-900 truncate">
+          <h1 className="text-xl md:text-2xl font-bold text-primary-500 uppercase italic truncate">
             {activeTab}
           </h1>
-          <p className="hidden xs:block text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          {/* <p className="hidden xs:block text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
             Portal Workspace
-          </p>
+          </p> */}
         </div>
       </div>
 

@@ -105,13 +105,7 @@ export const MOCK_DASHBOARD_STATS: DashboardStats[] = [
     color: "#f59e0b", // Amber 500
     icon: "clock" 
   },
-  { 
-    title: "WFH Quota", 
-    used: 12, 
-    total: 24, 
-    color: "#8b5cf6", // Violet 500
-    icon: "home" 
-  },
+
 ];
 
 // DATA FOR DASHBOARD CHART
