@@ -5,25 +5,32 @@ import { useAuth } from "../hooks/useAuth";
 import type { LoginCredentials } from "../types";
 
 import textSVG from '../../../assets/text.svg';
+import FailureModal from "../../../components/ui/FailureModal";
+import SuccessModal from "../../../components/ui/SuccessModal";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState<string>("employee@wenxttech.com");
   const [password, setPassword] = useState<string>("password123");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const [showError, setShowError] = useState<boolean>(false);
+  const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const { login } = useAuth();
 
   const handleLogin = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+    setShowError(false);
     try {
       const credentials: LoginCredentials = { email, password };
       const response = await loginUser(credentials);
+      setShowSuccess(true);
+      await new Promise((resolve) => setTimeout(resolve, 5000));
       login(response);
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Invalid credentials. Please try again.");
+
+      setShowError(true);
+      // alert("Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -32,6 +39,20 @@ const LoginForm: React.FC = () => {
   return (
     // <div className="bg-white p-10  rounded-xl border-2 border-white shadow-sm">  
     <div className=' flex flex-col items-center justify-center  bg-white rounded-lg filter drop-shadow-lg  w-full max-w-140 min-h-154.25 h-auto p-6  '>
+      {showError && (
+        <FailureModal
+          title="Login Failed"
+          message="Invalid credentials. Please try again."
+          onClose={() => setShowError(false)}
+        />
+      )}
+
+      {showSuccess && (
+      <SuccessModal
+        title="Success!"
+        message="Login successful. Redirecting to dashboard in 5 seconds..."
+      />
+    )}
 
       <img src={textSVG} alt="logo image" className="w-20 h-20" />
       <form onSubmit={handleLogin} className="space-y-6 w-full">

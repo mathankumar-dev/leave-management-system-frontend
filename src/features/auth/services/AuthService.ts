@@ -47,19 +47,20 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
   /** * MOCK BLOCK: Remove this once your API is live 
    **/
   await sleep(1000);
-  if (credentials.email === "manager@wennxttech.com") {
+  
+  if (credentials.email === "manager@wenxttech.com") {
     return {
       user: { id: "1", name: "Manager User", email: credentials.email, role: "Manager",department:"IT" },
       token: "mock-token-123"
     };
   }
-    if (credentials.email === "admin@wennxttech.com") {
+   else if (credentials.email === "admin@wenxttech.com") {
     return {
       user: { id: "2", name: "Admin User", email: credentials.email, role: "Admin",department:"IT" },
       token: "mock-token-123"
     };
   }
-      if (credentials.email === "hr@wennxttech.com") {
+     else if (credentials.email === "hr@wenxttech.com") {
     return {
       user: { id: "3", name: "HR User", email: credentials.email, role: "HR",department:"IT" },
       token: "mock-token-123"
