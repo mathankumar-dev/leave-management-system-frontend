@@ -52,14 +52,14 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ title, message, buttonText,
           {message}
         </p>
 
-        if(onClose != null){
+        {onClose && (
           <button
-            onClick=   {onClose}
-            // CHANGED: rounded-lg and adjusted typography to match "Continue" button
+            onClick={onClose}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg text-sm font-bold transition-all shadow-md shadow-indigo-100 active:scale-[0.98]"
           >
             {buttonText || "Continue"}
-          </button>}
+          </button>
+        )}
       </motion.div>
     </div>
   );

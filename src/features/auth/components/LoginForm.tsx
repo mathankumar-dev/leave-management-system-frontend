@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
 import { loginUser } from "../services/AuthService";
 import { useAuth } from "../hooks/useAuth";
@@ -15,6 +15,28 @@ const LoginForm: React.FC = () => {
   const [showError, setShowError] = useState<boolean>(false);
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const { login } = useAuth();
+  const [timer, setTimer] = useState(0);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+
+    if (showSuccess) {
+      setTimer(3);
+
+      interval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [showSuccess]);
+
 
   const handleLogin = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -24,8 +46,12 @@ const LoginForm: React.FC = () => {
       const credentials: LoginCredentials = { email, password };
       const response = await loginUser(credentials);
       setShowSuccess(true);
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      login(response);
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        login(response);
+      }, 3000);
+
     } catch (error) {
       console.error("Login failed:", error);
 
@@ -48,11 +74,11 @@ const LoginForm: React.FC = () => {
       )}
 
       {showSuccess && (
-      <SuccessModal
-        title="Success!"
-        message="Login successful. Redirecting to dashboard in 5 seconds..."
-      />
-    )}
+        <SuccessModal
+          title="Success!"
+          message={`Login successful. Redirecting to dashboard in ${timer} seconds...`}
+        />
+      )}
 
       <img src={textSVG} alt="logo image" className="w-20 h-20" />
       <form onSubmit={handleLogin} className="space-y-6 w-full">
