@@ -1,110 +1,254 @@
 import api from '../../../api/axiosInstance';
-import type { LeaveRecord, Employee, ApprovalRequest } from '../types';
+
+import type {
+
+  LeaveRecord,
+
+  Employee,
+
+  ApprovalRequest,
+
+  Notification,
+
+  AuditLog
+
+} from '../types';
+
+
 
 export const dashboardService = {
+
+
+  // =============================
+  // Dashboard Summary
+  // =============================
+
   getLeaveSummary: async () => {
+
     const response = await api.get('/dashboard/summary');
+
     return response.data;
+
   },
+
+
+  // =============================
+  // Apply Leave
+  // =============================
 
   submitLeaveRequest: async (leaveData: any) => {
+
     const response = await api.post('/leaves/apply', leaveData);
+
     return response.data;
+
   },
 
-  getPendingApprovals: async () => {
-    const response = await api.get<ApprovalRequest[]>('/leaves/approvals/pending');
+
+  // =============================
+  // Pending Approvals
+  // =============================
+
+  getPendingApprovals: async (): Promise<ApprovalRequest[]> => {
+
+    const response = await api.get('/leaves/approvals/pending');
+
     return response.data;
+
   },
 
-  // FIXED: Added this missing method to solve your TS error
-  // updateApprovalStatus: async (id: number, status: 'Approved' | 'Rejected') => {
-  //   const response = await api.put(`/leaves/approvals/${id}`, { status });
-  //   return response.data;
-  // },
 
-  updateApprovalStatus: async (id: number, status: 'Approved' | 'Rejected', comment?: string) => {
-  const response = await api.put(`/leaves/approvals/${id}`, { 
-    status, 
-    comment // This is the mandatory "Action Comment" for the Audit Log
-  });
-  return response.data;
-},
+  // =============================
+  // Approve / Reject
+  // =============================
 
-  getMyLeaveHistory: async () => {
-    const response = await api.get<LeaveRecord[]>('/leaves/my-history');
+  updateApprovalStatus: async (
+
+    id: number,
+
+    status: 'Approved' | 'Rejected',
+
+    comment?: string
+
+  ) => {
+
+    const response = await api.put(
+
+      `/leaves/approvals/${id}`,
+
+      {
+
+        status,
+
+        comment
+
+      }
+
+    );
+
     return response.data;
+
   },
 
-  // getAllEmployees: async () => {
-  //   const response = await api.get<Employee[]>('/admin/employees');
-  //   return response.data;
-  // }
+
+  // =============================
+  // Leave History
+  // =============================
+
+  getMyLeaveHistory: async (): Promise<LeaveRecord[]> => {
+
+    const response = await api.get('/leaves/my-history');
+
+    return response.data;
+
+  },
+
+
+  // =============================
+  // Employees
+  // =============================
+
   getAllEmployees: async (): Promise<Employee[]> => {
-  const response = await api.get<any[]>('/admin/employees');
 
-  return response.data.map((emp): Employee => ({
-    id: emp.id,
-    name: emp.name,
-    email: emp.email,
-    dept: emp.department ?? emp.dept,
-    role: emp.role,
-    status: emp.status === 'ON LEAVE' ? 'ON LEAVE' : 'ACTIVE',
-    initial: emp.name
-      .split(' ')
-      .map((n: string) => n[0])
-      .join(''),
-    color: emp.role === 'Manager'
-      ? 'bg-indigo-600'
-      : emp.role === 'HR Admin'
-        ? 'bg-rose-600'
-        : 'bg-slate-500',
-    designation: ''
-  }));
-},
+    const response = await api.get('/admin/employees');
 
-getHRStats: async (scope: string) => {
-    const response = await api.get('/reports/stats');
-    return response.data; 
+
+    return response.data.map((emp: any): Employee => ({
+
+      id: emp.id,
+
+      name: emp.name,
+
+      email: emp.email,
+
+      dept: emp.department ?? emp.dept,
+
+      role: emp.role,
+
+      status: emp.status,
+
+      designation: emp.designation ?? "",
+
+
+      initial: emp.name
+
+        .split(" ")
+
+        .map((n: string) => n[0])
+
+        .join(""),
+
+
+      color:
+
+        emp.role === "MANAGER"
+
+          ? "bg-indigo-600"
+
+          : emp.role === "HR"
+
+          ? "bg-rose-600"
+
+          : "bg-slate-500",
+
+    }));
+
   },
 
-  getDeptDistribution: async () => {
-    const response = await api.get('/reports/departments');
-    return response.data; 
-  },
 
-  getNotifications: async () => {
+  // =============================
+  // Notifications
+  // =============================
+
+  getNotifications: async (): Promise<Notification[]> => {
+
     const response = await api.get('/notifications');
+
     return response.data;
+
   },
 
-  getAuditLogs: async () => {
+
+  // =============================
+  // Audit Logs
+  // =============================
+
+  getAuditLogs: async (): Promise<AuditLog[]> => {
+
     const response = await api.get('/admin/audit-logs');
+
     return response.data;
+
   },
 
-  getCalendarLeaves: async (year: number, month: number, scope: string) => {
-  const response = await api.get(`/leaves/calendar?year=${year}&month=${month}`);
-  // Expected response: Record<number, { name: string, type: string, color: string }[]>
-  return response.data;
-},
-getLeaveTypes: async () => {
-    const response = await api.get('/settings/leave-types');
+
+  // =============================
+  // Calendar
+  // =============================
+
+  getCalendarLeaves: async (
+
+    year: number,
+
+    month: number
+
+  ) => {
+
+    const response = await api.get(
+
+      `/leaves/calendar?year=${year}&month=${month}`
+
+    );
+
     return response.data;
+
   },
+
+
+  // =============================
+  // Leave Types
+  // =============================
+
+  getLeaveTypes: async () => {
+
+    const response = await api.get('/settings/leave-types');
+
+    return response.data;
+
+  },
+
 
   createLeaveType: async (data: any) => {
+
     const response = await api.post('/settings/leave-types', data);
+
     return response.data;
+
   },
+
 
   updateLeaveType: async (id: number, data: any) => {
-    const response = await api.put(`/settings/leave-types/${id}`, data);
+
+    const response = await api.put(
+
+      `/settings/leave-types/${id}`,
+
+      data
+
+    );
+
     return response.data;
+
   },
 
+
   deleteLeaveType: async (id: number) => {
+
     await api.delete(`/settings/leave-types/${id}`);
+
     return true;
+
   },
+
+
 };
