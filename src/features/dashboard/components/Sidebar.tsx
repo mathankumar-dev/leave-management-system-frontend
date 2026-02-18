@@ -3,7 +3,7 @@ import {
   FaChevronLeft,
   FaSignOutAlt,
   FaThLarge,
-  FaPlus,
+  FaPlus, 
   FaListUl,
   FaCalendarAlt,
   FaBell,

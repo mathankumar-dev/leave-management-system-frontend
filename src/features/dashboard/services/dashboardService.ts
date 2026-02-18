@@ -40,19 +40,29 @@ export const dashboardService = {
   //   const response = await api.get<Employee[]>('/admin/employees');
   //   return response.data;
   // }
-  getAllEmployees: async () => {
+  getAllEmployees: async (): Promise<Employee[]> => {
   const response = await api.get<any[]>('/admin/employees');
-  return response.data.map(emp => ({
+
+  return response.data.map((emp): Employee => ({
     id: emp.id,
     name: emp.name,
     email: emp.email,
-    dept: emp.department || emp.dept, // Handles both naming conventions
+    dept: emp.department ?? emp.dept,
     role: emp.role,
-    status: emp.status.toUpperCase(), // Standardizes to "ACTIVE"
-    initial: emp.name.charAt(0),
-    color: emp.role === 'Manager' ? 'bg-indigo-600' : 'bg-slate-500'
+    status: emp.status === 'ON LEAVE' ? 'ON LEAVE' : 'ACTIVE',
+    initial: emp.name
+      .split(' ')
+      .map((n: string) => n[0])
+      .join(''),
+    color: emp.role === 'Manager'
+      ? 'bg-indigo-600'
+      : emp.role === 'HR Admin'
+        ? 'bg-rose-600'
+        : 'bg-slate-500',
+    designation: ''
   }));
 },
+
 getHRStats: async (scope: string) => {
     const response = await api.get('/reports/stats');
     return response.data; 
