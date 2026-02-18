@@ -29,7 +29,7 @@
 
 
 
-
+import Cookies from "js-cookie";
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { ENV } from '../config/environment';
 
@@ -51,7 +51,7 @@ const api: AxiosInstance = axios.create({
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('lms_token');
+     const token = Cookies.get("lms_token");
 
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -71,20 +71,21 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If the server returns 401, the token is likely expired or invalid
     if (error.response && error.response.status === 401) {
       console.warn("Unauthorized request - Logging out...");
-      
-      // Clear local storage to sync with AuthContext state
-      localStorage.removeItem('lms_token');
-      localStorage.removeItem('lms_user');
-      
-      // Optional: Redirect to login page
-      // window.location.href = '/login'; 
+
+      // Remove token from cookie
+      Cookies.remove("lms_token");
+
+      // Optional: redirect to login
+      // window.location.href = "/login";
     }
-    
+
     return Promise.reject(error);
   }
 );
 
+
 export default api;
+
+

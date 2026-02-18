@@ -93,7 +93,7 @@ export interface AuditLog {
 
 export interface ProfileData {
   // Identity & Basic Info
-  name: string;
+  name?: string;
   role: string;
   email: string;
   phone: string;

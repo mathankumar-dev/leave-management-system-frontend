@@ -147,7 +147,7 @@ export const MOCK_PROFILE: ProfileData = {
   email: "j.wick@continental.com",
   phone: "+1 (555) 042-9901",
   employeeId: "EMP-2026-0402",
-  photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&auto=format&fit=crop",
+  photo: "https://placehold.co/600x400/000000/FFFFFF/png",
 
   // Work Information
   department: "Product Engineering",

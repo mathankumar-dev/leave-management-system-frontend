@@ -78,3 +78,9 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
   
   // For now, return a default employee for any other email
 };
+
+
+export const getProfile = async () => {
+  const response = await api.get("/auth/profile");
+  return response.data.profile;
+};

@@ -62,7 +62,7 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
       
       {/* SECTION 1: PERSONAL DETAILS (Editable) */}
       <div>
-        <h3 className="text-xs font-black text-indigo-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+        <h3 className="text-xs font-black text-indigo-600 uppercase tracking-[0.2em]  flex items-center gap-3">
           <FaUser className="text-sm" /> Personal Details
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -127,43 +127,10 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
         </div>
       </div>
 
-      {/* SECTION 3: SOCIAL & SKILLS */}
-      <div>
-        <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-          <FaLinkedin className="text-sm" /> Social Presence
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="relative">
-            <label className={labelClass}>LinkedIn URL</label>
-            <div className="relative mt-1">
-              <FaLinkedin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input name="linkedin" value={profile.linkedin || ""} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} placeholder="linkedin.com/in/username" />
-            </div>
-          </div>
-          <div className="relative">
-            <label className={labelClass}>GitHub Profile</label>
-            <div className="relative mt-1">
-              <FaGithub className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input name="github" value={profile.github || ""} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} placeholder="github.com/username" />
-            </div>
-          </div>
-        </div>
 
-        {/* Skills Display */}
-        <div className="mt-6">
-          <label className={labelClass}>Core Skills</label>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {profile.skills.map((skill, index) => (
-              <span key={index} className="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-600 shadow-sm">
-                {skill}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* ACTIONS */}
-      {canEdit && (
+      {/* {canEdit && (
         <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
           {!isEditing ? (
             <button onClick={onStartEdit} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
@@ -180,7 +147,7 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
             </>
           )}
         </div>
-      )}
+      )} */}
     </div>
   );
 };
