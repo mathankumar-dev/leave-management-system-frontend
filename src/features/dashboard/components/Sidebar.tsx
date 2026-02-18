@@ -36,11 +36,11 @@ function Sidebar({
     { name: "Apply Leave", icon: <FaPlus />, roles: ["Employee", "Manager"] },
     { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: ["Employee"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["Manager", "HR Admin"] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["Manager", "HR"] },
     { name: "Notifications", icon: <FaBell />, roles: ["Employee", "Manager"] },
-    { name: "Employees", icon: <FaUsers />, roles: ["Manager", "HR Admin"] },
-    { name: "Leave Config", icon: <FaCog />, roles: ["HR Admin"] },
-    { name: "Reports", icon: <FaChartBar />, roles: ["HR Admin"] },
+    { name: "Employees", icon: <FaUsers />, roles: ["Manager", "HR"] },
+    { name: "Leave Config", icon: <FaCog />, roles: ["HR"] },
+    { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
     { name: "Pending Requests", icon: <FaCog />, roles: ["Manager"] },
   ];
 
