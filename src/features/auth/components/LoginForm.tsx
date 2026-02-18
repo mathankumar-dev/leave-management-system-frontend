@@ -4,6 +4,8 @@ import { loginUser } from "../services/AuthService";
 import { useAuth } from "../hooks/useAuth";
 import type { LoginCredentials } from "../types";
 
+
+
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState<string>("employee@company.com");
   const [password, setPassword] = useState<string>("password123");
@@ -29,13 +31,14 @@ const LoginForm: React.FC = () => {
 
   return (
     <div className="bg-white p-10 rounded-xl border-2 border-white shadow-sm">    <form onSubmit={handleLogin} className="space-y-6">
-      <header className="mb-8">
-        {/* INCREASED READABILITY: neutral-900 provides maximum contrast for headings */}
-        <h3 className="text-3xl font-bold text-neutral-900 tracking-tight mb-2">Sign In</h3>
-        <p className="text-neutral-600 font-medium text-sm leading-relaxed">
-          Welcome back to your employee portal.
-        </p>
-      </header>
+        <img src="../../../src" alt="logo image" className="w-20 h-20" />
+        <div className="flex flex-col gap-2.5 items-center">
+
+        <h1 className="text-3xl font-bold">Account Login</h1>
+        <p className="text-center">Enter your Registered Email and <br />
+            Password to Proceed.</p>
+        </div>
+
 
       {/* Email Field */}
       <div className="space-y-2">
