@@ -17,11 +17,52 @@ import {
 } from "react-icons/fa";
 
 export const MOCK_TEAM_MEMBERS: Employee[] = [
-  { id: 1, name: "Emma Wilson", email: "emma@company.com", dept: "Design", status: "ON LEAVE", role: "UI Designer", initial: "EW", color: "bg-rose-500" },
-  { id: 2, name: "Sarah Johnson", email: "sarah@company.com", dept: "Engineering", status: "ACTIVE", role: "Frontend Dev", initial: "SJ", color: "bg-emerald-500" },
-  { id: 3, name: "Michael Chen", email: "mike@company.com", dept: "Engineering", status: "ACTIVE", role: "Backend Dev", initial: "MC", color: "bg-emerald-500" },
-  { id: 4, name: "Alex Rivera", email: "alex@company.com", dept: "Operations", status: "ACTIVE", role: "Project Manager", initial: "AR", color: "bg-indigo-500" },
+  {
+    id: 1,
+    name: "Emma Wilson",
+    email: "emma@company.com",
+    dept: "Design",
+    status: "ON LEAVE",
+    role: "EMPLOYEE",
+    designation: "UI Designer",
+    initial: "EW",
+    color: "bg-rose-500",
+  },
+  {
+    id: 2,
+    name: "Sarah Johnson",
+    email: "sarah@company.com",
+    dept: "Engineering",
+    status: "ACTIVE",
+    role: "EMPLOYEE",
+    designation: "Frontend Developer",
+    initial: "SJ",
+    color: "bg-emerald-500",
+  },
+  {
+    id: 3,
+    name: "Michael Chen",
+    email: "mike@company.com",
+    dept: "Engineering",
+    status: "ACTIVE",
+    role: "EMPLOYEE",
+    designation: "Backend Developer",
+    initial: "MC",
+    color: "bg-emerald-500",
+  },
+  {
+    id: 4,
+    name: "Alex Rivera",
+    email: "alex@company.com",
+    dept: "Operations",
+    status: "ACTIVE",
+    role: "MANAGER",
+    designation: "Project Manager",
+    initial: "AR",
+    color: "bg-indigo-500",
+  },
 ];
+
 
 export const MOCK_PENDING_REQUESTS: ApprovalRequest[] = [
   {
@@ -106,7 +147,7 @@ export const MOCK_PROFILE: ProfileData = {
   email: "j.wick@continental.com",
   phone: "+1 (555) 042-9901",
   employeeId: "EMP-2026-0402",
-  photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=256&h=256&auto=format&fit=crop",
+  photo: "https://placehold.co/600x400/000000/FFFFFF/png",
 
   // Work Information
   department: "Product Engineering",

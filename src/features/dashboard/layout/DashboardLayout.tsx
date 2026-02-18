@@ -36,7 +36,7 @@ const DashboardLayout: React.FC = () => {
 
   /* ---------------- HR DEFAULT REDIRECT ---------------- */
   useEffect(() => {
-    if (userRole === "HR Admin" && activeTab === "Dashboard") {
+    if (userRole === "HR" && activeTab === "Dashboard") {
       setActiveTab("Employees");
     }
   }, [userRole, activeTab]);
@@ -55,7 +55,7 @@ const DashboardLayout: React.FC = () => {
     switch (activeTab) {
 
       case "Reports":
-        if (userRole === "HR Admin") {
+        if (userRole === "HR") {
           return <LeaveReportDashboard />;
         }
         if (userRole === "Manager") {
@@ -96,7 +96,7 @@ const DashboardLayout: React.FC = () => {
 
       case "Profile":
         if (userRole === "Manager") return <ManagerProfile />;
-        if (userRole === "HR Admin") return <HRProfile />;
+        if (userRole === "HR") return <HRProfile />;
         return <EmployeeProfile />;
 
       default:
