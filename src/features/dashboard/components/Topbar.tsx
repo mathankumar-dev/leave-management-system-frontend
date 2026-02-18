@@ -40,8 +40,10 @@ const Topbar: React.FC<TopbarProps> = ({
   }, [isNotifOpen, fetchNotifications]);
 
   return (
-    <div className="sticky top-0 z-40 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 md:py-4 border-b border-slate-100">
-
+    // <div className="sticky top-0 z-40 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 md:py-4 border-b border-slate-100">
+    <div className="sticky top-0 z-30 flex items-center justify-between 
+                bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 
+                border-b border-neutral-200 w-full transition-all duration-300">
       {/* LEFT */}
       <div className="flex items-center gap-3 min-w-0">
         <button
@@ -52,12 +54,12 @@ const Topbar: React.FC<TopbarProps> = ({
         </button>
 
         <div className="min-w-0">
-          <h1 className="text-base md:text-lg font-bold text-slate-900 truncate">
+          <h1 className="text-xl md:text-2xl font-bold text-primary-500 uppercase italic truncate">
             {activeTab}
           </h1>
-          <p className="hidden xs:block text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          {/* <p className="hidden xs:block text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
             Portal Workspace
-          </p>
+          </p> */}
         </div>
       </div>
 
@@ -71,11 +73,10 @@ const Topbar: React.FC<TopbarProps> = ({
               setIsNotifOpen(!isNotifOpen);
               setIsProfileOpen(false);
             }}
-            className={`p-2.5 rounded-xl transition-all ${
-              isNotifOpen
+            className={`p-2.5 rounded-xl transition-all ${isNotifOpen
                 ? "bg-indigo-50 text-indigo-600"
                 : "text-slate-400 hover:text-indigo-600"
-            }`}
+              }`}
           >
             <FaBell className="w-4 h-4" />
             <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-rose-500 border-2 border-white" />
@@ -99,7 +100,7 @@ const Topbar: React.FC<TopbarProps> = ({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
                   className="
-                    fixed top-20 left-4 right-4 z-[60]
+                    fixed top-20 left-4 right-4 z-60
                     sm:absolute sm:top-full sm:right-0 sm:left-auto sm:mt-3
                     sm:w-80 sm:z-20
                     bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden
@@ -114,7 +115,7 @@ const Topbar: React.FC<TopbarProps> = ({
                     </button>
                   </div>
 
-                  <div className="max-h-[60vh] sm:max-h-[350px] overflow-y-auto">
+                  <div className="max-h-[60vh] sm:max-h-87.5 overflow-y-auto">
                     {recentNotifs.length ? (
                       recentNotifs.map((n) => (
                         <div
@@ -123,11 +124,10 @@ const Topbar: React.FC<TopbarProps> = ({
                         >
                           <div className="flex gap-3">
                             <FaCircle
-                              className={`mt-1.5 w-2 h-2 ${
-                                n.unread
+                              className={`mt-1.5 w-2 h-2 ${n.unread
                                   ? "text-indigo-500"
                                   : "text-slate-200"
-                              }`}
+                                }`}
                             />
                             <div className="min-w-0">
                               <p className="text-xs font-bold text-slate-900 truncate">
@@ -186,9 +186,8 @@ const Topbar: React.FC<TopbarProps> = ({
                   {user?.role}
                 </span>
                 <FaChevronDown
-                  className={`text-[8px] text-slate-400 transition-transform ${
-                    isProfileOpen ? "rotate-180" : ""
-                  }`}
+                  className={`text-[8px] text-slate-400 transition-transform ${isProfileOpen ? "rotate-180" : ""
+                    }`}
                 />
               </div>
             </div>

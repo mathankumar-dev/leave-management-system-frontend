@@ -17,11 +17,52 @@ import {
 } from "react-icons/fa";
 
 export const MOCK_TEAM_MEMBERS: Employee[] = [
-  { id: 1, name: "Emma Wilson", email: "emma@company.com", dept: "Design", status: "ON LEAVE", role: "UI Designer", initial: "EW", color: "bg-rose-500" },
-  { id: 2, name: "Sarah Johnson", email: "sarah@company.com", dept: "Engineering", status: "ACTIVE", role: "Frontend Dev", initial: "SJ", color: "bg-emerald-500" },
-  { id: 3, name: "Michael Chen", email: "mike@company.com", dept: "Engineering", status: "ACTIVE", role: "Backend Dev", initial: "MC", color: "bg-emerald-500" },
-  { id: 4, name: "Alex Rivera", email: "alex@company.com", dept: "Operations", status: "ACTIVE", role: "Project Manager", initial: "AR", color: "bg-indigo-500" },
+  {
+    id: 1,
+    name: "Emma Wilson",
+    email: "emma@company.com",
+    dept: "Design",
+    status: "ON LEAVE",
+    role: "EMPLOYEE",
+    designation: "UI Designer",
+    initial: "EW",
+    color: "bg-rose-500",
+  },
+  {
+    id: 2,
+    name: "Sarah Johnson",
+    email: "sarah@company.com",
+    dept: "Engineering",
+    status: "ACTIVE",
+    role: "EMPLOYEE",
+    designation: "Frontend Developer",
+    initial: "SJ",
+    color: "bg-emerald-500",
+  },
+  {
+    id: 3,
+    name: "Michael Chen",
+    email: "mike@company.com",
+    dept: "Engineering",
+    status: "ACTIVE",
+    role: "EMPLOYEE",
+    designation: "Backend Developer",
+    initial: "MC",
+    color: "bg-emerald-500",
+  },
+  {
+    id: 4,
+    name: "Alex Rivera",
+    email: "alex@company.com",
+    dept: "Operations",
+    status: "ACTIVE",
+    role: "MANAGER",
+    designation: "Project Manager",
+    initial: "AR",
+    color: "bg-indigo-500",
+  },
 ];
+
 
 export const MOCK_PENDING_REQUESTS: ApprovalRequest[] = [
   {
@@ -64,13 +105,7 @@ export const MOCK_DASHBOARD_STATS: DashboardStats[] = [
     color: "#f59e0b", // Amber 500
     icon: "clock" 
   },
-  { 
-    title: "WFH Quota", 
-    used: 12, 
-    total: 24, 
-    color: "#8b5cf6", // Violet 500
-    icon: "home" 
-  },
+
 ];
 
 // DATA FOR DASHBOARD CHART

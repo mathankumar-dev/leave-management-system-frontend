@@ -1,83 +1,120 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaSearch, FaUserPlus, FaEllipsisV, FaFilter, FaBuilding, FaEnvelope } from "react-icons/fa";
+import {
+  FaSearch,
+  FaUserPlus,
+  FaEllipsisV,
+  FaEnvelope,
+  FaUserEdit,
+  FaUserSlash,
+  FaUserCheck,
+  FaSyncAlt,
+  FaTrash,
+  FaFilter,
+} from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import type { Employee } from "../../types";
+import AddEmployeeForm from "../../components/AddEmployeeForm";
 
-const EmployeesView: React.FC = () => {
+const EmployeesView = () => {
   const { fetchEmployees, loading } = useDashboard();
+
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
+  const [hiddenIds, setHiddenIds] = useState<number[]>([]); // soft delete UI-only
+
+  /* ----------------------- LOAD MOCK DATA ----------------------- */
+  const [openAddEmployee, setOpenAddEmployee] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    fetchEmployees().then(data => {
-      if (isMounted) setEmployees(data);
+
+    fetchEmployees().then((data: Employee[]) => {
+      if (isMounted) {
+        setEmployees(data);
+      }
     });
-    return () => { isMounted = false; };
+
+    return () => {
+      isMounted = false;
+    };
   }, [fetchEmployees]);
 
   const filteredEmployees = useMemo(() => {
-    return employees.filter(emp =>
-      emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.dept?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return employees.filter((emp) => {
+      return (
+        emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        emp.dept?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
   }, [employees, searchTerm]);
 
   if (loading && employees.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
-        <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Loading Directory...</p>
+        <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+          Loading Directory...
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6 p-4 md:p-0">
-      {/* Header Section */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Employee Directory</h2>
-          <p className="text-xs font-medium text-slate-500 mt-1">
-            Total Workspace Members: {employees.length}
+          <h2 className="text-2xl font-bold">Employee Directory</h2>
+          <p className="text-xs text-slate-500">
+            Total Members: {filteredEmployees.length}
           </p>
         </div>
-        <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+
+        <button  className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
           <FaUserPlus /> Add Employee
         </button>
       </div>
 
-      {/* Search and Filters */}
+      {/* Search */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative group">
-          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500" />
           <input
             type="text"
             placeholder="Search name, email or department..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border border-slate-200 pl-11 pr-4 py-3 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
+            className="w-full bg-white border border-slate-200 pl-11 pr-4 py-3 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm"
           />
         </div>
-        <button className="px-5 py-3 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 font-bold text-xs shadow-sm">
-          <FaFilter className="text-slate-400" /> Filters
+
+        <button className="px-5 py-3 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 flex items-center gap-2 font-bold text-xs shadow-sm">
+          <FaFilter /> Filters
         </button>
       </div>
 
-      {/* Directory Container */}
+      {/* Table */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="hidden md:table-header-group bg-slate-50/80 border-b border-slate-200">
+            <thead className="hidden md:table-header-group bg-slate-50 border-b">
               <tr>
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Employee</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Department & Role</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
+                <th className="px-6 py-4 text-[11px] font-bold uppercase text-slate-500">
+                  Employee
+                </th>
+                <th className="px-6 py-4 text-[11px] font-bold uppercase text-slate-500">
+                  Department & Role
+                </th>
+                <th className="px-6 py-4 text-[11px] font-bold uppercase text-slate-500 text-center">
+                  Status
+                </th>
                 <th className="px-6 py-4"></th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-slate-100">
               <AnimatePresence mode="popLayout">
                 {filteredEmployees.map((emp) => (
@@ -87,55 +124,45 @@ const EmployeesView: React.FC = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="flex flex-col md:table-row hover:bg-slate-50/50 transition-colors"
+                    className="flex flex-col md:table-row hover:bg-slate-50"
                   >
-                    {/* Employee Profile Cell */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 shrink-0 ${emp.color || 'bg-indigo-600'} rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm`}>
-                          {emp.initial || emp.name.charAt(0)}
+                        <div className={`w-10 h-10 ${emp.color ?? "bg-indigo-600"} rounded-lg flex items-center justify-center text-white font-bold`}>
+                          {emp.initial ?? emp.name.charAt(0)}
                         </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-900 text-sm truncate">{emp.name}</p>
-                          <div className="flex items-center gap-1.5 text-slate-400">
-                            <FaEnvelope size={10} />
-                            <p className="text-xs font-medium truncate">{emp.email}</p>
-                          </div>
+                        <div>
+                          <p className="font-bold text-sm">{emp.name}</p>
+                          <p className="text-xs text-slate-400 flex items-center gap-1">
+                            <FaEnvelope size={10} /> {emp.email}
+                          </p>
                         </div>
                       </div>
                     </td>
 
-                    {/* Dept & Role Cell */}
-                    <td className="px-6 py-2 md:py-4">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-1.5 text-slate-700">
-                          <FaBuilding size={10} className="text-slate-300 md:hidden" />
-                          <span className="text-xs font-semibold">{emp.dept}</span>
-                        </div>
-                        <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-tight">{emp.role}</span>
-                      </div>
+                    <td className="px-6 py-4">
+                      <p className="text-xs font-semibold">{emp.dept}</p>
+                      <p className="text-[10px] text-indigo-600 font-bold uppercase">
+                        {emp.role}
+                      </p>
                     </td>
 
-                    {/* Status Cell */}
-                    <td className="px-6 py-2 md:py-4 md:text-center">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold border ${
-                        emp.status === 'ACTIVE'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                          : 'bg-amber-50 text-amber-700 border-amber-100'
-                      }`}>
-                        <div className={`w-1.5 h-1.5 rounded-full bg-current ${emp.status === 'ACTIVE' ? 'animate-pulse' : ''}`} />
+                    <td className="px-6 py-4 text-center">
+                      <span
+                        className={`px-3 py-1 rounded-md text-[10px] font-bold ${
+                          emp.status === "ACTIVE"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-amber-50 text-amber-700"
+                        }`}
+                      >
                         {emp.status}
                       </span>
                     </td>
 
-                    {/* Actions Cell */}
-                    <td className="px-6 py-4 md:text-right">
-                      <div className="flex justify-between items-center md:justify-end">
-                        <span className="md:hidden text-xs text-slate-400 font-medium italic">Employee ID: #{emp.id}</span>
-                        <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all">
-                          <FaEllipsisV size={12} />
-                        </button>
-                      </div>
+                    <td className="px-6 py-4 text-right">
+                      <button className="p-2 hover:bg-slate-100 rounded">
+                        <FaEllipsisV size={12} />
+                      </button>
                     </td>
                   </motion.tr>
                 ))}
@@ -144,25 +171,43 @@ const EmployeesView: React.FC = () => {
           </table>
         </div>
 
-        {/* Empty & Footer */}
         {filteredEmployees.length === 0 && !loading && (
-          <div className="py-16 text-center text-slate-500 text-sm font-medium">
+          <div className="py-16 text-center text-slate-500 text-sm">
             No team members found matching "{searchTerm}"
           </div>
         )}
-
-        <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            {filteredEmployees.length} Members listed
-          </span>
-          <div className="flex gap-2">
-            <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-400 hover:bg-slate-50 transition-all">Previous</button>
-            <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900 hover:bg-slate-50 transition-all shadow-sm">Next Page</button>
-          </div>
-        </div>
       </div>
+
+      {/* 🔥 POPUP CONNECTION */}
+      <AddEmployeeForm
+        open={openAddEmployee}
+        onClose={() => setOpenAddEmployee(false)}
+      />
     </div>
   );
 };
+
+/* ----------------------- MENU ITEM ----------------------- */
+
+const MenuItem = ({
+  icon,
+  label,
+  onClick,
+  danger,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  danger?: boolean;
+}) => (
+  <button
+    onClick={onClick}
+    className={`w-full px-4 py-2 flex items-center gap-3 text-sm hover:bg-slate-50 ${
+      danger ? "text-rose-600" : ""
+    }`}
+  >
+    {icon} {label}
+  </button>
+);
 
 export default EmployeesView;

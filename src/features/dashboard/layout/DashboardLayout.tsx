@@ -1,40 +1,74 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
-// Views
+// Admin Views
 import EmployeesView from "../views/admin/EmployeesView";
 import LeaveTypesView from "../views/admin/LeaveTypesView";
-import CalendarView from "../views/employee/CalendarView";
+import HRProfile from "../views/admin/HRProfile";
+
+// Employee Views
 import DashboardView from "../views/employee/DashboardView";
+import CalendarView from "../views/employee/CalendarView";
 import LeaveApplicationForm from "../views/LeaveApplicationForm";
-import ManagerDashboardView from "../views/manager/ManagerDashboardView";
-import TeamCalendarView from "../views/manager/TeamCalendarView";
 import MyLeavesView from "../views/MyLeavesView";
 import NotificationsView from "../views/NotificationsView";
+import EmployeeProfile from "../views/employee/EmployeeProfile";
+import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
+
+
+
+// Manager Views
+import ManagerDashboardView from "../views/manager/ManagerDashboardView";
+import TeamCalendarView from "../views/manager/TeamCalendarView";
 import ApprovalsView from "../views/manager/ApprovalsView";
 import ManagerProfile from "../views/manager/ManagerProfile";
-import EmployeeProfile from "../views/employee/EmployeeProfile";
-import HRProfile from "../views/admin/HRProfile";
 
 const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuth();
+
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const userRole = user?.role || "Employee";
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  /* ---------------- HR DEFAULT REDIRECT ---------------- */
   useEffect(() => {
-    if (user?.role === "HR Admin" && activeTab === "Dashboard") {
+    if (userRole === "HR Admin" && activeTab === "Dashboard") {
       setActiveTab("Employees");
     }
-  }, [user, activeTab]);
-  let userRole = user?.role || "Employee";
+  }, [userRole, activeTab]);
 
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: 0,
+        behavior: "instant" 
+      });
+    }
+  }, [activeTab]);
+
+  /* ---------------- VIEW RENDERER ---------------- */
   const renderView = () => {
     switch (activeTab) {
+
+      case "Reports":
+        if (userRole === "HR Admin") {
+          return <LeaveReportDashboard />;
+        }
+        if (userRole === "Manager") {
+          return <ManagerDashboardView />;
+        }
+        return null;
+
       case "Dashboard":
         return userRole === "Manager"
           ? <ManagerDashboardView />
-          : userRole === "Employee" ? <DashboardView /> : <EmployeesView />;
+          : userRole === "Employee"
+            ? <DashboardView onNavigate={setActiveTab} />
+            : <EmployeesView />;
 
       case "Employees":
         return <EmployeesView />;
@@ -59,22 +93,24 @@ const DashboardLayout: React.FC = () => {
 
       case "Notifications":
         return <NotificationsView />;
-      case "Profile":
 
+      case "Profile":
         if (userRole === "Manager") return <ManagerProfile />;
         if (userRole === "HR Admin") return <HRProfile />;
         return <EmployeeProfile />;
 
       default:
-        return userRole === "Manager"
-          ? <ManagerDashboardView />
-          : <DashboardView />;
+        return <DashboardView />;
     }
   };
 
+
+  /* ---------------- LAYOUT ---------------- */
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] overflow-x-hidden">
-      {/* Sidebar */}
+
+    <div className="flex h-screen bg-neutral-25 overflow-hidden">
+
+      {/* Sidebar - Internal width should be w-80 */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -84,8 +120,9 @@ const DashboardLayout: React.FC = () => {
         onLogout={logout}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col md:ml-64 min-h-screen w-full overflow-x-hidden">
+      {/* Main Content Wrapper */}
+      {/* FIX: Change md:ml-64 to md:ml-80 to match the sidebar width exactly */}
+      <div className="flex-1 flex flex-col md:ml-80 h-full min-w-0 transition-all duration-300">
         <Topbar
           activeTab={activeTab}
           user={user}
@@ -94,8 +131,8 @@ const DashboardLayout: React.FC = () => {
           setActiveTab={setActiveTab}
         />
 
-        <main className="p-4 md:p-6 flex-1 overflow-y-auto w-full">
-          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500 w-full">
+        <main ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-6">
+          <div className="max-w-400 mx-auto animate-in fade-in duration-500 w-full">
             {renderView()}
           </div>
         </main>

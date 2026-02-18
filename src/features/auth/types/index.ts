@@ -1,4 +1,4 @@
-export type UserRole = "Employee" | "Manager" | "HR Admin";
+export type UserRole = "Employee" | "Manager" | "HR" | "Admin";
 
 export interface LoginCredentials {
   email: string;

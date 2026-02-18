@@ -1,30 +1,44 @@
-
-// import { ENV } from "../../../config/environment";
-// import type { LoginCredentials, AuthResponse, RegisterCredentials } from "../types";
+// import api from "../../../api/axiosInstance";
+// import type { AuthResponse, LoginCredentials } from "../types";
 
 // export const loginUser = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-//   const response = await fetch(`${ENV.API_BASE_URL}${ENV.ENDPOINTS.LOGIN}`, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify(credentials),
-//   });
-//   if (!response.ok) throw new Error("Login failed");
-//   return response.json();
-// };
 
-// export const registerUser = async (data: RegisterCredentials): Promise<any> => {
-//   const response = await fetch(`${ENV.API_BASE_URL}${ENV.ENDPOINTS.REGISTER}`, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify(data),
+//   const response = await api.post('/auth/login', {
+
+//     username: credentials.email,   // ✅ backend expects username
+//     password: credentials.password
+
 //   });
-//   if (!response.ok) throw new Error("Registration failed");
-//   return response.json();
+
+//   const data = response.data;
+
+//   // return in your frontend format
+
+//   return {
+
+//     token: data.token,
+
+//     user: {
+
+//       id: data.userId,
+
+//       name: credentials.email,
+
+//       email: credentials.email,
+
+//       role: data.role,
+
+//       department: ""
+
+//     }
+
+//   };
+
 // };
 
 
 import api from "../../../api/axiosInstance";
-import type { LoginCredentials, AuthResponse, RegisterCredentials } from "../types";
+import type { LoginCredentials, AuthResponse } from "../types";
 
 // Simulated delay for testing
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -33,15 +47,22 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
   /** * MOCK BLOCK: Remove this once your API is live 
    **/
   await sleep(1000);
-  if (credentials.email === "manager@company.com") {
+  
+  if (credentials.email === "manager@wenxttech.com") {
     return {
       user: { id: "1", name: "Manager User", email: credentials.email, role: "Manager",department:"IT" },
       token: "mock-token-123"
     };
   }
-    if (credentials.email === "admin@company.com") {
+   else if (credentials.email === "admin@wenxttech.com") {
     return {
-      user: { id: "1", name: "Admin User", email: credentials.email, role: "HR Admin",department:"IT" },
+      user: { id: "2", name: "Admin User", email: credentials.email, role: "Admin",department:"IT" },
+      token: "mock-token-123"
+    };
+  }
+     else if (credentials.email === "hr@wenxttech.com") {
+    return {
+      user: { id: "3", name: "HR User", email: credentials.email, role: "HR",department:"IT" },
       token: "mock-token-123"
     };
   }
@@ -56,14 +77,4 @@ export const loginUser = async (credentials: LoginCredentials): Promise<AuthResp
     user: { id: "2", name: "Employee User", email: credentials.email, role: "Employee",department:"IT" },
     token: "mock-token-456"
   };
-};
-
-export const registerUser = async (data: RegisterCredentials): Promise<any> => {
-  await sleep(1000);
-  
-  // Real code (Uncomment when API is ready):
-  // const response = await api.post('/auth/register', data);
-  // return response.data;
-
-  return { message: "Registration successful" };
 };

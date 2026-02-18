@@ -5,40 +5,68 @@
 }
 
 @theme {
-  /* ACCESSIBILITY SIZES */
+  /* ACCESSIBILITY SIZES 
   --font-size-base: 1rem; 
   --font-size-lg: 1.125rem;
-  --font-size-xl: 1.5rem;
+  --font-size-xl: 1.5rem;*/
 
-  /* PRIMARY BLUE SCALING */
+  /* PRIMARY BLUE */
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
   --color-primary-500: #0066ff;
   --color-primary-700: #0052cc;
   --color-primary-900: #1e3a8a;
 
-  /* THE COLOR FIX: Mapping Alice Blue to the background */
-  --color-neutral-50: #F0F8FF;  /* Alice Blue: High comfort, low glare */
-  --color-neutral-100: #E1EFFE; /* Light Blue tint for sections */
-  --color-neutral-200: #D1E1F0; /* Visible borders on Alice Blue */
-  --color-neutral-500: #475569; /* Slate-ish gray for secondary text */
-  --color-neutral-900: #0F172A; /* Deep Navy-Black for maximum contrast */
-  --color-neutral-950: #020617;
+  /* NEUTRALS (COMPLETE SCALE) */
   
-  /* SEMANTIC STATUSES */
+  --color-neutral-25:  #F7FBFF;
+  --color-neutral-50:  #F0F8FF; /* Alice Blue */
+  --color-neutral-100: #E1EFFE;
+  --color-neutral-200: #D1E1F0;
+  --color-neutral-300: #b9d0ea;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #475569;
+  --color-neutral-600: #334155;
+  --color-neutral-700: #1e293b;
+  --color-neutral-800: #0f172a;
+  --color-neutral-900: #020617;
+  --color-neutral-950: #01030d;
+
+  /* SEMANTIC */
   --color-success: #059669;
   --color-danger: #dc2626;
   --color-warning: #d97706;
+
+
+  --color-sidebar-bg: var(--color-neutral-900); 
+
+  /* Add these for clear contrast on dark backgrounds */
+  --color-on-dark-inactive: var(--color-neutral-300); /* High enough contrast */
+  --color-on-dark-hover: var(--color-neutral-100);
+
 }
 
+
+html , body{
+    overscroll-behavior-x: none; 
+  /* Ensures the body itself never expands beyond the screen */
+  max-width: 100vw;
+  overflow-x: hidden;
+  overscroll-behavior-y: none; 
+  
+  /* Ensures the body itself never grows taller than the screen */
+  max-height: 100vh;
+  overflow-y: hidden;
+}
 body {
   font-family: var(--font-internal);
   font-size: var(--font-size-base);
   line-height: 1.6rem;
   /* Using neutral-900 on neutral-50 (Alice Blue) provides a 15:1 contrast ratio */
   color: var(--color-neutral-900);
-  background-color: var(--color-neutral-50);
+  background-color: var(--color-neutral-25);
   -webkit-font-smoothing: antialiased;
+
 }
 
 /* THICK ACCESSIBLE SCROLLBAR */
@@ -60,3 +88,5 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary-700);
 }
+
+

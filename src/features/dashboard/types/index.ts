@@ -14,11 +14,14 @@ export interface Employee {
   name: string;
   email: string;
   dept: string;
-  status: 'ACTIVE' | 'ON LEAVE';
-  role: string;
+  status: "ACTIVE" | "ON LEAVE";
+  role: "EMPLOYEE" | "MANAGER" | "HR";
+  designation: string;   // 👈 job title
   initial: string;
   color: string;
 }
+
+
 
 // export interface ApprovalRequest {
 //   id: number;
@@ -84,6 +87,9 @@ export interface AuditLog {
   details: string;
   icon: React.ReactNode;
 }
+
+
+
 
 export interface ProfileData {
   // Identity & Basic Info
