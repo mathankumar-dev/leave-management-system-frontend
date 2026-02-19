@@ -10,40 +10,52 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+// Import the actual data
+import { monthlyTrendData } from '../data/mockData'; 
 
+interface MonthlyTrendProps {
+  data: {
+    month: string;
+    applied: number;
+    approved: number;
+    rejected: number;
+  }[];
+}
 export function MonthlyTrendChart() {
   return (
-    <Card>
+    <Card className="bg-white border-slate-200 shadow-sm">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold flex items-center gap-2">
-          <Activity className="h-4 w-4 text-primary" />
+        <CardTitle className="text-base font-semibold flex items-center gap-2 text-slate-800">
+          <Activity className="h-4 w-4 text-blue-600" />
           Monthly Leave Trend
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Changed h-62.5 to h-[250px] for standard Tailwind compatibility */}
         <div className="h-62.5 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart 
-              data={[{MonthlyTrendChart}]}
+              data={monthlyTrendData} 
               margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis 
                 dataKey="month" 
-                tick={{ fontSize: 11 }} 
+                tick={{ fontSize: 11, fill: '#64748b' }} 
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis 
-                tick={{ fontSize: 11 }} 
+                tick={{ fontSize: 11, fill: '#64748b' }} 
                 axisLine={false}
                 tickLine={false}
               />
               <Tooltip 
                 contentStyle={{ 
+                  backgroundColor: '#fff',
                   borderRadius: '8px', 
-                  border: 'none', 
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)' 
+                  border: '1px solid #e2e8f0', 
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.05)' 
                 }} 
               />
               <Legend 
@@ -51,25 +63,24 @@ export function MonthlyTrendChart() {
                 align="right"
                 iconSize={8}
                 iconType="circle"
-                wrapperStyle={{ fontSize: '10px', paddingBottom: '10px' }}
+                wrapperStyle={{ fontSize: '10px', paddingBottom: '20px' }}
               />
               <Line 
                 type="monotone" 
                 dataKey="applied" 
                 name="Applied"
-                stroke="hsl(var(--primary))" 
-                strokeWidth={2.5} 
-                dot={{ r: 0 }}
-                activeDot={{ r: 4 }}
+                stroke="#2563eb" 
+                strokeWidth={3} 
+                dot={{ r: 4, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }}
+                activeDot={{ r: 6 }}
               />
               <Line 
                 type="monotone" 
                 dataKey="approved" 
                 name="Approved"
                 stroke="#10B981" 
-                strokeWidth={2.5} 
-                dot={{ r: 0 }}
-                activeDot={{ r: 4 }}
+                strokeWidth={3} 
+                dot={false}
               />
               <Line 
                 type="monotone" 
@@ -78,7 +89,7 @@ export function MonthlyTrendChart() {
                 stroke="#EF4444" 
                 strokeWidth={2} 
                 strokeDasharray="4 4"
-                dot={{ r: 0 }}
+                dot={false}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -87,37 +98,3 @@ export function MonthlyTrendChart() {
     </Card>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
-// import { monthlyTrendData } from "../data/mockData";
-
-// export function MonthlyTrendChart() {
-//   return (
-//     <LineChart width={300} height={200} data={monthlyTrendData}>
-//       <XAxis dataKey="month" />
-//       <YAxis />
-//       <Tooltip />
-//       <Line type="monotone" dataKey="leaves" stroke="#82ca9d" />
-//     </LineChart>
-//   );
-// }

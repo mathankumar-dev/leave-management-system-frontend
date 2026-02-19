@@ -4,45 +4,59 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { departmentLeaveData } from '../data/mockData';
 
 export function DepartmentChart({ topDepartment }: any) {
+  // Fix: Extract string if topDepartment is an object, or provide fallback
+  const displayValue = typeof topDepartment === 'object' 
+    ? topDepartment?.department 
+    : topDepartment;
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" />
+    <Card className="border-none shadow-none bg-transparent">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-700">
+          <BarChart3 className="h-4 w-4 text-blue-600" />
           Department-wise Leaves
         </CardTitle>
-        <CardDescription>
-          Highest: <span className="font-semibold text-foreground">{topDepartment.department}</span>
+        <CardDescription className="text-[11px] text-slate-500">
+          Highest: <span className="font-bold text-slate-900">{displayValue || "N/A"}</span>
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={departmentLeaveData} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-            <XAxis type="number" />
-            <YAxis type="category" dataKey="department" width={85} tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Bar dataKey="leaves" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        {/* Using h-[250px] for standard tailwind height consistency */}
+        <div className="h-[250px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart 
+              data={departmentLeaveData} 
+              layout="vertical" 
+              margin={{ left: -10, right: 20, top: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+              <XAxis type="number" hide />
+              <YAxis 
+                type="category" 
+                dataKey="department" 
+                width={80} 
+                tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }} 
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip 
+                cursor={{ fill: '#f8fafc' }}
+                contentStyle={{ 
+                  borderRadius: '8px', 
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
+                }}
+              />
+              <Bar 
+                dataKey="leaves" 
+                fill="#2563eb" 
+                radius={[0, 4, 4, 0]} 
+                barSize={14} 
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );
 }
-
-
-
-
-// import { BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
-// import { departmentLeaveData } from "../data/mockData";
-
-// export function DepartmentChart() {
-//   return (
-//     <BarChart width={300} height={200} data={departmentLeaveData}>
-//       <XAxis dataKey="name" />
-//       <YAxis />
-//       <Tooltip />
-//       <Bar dataKey="leaves" fill="#8884d8" />
-//     </BarChart>
-//   );
-// }

@@ -8,14 +8,17 @@ interface Props {
 }
 
 export function ManagerTrackingTable({ topApprover, topPending }: Props) {
+  const approverName = topApprover?.name || "N/A";
+  const pendingName = topPending?.name || "N/A";
+
   return (
-    <Card>
+    <Card className="border border-slate-200 shadow-sm bg-white">
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
-        <div>
-          <CardTitle className="text-base font-semibold">Manager Tracking</CardTitle>
-          <CardDescription>
-            Top approver: <span className="font-semibold text-foreground">{topApprover.name}</span> · 
-            Most pending: <span className="font-semibold text-foreground">{topPending.name}</span>
+        <div className="space-y-1">
+          <CardTitle className="text-base font-semibold text-slate-800">Manager Tracking</CardTitle>
+          <CardDescription className="text-xs text-slate-500">
+            Top approver: <span className="font-bold text-emerald-600">{approverName}</span> · 
+            Most pending: <span className="font-bold text-rose-600">{pendingName}</span>
           </CardDescription>
         </div>
       </CardHeader>
@@ -23,31 +26,42 @@ export function ManagerTrackingTable({ topApprover, topPending }: Props) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b text-muted-foreground">
-                <th className="text-left py-2 font-medium">Manager</th>
-                <th className="text-left py-2 font-medium">Department</th>
-                <th className="text-center py-2 font-medium">Approved</th>
-                <th className="text-center py-2 font-medium">Pending</th>
-                <th className="text-center py-2 font-medium">Rejected</th>
-                <th className="text-center py-2 font-medium">Avg. Time (hrs)</th>
+              {/* Cleaned up header typography */}
+              <tr className="border-b border-slate-100 text-slate-400 uppercase text-[10px] font-bold tracking-widest">
+                <th className="text-left py-3 px-2">Manager</th>
+                <th className="text-left py-3 px-2">Department</th>
+                <th className="text-center py-3 px-2">Approved</th>
+                <th className="text-center py-3 px-2">Pending</th>
+                <th className="text-center py-3 px-2">Rejected</th>
+                <th className="text-right py-3 px-2">Avg. Time</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-50">
               {managerTrackingData.map((m) => (
-                <tr key={m.name} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="py-3 font-medium">{m.name}</td>
-                  <td className="py-3 text-muted-foreground">{m.department}</td>
-                  <td className="py-3 text-center">
-                    <Badge variant="secondary" className="bg-success/10 text-success">{m.approved}</Badge>
+                <tr key={m.name} className="group hover:bg-slate-50/80 transition-colors">
+                  <td className="py-4 px-2 font-semibold text-slate-700">{m.name}</td>
+                  <td className="py-4 px-2 text-slate-500 font-medium">{m.department}</td>
+                  <td className="py-4 px-2 text-center">
+                    {/* Replaced 'success' with 'emerald' for better Tailwind support */}
+                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 shadow-none hover:bg-emerald-100 font-bold px-3">
+                      {m.approved}
+                    </Badge>
                   </td>
-                  <td className="py-3 text-center">
-                    <Badge variant={m.pending > 3 ? 'destructive' : 'secondary'}>{m.pending}</Badge>
+                  <td className="py-4 px-2 text-center">
+                    <Badge 
+                      variant={m.pending > 3 ? 'destructive' : 'secondary'}
+                      className={m.pending > 3 ? "font-bold" : "bg-slate-100 text-slate-600 border-slate-200 font-bold px-3"}
+                    >
+                      {m.pending}
+                    </Badge>
                   </td>
-                  <td className="py-3 text-center">
-                    <Badge variant="outline">{m.rejected}</Badge>
+                  <td className="py-4 px-2 text-center">
+                    <Badge variant="outline" className="text-slate-400 border-slate-200 font-medium px-3">
+                      {m.rejected}
+                    </Badge>
                   </td>
-                  <td className="py-3 text-center">
-                    <span className={m.avgApprovalHrs > 6 ? 'text-warning font-medium' : 'text-muted-foreground'}>
+                  <td className="py-4 px-2 text-right">
+                    <span className={`text-xs font-bold ${m.avgApprovalHrs > 6 ? 'text-amber-600' : 'text-slate-500'}`}>
                       {m.avgApprovalHrs}h
                     </span>
                   </td>

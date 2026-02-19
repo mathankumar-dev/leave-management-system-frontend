@@ -136,6 +136,40 @@ export const rejectedLeaveSummary: RejectedLeaveSummary[] = [
   },
 ];
 
+// export const monthlyTrendData = [
+//   { month: "Jan", leaves: 10 },
+//   { month: "Feb", leaves: 20 },
+//   { month: "Mar", leaves: 30 },
+//   { month: "Apr", leaves: 15 },
+// ];
+
+// 1. Department-wise Leaves Data (from your screenshot)
+export const departmentData = [
+  { name: 'Engineering', leaves: 18 },
+  { name: 'Product', leaves: 9 },
+  { name: 'Design', leaves: 5 },
+  { name: 'Marketing', leaves: 11 },
+  { name: 'Sales', leaves: 10 },
+  { name: 'HR', leaves: 4 },
+];
+
+// 2. Leave Type Distribution (from your screenshot)
+export const leaveTypeData = [
+  { name: 'Casual', value: 36, color: '#8b5cf6' }, 
+  { name: 'Sick', value: 19, color: '#ef4444' },   
+  { name: 'Earned', value: 29, color: '#3b82f6' }, 
+  { name: 'Comp Off', value: 10, color: '#10b981' }, 
+  { name: 'Loss of Pay', value: 6, color: '#64748b' }, 
+];
+
+// 3. Monthly Trend Data (replicated from your trend chart)
+export const monthlyTrendData = [
+  { month: 'Jan', applied: 20, approved: 15, rejected: 2 },
+  { month: 'Feb', applied: 35, approved: 28, rejected: 5 },
+  { month: 'Mar', applied: 25, approved: 20, rejected: 3 },
+  // ... and so on for the year
+];
+
 
 // ... and the rest of your mock objects (lowBalanceEmployees, patterns, etc.)
 
@@ -158,13 +192,6 @@ export const rejectedLeaveSummary: RejectedLeaveSummary[] = [
 //   { name: "Casual", value: 40 },
 //   { name: "Sick", value: 30 },
 //   { name: "Earned", value: 30 },
-// ];
-
-// export const monthlyTrendData = [
-//   { month: "Jan", leaves: 10 },
-//   { month: "Feb", leaves: 20 },
-//   { month: "Mar", leaves: 30 },
-//   { month: "Apr", leaves: 15 },
 // ];
 
 // export const managerTrackingData: ManagerTracking[] = [

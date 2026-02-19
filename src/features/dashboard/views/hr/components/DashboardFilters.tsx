@@ -22,12 +22,14 @@ interface DashboardFiltersProps {
 
 export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProps) {
   return (
-    <Card className="border-none shadow-sm bg-card/60 backdrop-blur-md">
-      <CardContent className="py-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2 pr-2 border-r border-border/50">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <Card className="border border-slate-200 shadow-sm bg-white">
+      <CardContent className="py-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 pr-3 border-r border-slate-200">
+            <div className="bg-slate-100 p-1.5 rounded-md">
+                <Filter className="h-3.5 w-3.5 text-slate-500" />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Filters
             </span>
           </div>

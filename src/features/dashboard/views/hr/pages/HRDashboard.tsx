@@ -15,29 +15,40 @@ export function HRDashboard() {
   const { filters, updateFilter, stats } = useHRDashboard();
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <DashboardFilters  filters = {filters} updateFilter={updateFilter} />
+    <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 space-y-6 animate-fade-in">
+      <div className="flex flex-col mb-2">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back, Priya</h1>
+        <p className="text-sm text-slate-500">HR analytics and workforce insights</p>
+      </div>
+
+      <DashboardFilters filters={filters} updateFilter={updateFilter} />
       
       <SummarySection />
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* <LeaveInsights /> */}
-      </div>
-
+      {/* 3-Column Chart Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <DepartmentChart topDepartment={stats.topDepartment} />
-        <LeaveTypeChart />
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+            <DepartmentChart topDepartment={stats.topDepartment} />
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+            <LeaveTypeChart />
+        </div>
         <MonthlyTrendChart />
       </div>
 
-      <ManagerTrackingTable 
-        topApprover={stats.topApprover} 
-        topPending={stats.topPending} 
-      />
+      {/* Table Section */}
+      <div className="grid grid-cols-1 gap-6">
+          <ManagerTrackingTable 
+            topApprover={stats.topApprover} 
+            topPending={stats.topPending} 
+          />
+      </div>
 
       <MonitoringSection />
       
-      <QuickStatsRow />
+      <div className="pt-4 border-t border-slate-200">
+        <QuickStatsRow />
+      </div>
       
       <ExportActions />
     </div>
