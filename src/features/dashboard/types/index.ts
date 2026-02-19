@@ -120,3 +120,17 @@ export interface ProfileData {
   github?: string;
   skills: string[];
 }
+
+
+// // HR 
+// export interface DepartmentData {
+//   name: string;
+//   leaves: number;
+// }
+
+// export interface ManagerTracking {
+//   name: string;
+//   approved: number;
+//   pending: number;
+//   rejected: number;
+// }

@@ -32,15 +32,15 @@ function Sidebar({
   const role = user?.role || "Employee";
 
   const tabs = [
-    { name: "Dashboard", icon: <FaThLarge />, roles: ["Employee", "Manager"] },
+    { name: "Dashboard", icon: <FaThLarge />, roles: ["Employee", "Manager","HR"] },
     { name: "Apply Leave", icon: <FaPlus />, roles: ["Employee", "Manager"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager","HR"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: ["Employee"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["Manager", "HR Admin"] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["Manager", "Admin" , "HR"] },
     { name: "Notifications", icon: <FaBell />, roles: ["Employee", "Manager"] },
-    { name: "Employees", icon: <FaUsers />, roles: ["Manager", "HR Admin"] },
-    { name: "Leave Config", icon: <FaCog />, roles: ["HR Admin"] },
-    { name: "Reports", icon: <FaChartBar />, roles: ["HR Admin"] },
+    { name: "Employees", icon: <FaUsers />, roles: ["Manager", "Admin"] },
+    { name: "Leave Config", icon: <FaCog />, roles: ["Admin"] },
+    { name: "Reports", icon: <FaChartBar />, roles: ["Admin"] },
     { name: "Pending Requests", icon: <FaCog />, roles: ["Manager"] },
   ];
 
