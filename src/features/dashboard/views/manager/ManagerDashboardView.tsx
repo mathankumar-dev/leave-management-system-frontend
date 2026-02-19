@@ -139,60 +139,6 @@ const ManagerDashboardView: React.FC = () => {
             </AnimatePresence>
           </div>
         </div>
-
-        {/* 3. SIDEBAR STATS - Now appears first on mobile for quick overview */}
-        <div className="lg:col-span-4 space-y-6 order-1 lg:order-2">
-          
-          {/* Capacity Card */}
-          <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
-            <div className="flex justify-between items-start mb-4">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Team Capacity</h4>
-              <FaUsers className="text-slate-300" />
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tighter">84%</span>
-              <span className="text-xs text-emerald-600 font-bold">+2% from last week</span>
-            </div>
-            <div className="mt-4 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-slate-900 w-[84%]" />
-            </div>
-          </div>
-
-          {/* Quick Metrics - Grid on mobile to save vertical space */}
-          <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
-             <div className="bg-slate-50 border border-slate-200 p-4 rounded-md flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Out Today</p>
-                  <p className="text-sm sm:text-lg font-bold">04 Members</p>
-                </div>
-                <FaClock className="text-slate-300 hidden sm:block" />
-             </div>
-             
-             <div className="bg-rose-50 border border-rose-100 p-4 rounded-md flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                <div>
-                  <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Conflicts</p>
-                  <p className="text-sm sm:text-lg font-bold text-rose-700">03 Alerts</p>
-                </div>
-                <FaExclamationTriangle className="text-rose-300 hidden sm:block" />
-             </div>
-          </div>
-
-          {/* Activity Feed */}
-          <div className="bg-white border border-slate-200 rounded-md p-5">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Upcoming Schedule</h4>
-            <div className="space-y-4">
-               {[1, 2, 3].map((_, i) => (
-                 <div key={i} className="flex items-start gap-3 border-l-2 border-indigo-500 pl-3">
-                    <div className="flex-1">
-                      <p className="text-xs font-bold">System Maintenance</p>
-                      <p className="text-[10px] text-slate-500">Starts Feb 05 • 3 Members Away</p>
-                    </div>
-                 </div>
-               ))}
-            </div>
-          </div>
-
-        </div>
       </div>
     </div>
   );

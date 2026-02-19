@@ -12,11 +12,10 @@ import {
 import BaseProfile from "../../layout/BaseProfile";
 import type { ProfileData } from "../../types";
 import { MOCK_PROFILE } from "../../../../mockData";
-import { useAuth } from "../../../auth/hooks/useAuth";
 import { getProfile } from "../../../auth/services/AuthService";
 
 const EmployeeProfile: React.FC = () => {
-  const { user } = useAuth();
+  
 
   const [profile, setProfile] = useState<ProfileData>(MOCK_PROFILE);
   const [originalProfile, setOriginalProfile] =
