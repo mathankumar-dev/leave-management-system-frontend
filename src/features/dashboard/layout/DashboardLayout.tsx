@@ -24,6 +24,7 @@ import ManagerDashboardView from "../views/manager/ManagerDashboardView";
 import TeamCalendarView from "../views/manager/TeamCalendarView";
 import ApprovalsView from "../views/manager/ApprovalsView";
 import ManagerProfile from "../views/manager/ManagerProfile";
+import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -40,8 +41,35 @@ const DashboardLayout: React.FC = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+
   const userRole = user?.role || ROLES.EMPLOYEE;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+
+  useEffect(() => {
+    const hasBeenPrompted = sessionStorage.getItem("passwordPromptShown");
+
+    // Logic: If user exists, and hasn't been prompted this session
+    // (Optional: check user.mustChangePassword if your backend provides it)
+    if (user && !hasBeenPrompted) {
+      const timer = setTimeout(() => {
+        setShowPasswordPrompt(true);
+      }, 2000); // Delay by 2 seconds for a better UX
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
+  const handleDismissPrompt = () => {
+    setShowPasswordPrompt(false);
+    sessionStorage.setItem("passwordPromptShown", "true");
+  };
+
+  const handleGoToSettings = () => {
+    setShowPasswordPrompt(false);
+    sessionStorage.setItem("passwordPromptShown", "true");
+    // setActiveTab("Profile"); // Navigate to Profile tab
+  };
 
   /* ---------------- ADMIN DEFAULT REDIRECT ---------------- */
   useEffect(() => {
@@ -112,6 +140,13 @@ const DashboardLayout: React.FC = () => {
   /* ---------------- LAYOUT ---------------- */
   return (
     <div className="flex h-screen bg-neutral-25 overflow-hidden">
+
+      {showPasswordPrompt && (
+        <ChangePasswordDialog
+          onClose={handleDismissPrompt}
+          onGoToSettings={handleGoToSettings}
+        />
+      )}
       {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
