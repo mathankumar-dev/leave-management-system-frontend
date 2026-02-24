@@ -4,6 +4,19 @@
   --font-internal: "Inter", "Figtree", "SF Pro Display", "Roboto", system-ui, sans-serif;
 }
 
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
+
 @theme {
   /* ACCESSIBILITY SIZES 
   --font-size-base: 1rem; 

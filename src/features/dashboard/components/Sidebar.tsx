@@ -52,7 +52,7 @@ function Sidebar({
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-neutral-950/40 backdrop-blur-sm z-35 md:hidden"
+          className="fixed inset-0 bg-neutral-950/40 backdrop-blur-sm z-35 md:hidden no-scrollbar"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -61,7 +61,7 @@ function Sidebar({
       <aside
         className={`fixed top-0 left-0 z-40 h-screen w-80 bg-neutral-800
         p-6 border-r border-neutral-800 flex flex-col
-        transition-transform duration-300 ease-in-out
+        transition-transform duration-300 ease-in-out no-scrollbar
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         {/* Logo */}
@@ -106,7 +106,7 @@ function Sidebar({
         </div>
 
         {/* Menu Section */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+        <div className="flex-1 overflow-y-auto custom-scrollbar no-scrollbar pr-1">
           <p className="px-4 text-[10px] font-black text-neutral-600 uppercase tracking-widest mb-4">
             Menu
           </p>
@@ -119,7 +119,7 @@ function Sidebar({
                 <li
                   key={tab.name}
                   onClick={() => setActiveTab(tab.name)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${activeTab === tab.name
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all  ${activeTab === tab.name
                     ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25"
                     // CHANGED: text-neutral-300 provides much better contrast than 400/500
                     : "text-neutral-300 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
