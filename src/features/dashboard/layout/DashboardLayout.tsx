@@ -25,6 +25,7 @@ import TeamCalendarView from "../views/manager/TeamCalendarView";
 import ApprovalsView from "../views/manager/ApprovalsView";
 import ManagerProfile from "../views/manager/ManagerProfile";
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
+import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -122,8 +123,8 @@ const DashboardLayout: React.FC = () => {
       case "My Leaves":
         return <MyLeavesView />;
 
-      case "Pending Requests":
-        return <ApprovalsView />;
+      case "Pending Approvals":
+        return <PendingApprovalsView />;
 
       case "Notifications":
         return <NotificationsView />;

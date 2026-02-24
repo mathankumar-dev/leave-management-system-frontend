@@ -3,7 +3,7 @@ import {
   FaChevronLeft,
   FaSignOutAlt,
   FaThLarge,
-  FaPlus, 
+  FaPlus,
   FaListUl,
   FaCalendarAlt,
   FaBell,
@@ -33,16 +33,16 @@ function Sidebar({
   const role = user?.role || "Employee";
 
   const tabs = [
-    { name: "Dashboard", icon: <FaThLarge />, roles: ["Employee", "Manager","HR"] },
+    { name: "Dashboard", icon: <FaThLarge />, roles: ["Employee", "Manager", "HR"] },
     { name: "Apply Leave", icon: <FaPlus />, roles: ["Employee", "Manager"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager","HR"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager", "HR"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: ["Employee"] },
     { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["Manager", "HR"] },
     { name: "Notifications", icon: <FaBell />, roles: ["Employee", "Manager"] },
     { name: "Employees", icon: <FaUsers />, roles: ["Manager", "HR"] },
     { name: "Leave Config", icon: <FaCog />, roles: ["HR"] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
-    { name: "Pending Requests", icon: <FaCog />, roles: ["Manager"] },
+    { name: "Pending Approvals", icon: <FaCog />, roles: ["Manager"] },
   ];
 
   const visibleTabs = tabs.filter((tab) => tab.roles.includes(role));
@@ -120,9 +120,9 @@ function Sidebar({
                   key={tab.name}
                   onClick={() => setActiveTab(tab.name)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${activeTab === tab.name
-                      ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25"
-                      // CHANGED: text-neutral-300 provides much better contrast than 400/500
-                      : "text-neutral-300 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
+                    ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25"
+                    // CHANGED: text-neutral-300 provides much better contrast than 400/500
+                    : "text-neutral-300 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
                     }`}
                 >
                   {/* icon contrast fix */}
