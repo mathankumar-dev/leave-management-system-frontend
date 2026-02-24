@@ -1,6 +1,10 @@
 import { useState, useCallback } from "react";
 import { dashboardService } from "../services/dashboardService";
 import { dashboardMockService } from "../services/dashboardMockService";
+import { useMemo } from "react";
+import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
+
+
 import type {
   ApprovalRequest,
   LeaveRecord,
@@ -94,7 +98,7 @@ export const useDashboard = () => {
     }
   };
 
-  /* ================= HR STATS ================= */
+   /* ================= Admin STATS ================= */
 
   
 
@@ -109,7 +113,6 @@ export const useDashboard = () => {
       setLoading(false);
     }
   }, []);
-
   /* ================= NOTIFICATIONS ================= */
 
   const fetchNotifications = useCallback(async (): Promise<Notification[]> => {
@@ -233,6 +236,36 @@ export const useDashboard = () => {
     },
     []
   );
+  // ================= HR ===========================
+  // const topDepartment = useMemo(() => {
+  //   return departmentLeaveData.reduce((max, d) =>
+  //     d.leaves > max.leaves ? d : max
+  //   );
+  // }, []);
+
+  // const topApprover = useMemo(() => {
+  //   return managerTrackingData.reduce((max, m) =>
+  //     m.approved > max.approved ? m : max
+  //   );
+  // }, []);
+
+    const [filters, setFilters] = useState({
+    month: 'all',
+    year: '2026',
+    department: 'all',
+    leaveType: 'all',
+    manager: 'all',
+  });
+
+  const updateFilter = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const stats = useMemo(() => ({
+    topDepartment: departmentLeaveData.reduce((max, d) => (d.leaves > max.leaves ? d : max), departmentLeaveData[0]),
+    topApprover: managerTrackingData.reduce((max, m) => (m.approved > max.approved ? m : max), managerTrackingData[0]),
+    topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
+  }), []);
 
   /* ================= EXPORT ================= */
 
@@ -254,5 +287,8 @@ export const useDashboard = () => {
     addLeaveType,
     removeLeaveType,
     fetchTeamSchedule,
+    // topDepartment,
+    // topApprover,
+    filters, updateFilter, stats 
   };
 };
