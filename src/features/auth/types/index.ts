@@ -2,7 +2,7 @@ export type UserRole = "Employee" | "Manager" | "HR" | "Admin";
 
 export interface LoginCredentials {
   email: string;
-  password?: string;
+  password: string;
 }
 
 export interface AuthResponse {
@@ -14,6 +14,7 @@ export interface AuthResponse {
     role: UserRole;
     department: string;
   };
+  role: string
 }
 
 export interface RegisterCredentials {

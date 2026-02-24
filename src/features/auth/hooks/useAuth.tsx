@@ -98,30 +98,32 @@
 //   return context;
 // };
 
-// import React, { createContext, useContext, useState, useEffect } from "react";
-// import { jwtDecode } from "jwt-decode";
-// import Cookies from "js-cookie";
-// import type { AuthResponse } from "../types";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
+import type { AuthResponse } from "../types";
 
-// interface JwtPayload {
-//   exp: number;
-// }
+interface JwtPayload {
+  exp: number;
+}
 
-// interface AuthContextType {
-//   user: AuthResponse["user"] | null;
-//   token: string | null;
-//   login: (data: AuthResponse) => void;
-//   logout: () => void;
-//   isAuthenticated: boolean;
-//   isLoading: boolean;
-// }
+interface AuthContextType {
+  user: AuthResponse["user"] | null;
+  token: string | null;
+  login: (data: AuthResponse) => void;
+  logout: () => void;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
 
-// const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 //   const [user, setUser] = useState<AuthResponse["user"] | null>(null);
 //   const [token, setToken] = useState<string | null>(null);
 //   const [isLoading, setIsLoading] = useState(true);
+//   const [role, setRole] = useState<string | null>(null);
+
 
 //   const logout = () => {
 //     Cookies.remove("lms_token");
@@ -164,7 +166,8 @@
 
 //     Cookies.set("lms_token", data.token, { expires: expiryDate });
 //     Cookies.set("lms_user", JSON.stringify(data.user), { expires: expiryDate });
-
+//     Cookies.set("lms_user_role", data.role, { expires: expiryDate });
+//     console.log(data.user);
 //     setUser(data.user);
 //     setToken(data.token);
 
@@ -187,94 +190,67 @@
 //   );
 // };
 
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (!context) throw new Error("useAuth must be used within AuthProvider");
-//   return context;
-// };
-
-import React, { createContext, useContext, useState, useEffect } from "react";
-import Cookies from "js-cookie";
-import type { AuthResponse } from "../types";
-import { getProfile } from "../services/AuthService";
-
-
-interface AuthContextType {
-  user: AuthResponse["user"] | null;
-  token: string | null;
-  login: (data: AuthResponse) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthResponse["user"] | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  /**
-   * LOGOUT
-   */
   const logout = () => {
     Cookies.remove("lms_token");
+    Cookies.remove("lms_user");
+    Cookies.remove("lms_user_role");
     setUser(null);
     setToken(null);
   };
 
-  /**
-   * LOGIN
-   */
-  const login = async (data: AuthResponse) => {
-    // Save token in cookie (15 minutes)
-    Cookies.set("lms_token", data.token, { expires: 1 / 96 }); 
-    // 1/96 day ≈ 15 minutes
-
-    setToken(data.token);
-
-    // Fetch fresh profile from backend
-    const profile = await getProfile();
-    setUser(profile);
-  };
-
-  /**
-   * RESTORE SESSION ON REFRESH
-   */
   useEffect(() => {
-    const savedToken = Cookies.get("lms_token");
+    const initAuth = () => {
+      const savedUser = Cookies.get("lms_user");
+      const savedToken = Cookies.get("lms_token");
 
-    if (!savedToken) {
+      if (savedUser && savedToken) {
+        try {
+          const decoded = jwtDecode<JwtPayload>(savedToken);
+          // Check if token is expired (add a 10-second buffer for safety)
+          const isExpired = decoded.exp * 1000 < Date.now() + 10000;
+
+          if (isExpired) {
+            logout();
+          } else {
+            setUser(JSON.parse(savedUser));
+            setToken(savedToken);
+            
+            // Instead of a risky setTimeout, we just let the token 
+            // naturally fail on the next API call or next refresh.
+          }
+        } catch (error) {
+          logout();
+        }
+      }
       setIsLoading(false);
-      return;
-    }
+    };
 
-    setToken(savedToken);
-
-    getProfile()
-      .then((profile) => {
-        setUser(profile);
-      })
-      .catch(() => {
-        logout();
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    initAuth();
   }, []);
 
+  const login = (data: AuthResponse) => {
+    try {
+      const decoded = jwtDecode<JwtPayload>(data.token);
+      const expiryDate = new Date(decoded.exp * 1000);
+
+      // Save to cookies with the actual JWT expiration date
+      Cookies.set("lms_token", data.token, { expires: expiryDate, secure: true, sameSite: 'strict' });
+      Cookies.set("lms_user", JSON.stringify(data.user), { expires: expiryDate });
+      
+      setUser(data.user);
+      setToken(data.token);
+    } catch (e) {
+      console.error("Login failed during decoding", e);
+    }
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        login,
-        logout,
-        isAuthenticated: !!user,
-        isLoading,
-      }}
-    >
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -282,8 +258,103 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };
+
+
+// import React, { createContext, useContext, useState, useEffect } from "react";
+// import Cookies from "js-cookie";
+// import type { AuthResponse } from "../types";
+// import { getProfile } from "../services/AuthService";
+
+
+// interface AuthContextType {
+//   user: AuthResponse["user"] | null;
+//   token: string | null;
+//   login: (data: AuthResponse) => Promise<void>;
+//   logout: () => void;
+//   isAuthenticated: boolean;
+//   isLoading: boolean;
+// }
+
+// const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+//   const [user, setUser] = useState<AuthResponse["user"] | null>(null);
+//   const [token, setToken] = useState<string | null>(null);
+  
+//   const [isLoading, setIsLoading] = useState(true);
+
+//   /**
+//    * LOGOUT
+//    */
+//   const logout = () => {
+//     Cookies.remove("lms_token");
+//     setUser(null);
+//     setToken(null);
+//   };
+
+//   /**
+//    * LOGIN
+//    */
+//   const login = async (data: AuthResponse) => {
+//     // Save token in cookie (15 minutes)
+//     Cookies.set("lms_token", data.token, { expires: 1 / 96 }); 
+//     // 1/96 day ≈ 15 minutes
+
+//     setToken(data.token);
+
+//     // Fetch fresh profile from backend
+//     const profile = await getProfile();
+//     setUser(profile);
+//   };
+
+//   /**
+//    * RESTORE SESSION ON REFRESH
+//    */
+//   useEffect(() => {
+//     const savedToken = Cookies.get("lms_token");
+
+//     if (!savedToken) {
+//       setIsLoading(false);
+//       return;
+//     }
+
+//     setToken(savedToken);
+
+//     getProfile()
+//       .then((profile) => {
+//         setUser(profile);
+//       })
+//       .catch(() => {
+//         logout();
+//       })
+//       .finally(() => {
+//         setIsLoading(false);
+//       });
+//   }, []);
+
+//   return (
+//     <AuthContext.Provider
+//       value={{
+//         user,
+//         token,
+//         login,
+//         logout,
+//         isAuthenticated: !!user,
+//         isLoading,
+//       }}
+//     >
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// };
+
+// export const useAuth = () => {
+//   const context = useContext(AuthContext);
+//   if (!context) {
+//     throw new Error("useAuth must be used within AuthProvider");
+//   }
+//   return context;
+// };
