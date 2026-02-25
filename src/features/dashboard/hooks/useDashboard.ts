@@ -253,6 +253,21 @@ const fetchDashboard = useCallback(async () => {
     },
     []
   );
+
+  // Add this to your useDashboard.ts
+const fetchManagerDashboard = useCallback(async (id: number) => {
+  setLoading(true);
+  try {
+    // Calling the service with the dynamic ID
+    const response = await service.getManagerDashboard(id); 
+    return response;
+  } catch (err: any) {
+    setError(err.message || "Failed to fetch manager data");
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
   // ================= HR ===========================
   // const topDepartment = useMemo(() => {
   //   return departmentLeaveData.reduce((max, d) =>
@@ -294,6 +309,7 @@ const fetchDashboard = useCallback(async () => {
     error,
     setError,
     fetchDashboard,
+    fetchManagerDashboard,
     fetchApprovals,
     processApproval,
     fetchEmployees,

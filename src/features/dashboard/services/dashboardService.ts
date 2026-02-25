@@ -33,7 +33,14 @@ export const dashboardService = {
     getEmpDashboard: async (employeeId : number) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
-      console.log(response.data);
+      // console.log(response.data);
+    return response.data;
+
+  },
+      getManagerDashboard: async (managerId : number) => {
+
+    const response = await api.get(`/dashboard/manager/summary/${managerId}`);
+      // console.log(response.data);
     return response.data;
 
   },

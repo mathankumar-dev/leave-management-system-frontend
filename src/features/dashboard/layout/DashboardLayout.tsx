@@ -29,37 +29,39 @@ import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
-  ADMIN: "Admin",
+  ADMIN: "ADMIN",
   HR: "HR",
-  MANAGER: "Manager",
-  EMPLOYEE: "Employee",
+  MANAGER: "MANAGER",
+  EMPLOYEE: "EMPLOYEE",
 };
 
 
 const DashboardLayout: React.FC = () => {
   const { user, logout } = useAuth();
 
+
+  const userRole = user?.role;
+  const userId = user?.id;
+
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
 
-  const userRole = user?.role || ROLES.EMPLOYEE;
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
 
   useEffect(() => {
     const hasBeenPrompted = sessionStorage.getItem("passwordPromptShown");
 
-    // Logic: If user exists, and hasn't been prompted this session
-    // (Optional: check user.mustChangePassword if your backend provides it)
-    if (user && !hasBeenPrompted) {
+    if (userId && !hasBeenPrompted) {
       const timer = setTimeout(() => {
         setShowPasswordPrompt(true);
-      }, 2000); // Delay by 2 seconds for a better UX
+      }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [user]);
+  }, [userId]);
 
   const handleDismissPrompt = () => {
     setShowPasswordPrompt(false);
@@ -94,10 +96,10 @@ const DashboardLayout: React.FC = () => {
     switch (activeTab) {
       case "Dashboard":
         if (userRole === ROLES.MANAGER) return <ManagerDashboardView />;
-        if (userRole === ROLES.EMPLOYEE)
-          return <DashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
-        return <EmployeesView />;
+        if (userRole === ROLES.ADMIN) return <EmployeesView />;
+
+        return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
         if (userRole === ROLES.ADMIN) return <LeaveReportDashboard />;
@@ -152,7 +154,7 @@ const DashboardLayout: React.FC = () => {
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        user={user}
+
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
         onLogout={logout}
@@ -162,7 +164,7 @@ const DashboardLayout: React.FC = () => {
       <div className="flex-1 flex flex-col md:ml-80 h-full min-w-0 transition-all duration-300">
         <Topbar
           activeTab={activeTab}
-          user={user}
+
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={logout}
           setActiveTab={setActiveTab}

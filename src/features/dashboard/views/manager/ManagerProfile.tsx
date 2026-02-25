@@ -6,7 +6,6 @@ import { FaUserShield, FaUsers, FaChartLine, FaEnvelopeOpenText } from "react-ic
 import BaseProfile from "../../layout/BaseProfile";
 import { MOCK_PROFILE } from "../../../../mockData";
 import type { ProfileData } from "../../types";
-import { getProfile } from "../../../auth/services/AuthService";
 
 
 
@@ -23,27 +22,27 @@ const ManagerProfile: React.FC = () => {
    * When user loads from backend (via /me),
    * merge it into profile state.
    */
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const backendProfile = await getProfile();
+  // useEffect(() => {
+  //   const fetchProfile = async () => {
+  //     try {
+  //       const backendProfile = await getProfile();
 
-        const updatedProfile: ProfileData = {
-          ...MOCK_PROFILE,
-          ...backendProfile,
-        };
+  //       const updatedProfile: ProfileData = {
+  //         ...MOCK_PROFILE,
+  //         ...backendProfile,
+  //       };
 
-        setProfile(updatedProfile);
-        setOriginalProfile(updatedProfile);
-      } catch (error) {
-        console.error("Failed to load profile:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       setProfile(updatedProfile);
+  //       setOriginalProfile(updatedProfile);
+  //     } catch (error) {
+  //       console.error("Failed to load profile:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchProfile();
-  }, []);
+  //   fetchProfile();
+  // }, []);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setProfile({ ...profile, [name]: value });

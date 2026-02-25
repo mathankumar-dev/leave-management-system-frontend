@@ -11,11 +11,11 @@ import {
   FaCog,
   FaChartBar,
 } from "react-icons/fa";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  user: any;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   onLogout: () => void;
@@ -25,28 +25,33 @@ interface SidebarProps {
 function Sidebar({
   activeTab,
   setActiveTab,
-  user,
   isOpen,
   setIsOpen,
   onLogout,
 }: SidebarProps) {
-  const role = user?.role || "Employee";
+
+
+  const { user } = useAuth();
+
+  const userRole = user?.role;
+  const userName = user?.name;
 
   const tabs = [
-    { name: "Dashboard", icon: <FaThLarge />, roles: ["Employee", "Manager", "HR"] },
-    { name: "Apply Leave", icon: <FaPlus />, roles: ["Employee", "Manager"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager", "HR"] },
-    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["Employee"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["Manager", "HR"] },
-    { name: "Notifications", icon: <FaBell />, roles: ["Employee", "Manager"] },
-    { name: "Employees", icon: <FaUsers />, roles: ["Manager", "HR"] },
+    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
+    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
+    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE"] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "HR"] },
+    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER"] },
+    { name: "Employees", icon: <FaUsers />, roles: ["MANAGER", "HR"] },
     { name: "Leave Config", icon: <FaCog />, roles: ["HR"] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
-    { name: "Pending Approvals", icon: <FaCog />, roles: ["Manager"] },
+    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER"] },
   ];
 
-  const visibleTabs = tabs.filter((tab) => tab.roles.includes(role));
-
+  const visibleTabs = tabs.filter((tab) =>
+    userRole ? tab.roles.includes(userRole.toUpperCase()) : false
+  );
   return (
     <>
       {/* Mobile Overlay */}
@@ -92,15 +97,15 @@ function Sidebar({
           <div className="w-10 h-10 rounded-lg bg-primary-500
             flex items-center justify-center text-white font-bold text-sm
             shadow-lg shadow-primary-500/20">
-            {user?.name?.charAt(0) || "U"}
+            {userName?.charAt(0) || "U"}
           </div>
 
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">
-              {user?.name || "User"}
+              {userName|| "User"}
             </p>
             <p className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest">
-              {role}
+              {userRole}
             </p>
           </div>
         </div>

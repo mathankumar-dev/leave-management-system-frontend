@@ -12,10 +12,11 @@ import {
 import BaseProfile from "../../layout/BaseProfile";
 import type { ProfileData } from "../../types";
 import { MOCK_PROFILE } from "../../../../mockData";
-import { getProfile } from "../../../auth/services/AuthService";
+import { authService } from "../../../auth/services/AuthService";
+// import { getProfile } from "../../../auth/services/AuthService";
 
 const EmployeeProfile: React.FC = () => {
-  
+
 
   const [profile, setProfile] = useState<ProfileData>(MOCK_PROFILE);
   const [originalProfile, setOriginalProfile] =
@@ -24,31 +25,27 @@ const EmployeeProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
 
-  /**
-   * When user loads from backend (via /me),
-   * merge it into profile state.
-   */
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const backendProfile = await getProfile();
+  // useEffect(() => {
+  //   const fetchProfile = async () => {
+  //     try {
+  //       const backendProfile = await authService.getEmployeeProfile();
 
-        const updatedProfile: ProfileData = {
-          ...MOCK_PROFILE,
-          ...backendProfile,
-        };
+  //       const updatedProfile: ProfileData = {
+  //         ...MOCK_PROFILE,
+  //         ...backendProfile,
+  //       };
 
-        setProfile(updatedProfile);
-        setOriginalProfile(updatedProfile);
-      } catch (error) {
-        console.error("Failed to load profile:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       setProfile(updatedProfile);
+  //       setOriginalProfile(updatedProfile);
+  //     } catch (error) {
+  //       console.error("Failed to load profile:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchProfile();
-  }, []);
+  //   fetchProfile();
+  // }, []);
 
 
 
@@ -152,7 +149,7 @@ const EmployeeProfile: React.FC = () => {
                 </span>
               </div>
 
-              
+
             </div>
           </motion.div>
 
