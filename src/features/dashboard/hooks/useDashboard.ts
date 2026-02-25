@@ -1,9 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { dashboardService } from "../services/dashboardService";
-import { dashboardMockService } from "../services/dashboardMockService";
-import { useMemo } from "react";
-import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
 
+import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
 
 import type {
   ApprovalRequest,
@@ -13,6 +11,7 @@ import type {
   AuditLog,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
+import { dashboardMockService } from "../services/dashboardMockService";
 // import type { CalendarScope } from "../types/scope";
 
 // toggle this to false when the API is ready
@@ -37,6 +36,7 @@ export const useDashboard = () => {
     }
   }, []);
 
+  
   const processApproval = async (
     id: number,
     status: "Approved" | "Rejected",
@@ -72,7 +72,7 @@ export const useDashboard = () => {
   async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
     setLoading(true);
     try {
-      return await service.getHRStats(scope);
+      return await service.getLeaveSummary();
     } catch (err: any) {
       setError(err.message || "Failed to fetch HR analytics");
       return null;
@@ -223,7 +223,7 @@ export const useDashboard = () => {
       setLoading(true);
       try {
         const [calendar, members] = await Promise.all([
-          service.getCalendarLeaves(year, month, scope),
+          service.getCalendarLeaves(year, month),
           service.getAllEmployees(),
         ]);
         return { calendar, members };

@@ -14,7 +14,7 @@ export interface AuthResponse {
     role: UserRole;
     department: string;
   };
-  role: string
+  
 }
 
 export interface RegisterCredentials {

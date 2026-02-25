@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
-import { loginUser } from "../services/AuthService";
+import { loginUser } from "../pages/services/AuthService";
 import { useAuth } from "../hooks/useAuth";
 import type { LoginCredentials } from "../types";
 

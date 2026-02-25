@@ -234,20 +234,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (data: AuthResponse) => {
-    try {
+  try {
+    const isMock = data.token.startsWith("mock-token");
+
+    if (!isMock) {
+      // Decode real JWT tokens
       const decoded = jwtDecode<JwtPayload>(data.token);
       const expiryDate = new Date(decoded.exp * 1000);
 
-      // Save to cookies with the actual JWT expiration date
-      Cookies.set("lms_token", data.token, { expires: expiryDate, secure: true, sameSite: 'strict' });
+      // Save to cookies
+      Cookies.set("lms_token", data.token, { expires: expiryDate, secure: true, sameSite: "strict" });
       Cookies.set("lms_user", JSON.stringify(data.user), { expires: expiryDate });
-      
-      setUser(data.user);
-      setToken(data.token);
-    } catch (e) {
-      console.error("Login failed during decoding", e);
+      Cookies.set("lms_user_role", data.user.role, { expires: expiryDate });
+    } else {
+      // For mock tokens, just save without decoding
+      Cookies.set("lms_token", data.token);
+      Cookies.set("lms_user", JSON.stringify(data.user));
+      Cookies.set("lms_user_role", data.user.role);
+      console.log("Using mock token, skipping decode");
     }
-  };
+
+    setUser(data.user);
+    setToken(data.token);
+  } catch (e) {
+    console.error("Login failed during decoding", e);
+  }
+};
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, isLoading }}>

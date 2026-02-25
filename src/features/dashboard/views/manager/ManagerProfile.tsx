@@ -6,7 +6,7 @@ import { FaUserShield, FaUsers, FaChartLine, FaEnvelopeOpenText } from "react-ic
 import BaseProfile from "../../layout/BaseProfile";
 import { MOCK_PROFILE } from "../../../../mockData";
 import type { ProfileData } from "../../types";
-import { getProfile } from "../../../auth/services/AuthService";
+import { getProfile } from "../../../auth/pages/services/AuthService";
 
 
 

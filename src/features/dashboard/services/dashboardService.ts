@@ -156,6 +156,15 @@ export const dashboardService = {
   },
 
 
+  getDeptDistribution: async (): Promise<{ dept: string; count: number }[]> => {
+
+  const response = await api.get("/department-distribution");
+
+  return response.data;
+
+},
+
+
   // =============================
   // Notifications
   // =============================
