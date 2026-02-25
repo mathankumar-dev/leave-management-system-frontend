@@ -85,7 +85,7 @@ function Sidebar({
             setActiveTab("Profile");
             if (window.innerWidth < 768) setIsOpen(false);
           }}
-          className="bg-neutral-800/50 rounded-lg p-4 mb-8
+          className="bg-neutral-800 rounded-lg p-4 mb-8
           border border-neutral-700/30 flex items-center gap-3
           cursor-pointer hover:bg-neutral-800 transition-all shrink-0"
         >

@@ -30,6 +30,13 @@ export const dashboardService = {
     return response.data;
 
   },
+    getEmpDashboard: async (employeeId : number) => {
+
+    const response = await api.get(`/dashboard/${employeeId}`);
+      console.log(response.data);
+    return response.data;
+
+  },
 
 
   // =============================

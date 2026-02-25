@@ -16,8 +16,10 @@ import type { CalendarScope } from "../views/employee/CalendarView";
 // import type { CalendarScope } from "../types/scope";
 
 // toggle this to false when the API is ready
-const USE_MOCK = true;
-const service = USE_MOCK ? dashboardMockService : dashboardService;
+const USE_MOCK = false;
+// const service = USE_MOCK ? dashboardMockService : dashboardService;
+const service =  dashboardService;
+
 
 export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -82,6 +84,21 @@ export const useDashboard = () => {
   },
   []
 );
+
+const fetchDashboard = useCallback(async () => {
+  setLoading(true);
+  try {
+    const response = await service.getEmpDashboard(6);
+    console.log("API Response Success:", response); // Look for this in console
+    return response;
+  } catch (err: any) {
+    console.error("API ERROR DETAILS:", err.response?.data || err.message);
+    setError(err.message);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
 
   /* ================= LEAVES ================= */
@@ -269,10 +286,14 @@ export const useDashboard = () => {
 
   /* ================= EXPORT ================= */
 
+
+
+  
   return {
     loading,
     error,
     setError,
+    fetchDashboard,
     fetchApprovals,
     processApproval,
     fetchEmployees,

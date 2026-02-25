@@ -7,13 +7,7 @@ export interface LoginCredentials {
 
 export interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    department: string;
-  };
+  id : number;
   role: string
 }
 

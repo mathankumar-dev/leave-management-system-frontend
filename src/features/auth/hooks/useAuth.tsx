@@ -240,9 +240,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Save to cookies with the actual JWT expiration date
       Cookies.set("lms_token", data.token, { expires: expiryDate, secure: true, sameSite: 'strict' });
-      Cookies.set("lms_user", JSON.stringify(data.user), { expires: expiryDate });
+      Cookies.set("lms_user_id", JSON.stringify(data.id), { expires: expiryDate });
       
-      setUser(data.user);
+      setUser(data.id);
       setToken(data.token);
     } catch (e) {
       console.error("Login failed during decoding", e);
