@@ -1,102 +1,3 @@
-// import React, { createContext, useContext, useState, useEffect } from "react";
-// import {jwtDecode} from "jwt-decode";
-// import type { AuthResponse } from "../types";
-
-// interface JwtPayload {
-//   exp: number;
-// }
-
-// interface AuthContextType {
-//   user: AuthResponse["user"] | null;
-//   token: string | null;
-//   login: (data: AuthResponse) => void;
-//   logout: () => void;
-//   isAuthenticated: boolean;
-//   isLoading: boolean;
-// }
-
-// const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-//   const [user, setUser] = useState<AuthResponse["user"] | null>(null);
-//   const [token, setToken] = useState<string | null>(null);
-//   const [isLoading, setIsLoading] = useState(true);
-
-//   // Logout function
-//   const logout = () => {
-//     localStorage.removeItem("lms_token");
-//     localStorage.removeItem("lms_user");
-//     setUser(null);
-//     setToken(null);
-//   };
-
-//   // Restore session on refresh
-//   useEffect(() => {
-//     const savedUser = localStorage.getItem("lms_user");
-//     const savedToken = localStorage.getItem("lms_token");
-
-//     if (savedUser && savedToken) {
-//       try {
-//         const decoded = jwtDecode<JwtPayload>(savedToken);
-//         const isExpired = decoded.exp * 1000 < Date.now();
-
-//         if (isExpired) {
-//           logout();
-//         } else {
-//           setUser(JSON.parse(savedUser));
-//           setToken(savedToken);
-
-//           // Auto logout timer
-//           const expiryTime = decoded.exp * 1000 - Date.now();
-//           setTimeout(logout, expiryTime);
-//         }
-//       } catch (error) {
-//         console.error("Invalid token", error);
-//         logout();
-//       }
-//     }
-
-//     setIsLoading(false);
-//   }, []);
-
-//   // Login function
-//   const login = (data: AuthResponse) => {
-//     localStorage.setItem("lms_token", data.token);
-//     localStorage.setItem("lms_user", JSON.stringify(data.user));
-
-//     setUser(data.user);
-//     setToken(data.token);
-
-//     const decoded = jwtDecode<JwtPayload>(data.token);
-//     const expiryTime = decoded.exp * 1000 - Date.now();
-
-//     setTimeout(logout, expiryTime);
-//   };
-
-//   return (
-//     <AuthContext.Provider
-//       value={{
-//         user,
-//         token,
-//         login,
-//         logout,
-//         isAuthenticated: !!user,
-//         isLoading,
-//       }}
-//     >
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
-// // Custom hook
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (!context) {
-//     throw new Error("useAuth must be used within AuthProvider");
-//   }
-//   return context;
-// };
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
@@ -109,6 +10,7 @@ interface JwtPayload {
 
 interface AuthContextType {
   userId: AuthResponse["id"] | null;
+  userRole: string | null;
   token: string | null;
   login: (data: AuthResponse) => void;
   logout: () => void;
@@ -118,80 +20,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-//   const [user, setUser] = useState<AuthResponse["user"] | null>(null);
-//   const [token, setToken] = useState<string | null>(null);
-//   const [isLoading, setIsLoading] = useState(true);
-//   const [role, setRole] = useState<string | null>(null);
-
-
-//   const logout = () => {
-//     Cookies.remove("lms_token");
-//     Cookies.remove("lms_user");
-//     setUser(null);
-//     setToken(null);
-//   };
-
-//   useEffect(() => {
-//     const savedUser = Cookies.get("lms_user");
-//     const savedToken = Cookies.get("lms_token");
-
-//     if (savedUser && savedToken) {
-//       try {
-//         const decoded = jwtDecode<JwtPayload>(savedToken);
-//         const isExpired = decoded.exp * 1000 < Date.now();
-
-//         if (isExpired) {
-//           logout();
-//         } else {
-//           setUser(JSON.parse(savedUser));
-//           setToken(savedToken);
-
-//           const expiryTime = decoded.exp * 1000 - Date.now();
-//           setTimeout(logout, expiryTime);
-//         }
-//       } catch (error) {
-//         console.error("Invalid token", error);
-//         logout();
-//       }
-//     }
-
-//     setIsLoading(false);
-//   }, []);
-
-//   const login = (data: AuthResponse) => {
-//     const decoded = jwtDecode<JwtPayload>(data.token);
-//     const expiryTime = decoded.exp * 1000 - Date.now();
-//     const expiryDate = new Date(decoded.exp * 1000);
-
-//     Cookies.set("lms_token", data.token, { expires: expiryDate });
-//     Cookies.set("lms_user", JSON.stringify(data.user), { expires: expiryDate });
-//     Cookies.set("lms_user_role", data.role, { expires: expiryDate });
-//     console.log(data.user);
-//     setUser(data.user);
-//     setToken(data.token);
-
-//     setTimeout(logout, expiryTime);
-//   };
-
-//   return (
-//     <AuthContext.Provider
-//       value={{
-//         user,
-//         token,
-//         login,
-//         logout,
-//         isAuthenticated: !!user,
-//         isLoading,
-//       }}
-//     >
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// };
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userId, setUserId] = useState<AuthResponse["id"] | null>(null);
+const [userRole, setUserRole] = useState<string | null>(null); 
+
+
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -201,17 +34,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     Cookies.remove("lms_user_role");
     setUserId(null);
     setToken(null);
+    setUserRole(null);
   };
 
   useEffect(() => {
     const initAuth = () => {
       const savedUserId = Cookies.get("lms_user_Id");
       const savedToken = Cookies.get("lms_token");
-
-      if (savedUserId && savedToken) {
+      const savedRole = Cookies.get("lms_user_role");
+      if (savedUserId && savedToken && savedRole) {
         try {
           const decoded = jwtDecode<JwtPayload>(savedToken);
-          // Check if token is expired (add a 10-second buffer for safety)
+        
           const isExpired = decoded.exp * 1000 < Date.now() + 10000;
 
           if (isExpired) {
@@ -219,9 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             setUserId(JSON.parse(savedUserId));
             setToken(savedToken);
-            
-            // Instead of a risky setTimeout, we just let the token 
-            // naturally fail on the next API call or next refresh.
+            setUserRole(JSON.parse(savedRole));       
           }
         } catch (error) {
           logout();
@@ -240,17 +72,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Save to cookies with the actual JWT expiration date
       Cookies.set("lms_token", data.token, { expires: expiryDate, secure: true, sameSite: 'strict' });
-      Cookies.set("lms_user_id", JSON.stringify(data.id), { expires: expiryDate });
+      Cookies.set("lms_user_Id", JSON.stringify(data.id), { expires: expiryDate });
+      Cookies.set("lms_user_role", data.role, { expires: expiryDate });
       
       setUserId(data.id);
       setToken(data.token);
+      setUserRole(data.role);
     } catch (e) {
       console.error("Login failed during decoding", e);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ userId, token, login, logout, isAuthenticated: !!userId, isLoading }}>
+    <AuthContext.Provider value={{ userId, userRole, token, login, logout, isAuthenticated: !!userId, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
