@@ -8,7 +8,8 @@ export interface LoginCredentials {
 export interface AuthResponse {
   token: string;
   id : number;
-  role: string
+  role: string;
+
 }
 
 export interface RegisterCredentials {

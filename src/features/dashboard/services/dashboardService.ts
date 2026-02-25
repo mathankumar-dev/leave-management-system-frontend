@@ -32,7 +32,7 @@ export const dashboardService = {
   },
     getEmpDashboard: async (employeeId : number) => {
 
-    const response = await api.get(`/dashboard/${employeeId}`);
+    const response = await api.get(`/dashboard/employee/${employeeId}`);
       console.log(response.data);
     return response.data;
 

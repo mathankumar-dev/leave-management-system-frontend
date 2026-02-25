@@ -108,7 +108,7 @@ interface JwtPayload {
 }
 
 interface AuthContextType {
-  user: AuthResponse["user"] | null;
+  userId: AuthResponse["id"] | null;
   token: string | null;
   login: (data: AuthResponse) => void;
   logout: () => void;
@@ -191,24 +191,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthResponse["user"] | null>(null);
+  const [userId, setUserId] = useState<AuthResponse["id"] | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const logout = () => {
     Cookies.remove("lms_token");
-    Cookies.remove("lms_user");
+    Cookies.remove("lms_user_ID");
     Cookies.remove("lms_user_role");
-    setUser(null);
+    setUserId(null);
     setToken(null);
   };
 
   useEffect(() => {
     const initAuth = () => {
-      const savedUser = Cookies.get("lms_user");
+      const savedUserId = Cookies.get("lms_user_Id");
       const savedToken = Cookies.get("lms_token");
 
-      if (savedUser && savedToken) {
+      if (savedUserId && savedToken) {
         try {
           const decoded = jwtDecode<JwtPayload>(savedToken);
           // Check if token is expired (add a 10-second buffer for safety)
@@ -217,7 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (isExpired) {
             logout();
           } else {
-            setUser(JSON.parse(savedUser));
+            setUserId(JSON.parse(savedUserId));
             setToken(savedToken);
             
             // Instead of a risky setTimeout, we just let the token 
@@ -242,7 +242,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       Cookies.set("lms_token", data.token, { expires: expiryDate, secure: true, sameSite: 'strict' });
       Cookies.set("lms_user_id", JSON.stringify(data.id), { expires: expiryDate });
       
-      setUser(data.id);
+      setUserId(data.id);
       setToken(data.token);
     } catch (e) {
       console.error("Login failed during decoding", e);
@@ -250,7 +250,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, isLoading }}>
+    <AuthContext.Provider value={{ userId, token, login, logout, isAuthenticated: !!userId, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
