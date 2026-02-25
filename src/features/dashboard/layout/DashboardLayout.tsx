@@ -26,6 +26,7 @@ import ApprovalsView from "../views/manager/ApprovalsView";
 import ManagerProfile from "../views/manager/ManagerProfile";
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
+import TeamMembersView from "../views/manager/TeamMembersView";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -130,6 +131,8 @@ const DashboardLayout: React.FC = () => {
 
       case "Notifications":
         return <NotificationsView />;
+      case "Team Members":
+        return <TeamMembersView />;
 
       case "Profile":
         if (userRole === ROLES.MANAGER) return <ManagerProfile />;

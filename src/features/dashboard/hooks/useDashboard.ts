@@ -289,6 +289,23 @@ const fetchManagerDashboard = useCallback(async (id: number) => {
     manager: 'all',
   });
 
+
+  const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
+  setLoading(true);
+  try {
+    // Replace 'service' with your actual API service name
+    const response = await service.getTeamLeaveStats(managerId);
+    return response;
+  } catch (err: any) {
+    const message = err.message || "Failed to fetch team members";
+    setError(message);
+    console.error(message);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
   const updateFilter = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
@@ -320,6 +337,7 @@ const fetchManagerDashboard = useCallback(async (id: number) => {
     fetchAuditLogs,
     fetchCalendar,
     applyLeave,
+    getTeamMembers,
     fetchLeaveTypes,
     addLeaveType,
     removeLeaveType,

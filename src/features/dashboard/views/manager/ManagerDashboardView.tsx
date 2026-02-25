@@ -23,6 +23,7 @@ const ManagerDashboardView: React.FC = () => {
 
       fetchManagerDashboard(userId).then((data) => {
         if (data) {
+          console.log(data.pendingTeamRequests);
           setDashboardData(data);
           setApprovals(data.pendingTeamRequests || []);
         }

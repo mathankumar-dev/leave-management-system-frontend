@@ -37,25 +37,14 @@ export interface LeaveRecord {
 // ==============================
 
 export interface Employee {
-
-  id: number;
-
-  name: string;
-
-  email: string;
-
-  dept: string;
-
-  status: "ACTIVE" | "ON LEAVE";
-
-  role: "EMPLOYEE" | "MANAGER" | "HR";
-
-  designation: string;
-
-  initial: string;
-
-  color: string;
-
+  employeeId: number;
+  employeeName: string;
+  totalAllocated: number;   // Handles 0.0 or other decimals
+  totalUsed: number;
+  totalRemaining: number;
+  compOffBalance: number;
+  lopPercentage: number;
+  totalWorkingDays: number | null; // Use union type because your data shows 'null'
 }
 
 

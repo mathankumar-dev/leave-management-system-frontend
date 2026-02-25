@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import api from '../../../api/axiosInstance';
 
 import type {
@@ -37,7 +38,7 @@ export const dashboardService = {
     return response.data;
 
   },
-      getManagerDashboard: async (managerId : number) => {
+    getManagerDashboard: async (managerId : number) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
       // console.log(response.data);
@@ -45,6 +46,12 @@ export const dashboardService = {
 
   },
 
+  getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
+    // Note: Assuming your endpoint follows this pattern based on your summary URL
+    const response = await api.get(`/dashboard/manager/team-balances/${managerId}?year=2026`);
+    
+    // If your backend returns the array directly:
+    return response.data;},
 
   // =============================
   // Apply Leave
@@ -122,52 +129,55 @@ export const dashboardService = {
   // Employees
   // =============================
 
-  getAllEmployees: async (): Promise<Employee[]> => {
+  // getAllEmployees: async (): Promise<Employee[]> => {
 
-    const response = await api.get('/admin/employees');
-
-
-    return response.data.map((emp: any): Employee => ({
-
-      id: emp.id,
-
-      name: emp.name,
-
-      email: emp.email,
-
-      dept: emp.department ?? emp.dept,
-
-      role: emp.role,
-
-      status: emp.status,
-
-      designation: emp.designation ?? "",
+  //   const response = await api.get('/admin/employees');
 
 
-      initial: emp.name
+  //   return response.data.map((emp: any): Employee => ({
 
-        .split(" ")
+  //     id: emp.id,
 
-        .map((n: string) => n[0])
+  //     name: emp.name,
 
-        .join(""),
+  //     email: emp.email,
+
+  //     dept: emp.department ?? emp.dept,
+
+  //     role: emp.role,
+
+  //     status: emp.status,
+
+  //     designation: emp.designation ?? "",
 
 
-      color:
+  //     initial: emp.name
 
-        emp.role === "MANAGER"
+  //       .split(" ")
 
-          ? "bg-indigo-600"
+  //       .map((n: string) => n[0])
 
-          : emp.role === "HR"
+  //       .join(""),
 
-          ? "bg-rose-600"
 
-          : "bg-slate-500",
+  //     color:
 
-    }));
+  //       emp.role === "MANAGER"
 
-  },
+  //         ? "bg-indigo-600"
+
+  //         : emp.role === "HR"
+
+  //         ? "bg-rose-600"
+
+  //         : "bg-slate-500",
+
+  //   }));
+
+  // },
+
+
+  
 
 
   // =============================
