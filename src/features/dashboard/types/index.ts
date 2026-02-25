@@ -2,22 +2,33 @@
 // Leave Record
 // ==============================
 
+export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+export type LeaveType = "SICK" | "CASUAL" | "EARNED" | "COMP_OFF"; // Add types as per your backend
+
 export interface LeaveRecord {
-
   id: number;
-
-  type: string;
-
-  range: string;
-
+  employeeId: number;
+  leaveType: LeaveType;
+  halfDayType: string | null; // e.g., "FIRST_HALF" or "SECOND_HALF"
+  year: number;
+  startDate: string; // ISO Date string
+  endDate: string;   // ISO Date string
   days: number;
-
-  status: 'Approved' | 'Pending' | 'Rejected';
-
-  applied: string;
-
-  approvedBy: string;
-
+  reason: string;
+  status: LeaveStatus;
+  approvedBy: number | null;
+  approvedRole: string | null;
+  approvedAt: string | null;
+  carryForwardUsed: number;
+  compOffUsed: number;
+  lossOfPayApplied: number;
+  createdAt: string;
+  updatedAt: string;
+  escalated: boolean;
+  escalatedAt: string | null;
+  managerId: number;
+  version: number;
+  attachments: string[]; // Adjust type if attachments have a specific object structure
 }
 
 
@@ -26,25 +37,14 @@ export interface LeaveRecord {
 // ==============================
 
 export interface Employee {
-
-  id: number;
-
-  name: string;
-
-  email: string;
-
-  dept: string;
-
-  status: "ACTIVE" | "ON LEAVE";
-
-  role: "EMPLOYEE" | "MANAGER" | "HR";
-
-  designation: string;
-
-  initial: string;
-
-  color: string;
-
+  employeeId: number;
+  employeeName: string;
+  totalAllocated: number;   // Handles 0.0 or other decimals
+  totalUsed: number;
+  totalRemaining: number;
+  compOffBalance: number;
+  lopPercentage: number;
+  totalWorkingDays: number | null; // Use union type because your data shows 'null'
 }
 
 

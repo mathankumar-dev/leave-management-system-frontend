@@ -73,7 +73,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigate,
 }) => {
 
-  const { fetchStats, setError } = useDashboard();
+  const { fetchStats, fetchDashboard, setError } = useDashboard();
 
 
   // ✅ USE MOCK DATA AS DEFAULT
@@ -98,7 +98,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       setFetching(true);
 
-      const data = await fetchStats(scope);
+      // const data = await fetchStats(scope);
+      const data = await fetchDashboard();
+
+      console.log(data);
 
 
       // ✅ ONLY REPLACE IF API RETURNS DATA
@@ -125,7 +128,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
     }
 
-  }, [fetchStats, scope, setError]);
+    // }, [fetchStats, scope, setError]);
+  }, [fetchDashboard, setError]);
 
 
 

@@ -3,7 +3,7 @@ import {
   FaChevronLeft,
   FaSignOutAlt,
   FaThLarge,
-  FaPlus, 
+  FaPlus,
   FaListUl,
   FaCalendarAlt,
   FaBell,
@@ -11,11 +11,11 @@ import {
   FaCog,
   FaChartBar,
 } from "react-icons/fa";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  user: any;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   onLogout: () => void;
@@ -25,34 +25,40 @@ interface SidebarProps {
 function Sidebar({
   activeTab,
   setActiveTab,
-  user,
   isOpen,
   setIsOpen,
   onLogout,
 }: SidebarProps) {
-  const role = user?.role || "Employee";
+
+
+  const { user } = useAuth();
+
+  const userRole = user?.role;
+  const userName = user?.name;
 
   const tabs = [
-    { name: "Dashboard", icon: <FaThLarge />, roles: ["Employee", "Manager"] },
-    { name: "Apply Leave", icon: <FaPlus />, roles: ["Employee", "Manager"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager"] },
-    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["Employee"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["Manager", "HR"] },
-    { name: "Notifications", icon: <FaBell />, roles: ["Employee", "Manager"] },
-    { name: "Employees", icon: <FaUsers />, roles: ["Manager", "HR"] },
+    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
+    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
+    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE"] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "HR"] },
+    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER"] },
+    { name: "Employees", icon: <FaUsers />, roles: ["HR"] },
+    { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
     { name: "Leave Config", icon: <FaCog />, roles: ["HR"] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
-    { name: "Pending Requests", icon: <FaCog />, roles: ["Manager"] },
+    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER"] },
   ];
 
-  const visibleTabs = tabs.filter((tab) => tab.roles.includes(role));
-
+  const visibleTabs = tabs.filter((tab) =>
+    userRole ? tab.roles.includes(userRole.toUpperCase()) : false
+  );
   return (
     <>
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-neutral-950/40 backdrop-blur-sm z-35 md:hidden"
+          className="fixed inset-0 bg-neutral-950/40 backdrop-blur-sm z-35 md:hidden no-scrollbar"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -61,7 +67,7 @@ function Sidebar({
       <aside
         className={`fixed top-0 left-0 z-40 h-screen w-80 bg-neutral-800
         p-6 border-r border-neutral-800 flex flex-col
-        transition-transform duration-300 ease-in-out
+        transition-transform duration-300 ease-in-out no-scrollbar
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         {/* Logo */}
@@ -85,28 +91,28 @@ function Sidebar({
             setActiveTab("Profile");
             if (window.innerWidth < 768) setIsOpen(false);
           }}
-          className="bg-neutral-800/50 rounded-lg p-4 mb-8
+          className="bg-neutral-800 rounded-lg p-4 mb-8
           border border-neutral-700/30 flex items-center gap-3
           cursor-pointer hover:bg-neutral-800 transition-all shrink-0"
         >
           <div className="w-10 h-10 rounded-lg bg-primary-500
             flex items-center justify-center text-white font-bold text-sm
             shadow-lg shadow-primary-500/20">
-            {user?.name?.charAt(0) || "U"}
+            {userName?.charAt(0) || "U"}
           </div>
 
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">
-              {user?.name || "User"}
+              {userName|| "User"}
             </p>
             <p className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest">
-              {role}
+              {userRole}
             </p>
           </div>
         </div>
 
         {/* Menu Section */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+        <div className="flex-1 overflow-y-auto custom-scrollbar no-scrollbar pr-1">
           <p className="px-4 text-[10px] font-black text-neutral-600 uppercase tracking-widest mb-4">
             Menu
           </p>
@@ -119,10 +125,10 @@ function Sidebar({
                 <li
                   key={tab.name}
                   onClick={() => setActiveTab(tab.name)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${activeTab === tab.name
-                      ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25"
-                      // CHANGED: text-neutral-300 provides much better contrast than 400/500
-                      : "text-neutral-300 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all  ${activeTab === tab.name
+                    ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25"
+                    // CHANGED: text-neutral-300 provides much better contrast than 400/500
+                    : "text-neutral-300 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
                     }`}
                 >
                   {/* icon contrast fix */}

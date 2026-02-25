@@ -1,6 +1,10 @@
 import { useState, useCallback } from "react";
 import { dashboardService } from "../services/dashboardService";
 import { dashboardMockService } from "../services/dashboardMockService";
+import { useMemo } from "react";
+import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
+
+
 import type {
   ApprovalRequest,
   LeaveRecord,
@@ -12,8 +16,10 @@ import type { CalendarScope } from "../views/employee/CalendarView";
 // import type { CalendarScope } from "../types/scope";
 
 // toggle this to false when the API is ready
-const USE_MOCK = true;
-const service = USE_MOCK ? dashboardMockService : dashboardService;
+const USE_MOCK = false;
+// const service = USE_MOCK ? dashboardMockService : dashboardService;
+const service =  dashboardService;
+
 
 export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -79,22 +85,37 @@ export const useDashboard = () => {
   []
 );
 
+const fetchDashboard = useCallback(async (employeeId : number) => {
+  setLoading(true);
+  try {
+    const response = await service.getEmpDashboard(employeeId);
+    console.log("API Response Success:", response); // Look for this in console
+    return response;
+  } catch (err: any) {
+    console.error("API ERROR DETAILS:", err.response?.data || err.message);
+    setError(err.message);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
 
   /* ================= LEAVES ================= */
 
-  const fetchMyLeaves = async (): Promise<LeaveRecord[]> => {
+  const fetchMyLeaves = useCallback(async (employeeId : number): Promise<LeaveRecord[]> => {
     setLoading(true);
     try {
-      return await service.getMyLeaveHistory();
+      return await service.getMyLeaveHistory(employeeId);
     } catch (err: any) {
       setError(err.message || "Failed to fetch leave history");
       return [];
     } finally {
       setLoading(false);
     }
-  };
+  },[]);
 
-  /* ================= HR STATS ================= */
+   /* ================= Admin STATS ================= */
 
   
 
@@ -109,7 +130,6 @@ export const useDashboard = () => {
       setLoading(false);
     }
   }, []);
-
   /* ================= NOTIFICATIONS ================= */
 
   const fetchNotifications = useCallback(async (): Promise<Notification[]> => {
@@ -234,12 +254,79 @@ export const useDashboard = () => {
     []
   );
 
+  // Add this to your useDashboard.ts
+const fetchManagerDashboard = useCallback(async (id: number) => {
+  setLoading(true);
+  try {
+    // Calling the service with the dynamic ID
+    const response = await service.getManagerDashboard(id); 
+    return response;
+  } catch (err: any) {
+    setError(err.message || "Failed to fetch manager data");
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
+  // ================= HR ===========================
+  // const topDepartment = useMemo(() => {
+  //   return departmentLeaveData.reduce((max, d) =>
+  //     d.leaves > max.leaves ? d : max
+  //   );
+  // }, []);
+
+  // const topApprover = useMemo(() => {
+  //   return managerTrackingData.reduce((max, m) =>
+  //     m.approved > max.approved ? m : max
+  //   );
+  // }, []);
+
+    const [filters, setFilters] = useState({
+    month: 'all',
+    year: '2026',
+    department: 'all',
+    leaveType: 'all',
+    manager: 'all',
+  });
+
+
+  const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
+  setLoading(true);
+  try {
+    // Replace 'service' with your actual API service name
+    const response = await service.getTeamLeaveStats(managerId);
+    return response;
+  } catch (err: any) {
+    const message = err.message || "Failed to fetch team members";
+    setError(message);
+    console.error(message);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
+  const updateFilter = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const stats = useMemo(() => ({
+    topDepartment: departmentLeaveData.reduce((max, d) => (d.leaves > max.leaves ? d : max), departmentLeaveData[0]),
+    topApprover: managerTrackingData.reduce((max, m) => (m.approved > max.approved ? m : max), managerTrackingData[0]),
+    topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
+  }), []);
+
   /* ================= EXPORT ================= */
 
+
+
+  
   return {
     loading,
     error,
     setError,
+    fetchDashboard,
+    fetchManagerDashboard,
     fetchApprovals,
     processApproval,
     fetchEmployees,
@@ -250,9 +337,13 @@ export const useDashboard = () => {
     fetchAuditLogs,
     fetchCalendar,
     applyLeave,
+    getTeamMembers,
     fetchLeaveTypes,
     addLeaveType,
     removeLeaveType,
     fetchTeamSchedule,
+    // topDepartment,
+    // topApprover,
+    filters, updateFilter, stats 
   };
 };
