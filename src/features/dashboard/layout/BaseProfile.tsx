@@ -81,13 +81,13 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
             </div>
           </div>
 
-          {/* <div className="md:col-span-2 relative">
-            <label className={labelClass}>Residential Address</label>
+          <div className="md:col-span-2 relative">
+            <label className={labelClass}>Email</label>
             <div className="relative mt-1">
               <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input name="address" value={profile.address} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} />
+              <input name="email" value={profile.email} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} />
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
 

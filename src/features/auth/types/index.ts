@@ -17,6 +17,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole; 
+  department : string | null;
   managerId: number | null;
   active: boolean;
   joiningDate: string;

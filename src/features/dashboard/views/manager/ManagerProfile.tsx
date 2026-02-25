@@ -6,53 +6,64 @@ import { FaUserShield, FaUsers, FaChartLine, FaEnvelopeOpenText } from "react-ic
 import BaseProfile from "../../layout/BaseProfile";
 import { MOCK_PROFILE } from "../../../../mockData";
 import type { ProfileData } from "../../types";
+import { useAuth } from "../../../auth/hooks/useAuth";
 
 
 
 const ManagerProfile: React.FC = () => {
-  // Initializing with Manager specific data
-  const [profile, setProfile] = useState<ProfileData>(MOCK_PROFILE);
-  const [originalProfile, setOriginalProfile] =
-    useState<ProfileData>(MOCK_PROFILE);
+  const { user, isLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
 
+  // Initialize state
+  const [profile, setProfile] = useState<ProfileData>(() => ({
+    ...user,
+    phone: null,
+    employeeId: null,
+    photo: null,
+    department: user?.department || null,
+    designation: null,
+    joiningDate: user?.joiningDate || null,
+    workLocation: null,
+    managerName: null,
+    employmentType: 'Full-time',
+    dob: null,
+    gender: null,
+    nationality: null,
+    address: null,
+    skills: [],
+  } as unknown as ProfileData));
 
-  /**
-   * When user loads from backend (via /me),
-   * merge it into profile state.
-   */
-  // useEffect(() => {
-  //   const fetchProfile = async () => {
-  //     try {
-  //       const backendProfile = await getProfile();
+  const [originalProfile, setOriginalProfile] = useState<ProfileData>(profile);
 
-  //       const updatedProfile: ProfileData = {
-  //         ...MOCK_PROFILE,
-  //         ...backendProfile,
-  //       };
+  // SINGLE Sync Effect: Runs once when user data arrives or changes
+  useEffect(() => {
+    if (user) {
+      const userData = user as unknown as ProfileData;
+      setProfile(userData);
+      setOriginalProfile(userData);
+    }
+  }, [user]);
 
-  //       setProfile(updatedProfile);
-  //       setOriginalProfile(updatedProfile);
-  //     } catch (error) {
-  //       console.error("Failed to load profile:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+  // Loading Guard: Very important to prevent 'null' errors in the UI
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600" />
+      </div>
+    );
+  }
 
-  //   fetchProfile();
-  // }, []);
+  // Handle changes...
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setProfile({ ...profile, [name]: value });
+    setProfile(prev => ({ ...prev, [name]: value }));
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => setProfile({ ...profile, photo: reader.result as string });
+    reader.onloadend = () => setProfile(prev => ({ ...prev, photo: reader.result as string }));
     reader.readAsDataURL(file);
   };
 
