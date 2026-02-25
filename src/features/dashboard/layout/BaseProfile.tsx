@@ -5,28 +5,6 @@ import {
 } from "react-icons/fa";
 import type { ProfileData } from "../types";
 
-// export interface ProfileData {
-//   name: string;
-//   role: string;
-//   email: string;
-//   phone: string;
-//   employeeId: string;
-//   photo: string;
-//   department: string;
-//   designation: string;
-//   joiningDate: string;
-//   workLocation: string;
-//   managerName: string;
-//   employmentType: 'Full-time' | 'Contract' | 'Intern';
-//   dob: string;
-//   gender: string;
-//   bloodGroup?: string;
-//   nationality: string;
-//   address: string;
-//   linkedin?: string;
-//   github?: string;
-//   skills: string[];
-// }
 
 export interface BaseProfileProps {
   profile: ProfileData;
@@ -101,10 +79,10 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
             <label className={labelClass}>Employee ID</label>
             <p className="mt-1 font-bold text-slate-700 text-sm">{profile.employeeId}</p>
           </div>
-          <div>
+          {/* <div>
             <label className={labelClass}>Department</label>
             <p className="mt-1 font-bold text-slate-700 text-sm">{profile.department}</p>
-          </div>
+          </div> */}
           <div>
             <label className={labelClass}>Manager</label>
             <p className="mt-1 font-bold text-slate-700 text-sm">{profile.managerName}</p>

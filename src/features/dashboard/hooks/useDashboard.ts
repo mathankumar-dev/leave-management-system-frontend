@@ -85,10 +85,10 @@ export const useDashboard = () => {
   []
 );
 
-const fetchDashboard = useCallback(async () => {
+const fetchDashboard = useCallback(async (employeeId : number) => {
   setLoading(true);
   try {
-    const response = await service.getEmpDashboard(6);
+    const response = await service.getEmpDashboard(employeeId);
     console.log("API Response Success:", response); // Look for this in console
     return response;
   } catch (err: any) {
@@ -103,17 +103,17 @@ const fetchDashboard = useCallback(async () => {
 
   /* ================= LEAVES ================= */
 
-  const fetchMyLeaves = async (): Promise<LeaveRecord[]> => {
+  const fetchMyLeaves = useCallback(async (employeeId : number): Promise<LeaveRecord[]> => {
     setLoading(true);
     try {
-      return await service.getMyLeaveHistory();
+      return await service.getMyLeaveHistory(employeeId);
     } catch (err: any) {
       setError(err.message || "Failed to fetch leave history");
       return [];
     } finally {
       setLoading(false);
     }
-  };
+  },[]);
 
    /* ================= Admin STATS ================= */
 

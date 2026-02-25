@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FaCheck, FaTimes, FaClock, FaCalendarAlt,
-  FaUsers, FaExclamationTriangle, FaCheckDouble,
-  FaArrowRight, FaCommentDots, FaLayerGroup, FaBolt
-} from "react-icons/fa";
+  FaCheck, FaClock, FaCalendarAlt,
+  FaUsers, FaCheckDouble,
+  FaCommentDots, FaLayerGroup} from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
-import type { ApprovalRequest } from "../../types";
 import { useAuth } from "../../../auth/hooks/useAuth";
 
 const ManagerDashboardView: React.FC = () => {

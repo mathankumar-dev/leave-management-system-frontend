@@ -82,25 +82,21 @@ const ManagerProfile: React.FC = () => {
           >
             <div className="text-center">
               <div className="relative inline-block mb-4">
-                <img
+                {/* <img
                   src={profile.photo || "https://i.pravatar.cc/150?u=jane"}
                   className="w-32 h-32 rounded-full object-cover border-4 border-slate-50 mx-auto shadow-md"
                   alt="Manager Profile"
-                />
+                /> */}
+                <div className="w-10 h-10 rounded-lg bg-primary-500
+            flex items-center justify-center text-white font-bold text-sm
+            shadow-lg shadow-primary-500/20">
+                  {profile.name?.charAt(0) || "U"}
+                </div>
               </div>
               <h2 className="text-xl font-bold text-slate-900">{profile.name}</h2>
               <p className="text-sm font-semibold text-amber-600 mb-4">{profile.role}</p>
             </div>
 
-
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-slate-600">
-                <FaUsers className="text-slate-400 shrink-0" />
-                <span className="text-xs font-medium">Department: {profile.department}</span>
-              </div>
-
-            </div>
           </motion.div>
         </div>
 
