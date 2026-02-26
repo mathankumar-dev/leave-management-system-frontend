@@ -11,7 +11,8 @@ import type {
 
   Notification,
 
-  AuditLog
+  AuditLog,
+  LeaveApplication
 
 } from '../types';
 
@@ -72,19 +73,11 @@ export const dashboardService = {
 //     return response.data;
 //   },
 
-submitLeaveRequest: async (leaveData: FormData | LeaveApplication) => {
-      console.log("leave data in service");
-    console.log(leaveData);
-    
-    console.log("going to call /leaves/apply");
-    
+// dashboardService.ts
+submitLeaveRequest: async (leaveData: LeaveApplication) => {
     const response = await api.post('/leaves/apply', leaveData);
-
-console.log("successfully called /leaves/apply");
-    console.log(response);
-    
     return response.data;
-  },
+},
 
 
   // =============================

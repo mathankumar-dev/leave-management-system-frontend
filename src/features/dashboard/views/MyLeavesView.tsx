@@ -157,7 +157,6 @@ const MyLeavesView: React.FC = () => {
   );
 };
 
-// ... StatusBadge Component stays the same ...
 
 const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {

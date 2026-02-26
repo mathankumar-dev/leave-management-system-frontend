@@ -180,7 +180,7 @@ const fetchDashboard = useCallback(async (employeeId : number) => {
 
   /* ================= LEAVE ACTIONS ================= */
 
-const applyLeave = useCallback(async (formData: LeaveApplication | FormData) => {
+const applyLeave = useCallback(async (formData: LeaveApplication ) => {
     setLoading(true);
     setError(null);
     try {

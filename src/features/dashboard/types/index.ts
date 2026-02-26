@@ -220,8 +220,8 @@ export interface ProfileData {
 export interface LeaveApplication{
   employeeId : number;
   leaveType : LeaveType;
-  startDate : Date;
-  endDate : Date;
+  startDate : string;
+  endDate : string;
   reason : string;
   halfDayType? : HalfDayLeaveType;
    confirmLossOfPay? : boolean;
