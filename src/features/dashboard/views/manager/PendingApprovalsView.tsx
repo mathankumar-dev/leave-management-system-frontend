@@ -12,7 +12,7 @@ const PendingApprovalsView: React.FC = () => {
 
     if (loading) return <div className='flex items-center'>Loading</div>;
 
-    // if(requests.length == 0) return <div>nothing here to show</div>;
+    if(requests.length == 0) return <div>nothing here to show</div>;
     return (
         <div className='flex flex-col gap-2'>
             <div className='min-h-20 py-2.5 w-full flex justify-between items-center bg-[#F1F5F9] pl-4 pr-4 rounded-sm'>

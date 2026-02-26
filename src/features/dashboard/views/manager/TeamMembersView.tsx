@@ -2,8 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     FaSearch,
-    FaEnvelope,
-    FaEllipsisV,
     FaChartPie,
     FaCalendarCheck,
     FaFilter,
