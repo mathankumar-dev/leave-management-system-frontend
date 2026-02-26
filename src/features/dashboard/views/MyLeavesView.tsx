@@ -4,6 +4,7 @@ import { FaCalendarAlt, FaChevronRight } from "react-icons/fa";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuth } from "../../auth/hooks/useAuth";
 import type { LeaveRecord } from "../types";
+import CustomLoader from "../../../components/ui/CustomLoader";
 
 const MyLeavesView: React.FC = () => {
   const { fetchMyLeaves, loading } = useDashboard();
@@ -44,8 +45,11 @@ const MyLeavesView: React.FC = () => {
     }));
   }, [history, statusFilter]);
 
-  if (loading) return <div className="p-8 text-slate-400 animate-pulse font-bold">Loading History...</div>;
-
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
+      <CustomLoader label="Loading Leaves History" />
+    </div>
+  );
   return (
     <div className="w-full space-y-6">
       <header className="px-1 md:px-0">

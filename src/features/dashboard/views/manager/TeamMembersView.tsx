@@ -9,6 +9,7 @@ import {
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../../auth/hooks/useAuth";
 import type { Employee } from "../../types";
+import CustomLoader from "../../../../components/ui/CustomLoader";
 
 const TeamMembersView: React.FC = () => {
     const { getTeamMembers, loading } = useDashboard();
@@ -32,14 +33,12 @@ const TeamMembersView: React.FC = () => {
 
     if (loading && members.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-20">
-                <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
-                <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">
-                    Syncing Team Data...
-                </p>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
+                <CustomLoader label="Loading Team Members" />
             </div>
         );
     }
+
 
     return (
         <div className="space-y-6 p-4 md:p-0">

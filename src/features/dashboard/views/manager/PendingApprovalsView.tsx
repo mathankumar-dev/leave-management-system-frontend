@@ -3,6 +3,7 @@ import Divider from '../../../../components/ui/Divider';
 import MetricTile from '../../components/tiles/MetricTile';
 import RequestTile from '../../components/tiles/RequestTile';
 import { useManagerApprovals } from '../../hooks/manager/useManagerApprovals';
+import CustomLoader from '../../../../components/ui/CustomLoader';
 
 
 const PendingApprovalsView: React.FC = () => {
@@ -10,9 +11,12 @@ const PendingApprovalsView: React.FC = () => {
 
     const { requests, loading, handleDecision } = useManagerApprovals(managerId);
 
-    if (loading) return <div className='flex items-center'>Loading</div>;
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
+            <CustomLoader label="Loading pending approvals" />
+        </div>
+    );
 
-    if(requests.length == 0) return <div>nothing here to show</div>;
     return (
         <div className='flex flex-col gap-2'>
             <div className='min-h-20 py-2.5 w-full flex justify-between items-center bg-[#F1F5F9] pl-4 pr-4 rounded-sm'>
