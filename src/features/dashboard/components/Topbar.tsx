@@ -10,10 +10,11 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDashboard } from "../hooks/useDashboard";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 interface TopbarProps {
   activeTab: string;
-  user: any;
+
   onMenuClick: () => void;
   onLogout: () => void;
   setActiveTab: (tab: string) => void;
@@ -21,7 +22,7 @@ interface TopbarProps {
 
 const Topbar: React.FC<TopbarProps> = ({
   activeTab,
-  user,
+
   onMenuClick,
   onLogout,
   setActiveTab,
@@ -30,6 +31,11 @@ const Topbar: React.FC<TopbarProps> = ({
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [recentNotifs, setRecentNotifs] = useState<any[]>([]);
   const { fetchNotifications } = useDashboard();
+
+  const { user } = useAuth();
+
+  const userRole = user?.role;
+  const userName = user?.name;
 
   useEffect(() => {
     if (isNotifOpen) {
@@ -74,8 +80,8 @@ const Topbar: React.FC<TopbarProps> = ({
               setIsProfileOpen(false);
             }}
             className={`p-2.5 rounded-xl transition-all ${isNotifOpen
-                ? "bg-indigo-50 text-indigo-600"
-                : "text-slate-400 hover:text-indigo-600"
+              ? "bg-indigo-50 text-indigo-600"
+              : "text-slate-400 hover:text-indigo-600"
               }`}
           >
             <FaBell className="w-4 h-4" />
@@ -125,8 +131,8 @@ const Topbar: React.FC<TopbarProps> = ({
                           <div className="flex gap-3">
                             <FaCircle
                               className={`mt-1.5 w-2 h-2 ${n.unread
-                                  ? "text-indigo-500"
-                                  : "text-slate-200"
+                                ? "text-indigo-500"
+                                : "text-slate-200"
                                 }`}
                             />
                             <div className="min-w-0">
@@ -166,24 +172,18 @@ const Topbar: React.FC<TopbarProps> = ({
             className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-50 transition-all"
           >
             <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden">
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  className="object-cover w-full h-full"
-                  alt=""
-                />
-              ) : (
-                <FaUserCircle className="text-slate-400 w-6 h-6" />
-              )}
+
+              <FaUserCircle className="text-slate-400 w-6 h-6" />
+
             </div>
 
             <div className="hidden lg:flex flex-col items-start">
               <span className="text-xs font-black text-slate-700 leading-none">
-                {user?.name}
+                {userName}
               </span>
               <div className="flex items-center gap-1 mt-1">
                 <span className="text-[9px] font-black text-indigo-500 uppercase tracking-wider">
-                  {user?.role}
+                  {userRole}
                 </span>
                 <FaChevronDown
                   className={`text-[8px] text-slate-400 transition-transform ${isProfileOpen ? "rotate-180" : ""

@@ -1,136 +1,213 @@
+// ==============================
+// Leave Record
+// ==============================
+
+export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+export type LeaveType = "SICK" | "CASUAL" | "EARNED" | "COMP_OFF"; // Add types as per your backend
+
 export interface LeaveRecord {
   id: number;
-  type: string;
-  range: string;
+  employeeId: number;
+  leaveType: LeaveType;
+  halfDayType: string | null; // e.g., "FIRST_HALF" or "SECOND_HALF"
+  year: number;
+  startDate: string; // ISO Date string
+  endDate: string;   // ISO Date string
   days: number;
-  status: 'Approved' | 'Pending' | 'Rejected';
-  applied: string;
-  approvedBy: string;
-  
+  reason: string;
+  status: LeaveStatus;
+  approvedBy: number | null;
+  approvedRole: string | null;
+  approvedAt: string | null;
+  carryForwardUsed: number;
+  compOffUsed: number;
+  lossOfPayApplied: number;
+  createdAt: string;
+  updatedAt: string;
+  escalated: boolean;
+  escalatedAt: string | null;
+  managerId: number;
+  version: number;
+  attachments: string[]; // Adjust type if attachments have a specific object structure
 }
+
+
+// ==============================
+// Employee
+// ==============================
 
 export interface Employee {
-  id: number;
-  name: string;
-  email: string;
-  dept: string;
-  status: "ACTIVE" | "ON LEAVE";
-  role: "EMPLOYEE" | "MANAGER" | "HR";
-  designation: string;   // 👈 job title
-  initial: string;
-  color: string;
+  employeeId: number;
+  employeeName: string;
+  totalAllocated: number;   // Handles 0.0 or other decimals
+  totalUsed: number;
+  totalRemaining: number;
+  compOffBalance: number;
+  lopPercentage: number;
+  totalWorkingDays: number | null; // Use union type because your data shows 'null'
 }
 
 
-
-// export interface ApprovalRequest {
-//   id: number;
-//   initial: string;
-//   employee: string;
-//   dept: string;
-//   type: string;
-//   range: string;
-//   days: number;
-//   avatarColor?: string;
-//   appliedOn: string;
-// }
-
+// ==============================
+// Approval Request
+// ==============================
 
 export interface ApprovalRequest {
+
   id: number;
+
   initial: string;
+
   employee: string;
+
   dept: string;
+
   type: string;
+
   range: string;
+
   days: number;
+
   avatarColor?: string;
+
   appliedOn: string;
-  // --- ADD THESE ---
-  balance: number; // Mandatory: To show "Days Left" in UI
-  reason: string;  // Mandatory: To show "Reason" snippet in table
+
+  balance: number;
+
+  reason: string;
+
 }
+
+
+// ==============================
+// Dashboard Stats
+// ==============================
+
 export interface DashboardStats {
+
   title: string;
+
   used: number;
+
   total: number;
+
   color: string;
-  icon: string; // or React.ReactNode if passing icons from service
+
+  icon: string;
+
 }
+
+
+// ==============================
+// Chart Data
+// ==============================
 
 export interface ChartData {
+
   month: string;
+
   Casual: number;
+
   Sick: number;
+
   Earned: number;
+
 }
 
+
+// ==============================
+// Notification
+// ==============================
 
 export interface Notification {
+
   id: number;
+
   type: 'success' | 'info' | 'error' | 'default';
+
   title: string;
+
   desc: string;
+
   time: string;
+
   unread: boolean;
+
   category: 'Personal' | 'Team' | 'System' | 'All';
+
 }
+
+
+// ==============================
+// Audit Log
+// ==============================
 
 export interface AuditLog {
+
   action: string;
+
   target: string;
+
   actor: string;
+
   role: 'Manager' | 'Employee' | 'Admin' | 'System Admin';
+
   time: string;
+
   timestamp: string;
+
   status: 'success' | 'error' | 'security' | 'info';
+
   details: string;
+
   icon: React.ReactNode;
+
 }
 
 
-
+// ==============================
+// Profile
+// ==============================
 
 export interface ProfileData {
   // Identity & Basic Info
-  name: string;
+  name?: string;
   role: string;
+
   email: string;
+
   phone: string;
+
   employeeId: string;
+
   photo: string;
-  
-  // Work Information
+
   department: string;
+
   designation: string;
+
   joiningDate: string;
+
   workLocation: string;
+
   managerName: string;
+
   employmentType: 'Full-time' | 'Contract' | 'Intern';
-  
-  // Personal Details
+
   dob: string;
+
   gender: string;
+
   bloodGroup?: string;
+
   nationality: string;
+
   address: string;
-  
-  // Social & Professional
+
   linkedin?: string;
+
   github?: string;
+
   skills: string[];
+
 }
-
-
-// // HR 
-// export interface DepartmentData {
-//   name: string;
-//   leaves: number;
-// }
-
-// export interface ManagerTracking {
-//   name: string;
-//   approved: number;
-//   pending: number;
-//   rejected: number;
-// }
