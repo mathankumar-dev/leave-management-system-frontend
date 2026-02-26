@@ -33,12 +33,12 @@ function Sidebar({
   const role = user?.role || "Employee";
 
   const tabs = [
-    { name: "Dashboard", icon: <FaThLarge />, roles: ["Employee", "Manager", "HR"] },
-    { name: "Apply Leave", icon: <FaPlus />, roles: ["Employee", "Manager"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager", "HR"] },
-    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["Employee"] },
+    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "Manager", "HR"] },
+    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "Manager"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "Manager", "HR"] },
+    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE"] },
     { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["Manager", "HR"] },
-    { name: "Notifications", icon: <FaBell />, roles: ["Employee", "Manager"] },
+    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "Manager"] },
     { name: "Employees", icon: <FaUsers />, roles: ["Manager", "HR"] },
     { name: "Leave Config", icon: <FaCog />, roles: ["HR"] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },

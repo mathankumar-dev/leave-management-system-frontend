@@ -1,6 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
 import { dashboardService } from "../services/dashboardService";
-
 import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
 
 import type {
@@ -15,7 +14,7 @@ import { dashboardMockService } from "../services/dashboardMockService";
 // import type { CalendarScope } from "../types/scope";
 
 // toggle this to false when the API is ready
-const USE_MOCK = true;
+const USE_MOCK = false;
 const service = USE_MOCK ? dashboardMockService : dashboardService;
 
 export const useDashboard = () => {
@@ -56,17 +55,17 @@ export const useDashboard = () => {
 
   /* ================= EMPLOYEES ================= */
 
-  const fetchEmployees = async (): Promise<Employee[]> => {
-    setLoading(true);
-    try {
-      return await service.getAllEmployees();
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch employees");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchEmployees = async (): Promise<Employee[]> => {
+  setLoading(true);
+  try {
+    return await dashboardService.getEmployeeDashboard(); // now always returns Employee[]
+  } catch (err: any) {
+    setError(err.message || "Failed to fetch employees");
+    return [];
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchStats = useCallback(
   async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
@@ -223,7 +222,7 @@ export const useDashboard = () => {
       setLoading(true);
       try {
         const [calendar, members] = await Promise.all([
-          service.getCalendarLeaves(year, month),
+          service.getCalendarLeaves(year, month,scope),
           service.getAllEmployees(),
         ]);
         return { calendar, members };
@@ -288,6 +287,7 @@ export const useDashboard = () => {
     removeLeaveType,
     fetchTeamSchedule,
     // topDepartment,
+    
     // topApprover,
     filters, updateFilter, stats 
   };

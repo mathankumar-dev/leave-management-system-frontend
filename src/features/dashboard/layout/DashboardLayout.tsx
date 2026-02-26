@@ -29,10 +29,10 @@ import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
-  ADMIN: "Admin",
+  ADMIN: "ADMIN",
   HR: "HR",
-  MANAGER: "Manager",
-  EMPLOYEE: "Employee",
+  MANAGER: "MANAGER",
+  EMPLOYEE: "EMPLOYEE",
 };
 
 

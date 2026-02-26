@@ -5,16 +5,13 @@ import {
   FaUserPlus,
   FaEllipsisV,
   FaEnvelope,
-  FaUserEdit,
-  FaUserSlash,
-  FaUserCheck,
-  FaSyncAlt,
-  FaTrash,
+
   FaFilter,
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import type { Employee } from "../../types";
 import AddEmployeeForm from "../../components/AddEmployeeForm";
+import { getEmployeeId } from "../../../../api/axiosInstance";
 
 const EmployeesView = () => {
   const { fetchEmployees, loading } = useDashboard();
@@ -27,19 +24,26 @@ const EmployeesView = () => {
   /* ----------------------- LOAD MOCK DATA ----------------------- */
   const [openAddEmployee, setOpenAddEmployee] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
+   useEffect(() => {
+  const employeeId = getEmployeeId();
 
-    fetchEmployees().then((data: Employee[]) => {
-      if (isMounted) {
-        setEmployees(data);
-      }
-    });
+  if (!employeeId) {
+    console.warn("Employee ID not ready yet");
+    return;
+  }
+  
+  let isMounted = true;
 
-    return () => {
-      isMounted = false;
-    };
-  }, [fetchEmployees]);
+  fetchEmployees().then((data: Employee[]) => {
+    if (isMounted) {
+      setEmployees(data);   // ❌ THIS LINE CAUSING ERROR
+    }
+  });
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
 
   const filteredEmployees = useMemo(() => {
     return employees.filter((emp) => {

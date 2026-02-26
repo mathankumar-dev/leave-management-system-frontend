@@ -101,7 +101,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
-import type { AuthResponse } from "../types";
+import type { AuthResponse, UserRole } from "../types";
 
 interface JwtPayload {
   exp: number;
@@ -233,31 +233,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, []);
 
-  const login = (data: AuthResponse) => {
+ const login = (data: AuthResponse) => {
   try {
-    const isMock = data.token.startsWith("mock-token");
+    const decoded = jwtDecode<JwtPayload>(data.token);
+    const expiryDate = new Date(decoded.exp * 1000);
 
-    if (!isMock) {
-      // Decode real JWT tokens
-      const decoded = jwtDecode<JwtPayload>(data.token);
-      const expiryDate = new Date(decoded.exp * 1000);
+    // ✅ Full user object for TypeScript
+    const userObj = {
+      id: (data.id),       // make sure this is employee ID
+      name: data.name || "",
+      email: data.email || "",
+      department: data.department || "",
+      role: data.role as UserRole
+    };
 
-      // Save to cookies
-      Cookies.set("lms_token", data.token, { expires: expiryDate, secure: true, sameSite: "strict" });
-      Cookies.set("lms_user", JSON.stringify(data.user), { expires: expiryDate });
-      Cookies.set("lms_user_role", data.user.role, { expires: expiryDate });
-    } else {
-      // For mock tokens, just save without decoding
-      Cookies.set("lms_token", data.token);
-      Cookies.set("lms_user", JSON.stringify(data.user));
-      Cookies.set("lms_user_role", data.user.role);
-      console.log("Using mock token, skipping decode");
-    }
+    // Save token
+    Cookies.set("lms_token", data.token, { expires: expiryDate });
+    Cookies.set("lms_user", JSON.stringify(userObj), { expires: expiryDate });
+    Cookies.set("lms_user_role", data.role, { expires: expiryDate });
 
-    setUser(data.user);
+    // 🔹 Save employee_id separately for dashboardService
+    Cookies.set("employee_id", String(data.id), { expires: expiryDate });
+
+    setUser(userObj);
     setToken(data.token);
-  } catch (e) {
-    console.error("Login failed during decoding", e);
+
+    console.log("SUCCESS LOGIN:", userObj);
+  } catch (err) {
+    console.error(err);
   }
 };
 
