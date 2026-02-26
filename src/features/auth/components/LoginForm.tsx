@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
-import { loginUser } from "../services/AuthService";
+
 import { useAuth } from "../hooks/useAuth";
 import type { LoginCredentials } from "../types";
 
 import textSVG from '../../../assets/text.svg';
 import FailureModal from "../../../components/ui/FailureModal";
 import SuccessModal from "../../../components/ui/SuccessModal";
+import { authService } from "../services/AuthService";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState<string>("employee@wenxttech.com");
-  const [password, setPassword] = useState<string>("password123");
+  const [email, setEmail] = useState<string>("emp1@company.com");
+  const [password, setPassword] = useState<string>("1234");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showError, setShowError] = useState<boolean>(false);
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
@@ -38,25 +39,35 @@ const LoginForm: React.FC = () => {
   }, [showSuccess]);
 
 
-  const handleLogin = async (e: React.SubmitEvent) => {
+  // Change e: React.SubmitEvent to e: React.FormEvent
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setShowError(false);
+
     try {
       const credentials: LoginCredentials = { email, password };
-      const response = await loginUser(credentials);
-      setShowSuccess(true);
+
+      // FIX 1: Use authService instead of loginUser
+      const response = await authService.loginUser(credentials);
+
+      // FIX 2: Trigger success UI
       setShowSuccess(true);
 
-      setTimeout(() => {
-        login(response);
+
+      setTimeout(async () => {
+        try {
+          await login(response);
+        } catch (profileError) {
+          console.error("Profile fetch failed:", profileError);
+          setShowError(true);
+          setShowSuccess(false);
+        }
       }, 3000);
 
     } catch (error) {
       console.error("Login failed:", error);
-
       setShowError(true);
-      // alert("Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);
     }

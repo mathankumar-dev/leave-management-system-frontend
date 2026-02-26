@@ -1,26 +1,30 @@
-export type UserRole = "Employee" | "Manager" | "HR" | "Admin";
+// 1. Standardize the Role type to match your Backend JSON
+export type UserRole = "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN";
 
 export interface LoginCredentials {
   email: string;
-  password?: string;
+  password: string;
 }
 
 export interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    department: string;
-  };
+  id: number;
+  role: UserRole; 
 }
 
-export interface RegisterCredentials {
-  employeeName: string;
-  emailId: string;
-  department: string;
-  designation: string;
-  managerId: string;
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole; 
+  department : string | null;
+  managerId: number | null;
+  active: boolean;
   joiningDate: string;
+  biometricStatus: string;
+  vpnStatus: string;
+  onboardingCompletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
+
