@@ -51,8 +51,8 @@ const api: AxiosInstance = axios.create({
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('lms_token');
-
+    // const token = localStorage.getItem('lms_token');
+    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJockBjb21wYW55LmNvbSIsImlkIjoxLCJyb2xlIjoiSFIiLCJpYXQiOjE3NzIwMDAxMjgsImV4cCI6MTc3MjA4NjUyOH0.DKPwKObJc3oOTZoiusVHvFYHhDVu2jFJnUfTjt7EmBM";
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }

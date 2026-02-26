@@ -1,59 +1,89 @@
-import { 
-  Users, 
-  UserCheck, 
-  FileText, 
-  CheckCircle2, 
-  XCircle, 
-  CalendarClock 
-} from 'lucide-react';
-import { StatsCard } from '../components/StatsCard';
+  import type { LucideIcon } from 'lucide-react';
+  import {
+    Users,
+    FileText,
+    CheckCircle2,
+    CalendarClock,
+    Clock,
+  } from 'lucide-react';
 
-export function SummarySection() {
-  const summaryData = [
-    { title: "Total Employees", value: 156, subtitle: "Across 6 departments", icon: Users, variant: "primary" },
-    { title: "Total Managers", value: 12, subtitle: "Active managers", icon: UserCheck, variant: "info" },
-    { title: "Leave Applications", value: 47, subtitle: "This month", icon: FileText, variant: "default" },
-    { title: "Approved Leaves", value: 38, subtitle: "This month", icon: CheckCircle2, variant: "success" },
-    { title: "Rejected Leaves", value: 5, subtitle: "This month", icon: XCircle, variant: "warning" },
-    { title: "On Leave Today", value: 14, subtitle: "9% of workforce", icon: CalendarClock, variant: "warning" },
-  ];
+  import { StatsCard } from '../components/StatsCard';
+  import type { StatsCardVariant } from '../components/StatsCard';
 
-  return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-      {summaryData.map((stat, idx) => (
-        <StatsCard 
-          key={idx}
-          title={stat.title}
-          value={stat.value}
-          subtitle={stat.subtitle}
-          icon={stat.icon}
-          variant={stat.variant as any}
-        />
-      ))}
-    </section>
-  );
-}
+  interface SummarySectionProps {
+    totalEmployees: number;
+    activeEmployees: number;
+    employeesOnLeaveToday: number;
+    totalPendingLeaves: number;
+    totalApprovedLeaves: number;
+  }
 
+  interface SummaryItem {
+    title: string;
+    value: number;
+    subtitle: string;
+    icon: LucideIcon;
+    variant: StatsCardVariant;
+  }
 
+  export function SummarySection({
+    totalEmployees,
+    activeEmployees,
+    employeesOnLeaveToday,
+    totalPendingLeaves,
+    totalApprovedLeaves,
+  }: SummarySectionProps) {
 
+    const summaryData: SummaryItem[] = [
+      {
+        title: 'Total Employees',
+        value: totalEmployees,
+        subtitle: 'All registered employees',
+        icon: Users,
+        variant: 'primary',
+      },
+      {
+        title: 'Active Employees',
+        value: activeEmployees,
+        subtitle: 'Currently active workforce',
+        icon: Users,
+        variant: 'info',
+      },
+      {
+        title: 'Pending Leaves',
+        value: totalPendingLeaves,
+        subtitle: 'Awaiting approval',
+        icon: Clock,
+        variant: 'warning',
+      },
+      {
+        title: 'Approved Leaves',
+        value: totalApprovedLeaves,
+        subtitle: 'Successfully approved',
+        icon: CheckCircle2,
+        variant: 'success',
+      },
+      {
+        title: 'On Leave Today',
+        value: employeesOnLeaveToday,
+        subtitle: 'Employees absent today',
+        icon: CalendarClock,
+        variant: 'destructive',
+      },
+    ];
 
-
-
-
-
-
-
-
-
-
-
-
-// export function SummarySection() {
-//   return (
-//     <div className="grid grid-cols-3 gap-4">
-//       <div className="p-4 bg-white shadow rounded">Total Leaves: 120</div>
-//       <div className="p-4 bg-white shadow rounded">Pending: 15</div>
-//       <div className="p-4 bg-white shadow rounded">Rejected: 6</div>
-//     </div>
-//   );
-// }
+    return (
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        {summaryData.map((stat) => (
+          <StatsCard
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
+            subtitle={stat.subtitle}
+            icon={stat.icon}
+            variant={stat.variant}
+          />
+        ))}
+      </section>
+    );
+  }

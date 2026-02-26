@@ -1,68 +1,56 @@
-// // import { useMemo } from "react";
-// // import { departmentLeaveData, managerTrackingData } from "../data/mockData";
+import { useCallback, useEffect, useState } from 'react';
+import { hrDashboardService } from '../service/hrDashboardService';
+import type { DashboardResponse } from '../types';
 
-// // export function useHRDashboard() {
-// //   const topDepartment = useMemo(() => {
-// //     return departmentLeaveData.reduce((max, d) =>
-// //       d.leaves > max.leaves ? d : max
-// //     );
-// //   }, []);
+export interface DepartmentStat {
+  department: string;
+  members:    number;
+}
 
-// //   const topApprover = useMemo(() => {
-// //     return managerTrackingData.reduce((max, m) =>
-// //       m.approved > max.approved ? m : max
-// //     );
-// //   }, []);
-
-// //   return {
-// //     topDepartment,
-// //     topApprover,
-// //   };
-// // }
-
-
-import { useState, useMemo } from 'react';
-import { 
-  departmentLeaveData, 
-  managerTrackingData, 
-  monthlyTrendData, 
-  leaveTypeDistribution 
-} from '../data/mockData';
+interface HRDashboardState {
+  data:            DashboardResponse | null;
+  departmentStats: DepartmentStat[];
+  loading:         boolean;
+  error:           string | null;
+}
 
 export function useHRDashboard() {
-  const [filters, setFilters] = useState({
-    month: 'all',
-    year: '2026',
-    department: 'all',
-    leaveType: 'all',
-    manager: 'all',
+  const [state, setState] = useState<HRDashboardState>({
+    data:            null,
+    departmentStats: [],
+    loading:         true,
+    error:           null,
   });
 
-  const updateFilter = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
+  const loadDashboard = useCallback(async (signal?: AbortSignal) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      const data = await hrDashboardService.getDashboardData(signal);
 
-  // 1. Filtered Data for charts
-  const filteredDeptData = useMemo(() => {
-    if (filters.department === 'all') return departmentLeaveData;
-    return departmentLeaveData.filter(d => d.department === filters.department);
-  }, [filters.department]);
+      const departmentStats: DepartmentStat[] = data.teamStructure.map((team) => ({
+        department: team.managerName,
+        members:    team.teamMemberCount,
+      }));
 
-  // 2. Stats calculated from filtered data
-  const stats = useMemo(() => ({
-    topDepartment: filteredDeptData.reduce((max, d) => (d.leaves > max.leaves ? d : max), filteredDeptData[0] || departmentLeaveData[0]),
-    topApprover: managerTrackingData.reduce((max, m) => (m.approved > max.approved ? m : max), managerTrackingData[0]),
-    topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
-  }), [filteredDeptData]); // Re-calculate when filter changes
-
-  return { 
-    filters, 
-    updateFilter, 
-    stats,
-    chartData: {
-      trend: monthlyTrendData,
-      departments: filteredDeptData,
-      types: leaveTypeDistribution
+      setState({ data, departmentStats, loading: false, error: null });
+    } catch (err) {
+      if (err instanceof Error && err.name === 'CanceledError') return;
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: err instanceof Error ? err.message : 'Failed to load dashboard',
+      }));
     }
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadDashboard(controller.signal);
+    return () => controller.abort();
+  }, [loadDashboard]);
+
+  return {
+    ...state,
+    reload: () => loadDashboard(),
   };
 }

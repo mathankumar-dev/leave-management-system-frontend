@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 import { dashboardService } from "../services/dashboardService";
 import { dashboardMockService } from "../services/dashboardMockService";
-import { useMemo } from "react";
-import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
+// import { useMemo } from "react";
+// import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
 
 
 import type {
@@ -261,11 +261,11 @@ export const useDashboard = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const stats = useMemo(() => ({
-    topDepartment: departmentLeaveData.reduce((max, d) => (d.leaves > max.leaves ? d : max), departmentLeaveData[0]),
-    topApprover: managerTrackingData.reduce((max, m) => (m.approved > max.approved ? m : max), managerTrackingData[0]),
-    topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
-  }), []);
+  // const stats = useMemo(() => ({
+  //   topDepartment: departmentLeaveData.reduce((max, d) => (d.leaves > max.leaves ? d : max), departmentLeaveData[0]),
+  //   topApprover: managerTrackingData.reduce((max, m) => (m.approved > max.approved ? m : max), managerTrackingData[0]),
+  //   topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
+  // }), []);
 
   /* ================= EXPORT ================= */
 
@@ -289,6 +289,6 @@ export const useDashboard = () => {
     fetchTeamSchedule,
     // topDepartment,
     // topApprover,
-    filters, updateFilter, stats 
+    // filters, updateFilter, stats 
   };
 };

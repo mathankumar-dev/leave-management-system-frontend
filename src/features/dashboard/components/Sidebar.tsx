@@ -34,7 +34,7 @@ function Sidebar({
   const tabs = [
     { name: "Dashboard", icon: <FaThLarge />, roles: ["Employee", "Manager","HR"] },
     { name: "Apply Leave", icon: <FaPlus />, roles: ["Employee", "Manager"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager","HR"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["Employee", "Manager"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: ["Employee"] },
     { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["Manager", "Admin" , "HR"] },
     { name: "Notifications", icon: <FaBell />, roles: ["Employee", "Manager"] },
