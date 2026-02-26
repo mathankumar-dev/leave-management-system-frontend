@@ -57,12 +57,33 @@ export const dashboardService = {
   // Apply Leave
   // =============================
 
-  submitLeaveRequest: async (leaveData: any) => {
 
+//   submitLeaveRequest: async (leaveData: LeaveApplication | FormData) => {
+//     console.log("leave data in service");
+//     console.log(leaveData);
+    
+//     console.log("going to call /leaves/apply");
+    
+//     const response = await api.post('/leaves/apply', leaveData);
+
+// console.log("successfully called /leaves/apply");
+//     console.log(response);
+    
+//     return response.data;
+//   },
+
+submitLeaveRequest: async (leaveData: FormData | LeaveApplication) => {
+      console.log("leave data in service");
+    console.log(leaveData);
+    
+    console.log("going to call /leaves/apply");
+    
     const response = await api.post('/leaves/apply', leaveData);
 
+console.log("successfully called /leaves/apply");
+    console.log(response);
+    
     return response.data;
-
   },
 
 

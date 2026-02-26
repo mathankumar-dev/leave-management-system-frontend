@@ -11,6 +11,7 @@ import type {
   Employee,
   Notification,
   AuditLog,
+  LeaveApplication,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
 // import type { CalendarScope } from "../types/scope";
@@ -179,18 +180,21 @@ const fetchDashboard = useCallback(async (employeeId : number) => {
 
   /* ================= LEAVE ACTIONS ================= */
 
-  const applyLeave = async (formData: any) => {
+const applyLeave = useCallback(async (formData: LeaveApplication | FormData) => {
     setLoading(true);
     setError(null);
     try {
-      return await service.submitLeaveRequest(formData);
+      // Pass the typed data to the service
+      const result = await service.submitLeaveRequest(formData);
+      return result;
     } catch (err: any) {
-      setError(err.message || "Failed to submit leave request");
+      const errorMessage = err.response?.data?.message || err.message || "Submission failed";
+      setError(errorMessage);
       return null;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const fetchLeaveTypes = useCallback(async () => {
     setLoading(true);

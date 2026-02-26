@@ -3,7 +3,10 @@
 // ==============================
 
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
-export type LeaveType = "SICK" | "CASUAL" | "EARNED" | "COMP_OFF"; // Add types as per your backend
+
+
+export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF" ;
+export type LeaveType = "SICK" | "CASUAL" | "EARNED" | "COMP_OFF"; 
 
 export interface LeaveRecord {
   id: number;
@@ -44,7 +47,7 @@ export interface Employee {
   totalRemaining: number;
   compOffBalance: number;
   lopPercentage: number;
-  totalWorkingDays: number | null; // Use union type because your data shows 'null'
+  totalWorkingDays: number | null; 
 }
 
 
@@ -210,4 +213,17 @@ export interface ProfileData {
 
   skills: string[];
 
+}
+
+
+
+export interface LeaveApplication{
+  employeeId : number;
+  leaveType : LeaveType;
+  startDate : Date;
+  endDate : Date;
+  reason : string;
+  halfDayType? : HalfDayLeaveType;
+   confirmLossOfPay? : boolean;
+   
 }
