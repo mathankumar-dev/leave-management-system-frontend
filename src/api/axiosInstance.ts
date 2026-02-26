@@ -52,7 +52,7 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // const token = localStorage.getItem('lms_token');
-    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJockBjb21wYW55LmNvbSIsImlkIjoxLCJyb2xlIjoiSFIiLCJpYXQiOjE3NzIwMDAxMjgsImV4cCI6MTc3MjA4NjUyOH0.DKPwKObJc3oOTZoiusVHvFYHhDVu2jFJnUfTjt7EmBM";
+    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJockBjb21wYW55LmNvbSIsImlkIjoxLCJyb2xlIjoiSFIiLCJpYXQiOjE3NzIwODkyNjIsImV4cCI6MTc3MjE3NTY2Mn0.qaYylkBvA5gjrHr8lSecvG_YQm60dhWfddPYT2nL7Nc";
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
