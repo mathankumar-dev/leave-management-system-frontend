@@ -1,54 +1,98 @@
-import React from "react";
-import { ShieldAlert, ArrowRight, Lock } from "lucide-react";
+import React, { useState } from "react";
+import { ShieldAlert } from "lucide-react";
+import { useAuth } from "../../features/auth/hooks/useAuth";
+import { authService } from "../../features/auth/services/AuthService";
 
-interface ChangePasswordDialogProps {
-    onClose: () => void;
-    onGoToSettings: () => void;
-}
+const ChangePasswordDialog: React.FC = () => {
+  const { setForceChangePassword } = useAuth();
 
-const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({ onClose, onGoToSettings }) => {
-    return (
-        <div className="fixed inset-0 z-999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform animate-in zoom-in-95 duration-300">
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-                <div className="p-8 text-center">
-                    <div className="mx-auto w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-4">
-                        <ShieldAlert className="text-amber-600 w-8 h-8" />
-                    </div>
+  const handleSubmit = async () => {
+    setError("");
 
-                    <h3 className="text-2xl font-bold text-neutral-900">Update Your Password</h3>
+    if (!newPassword || !confirmPassword) {
+      setError("All fields are required.");
+      return;
+    }
 
-                    <div className="mt-4 p-3 bg-neutral-50 rounded-lg border border-neutral-100">
-                        <p className="text-neutral-600 text-sm leading-relaxed">
-                            You are currently using a <span className="font-semibold text-neutral-900">default password</span> assigned by your Administrator.
-                        </p>
-                    </div>
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
-                    <p className="text-neutral-500 mt-4 text-sm">
-                        For your security, please create a unique password before continuing with your work.
-                    </p>
-                </div>
+    if (newPassword.length < 0) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
 
-                {/* Actions */}
-                <div className="px-8 pb-8 flex flex-col gap-3">
-                    <button
-                        onClick={onGoToSettings}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 group shadow-lg shadow-blue-200"
-                    >
-                        Change Password Now
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </button>
+    try {
+      setLoading(true);
+      await authService.changePassword(newPassword);      
+      setForceChangePassword(false);
+    } catch (err) {
+      setError("Failed to update password. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                    <button
-                        onClick={onClose}
-                        className="w-full bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-500 font-medium py-3 rounded-xl transition-colors text-sm"
-                    >
-                        I'll do it later (Skip for now)
-                    </button>
-                </div>
-            </div>
+  return (
+    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+
+        <div className="p-8 text-center">
+          <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+            <ShieldAlert className="text-red-600 w-8 h-8" />
+          </div>
+
+          <h3 className="text-2xl font-bold text-neutral-900">
+            Password Update Required
+          </h3>
+
+          <p className="text-neutral-500 mt-2 text-sm">
+            You must change your default password to continue.
+          </p>
         </div>
-    );
+
+        <div className="px-8 pb-8 space-y-4">
+
+          <input
+            type="password"
+            placeholder="New Password"
+            className="w-full border border-neutral-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            className="w-full border border-neutral-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+
+          {error && (
+            <p className="text-red-500 text-sm text-center">{error}</p>
+          )}
+
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-red-200 disabled:opacity-50"
+          >
+            {loading ? "Updating..." : "Update Password"}
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  );
 };
 
 export default ChangePasswordDialog;

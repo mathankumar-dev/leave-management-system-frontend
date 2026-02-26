@@ -22,7 +22,6 @@ import EmployeeProfile from "../views/employee/EmployeeProfile";
 /* ---------------- MANAGER VIEWS ---------------- */
 import ManagerDashboardView from "../views/manager/ManagerDashboardView";
 import TeamCalendarView from "../views/manager/TeamCalendarView";
-import ApprovalsView from "../views/manager/ApprovalsView";
 import ManagerProfile from "../views/manager/ManagerProfile";
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
@@ -36,44 +35,15 @@ const ROLES = {
   EMPLOYEE: "EMPLOYEE",
 };
 
-
 const DashboardLayout: React.FC = () => {
-  const { user, logout } = useAuth();
-
+  const { user, logout, forceChangePassword } = useAuth();
 
   const userRole = user?.role;
-  const userId = user?.id;
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-
-
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-
-  useEffect(() => {
-    const hasBeenPrompted = sessionStorage.getItem("passwordPromptShown");
-
-    if (userId && !hasBeenPrompted) {
-      const timer = setTimeout(() => {
-        setShowPasswordPrompt(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [userId]);
-
-  const handleDismissPrompt = () => {
-    setShowPasswordPrompt(false);
-    sessionStorage.setItem("passwordPromptShown", "true");
-  };
-
-  const handleGoToSettings = () => {
-    setShowPasswordPrompt(false);
-    sessionStorage.setItem("passwordPromptShown", "true");
-    // setActiveTab("Profile"); // Navigate to Profile tab
-  };
 
   /* ---------------- ADMIN DEFAULT REDIRECT ---------------- */
   useEffect(() => {
@@ -99,7 +69,6 @@ const DashboardLayout: React.FC = () => {
         if (userRole === ROLES.MANAGER) return <ManagerDashboardView />;
         if (userRole === ROLES.HR) return <HRDashboard />;
         if (userRole === ROLES.ADMIN) return <EmployeesView />;
-
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
@@ -131,6 +100,7 @@ const DashboardLayout: React.FC = () => {
 
       case "Notifications":
         return <NotificationsView />;
+
       case "Team Members":
         return <TeamMembersView />;
 
@@ -143,31 +113,25 @@ const DashboardLayout: React.FC = () => {
     }
   };
 
+  /* ---------------- STRICT PASSWORD LOCK ---------------- */
+  if (forceChangePassword) {
+    return <ChangePasswordDialog />;
+  }
+
   /* ---------------- LAYOUT ---------------- */
   return (
     <div className="flex h-screen bg-neutral-25 overflow-hidden">
-
-      {showPasswordPrompt && (
-        <ChangePasswordDialog
-          onClose={handleDismissPrompt}
-          onGoToSettings={handleGoToSettings}
-        />
-      )}
-      {/* Sidebar */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
         onLogout={logout}
       />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col md:ml-80 h-full min-w-0 transition-all duration-300">
         <Topbar
           activeTab={activeTab}
-
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={logout}
           setActiveTab={setActiveTab}

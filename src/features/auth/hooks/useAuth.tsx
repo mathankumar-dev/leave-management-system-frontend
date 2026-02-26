@@ -15,6 +15,9 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  forceChangePassword: boolean | null;
+  setForceChangePassword: React.Dispatch<React.SetStateAction<boolean | null>>;
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,16 +25,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [forceChangePassword, setForceChangePassword] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const logout = useCallback(() => {
     Cookies.remove("lms_token");
     Cookies.remove("lms_user_id");
+
     setUser(null);
     setToken(null);
+    setForceChangePassword(null);
   }, []);
 
-  // Hydrate user data on refresh
+  /* ---------------- INIT AUTH ---------------- */
   useEffect(() => {
     const initAuth = async () => {
       const savedToken = Cookies.get("lms_token");
@@ -46,35 +52,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             logout();
           } else {
             setToken(savedToken);
+
             const profile = await authService.getEmployeeProfile(Number(savedId));
             setUser(profile);
+
+            // 👇 IMPORTANT: backend should return this in profile
+            // setForceChangePassword(profile.forcePasswordChange ?? false);
           }
         } catch (error) {
           console.error("Auth initialization failed:", error);
           logout();
         }
       }
+
       setIsLoading(false);
     };
 
     initAuth();
   }, [logout]);
 
+  /* ---------------- LOGIN ---------------- */
   const login = async (data: AuthResponse) => {
     try {
       const decoded = jwtDecode<JwtPayload>(data.token);
       const expiryDate = new Date(decoded.exp * 1000);
 
-      // 1. Save to cookies
       Cookies.set("lms_token", data.token, { expires: expiryDate, secure: true });
       Cookies.set("lms_user_id", JSON.stringify(data.id), { expires: expiryDate });
 
-      // 2. Update state
       setToken(data.token);
 
-      // 3. Fetch profile using data.id directly from the login response
+      // 👇 set directly from backend login response
+      setForceChangePassword(data.forcePasswordChange ?? false);
+
       const profile = await authService.getEmployeeProfile(data.id);
       setUser(profile);
+
     } catch (e) {
       console.error("Login failed:", e);
       throw e;
@@ -89,7 +102,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         isAuthenticated: !!user,
-        isLoading
+        isLoading,
+        forceChangePassword,
+        setForceChangePassword,
       }}
     >
       {children}

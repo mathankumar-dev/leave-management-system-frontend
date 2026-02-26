@@ -10,6 +10,7 @@ export interface AuthResponse {
   token: string;
   id: number;
   role: UserRole; 
+  forcePasswordChange : boolean;
 }
 
 export interface User {

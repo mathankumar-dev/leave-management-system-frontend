@@ -10,7 +10,22 @@ export const authService = {
 
 
 getEmployeeProfile: async (id: number): Promise<User> => {
-    const response = await api.get<User>(`/employees/${id}`);
+    const response = await api.get<User>(`/employees/profile?employeeId=${id}`);
     return response.data;
+  },
+
+
+
+changePassword: async (newPassword: string): Promise<void> => {
+
+  await api.put('/auth/change-password', {
+    newPassword,
+  });
+  
+},
+
+  forgotPassword : async(email : string) => {
+    const response = await api.post('/password-reset/request',email);
+    return response;
   }
 };
