@@ -15,23 +15,13 @@ getEmployeeProfile: async (id: number): Promise<User> => {
   },
 
 
-
 changePassword: async (newPassword: string): Promise<void> => {
-
   await api.put('/auth/change-password', {
     newPassword,
-  });
-  
+  });  
 },
 
   forgotPassword : async(email : string) : Promise<void> => {
-    console.log("going to call forgot password");
-    console.log(email);
-    
-   const response = await api.post(`/password-reset/request?email=${email}`);
-   console.log(response);
-   
-    console.log("after forgotpass");
-    
+   await api.post(`/password-reset/request?email=${email}`);    
   }
 };

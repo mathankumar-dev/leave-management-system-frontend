@@ -11,7 +11,7 @@ import { authService } from "../services/AuthService";
 import { Link } from "react-router-dom";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState<string>("emp1@company.com");
+  const [email, setEmail] = useState<string>("emp1@wennxttech.com");
   const [password, setPassword] = useState<string>("1234");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showError, setShowError] = useState<boolean>(false);

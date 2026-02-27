@@ -1,15 +1,17 @@
 import React, { useState } from "react";
-import { ShieldAlert } from "lucide-react";
+import { FaShieldAlt } from "react-icons/fa";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { authService } from "../../features/auth/services/AuthService";
+import SuccessModal from "../ui/SuccessModal";
 
 const ChangePasswordDialog: React.FC = () => {
-  const { setForceChangePassword } = useAuth();
+  const { user, setUser } = useAuth();
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = async () => {
     setError("");
@@ -31,67 +33,95 @@ const ChangePasswordDialog: React.FC = () => {
 
     try {
       setLoading(true);
-      await authService.changePassword(newPassword);      
-      setForceChangePassword(false);
+
+      await authService.changePassword(newPassword);
+
+      // Show success modal instead of instantly unlocking
+      setShowSuccess(true);
+
     } catch (err) {
+      console.error("Change password error:", err);
       setError("Failed to update password. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+  const handleSuccessClose = async () => {
+    setShowSuccess(false);
 
-        <div className="p-8 text-center">
-          <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-            <ShieldAlert className="text-red-600 w-8 h-8" />
+    if (user) {
+      const updatedProfile = await authService.getEmployeeProfile(user.id);
+      setUser(updatedProfile);
+    }
+  };
+
+  return (
+    <>
+      {/* 🔐 Main Password Dialog */}
+      <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+
+          <div className="p-8 text-center">
+            <div className="mx-auto w-16 h-16 bg-red-50 rounded-lg flex items-center justify-center mb-4 text-2xl text-red-600">
+              <FaShieldAlt />
+            </div>
+
+            <h3 className="text-2xl font-bold text-neutral-900">
+              Password Update Required
+            </h3>
+
+            <p className="text-neutral-500 mt-2 text-sm">
+              You must change your default password to continue.
+            </p>
           </div>
 
-          <h3 className="text-2xl font-bold text-neutral-900">
-            Password Update Required
-          </h3>
+          <div className="px-8 pb-8 space-y-4">
 
-          <p className="text-neutral-500 mt-2 text-sm">
-            You must change your default password to continue.
-          </p>
+            <input
+              type="password"
+              placeholder="New Password"
+              className="w-full border border-neutral-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              disabled={loading}
+            />
+
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              className="w-full border border-neutral-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={loading}
+            />
+
+            {error && (
+              <p className="text-red-500 text-sm text-center">{error}</p>
+            )}
+
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-red-200 disabled:opacity-50"
+            >
+              {loading ? "Updating..." : "Update Password"}
+            </button>
+
+          </div>
         </div>
-
-        <div className="px-8 pb-8 space-y-4">
-
-          <input
-            type="password"
-            placeholder="New Password"
-            className="w-full border border-neutral-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            className="w-full border border-neutral-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-
-          {error && (
-            <p className="text-red-500 text-sm text-center">{error}</p>
-          )}
-
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-red-200 disabled:opacity-50"
-          >
-            {loading ? "Updating..." : "Update Password"}
-          </button>
-
-        </div>
-
       </div>
-    </div>
+
+      {/* ✅ Success Modal */}
+      {showSuccess && (
+        <SuccessModal
+          title="Password Updated"
+          message="Your password has been successfully updated. You may now continue to your dashboard."
+          buttonText="Continue"
+          onClose={handleSuccessClose}
+        />
+      )}
+    </>
   );
 };
 

@@ -16,6 +16,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   mustChangePassword: boolean;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -74,14 +76,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         secure: true,
       });
 
-      // 🔥 FIX: DO NOT JSON.stringify
       Cookies.set("lms_user_id", data.id.toString(), {
         expires: expiryDate,
       });
 
       setToken(data.token);
 
-      // 🔥 Only trust profile
       const profile = await authService.getEmployeeProfile(data.id);
       setUser(profile);
 
@@ -101,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         mustChangePassword: user?.mustChangePassword ?? false,
+        setUser
       }}
     >
       {children}
