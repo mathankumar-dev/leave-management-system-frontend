@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { hrDashboardService } from '../service/hrDashboardService';
-import type { DashboardResponse } from '../types';
+import type { DashboardResponse, LowBalanceEmployee } from '../types';
 
 export interface DepartmentStat {
   department: string;
@@ -8,23 +8,31 @@ export interface DepartmentStat {
 }
 
 interface HRDashboardState {
-  data:            DashboardResponse | null;
-  departmentStats: DepartmentStat[];
-  loading:         boolean;
-  error:           string | null;
+  data:              DashboardResponse | null;
+  departmentStats:   DepartmentStat[];
+  lowBalanceData:    LowBalanceEmployee[];
+  lowBalanceError:   string | null;
+  lowBalanceLoading: boolean;
+  loading:           boolean;
+  error:             string | null;
 }
 
 export function useHRDashboard() {
   const [state, setState] = useState<HRDashboardState>({
-    data:            null,
-    departmentStats: [],
-    loading:         true,
-    error:           null,
+    data:              null,
+    departmentStats:   [],
+    lowBalanceData:    [],
+    lowBalanceError:   null,
+    lowBalanceLoading: true,
+    loading:           true,
+    error:             null,
   });
 
   const loadDashboard = useCallback(async (signal?: AbortSignal) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+    setState((prev) => ({ ...prev, loading: true, lowBalanceLoading: true, error: null }));
+
     try {
+      // Main dashboard — must succeed
       const data = await hrDashboardService.getDashboardData(signal);
 
       const departmentStats: DepartmentStat[] = data.teamStructure.map((team) => ({
@@ -32,12 +40,34 @@ export function useHRDashboard() {
         members:    team.teamMemberCount,
       }));
 
-      setState({ data, departmentStats, loading: false, error: null });
+      // Low balance — fetch separately, failure won't crash dashboard
+      let lowBalanceData: LowBalanceEmployee[] = [];
+      let lowBalanceError: string | null = null;
+
+      try {
+        lowBalanceData = await hrDashboardService.getLowBalanceEmployees(signal);
+      } catch (err) {
+        // Backend 500 — show empty table with error message, don't crash dashboard
+        lowBalanceError = 'Low balance data unavailable — backend error';
+        console.warn('Low balance fetch failed:', err);
+      }
+
+      setState({
+        data,
+        departmentStats,
+        lowBalanceData,
+        lowBalanceError,
+        lowBalanceLoading: false,
+        loading:           false,
+        error:             null,
+      });
+
     } catch (err) {
       if (err instanceof Error && err.name === 'CanceledError') return;
       setState((prev) => ({
         ...prev,
-        loading: false,
+        loading:           false,
+        lowBalanceLoading: false,
         error: err instanceof Error ? err.message : 'Failed to load dashboard',
       }));
     }

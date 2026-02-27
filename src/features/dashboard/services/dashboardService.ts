@@ -11,7 +11,8 @@ import type {
 
   Notification,
 
-  AuditLog
+  AuditLog,
+  LeaveApplication
 
 } from '../types';
 

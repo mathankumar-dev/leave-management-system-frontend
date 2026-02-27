@@ -45,6 +45,18 @@ export interface ManagerApprovalStat {
   avgApprovalHrs?: number;
 }
 
+// ─── Low Balance ─────────────────────────────────────────────────
+export interface LowBalanceEmployee {
+  employeeId:       number;
+  employeeName:     string;
+  totalAllocated:   number;
+  totalUsed:        number;
+  totalRemaining:   number;
+  compOffBalance:   number | null;
+  lopPercentage:    number | null;
+  totalWorkingDays: number | null;
+}
+
 // ─── Exact API Response from GET /dashboard/hr ───────────────────
 export interface DashboardResponse {
   currentYear:                number;

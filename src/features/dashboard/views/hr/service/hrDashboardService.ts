@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import api from '../../../../../api/axiosInstance';
-import type { DashboardResponse } from '../types';
+import type { DashboardResponse, LowBalanceEmployee } from '../types';
 
 const handleError = (err: unknown, context: string): never => {
   if (err instanceof AxiosError) {
@@ -12,6 +12,8 @@ const handleError = (err: unknown, context: string): never => {
 };
 
 export const hrDashboardService = {
+
+  // GET /dashboard/hr — main dashboard data
   getDashboardData: async (signal?: AbortSignal): Promise<DashboardResponse> => {
     try {
       const response = await api.get<DashboardResponse>('/dashboard/hr', { signal });
@@ -20,8 +22,18 @@ export const hrDashboardService = {
       throw handleError(err, 'getDashboardData');
     }
   },
-};
 
+  // GET /dashboard/hr/low-balance — employee leave balance
+  getLowBalanceEmployees: async (signal?: AbortSignal): Promise<LowBalanceEmployee[]> => {
+    try {
+      const response = await api.get<LowBalanceEmployee[]>('/dashboard/hr/low-balance?year=2026', { signal });
+      return response.data;
+    } catch (err) {
+      throw handleError(err, 'getLowBalanceEmployees');
+    }
+  },
+
+};
 
 
 
