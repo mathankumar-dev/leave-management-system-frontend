@@ -3,6 +3,7 @@ import { FaShieldAlt } from "react-icons/fa";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { authService } from "../../features/auth/services/AuthService";
 import SuccessModal from "../ui/SuccessModal";
+import FailureModal from "../ui/FailureModal";
 
 const ChangePasswordDialog: React.FC = () => {
   const { user, setUser } = useAuth();
@@ -10,24 +11,27 @@ const ChangePasswordDialog: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showFailure, setShowFailure] = useState(false);
+  const [failureMessage, setFailureMessage] = useState("");
 
   const handleSubmit = async () => {
-    setError("");
-
     if (!newPassword || !confirmPassword) {
-      setError("All fields are required.");
+      setFailureMessage("All fields are required.");
+      setShowFailure(true);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match.");
+      setFailureMessage("Passwords do not match.");
+      setShowFailure(true);
       return;
     }
 
     if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setFailureMessage("Password must be at least 6 characters.");
+      setShowFailure(true);
       return;
     }
 
@@ -36,12 +40,12 @@ const ChangePasswordDialog: React.FC = () => {
 
       await authService.changePassword(newPassword);
 
-      // Show success modal instead of instantly unlocking
       setShowSuccess(true);
 
     } catch (err) {
       console.error("Change password error:", err);
-      setError("Failed to update password. Try again.");
+      setFailureMessage("Failed to update password. Please try again.");
+      setShowFailure(true);
     } finally {
       setLoading(false);
     }
@@ -58,7 +62,7 @@ const ChangePasswordDialog: React.FC = () => {
 
   return (
     <>
-      {/* 🔐 Main Password Dialog */}
+      {/* 🔐 Password Dialog */}
       <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
 
@@ -96,10 +100,6 @@ const ChangePasswordDialog: React.FC = () => {
               disabled={loading}
             />
 
-            {error && (
-              <p className="text-red-500 text-sm text-center">{error}</p>
-            )}
-
             <button
               onClick={handleSubmit}
               disabled={loading}
@@ -119,6 +119,16 @@ const ChangePasswordDialog: React.FC = () => {
           message="Your password has been successfully updated. You may now continue to your dashboard."
           buttonText="Continue"
           onClose={handleSuccessClose}
+        />
+      )}
+
+      {/* ❌ Failure Modal */}
+      {showFailure && (
+        <FailureModal
+          title="Update Failed"
+          message={failureMessage}
+          buttonText="Try Again"
+          onClose={() => setShowFailure(false)}
         />
       )}
     </>
