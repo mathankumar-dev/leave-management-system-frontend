@@ -94,8 +94,7 @@ export const dashboardService = {
       decisionRequest
     );
 
-    console.log(response.status);
-    
+    console.log(response.status);    
 
     // return response.data;
   },
