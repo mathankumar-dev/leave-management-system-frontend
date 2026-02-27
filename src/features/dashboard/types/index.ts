@@ -4,9 +4,10 @@
 
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
-
 export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF" ;
 export type LeaveType = "SICK" | "CASUAL" | "EARNED" | "COMP_OFF"; 
+
+export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
 export interface LeaveRecord {
   id: number;
@@ -34,6 +35,13 @@ export interface LeaveRecord {
   attachments: string[]; // Adjust type if attachments have a specific object structure
 }
 
+
+export interface LeaveDecisionRequest{
+  leaveId : number;
+  managerId : number;
+  decision : LeaveDecision;
+  comments? : string;
+}
 
 // ==============================
 // Employee

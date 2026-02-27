@@ -1,51 +1,45 @@
-import { useEffect, useState } from "react"
-import { managerService } from "../../services/manager/managerService";
+import { useEffect, useState } from "react";
+import type { LeaveDecisionRequest } from "../../types";
+import { dashboardService } from "../../services/dashboardService";
 
-export const useManagerApprovals = (managerId : string) => {
-    const [requests ,  setRequests] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+export const useManagerApprovals = (managerId: number) => {
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const fetchRequests = async () =>{
+  const fetchRequests = async () => {
+    setLoading(true);
+    try {
+      const data = await dashboardService.getPendingApprovals(managerId);
+      setRequests(data);
+    } catch (err) {
+      console.error("Failed to fetch approvals:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setLoading(true);
+  useEffect(() => {
+    if (managerId) fetchRequests();
+  }, [managerId]);
 
-        try{
-            const data = await managerService.getPendingApprovals(managerId);
-            setRequests(data);
-        }
-        catch(err){
-            console.error(err);
-        }
-        finally{
-            setLoading(false);
-        }
+  const handleDecision = async (decisionRequest: LeaveDecisionRequest) => {
+    try {
+      await dashboardService.updateDecision(decisionRequest);
+      setRequests((prev) => 
+        prev.filter((req) => req.id !== decisionRequest.leaveId)
+      );
 
-    };
+      return { success: true };
+    } catch (err) {
+      console.error("Error processing leave decision:", err);
+      return { success: false, error: err };
+    }
+  };
 
-    useEffect(() => {
-        fetchRequests();
-    },[managerId]);
-
-
-    const handleDecision = async (leaveId : number , type : 'approve' | 'reject' | 'discuss') =>{
-        try{
-            if(type === 'approve'){
-                await managerService.approveLeave(leaveId,managerId);
-            }
-            else if(type == 'reject'){
-                await managerService.rejectLeave(leaveId,managerId);
-            }
-            else{
-                await managerService.discussLeave(leaveId , managerId)
-            }
-
-            setRequests((prev) => prev.filter((req) => String(req.id) !== String(leaveId)));
-        }catch(err){
-            console.error(err);
-            alert("Failed to process decision. Please try again.");
-            
-        }
-    };
-
-    return {  requests, loading , handleDecision , refresh : fetchRequests };
-}
+  return { 
+    requests, 
+    loading, 
+    handleDecision, 
+    refresh: fetchRequests 
+  };
+};

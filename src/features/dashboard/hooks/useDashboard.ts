@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { dashboardService } from "../services/dashboardService";
-import { dashboardMockService } from "../services/dashboardMockService";
 import { useMemo } from "react";
 import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
 
@@ -12,14 +11,12 @@ import type {
   Notification,
   AuditLog,
   LeaveApplication,
+  LeaveDecision,
+  LeaveDecisionRequest,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
-// import type { CalendarScope } from "../types/scope";
 
-// toggle this to false when the API is ready
-const USE_MOCK = false;
-// const service = USE_MOCK ? dashboardMockService : dashboardService;
-const service =  dashboardService;
+const service = dashboardService;
 
 
 export const useDashboard = () => {
@@ -40,22 +37,22 @@ export const useDashboard = () => {
     }
   }, []);
 
-  const processApproval = async (
-    id: number,
-    status: "Approved" | "Rejected",
-    comment?: string
-  ): Promise<boolean> => {
-    setLoading(true);
-    try {
-      await service.updateApprovalStatus(id, status, comment);
-      return true;
-    } catch (err: any) {
-      setError(err.message || "Action failed");
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+const processApproval = async (
+  decisionRequest: LeaveDecisionRequest
+): Promise<boolean> => {
+  setLoading(true);
+  setError(null); 
+  try {
+    await service.updateDecision(decisionRequest);
+    return true;
+  } catch (err: any) {
+    console.error("Full Error Object:", err);
+    setError(err.message || "Action failed");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ================= EMPLOYEES ================= */
 
@@ -72,39 +69,39 @@ export const useDashboard = () => {
   };
 
   const fetchStats = useCallback(
-  async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
+    async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
+      setLoading(true);
+      try {
+        return await service.getHRStats(scope);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch HR analytics");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const fetchDashboard = useCallback(async (employeeId: number) => {
     setLoading(true);
     try {
-      return await service.getHRStats(scope);
+      const response = await service.getEmpDashboard(employeeId);
+      console.log("API Response Success:", response); // Look for this in console
+      return response;
     } catch (err: any) {
-      setError(err.message || "Failed to fetch HR analytics");
+      console.error("API ERROR DETAILS:", err.response?.data || err.message);
+      setError(err.message);
       return null;
     } finally {
       setLoading(false);
     }
-  },
-  []
-);
-
-const fetchDashboard = useCallback(async (employeeId : number) => {
-  setLoading(true);
-  try {
-    const response = await service.getEmpDashboard(employeeId);
-    console.log("API Response Success:", response); // Look for this in console
-    return response;
-  } catch (err: any) {
-    console.error("API ERROR DETAILS:", err.response?.data || err.message);
-    setError(err.message);
-    return null;
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  }, []);
 
 
   /* ================= LEAVES ================= */
 
-  const fetchMyLeaves = useCallback(async (employeeId : number): Promise<LeaveRecord[]> => {
+  const fetchMyLeaves = useCallback(async (employeeId: number): Promise<LeaveRecord[]> => {
     setLoading(true);
     try {
       return await service.getMyLeaveHistory(employeeId);
@@ -114,11 +111,11 @@ const fetchDashboard = useCallback(async (employeeId : number) => {
     } finally {
       setLoading(false);
     }
-  },[]);
+  }, []);
 
-   /* ================= Admin STATS ================= */
+  /* ================= Admin STATS ================= */
 
-  
+
 
   const fetchDeptDistribution = useCallback(async () => {
     setLoading(true);
@@ -180,7 +177,7 @@ const fetchDashboard = useCallback(async (employeeId : number) => {
 
   /* ================= LEAVE ACTIONS ================= */
 
-const applyLeave = useCallback(async (formData: LeaveApplication ) => {
+  const applyLeave = useCallback(async (formData: LeaveApplication) => {
     setLoading(true);
     setError(null);
     try {
@@ -259,19 +256,19 @@ const applyLeave = useCallback(async (formData: LeaveApplication ) => {
   );
 
   // Add this to your useDashboard.ts
-const fetchManagerDashboard = useCallback(async (id: number) => {
-  setLoading(true);
-  try {
-    // Calling the service with the dynamic ID
-    const response = await service.getManagerDashboard(id); 
-    return response;
-  } catch (err: any) {
-    setError(err.message || "Failed to fetch manager data");
-    return null;
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  const fetchManagerDashboard = useCallback(async (id: number) => {
+    setLoading(true);
+    try {
+      // Calling the service with the dynamic ID
+      const response = await service.getManagerDashboard(id);
+      return response;
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch manager data");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
   // ================= HR ===========================
   // const topDepartment = useMemo(() => {
   //   return departmentLeaveData.reduce((max, d) =>
@@ -285,7 +282,7 @@ const fetchManagerDashboard = useCallback(async (id: number) => {
   //   );
   // }, []);
 
-    const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState({
     month: 'all',
     year: '2026',
     department: 'all',
@@ -295,20 +292,20 @@ const fetchManagerDashboard = useCallback(async (id: number) => {
 
 
   const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
-  setLoading(true);
-  try {
-    // Replace 'service' with your actual API service name
-    const response = await service.getTeamLeaveStats(managerId);
-    return response;
-  } catch (err: any) {
-    const message = err.message || "Failed to fetch team members";
-    setError(message);
-    console.error(message);
-    return [];
-  } finally {
-    setLoading(false);
-  }
-}, []);
+    setLoading(true);
+    try {
+      // Replace 'service' with your actual API service name
+      const response = await service.getTeamLeaveStats(managerId);
+      return response;
+    } catch (err: any) {
+      const message = err.message || "Failed to fetch team members";
+      setError(message);
+      console.error(message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const updateFilter = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -324,7 +321,7 @@ const fetchManagerDashboard = useCallback(async (id: number) => {
 
 
 
-  
+
   return {
     loading,
     error,
@@ -346,8 +343,9 @@ const fetchManagerDashboard = useCallback(async (id: number) => {
     addLeaveType,
     removeLeaveType,
     fetchTeamSchedule,
+
     // topDepartment,
     // topApprover,
-    filters, updateFilter, stats 
+    filters, updateFilter, stats
   };
 };

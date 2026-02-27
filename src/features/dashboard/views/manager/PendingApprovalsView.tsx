@@ -4,12 +4,14 @@ import MetricTile from '../../components/tiles/MetricTile';
 import RequestTile from '../../components/tiles/RequestTile';
 import { useManagerApprovals } from '../../hooks/manager/useManagerApprovals';
 import CustomLoader from '../../../../components/ui/CustomLoader';
+import { useAuth } from '../../../auth/hooks/useAuth';
 
 
 const PendingApprovalsView: React.FC = () => {
-    const managerId = "1";
+    
+    const {user} = useAuth();
 
-    const { requests, loading, handleDecision } = useManagerApprovals(managerId);
+    const { requests, loading, handleDecision } = useManagerApprovals(user?.id);
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">

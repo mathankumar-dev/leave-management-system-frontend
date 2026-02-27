@@ -12,7 +12,9 @@ import type {
   Notification,
 
   AuditLog,
-  LeaveApplication
+  LeaveApplication,
+  LeaveDecision,
+  LeaveDecisionRequest
 
 } from '../types';
 
@@ -32,17 +34,17 @@ export const dashboardService = {
     return response.data;
 
   },
-    getEmpDashboard: async (employeeId : number) => {
+  getEmpDashboard: async (employeeId: number) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
-      // console.log(response.data);
+    // console.log(response.data);
     return response.data;
 
   },
-    getManagerDashboard: async (managerId : number) => {
+  getManagerDashboard: async (managerId: number) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
-      // console.log(response.data);
+    // console.log(response.data);
     return response.data;
 
   },
@@ -50,46 +52,31 @@ export const dashboardService = {
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
     // Note: Assuming your endpoint follows this pattern based on your summary URL
     const response = await api.get(`/dashboard/manager/team-balances/${managerId}?year=2026`);
-    
+
     // If your backend returns the array directly:
-    return response.data;},
+    return response.data;
+  },
 
   // =============================
   // Apply Leave
   // =============================
 
 
-//   submitLeaveRequest: async (leaveData: LeaveApplication | FormData) => {
-//     console.log("leave data in service");
-//     console.log(leaveData);
-    
-//     console.log("going to call /leaves/apply");
-    
-//     const response = await api.post('/leaves/apply', leaveData);
 
-// console.log("successfully called /leaves/apply");
-//     console.log(response);
-    
-//     return response.data;
-//   },
-
-// dashboardService.ts
-submitLeaveRequest: async (leaveData: LeaveApplication) => {
+  // dashboardService.ts
+  submitLeaveRequest: async (leaveData: LeaveApplication) => {
     const response = await api.post('/leaves/apply', leaveData);
     return response.data;
-},
+  },
 
 
   // =============================
   // Pending Approvals
   // =============================
 
-  getPendingApprovals: async (): Promise<ApprovalRequest[]> => {
-
-    const response = await api.get('/leaves/approvals/pending');
-
-    return response.data;
-
+  getPendingApprovals: async (managerId: number) => {
+    const response = await api.get(`/leave-approvals/pending?managerId=${managerId}`);
+    return response.data.content;
   },
 
 
@@ -97,40 +84,30 @@ submitLeaveRequest: async (leaveData: LeaveApplication) => {
   // Approve / Reject
   // =============================
 
-  updateApprovalStatus: async (
-
-    id: number,
-
-    status: 'Approved' | 'Rejected',
-
-    comment?: string
-
-  ) => {
-
-    const response = await api.put(
-
-      `/leaves/approvals/${id}`,
-
-      {
-
-        status,
-
-        comment
-
-      }
-
+  updateDecision: async (
+    decisionRequest: LeaveDecisionRequest
+  ) : Promise<void> => {
+    console.log("came here");
+    
+    const response = await api.patch(
+      "/leave-approvals/decision",
+      decisionRequest
     );
 
-    return response.data;
+    console.log(response.status);
+    
 
+    // return response.data;
   },
+
+
 
 
   // =============================
   // Leave History
   // =============================
 
-  getMyLeaveHistory: async (employeeId : number): Promise<LeaveRecord[]> => {
+  getMyLeaveHistory: async (employeeId: number): Promise<LeaveRecord[]> => {
 
     const response = await api.get(`leaves/employee/${employeeId}`);
 
@@ -191,7 +168,7 @@ submitLeaveRequest: async (leaveData: LeaveApplication) => {
   // },
 
 
-  
+
 
 
   // =============================

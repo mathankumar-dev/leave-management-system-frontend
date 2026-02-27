@@ -8,6 +8,7 @@ import {
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../../auth/hooks/useAuth";
 import CustomLoader from "../../../../components/ui/CustomLoader";
+import type { LeaveDecision, LeaveDecisionRequest } from "../../types";
 
 const ManagerDashboardView: React.FC = () => {
 
@@ -31,34 +32,49 @@ const ManagerDashboardView: React.FC = () => {
     });
   }, [user, isLoading, fetchManagerDashboard]);
 
-  const handleAction = async (id: number, status: "Approved" | "Rejected") => {
-    let comment: string | null = null;
+  const handleAction = async (id: number, status: LeaveDecision) => {
+    if (!user?.id) {
+      alert("Authentication error: Manager ID not found.");
+      return;
+    }
 
-    // 1. Handle Rejection Logic
-    if (status === "Rejected") {
-      comment = prompt("Mandatory: Please provide a reason for rejection:");
+    let commentText: string | undefined = undefined;
 
-      // If user clicks "Cancel" or leaves it empty, stop the execution
-      if (comment === null || comment.trim() === "") {
-        alert("A reason is required to reject a leave request.");
+    // 1. Enforce mandatory comments for specific statuses
+    if (status === 'REJECTED' || status === 'MEETING_REQUIRED') {
+      const promptMsg = status === 'REJECTED'
+        ? "Mandatory: Please provide a reason for rejection:"
+        : "Mandatory: Please provide notes for the required meeting:";
+
+      const reason = prompt(promptMsg);
+
+      // Strict validation: stop the process if the comment is missing or empty
+      if (!reason || reason.trim() === "") {
+        alert(`A comment is required to set the status to ${status}.`);
         return;
       }
+      commentText = reason;
     }
-    const success = await processApproval(id, status, comment || undefined);
+
+ 
+    const decisionPayload: LeaveDecisionRequest = {
+      leaveId: id, 
+      managerId: Number(user.id),
+      decision: status,
+      comments: commentText 
+    };
+
+    // 3. Execute API call
+    const success = await processApproval(decisionPayload);
 
     if (success) {
-      setApprovals((prev) => prev.filter((req) => req.id !== id));
-
-      if (dashboardData) {
-        setDashboardData((prev: any) => ({
-          ...prev,
-          teamPendingRequestCount: Math.max(0, prev.teamPendingRequestCount - 1),
-          // If approved, increment the approved count
-          approvedCount: status === "Approved" ? prev.approvedCount + 1 : prev.approvedCount,
-          // If rejected, increment the rejected count
-          rejectedCount: status === "Rejected" ? prev.rejectedCount + 1 : prev.rejectedCount,
-        }));
-      }
+      setApprovals((prev) => prev.filter((req) => req.leaveId !== id));
+      setDashboardData((prev: any) => ({
+        ...prev,
+        teamPendingRequestCount: Math.max(0, prev.teamPendingRequestCount - 1),
+        approvedCount: status === 'APPROVED' ? prev.approvedCount + 1 : prev.approvedCount,
+        rejectedCount: status === 'REJECTED' ? prev.rejectedCount + 1 : prev.rejectedCount,
+      }));
     }
   };
 
@@ -125,7 +141,7 @@ const ManagerDashboardView: React.FC = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      key={req.id}
+                      key={req.leaveId}
                       className="group bg-white border border-slate-200 rounded-md p-4 hover:border-indigo-400 transition-all shadow-sm"
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
@@ -137,7 +153,8 @@ const ManagerDashboardView: React.FC = () => {
                           </div>
                           <div className="flex-1 sm:hidden">
                             <p className="font-bold text-sm">{req.employeeName || req.employee}</p>
-                            <p className="text-[10px] text-slate-500 font-medium">ID: {req.id}</p>
+
+                            <p className="text-[10px] text-slate-500 font-medium">ID: {req.employeeId}</p>
                           </div>
                         </div>
 
@@ -165,15 +182,26 @@ const ManagerDashboardView: React.FC = () => {
 
                         {/* Actions */}
                         <div className="flex gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
+                          {/* DENY BUTTON */}
                           <button
-                            onClick={() => handleAction(req.id, "Rejected")}
-                            className="flex-1 sm:flex-none px-4 py-2 sm:px-3 sm:py-1.5 border border-slate-200 rounded text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all text-xs font-bold"
+                            onClick={() => handleAction(req.leaveId, 'REJECTED')}
+                            className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 rounded text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all text-xs font-bold"
                           >
                             Deny
                           </button>
+
+                          {/* DISCUSS BUTTON - Styled with a softer slate/indigo tint */}
                           <button
-                            onClick={() => handleAction(req.id, "Approved")}
-                            className="flex-1 sm:flex-none px-4 py-2 sm:px-3 sm:py-1.5 bg-slate-900 text-white rounded hover:bg-indigo-600 transition-all text-xs font-bold shadow-sm"
+                            onClick={() => handleAction(req.leaveId, 'MEETING_REQUIRED')}
+                            className="flex-1 sm:flex-none px-4 py-2 bg-slate-100 text-slate-700 border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-all text-xs font-bold"
+                          >
+                            Discuss
+                          </button>
+
+                          {/* APPROVE BUTTON */}
+                          <button
+                            onClick={() => handleAction(req.leaveId, 'APPROVED')}
+                            className="flex-1 sm:flex-none px-4 py-2 bg-slate-900 text-white rounded hover:bg-indigo-600 transition-all text-xs font-bold shadow-sm"
                           >
                             Approve
                           </button>
@@ -192,7 +220,7 @@ const ManagerDashboardView: React.FC = () => {
           </div>
 
           {/* 4. SIDEBAR - Team Insight */}
-          <div className="lg:col-span-4 space-y-6">
+          {/* <div className="lg:col-span-4 space-y-6">
             <div className="bg-slate-900 rounded-xl p-5 text-white shadow-xl shadow-slate-200">
               <div className="flex items-center gap-3 mb-4">
                 <FaLayerGroup className="text-indigo-400" />
@@ -223,7 +251,7 @@ const ManagerDashboardView: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </motion.div>
