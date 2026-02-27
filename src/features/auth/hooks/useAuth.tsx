@@ -55,9 +55,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             const profile = await authService.getEmployeeProfile(Number(savedId));
             setUser(profile);
-
-            // 👇 IMPORTANT: backend should return this in profile
-            // setForceChangePassword(profile.forcePasswordChange ?? false);
           }
         } catch (error) {
           console.error("Auth initialization failed:", error);

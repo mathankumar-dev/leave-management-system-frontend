@@ -24,8 +24,14 @@ changePassword: async (newPassword: string): Promise<void> => {
   
 },
 
-  forgotPassword : async(email : string) => {
-    const response = await api.post('/password-reset/request',email);
-    return response;
+  forgotPassword : async(email : string) : Promise<void> => {
+    console.log("going to call forgot password");
+    console.log(email);
+    
+   const response = await api.post(`/password-reset/request?email=${email}`);
+   console.log(response);
+   
+    console.log("after forgotpass");
+    
   }
 };

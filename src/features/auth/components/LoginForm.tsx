@@ -8,6 +8,7 @@ import textSVG from '../../../assets/text.svg';
 import FailureModal from "../../../components/ui/FailureModal";
 import SuccessModal from "../../../components/ui/SuccessModal";
 import { authService } from "../services/AuthService";
+import { Link } from "react-router-dom";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState<string>("emp1@company.com");
@@ -138,8 +139,12 @@ const LoginForm: React.FC = () => {
               required
             />
           </div>
-          <a href="#" className="text-[11px] font-bold text-primary-700 hover:text-primary-700 hover:underline flex justify-end">Forgot Password?</a>
-        </div>
+          <Link
+            to="/forgot-password"
+            className="text-[11px] font-bold text-primary-700 hover:text-primary-700 hover:underline flex justify-end"
+          >
+            Forgot Password?
+          </Link>        </div>
 
         {/* Primary Action Button */}
         <button

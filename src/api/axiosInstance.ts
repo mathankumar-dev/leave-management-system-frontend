@@ -1,33 +1,3 @@
-// import axios from 'axios';
-// import { ENV } from '../config/environment';
-
-// const api = axios.create({
-//   baseURL: ENV.API_BASE_URL,
-// });
-
-// // Automatically attach the token from localStorage to every request
-// // api.interceptors.request.use((config) => {
-// //   const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
-// //   if (user?.token) {
-// //     config.headers.Authorization = `Bearer ${user.token}`;
-// //   }
-// //   return config;
-// // });
-
-// // Inside your api.ts (axios instance)
-// api.interceptors.request.use((config) => {
-//   // Use the same key used in AuthProvider
-//   const token = localStorage.getItem('lms_token'); 
-  
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return config;
-// });
-
-// export default api;
-
-
 
 import Cookies from "js-cookie";
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
@@ -78,7 +48,7 @@ api.interceptors.response.use(
       Cookies.remove("lms_token");
 
       // Optional: redirect to login
-      // window.location.href = "/login";
+      window.location.href = "/login";
     }
 
     return Promise.reject(error);

@@ -5,6 +5,7 @@ import { useAuth } from "../features/auth/hooks/useAuth"; // Use your hook
 import AuthPage from "../features/auth/pages/AuthPage";
 import DashboardLayout from "../features/dashboard/layout/DashboardLayout";
 import ProtectedRoute from "./ProtectedRoute";
+import ForgotPassword from "../features/auth/pages/ForgotPassword";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,23 +20,25 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      <Route 
-        path="/login" 
+      <Route
+        path="/login"
         element={
           !isAuthenticated ? (
             <AuthPage />
           ) : (
             <Navigate to="/dashboard" replace />
           )
-        } 
+        }
       />
 
-      
+
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard/*" element={<DashboardLayout />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+
     </Routes>
   );
 };
