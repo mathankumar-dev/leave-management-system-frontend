@@ -24,7 +24,7 @@ const ChangePasswordDialog: React.FC = () => {
       return;
     }
 
-    if (newPassword.length < 0) {
+    if (newPassword.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
     }

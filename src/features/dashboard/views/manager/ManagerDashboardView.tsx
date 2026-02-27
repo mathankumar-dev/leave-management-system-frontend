@@ -12,26 +12,24 @@ import CustomLoader from "../../../../components/ui/CustomLoader";
 const ManagerDashboardView: React.FC = () => {
 
 
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  const userId = user?.id;
   const { fetchManagerDashboard, processApproval, loading } = useDashboard();
 
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [approvals, setApprovals] = useState<any[]>([]);
 
   useEffect(() => {
-    if (userId) {
+    if (isLoading) return;
+    if (!user?.id) return;
 
-      fetchManagerDashboard(userId).then((data) => {
-        if (data) {
-          console.log(data.pendingTeamRequests);
-          setDashboardData(data);
-          setApprovals(data.pendingTeamRequests || []);
-        }
-      });
-    }
-  }, [userId, fetchManagerDashboard]);
+    fetchManagerDashboard(user.id).then((data) => {
+      if (data) {
+        setDashboardData(data);
+        setApprovals(data.pendingTeamRequests || []);
+      }
+    });
+  }, [user, isLoading, fetchManagerDashboard]);
 
   const handleAction = async (id: number, status: "Approved" | "Rejected") => {
     let comment: string | null = null;

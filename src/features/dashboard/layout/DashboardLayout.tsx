@@ -36,8 +36,7 @@ const ROLES = {
 };
 
 const DashboardLayout: React.FC = () => {
-  const { user, logout, forceChangePassword } = useAuth();
-
+  const { user, logout, mustChangePassword } = useAuth();
   const userRole = user?.role;
 
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -114,7 +113,7 @@ const DashboardLayout: React.FC = () => {
   };
 
   /* ---------------- STRICT PASSWORD LOCK ---------------- */
-  if (forceChangePassword) {
+  if (mustChangePassword) {
     return <ChangePasswordDialog />;
   }
 
