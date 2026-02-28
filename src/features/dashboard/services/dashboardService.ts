@@ -103,8 +103,9 @@ export const dashboardService = {
   // =============================
 
   getMyLeaveHistory: async (employeeId: number): Promise<LeaveRecord[]> => {
-
-    const response = await api.get(`leaves/employee/${employeeId}`);
+    console.log("leave history called");
+    
+    const response = await api.get(`/leaves/employee/${employeeId}`);
 
     return response.data;
 
