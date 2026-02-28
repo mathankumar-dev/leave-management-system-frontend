@@ -11,7 +11,7 @@ import {
 import {
   FaChartLine,
   FaCheckCircle,
-  FaClock,
+  FaClock, 
   FaPlus,
   FaTimesCircle,
 } from "react-icons/fa";
@@ -68,6 +68,8 @@ const statusConfig: Record<
 
 
 
+
+
 const DashboardView: React.FC<DashboardViewProps> = ({
   scope = "SELF",
   onNavigate,
@@ -106,14 +108,36 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       // ✅ ONLY REPLACE IF API RETURNS DATA
 
-      if (data?.summaryStats)
-        setStats(data.summaryStats);
+      if (data) {
 
-      if (data?.chartData)
-        setChartData(data.chartData);
+  setStats([
+    {
+      title: "Yearly Balance",
+      used: data.yearlyUsed,
+      total: data.yearlyAllocated,
+      color: "blue"
+    },
+    {
+      title: "Monthly Balance",
+      used: data.monthlyUsed,
+      total: data.monthlyAllocated,
+      color: "green"
+    },
+    {
+      title: "Approved",
+      used: data.approvedCount,
+      total: data.approvedCount,
+      color: "purple"
+    },
+    {
+      title: "Pending",
+      used: data.pendingCount,
+      total: data.pendingCount,
+      color: "orange"
+    }
+  ]);
 
-      if (data?.recentLeaves)
-        setRecentLeaves(data.recentLeaves);
+}
 
 
     } catch (err: any) {

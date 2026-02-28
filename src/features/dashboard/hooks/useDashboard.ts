@@ -1,8 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { dashboardService } from "../services/dashboardService";
-import { useMemo } from "react";
 import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
-
 
 import type {
   ApprovalRequest,
@@ -15,9 +13,12 @@ import type {
   LeaveDecisionRequest,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
+import { dashboardMockService } from "../services/dashboardMockService";
+// import type { CalendarScope } from "../types/scope";
 
-const service = dashboardService;
-
+// toggle this to false when the API is ready
+const USE_MOCK = false;
+const service = USE_MOCK ? dashboardMockService : dashboardService;
 
 export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -56,32 +57,47 @@ const processApproval = async (
 
   /* ================= EMPLOYEES ================= */
 
-  const fetchEmployees = async (): Promise<Employee[]> => {
+ const fetchEmployees = async (): Promise<Employee[]> => {
+  setLoading(true);
+  try {
+    return await dashboardService.getEmployeeDashboard(); // now always returns Employee[]
+  } catch (err: any) {
+    setError(err.message || "Failed to fetch employees");
+    return [];
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const fetchStats = useCallback(
+  async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
     setLoading(true);
     try {
-      return await service.getAllEmployees();
+      return await service.getHRStats(scope);
     } catch (err: any) {
-      setError(err.message || "Failed to fetch employees");
-      return [];
+      setError(err.message || "Failed to fetch HR analytics");
+      return null;
     } finally {
       setLoading(false);
     }
-  };
+  },
+  []
+);
 
-  const fetchStats = useCallback(
-    async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
-      setLoading(true);
-      try {
-        return await service.getHRStats(scope);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch HR analytics");
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+  const fetchDashboard = useCallback(async (employeeId: number) => {
+    setLoading(true);
+    try {
+      const response = await service.getEmpDashboard(employeeId);
+      console.log("API Response Success:", response); // Look for this in console
+      return response;
+    } catch (err: any) {
+      console.error("API ERROR DETAILS:", err.response?.data || err.message);
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const fetchDashboard = useCallback(async (employeeId: number) => {
     setLoading(true);
@@ -240,7 +256,7 @@ const processApproval = async (
       setLoading(true);
       try {
         const [calendar, members] = await Promise.all([
-          service.getCalendarLeaves(year, month, scope),
+          service.getCalendarLeaves(year, month,scope),
           service.getAllEmployees(),
         ]);
         return { calendar, members };
@@ -344,6 +360,7 @@ const processApproval = async (
     fetchTeamSchedule,
 
     // topDepartment,
+    
     // topApprover,
     filters, updateFilter, stats
   };

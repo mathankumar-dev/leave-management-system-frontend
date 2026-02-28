@@ -57,11 +57,14 @@ export const dashboardMockService = {
     return MOCK_PENDING_REQUESTS;
   },
 
-  updateApprovalStatus: async (id: number, status: 'Approved' | 'Rejected') => {
-    await sleep(500);
-    console.log(`Mock: Request ${id} has been ${status}`);
-    return { success: true, id, status };
-  },
+ updateApprovalStatus: async (
+  id: number,
+  status: 'Approved' | 'Rejected',
+  comment?: string
+) => {
+  await sleep(500);
+  return { success: true };
+},
 
   /**
    * 3. EMPLOYEE & TEAM DATA
@@ -71,15 +74,15 @@ export const dashboardMockService = {
     return MOCK_TEAM_MEMBERS;
   },
 
-  getDeptDistribution: async () => {
-    await sleep(400);
-    return [
-      { dept: "Engineering", count: 45 },
-      { dept: "Design", count: 15 },
-      { dept: "HR", count: 5 },
-      { dept: "Operations", count: 20 }
-    ];
-  },
+  getDeptDistribution: async (): Promise<{ dept: string; count: number }[]> => {
+  await sleep(400);
+  return [
+    { dept: "Engineering", count: 45 },
+    { dept: "Design", count: 15 },
+    { dept: "HR", count: 5 },
+    { dept: "Operations", count: 20 }
+  ];
+},
 
   /**
    * 4. LEAVE HISTORY & REQUESTS (User View)
@@ -98,10 +101,15 @@ export const dashboardMockService = {
   /**
    * 5. CALENDAR & SCHEDULE
    */
-  getCalendarLeaves: async (year: number, month: number) => {
-    await sleep(600);
-    return MOCK_CALENDAR_LEAVES;
-  },
+ getCalendarLeaves: async (
+  year: number,
+  month: number,
+  scope?: string
+) => {
+  await sleep(600);
+  return MOCK_CALENDAR_LEAVES;
+},
+
 
   /**
    * 6. SYSTEM (Notifications & Audit)

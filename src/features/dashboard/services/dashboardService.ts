@@ -23,15 +23,28 @@ import type {
 export const dashboardService = {
 
 
-  // =============================
-  // Dashboard Summary
-  // =============================
+// getEmployeeDashboard: async (employeeId: number) => {
 
-  getLeaveSummary: async () => {
+//   const response = await api.get(`/dashboard/employee/${employeeId}`);
 
-    const response = await api.get('/dashboard/summary');
+//   return response.data;
 
-    return response.data;
+// },
+
+
+//   // =============================
+//   // Dashboard Summary
+//   // =============================
+
+//  getLeaveSummary: async () => {
+
+//   const employeeId = Cookies.get("employee_id");
+
+//   const response = await api.get(
+//     `/dashboard/employee/${employeeId}`
+//   );
+
+//   return response.data;
 
   },
   getEmpDashboard: async (employeeId: number) => {
@@ -196,23 +209,15 @@ export const dashboardService = {
   // Calendar
   // =============================
 
-  getCalendarLeaves: async (
+  getCalendarLeaves: async (year: any, month: any, scope: any) => {
 
-    year: number,
+const response = await api.get(
+`/leaves/calendar?year=${year}&month=${month}&scope=${scope}`
+);
 
-    month: number
+return response.data;
 
-  ) => {
-
-    const response = await api.get(
-
-      `/leaves/calendar?year=${year}&month=${month}`
-
-    );
-
-    return response.data;
-
-  },
+},
 
 
   // =============================
@@ -249,6 +254,38 @@ export const dashboardService = {
 
     return response.data;
 
+  },
+  
+
+ getEmployeeDashboard: async (employeeId?: number): Promise<Employee[]> => {
+  // Use parameter if passed, otherwise fallback to cookie
+  const id = employeeId ?? getEmployeeId();
+
+  if (!id) {
+    console.error("Employee ID is missing! Cannot fetch dashboard.");
+    return [];
+  }
+
+  try {
+    const response = await api.get(`/dashboard/employee/${id}`);
+    console.log("Dashboard data:", response.data);
+    return [response.data];
+  } catch (error: any) {
+    console.error("Failed to fetch dashboard:", error.message || error);
+    return [];
+  }
+},
+
+  getLeaveSummary: async () => {
+    const id = Cookies.get("employee_id");
+    
+    if (!id) {
+      console.error("Employee ID is missing! Cannot fetch leave summary.");
+      return null;
+    }
+
+    const response = await api.get(`/dashboard/employee/${id}`);
+    return response.data;
   },
 
 

@@ -14,6 +14,8 @@ import type { ProfileData } from "../../types";
 import { MOCK_PROFILE } from "../../../../mockData";
 import { authService } from "../../../auth/services/AuthService";
 // import { getProfile } from "../../../auth/services/AuthService";
+import { getProfile } from "../../../auth/pages/services/AuthService";
+
 
 const EmployeeProfile: React.FC = () => {
 
