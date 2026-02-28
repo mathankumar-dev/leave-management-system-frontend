@@ -1,13 +1,14 @@
 import { useCallback, useState } from 'react';
 import { useHRDashboard } from '../hooks/useHRDashboard';
+import { DashboardSkeleton } from '../components/Dashboardskeleton';
 import { DashboardFilters } from '../components/DashboardFilters';
 import { SummarySection } from '../components/SummarySection';
 import { DepartmentChart } from '../components/DepartmentChart';
 import { ManagerTrackingTable } from '../components/ManagerTrackingTable';
 import { MonitoringSection } from '../components/MonitoringSection';
-import { LowBalanceTable } from '../components/Lowbalancetable';
 import { ExportActions } from '../components/ExportActions';
 import OnboardingStats from '../components/OnboardingStats';
+import { LowBalanceTable } from '../components/LowBalanceTable';
 
 interface HRDashboardProps {
   userName?: string;
@@ -40,30 +41,22 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
     setFilters((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  // ─── Loading ─────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
-          <p className="text-slate-500 text-sm font-medium">Loading HR Dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  // ─── Skeleton Loading ─────────────────────────────────────────────
+  if (loading) return <DashboardSkeleton />;
 
   // ─── Error ───────────────────────────────────────────────────────
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <div className="flex flex-col items-center gap-3">
-          <p className="text-red-500 text-sm font-medium">Error: {error}</p>
-          <button
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+          <p className="text-slate-500 text-sm font-medium">Loading HR Dashboard...</p>
+          {/* <button
             onClick={reload}
             className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Retry
-          </button>
+          </button> */}
         </div>
       </div>
     );
@@ -114,7 +107,7 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
         </div>
       </div>
 
-      {/* Low Balance Table — backend 500 gracefully handled */}
+      {/* Low Balance Table */}
       <LowBalanceTable
         data={lowBalanceData}
         loading={lowBalanceLoading}
