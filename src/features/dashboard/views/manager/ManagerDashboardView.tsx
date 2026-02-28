@@ -3,22 +3,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FaCheck, FaClock, FaCalendarAlt,
   FaUsers, FaCheckDouble,
-  FaCommentDots, FaLayerGroup
+  FaCommentDots
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../../auth/hooks/useAuth";
 import CustomLoader from "../../../../components/ui/CustomLoader";
 import type { LeaveDecision, LeaveDecisionRequest } from "../../types";
+import { notify } from "../../../../utils/notifications"; 
+import CommentDialog from "../../../../components/ui/CommentDialog";
 
 const ManagerDashboardView: React.FC = () => {
-
-
   const { user, isLoading } = useAuth();
-
   const { fetchManagerDashboard, processApproval, loading } = useDashboard();
 
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [approvals, setApprovals] = useState<any[]>([]);
+
+  // Dialog State
+  const [dialogConfig, setDialogConfig] = useState<{
+    isOpen: boolean;
+    req: any;
+    status: LeaveDecision | null;
+  }>({ isOpen: false, req: null, status: null });
 
   useEffect(() => {
     if (isLoading) return;
@@ -32,49 +38,49 @@ const ManagerDashboardView: React.FC = () => {
     });
   }, [user, isLoading, fetchManagerDashboard]);
 
-  const handleAction = async (id: number, status: LeaveDecision) => {
+  // Step 1: Logic to decide if we need a dialog
+  const handleAction = (req: any, status: LeaveDecision) => {
     if (!user?.id) {
-      alert("Authentication error: Manager ID not found.");
+      notify.error("Auth Error", "Manager ID not found.");
       return;
     }
 
-    let commentText: string | undefined = undefined;
-
-    // 1. Enforce mandatory comments for specific statuses
     if (status === 'REJECTED' || status === 'MEETING_REQUIRED') {
-      const promptMsg = status === 'REJECTED'
-        ? "Mandatory: Please provide a reason for rejection:"
-        : "Mandatory: Please provide notes for the required meeting:";
-
-      const reason = prompt(promptMsg);
-
-      // Strict validation: stop the process if the comment is missing or empty
-      if (!reason || reason.trim() === "") {
-        alert(`A comment is required to set the status to ${status}.`);
-        return;
-      }
-      commentText = reason;
+      setDialogConfig({ isOpen: true, req, status });
+      return;
     }
 
- 
+    // Process approval immediately
+    executeDecision(req, status);
+  };
+
+  // Step 2: Final API Execution
+  const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
     const decisionPayload: LeaveDecisionRequest = {
-      leaveId: id, 
-      managerId: Number(user.id),
+      leaveId: req.leaveId,
+      managerId: Number(user?.id),
       decision: status,
-      comments: commentText 
+      comments: commentText
     };
 
-    // 3. Execute API call
     const success = await processApproval(decisionPayload);
 
     if (success) {
-      setApprovals((prev) => prev.filter((req) => req.leaveId !== id));
+      notify.leaveAction(status, req.employeeName || req.employee);
+      
+      // Update UI state
+      setApprovals((prev) => prev.filter((item) => item.leaveId !== req.leaveId));
       setDashboardData((prev: any) => ({
         ...prev,
         teamPendingRequestCount: Math.max(0, prev.teamPendingRequestCount - 1),
         approvedCount: status === 'APPROVED' ? prev.approvedCount + 1 : prev.approvedCount,
         rejectedCount: status === 'REJECTED' ? prev.rejectedCount + 1 : prev.rejectedCount,
       }));
+
+      // Close Dialog
+      setDialogConfig({ isOpen: false, req: null, status: null });
+    } else {
+      notify.error("Update Failed", "Please try again later.");
     }
   };
 
@@ -83,15 +89,23 @@ const ManagerDashboardView: React.FC = () => {
       <CustomLoader label="Loading Dashboard" />
     </div>
   );
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="space-y-6 max-w-7xl mx-auto text-slate-900"
     >
-      <div className="space-y-6 max-w-7xl mx-auto text-slate-900">
+      <CommentDialog
+        isOpen={dialogConfig.isOpen}
+        onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
+        title={dialogConfig.status === 'REJECTED' ? 'Reject Leave Request' : 'Discussion Required'}
+        placeholder={`Provide context for ${dialogConfig.req?.employeeName || 'this employee'}...`}
+        confirmLabel={dialogConfig.status === 'REJECTED' ? 'Confirm Rejection' : 'Confirm Discussion'}
+        onSubmit={(comment: string) => executeDecision(dialogConfig.req, dialogConfig.status!, comment)}
+      />
 
-        {/* 1. HEADER SECTION */}
+      <div className="space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-6 gap-4">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-slate-900">Manager Dashboard</h2>
@@ -102,8 +116,6 @@ const ManagerDashboardView: React.FC = () => {
             <button className="flex-1 md:flex-none px-4 py-2 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700 transition-all shadow-sm">Export Data</button>
           </div>
         </div>
-
-        {/* 2. STATS GRID - Using your JSON fields */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Team Size", value: dashboardData?.teamSize || 0, icon: <FaUsers />, color: "text-blue-600" },
@@ -122,11 +134,9 @@ const ManagerDashboardView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-          {/* 3. PENDING REQUESTS LIST */}
-          <div className="lg:col-span-8 space-y-4">
+          <div className="lg:col-span-12 space-y-4">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Action Required ({approvals.length})
               </h3>
@@ -145,62 +155,44 @@ const ManagerDashboardView: React.FC = () => {
                       className="group bg-white border border-slate-200 rounded-md p-4 hover:border-indigo-400 transition-all shadow-sm"
                     >
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-
-                        {/* Avatar & Basic Info */}
                         <div className="flex items-center gap-3 w-full sm:w-auto">
                           <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded flex items-center justify-center text-indigo-700 font-bold text-sm shrink-0">
                             {(req.employeeName || req.employee || "E").charAt(0)}
                           </div>
-                          <div className="flex-1 sm:hidden">
+                          <div className="flex-1">
                             <p className="font-bold text-sm">{req.employeeName || req.employee}</p>
-
                             <p className="text-[10px] text-slate-500 font-medium">ID: {req.employeeId}</p>
                           </div>
                         </div>
 
-                        {/* Request Details */}
                         <div className="flex-1 min-w-0 w-full">
-                          <div className="hidden sm:flex items-center gap-2">
-                            <span className="font-bold text-sm">{req.employeeName || req.employee}</span>
-                            <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 border border-slate-200">#{req.id}</span>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0 sm:mt-1 text-xs text-slate-500">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
                             <span className="font-bold text-indigo-600">{req.leaveType || req.type}</span>
-                            <span className="hidden sm:inline">•</span>
+                            <span>•</span>
                             <span>{req.numberOfDays || req.days} days requested</span>
                           </div>
-
                           {req.reason && (
-                            <div className="mt-3 flex items-start gap-2 bg-slate-50 p-2 rounded border border-slate-100">
+                            <div className="mt-2 flex items-start gap-2 bg-slate-50 p-2 rounded border border-slate-100">
                               <FaCommentDots className="text-slate-400 mt-0.5 shrink-0" />
-                              <p className="text-[11px] italic text-slate-600 leading-relaxed">
-                                "{req.reason}"
-                              </p>
+                              <p className="text-[11px] italic text-slate-600">"{req.reason}"</p>
                             </div>
                           )}
                         </div>
-
-                        {/* Actions */}
                         <div className="flex gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
-                          {/* DENY BUTTON */}
                           <button
-                            onClick={() => handleAction(req.leaveId, 'REJECTED')}
+                            onClick={() => handleAction(req, 'REJECTED')}
                             className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 rounded text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all text-xs font-bold"
                           >
                             Deny
                           </button>
-
-                          {/* DISCUSS BUTTON - Styled with a softer slate/indigo tint */}
                           <button
-                            onClick={() => handleAction(req.leaveId, 'MEETING_REQUIRED')}
+                            onClick={() => handleAction(req, 'MEETING_REQUIRED')}
                             className="flex-1 sm:flex-none px-4 py-2 bg-slate-100 text-slate-700 border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-all text-xs font-bold"
                           >
                             Discuss
                           </button>
-
-                          {/* APPROVE BUTTON */}
                           <button
-                            onClick={() => handleAction(req.leaveId, 'APPROVED')}
+                            onClick={() => handleAction(req, 'APPROVED')}
                             className="flex-1 sm:flex-none px-4 py-2 bg-slate-900 text-white rounded hover:bg-indigo-600 transition-all text-xs font-bold shadow-sm"
                           >
                             Approve
@@ -218,40 +210,6 @@ const ManagerDashboardView: React.FC = () => {
               </AnimatePresence>
             </div>
           </div>
-
-          {/* 4. SIDEBAR - Team Insight */}
-          {/* <div className="lg:col-span-4 space-y-6">
-            <div className="bg-slate-900 rounded-xl p-5 text-white shadow-xl shadow-slate-200">
-              <div className="flex items-center gap-3 mb-4">
-                <FaLayerGroup className="text-indigo-400" />
-                <h3 className="text-sm font-bold tracking-wide">Team Insights</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                  <span className="text-xs text-slate-400">Monthly Balance Used</span>
-                  <span className="text-sm font-bold">{dashboardData?.monthlyUsed || 0} Days</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                  <span className="text-xs text-slate-400">Active Team Leaves</span>
-                  <span className="text-sm font-bold text-indigo-400">{dashboardData?.teamOnLeaveCount || 0}</span>
-                </div>
-                <div className="pt-2">
-                  <p className="text-[10px] text-slate-500 uppercase font-black mb-3">On Leave Today</p>
-                  {dashboardData?.teamOnLeaveToday?.length > 0 ? (
-                    <div className="flex -space-x-2">
-                      {dashboardData.teamOnLeaveToday.map((name: string, i: number) => (
-                        <div key={i} title={name} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-indigo-500 flex items-center justify-center text-[10px] font-bold">
-                          {name.charAt(0)}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 italic">No one is out today</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div> */}
         </div>
       </div>
     </motion.div>

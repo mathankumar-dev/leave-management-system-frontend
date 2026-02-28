@@ -8,6 +8,7 @@ export interface RequestTileProps {
     leaveType: string;
     dateRange: string;
     reasonMessage: string;
+    createdAt : string;
     onClick?: () => void;
     onAccept: () => void;
     onReject: () => void;
@@ -19,6 +20,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
     leaveType,
     dateRange,
     reasonMessage,
+    createdAt,
     onAccept,
     onReject,
     onDiscuss,
@@ -79,7 +81,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
 
             {/* 5. Timestamp */}
             <span className='text-gray-400 text-[10px] md:text-xs self-end md:self-center whitespace-nowrap'>
-                2 min ago
+                {createdAt}
             </span>
         </div>
     )

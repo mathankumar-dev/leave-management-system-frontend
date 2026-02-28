@@ -27,6 +27,6 @@ export interface User {
   onboardingCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  mustChangePassword : boolean;
+  mustChangePassword? : boolean;
 }
 

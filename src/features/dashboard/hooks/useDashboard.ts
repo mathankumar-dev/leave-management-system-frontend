@@ -181,7 +181,6 @@ const processApproval = async (
     setLoading(true);
     setError(null);
     try {
-      // Pass the typed data to the service
       const result = await service.submitLeaveRequest(formData);
       return result;
     } catch (err: any) {
