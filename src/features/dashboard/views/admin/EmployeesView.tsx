@@ -28,7 +28,9 @@ const EmployeesView = () => {
   const [openAddEmployee, setOpenAddEmployee] = useState(false);
 
    useEffect(() => {
-  const employeeId = user?.id;
+  // const employeeId = user?.id;
+
+  const employeeId = getEmployeeId();
 
   if (!employeeId) {
     console.warn("Employee ID not ready yet");
