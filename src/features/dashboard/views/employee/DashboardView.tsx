@@ -23,15 +23,10 @@ import LeaveDetailsDrawer from "../../components/LeaveDetailsDrawer";
 import { useDashboard } from "../../hooks/useDashboard";
 
 
-// ✅ MOCK DATA IMPORT
-import {
-  MOCK_CHART_DATA,
-  MOCK_DASHBOARD_STATS,
-  MOCK_LEAVE_HISTORY,
-} from "../../../../mockData";
-
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
 import ActivityCard from "../../../../components/ui/ActivityCard";
+import { useAuth } from "../../../auth/hooks/useAuth";
+import { MOCK_DASHBOARD_STATS, MOCK_LEAVE_HISTORY } from "../../../../mockData";
 
 
 export type DashboardScope = "SELF" | "TEAM" | "ALL";
@@ -68,75 +63,75 @@ const statusConfig: Record<
 
 
 
+
+
 const DashboardView: React.FC<DashboardViewProps> = ({
   scope = "SELF",
   onNavigate,
 }) => {
-
   const { fetchStats, fetchDashboard, setError } = useDashboard();
 
-
-  // ✅ USE MOCK DATA AS DEFAULT
-  const [stats, setStats] = useState<any[]>(MOCK_DASHBOARD_STATS);
-
-  const [chartData, setChartData] = useState<any[]>(MOCK_CHART_DATA);
-
-  const [recentLeaves, setRecentLeaves] = useState<any[]>(MOCK_LEAVE_HISTORY);
-
-
-
+  // 1. Initialized with empty arrays
+  const [stats, setStats] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
   const [fetching, setFetching] = useState(true);
-
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
-
-
+  const { user } = useAuth();
+  const employeeId = user?.id;
 
   const loadDashboardData = useCallback(async () => {
+    if (!employeeId) return;
 
     try {
-
       setFetching(true);
+      const data = await fetchDashboard(employeeId);
 
-      // const data = await fetchStats(scope);
-      const data = await fetchDashboard();
+      if (data) {
+        // 2. Map API data to the StatCard format
+        setStats([
+          {
+            title: "Yearly Balance",
+            used: data.yearlyUsed || 0,
+            total: data.yearlyAllocated || 0,
+            color: "blue"
+          },
+          {
+            title: "Monthly Balance",
+            used: data.monthlyUsed || 0,
+            total: data.monthlyAllocated || 0,
+            color: "green"
+          },
+          {
+            title: "Approved",
+            used: data.approvedCount || 0,
+            total: data.approvedCount || 0,
+            color: "purple"
+          },
+          {
+            title: "Pending",
+            used: data.pendingCount || 0,
+            total: data.pendingCount || 0,
+            color: "orange"
+          }
+        ]);
 
-      console.log(data);
-
-
-      // ✅ ONLY REPLACE IF API RETURNS DATA
-
-      if (data?.summaryStats)
-        setStats(data.summaryStats);
-
-      if (data?.chartData)
-        setChartData(data.chartData);
-
-      if (data?.recentLeaves)
-        setRecentLeaves(data.recentLeaves);
-
-
+        // 3. Map Chart Data (Assuming API might send utilization array)
+        // If your API doesn't have data.utilization yet, chart will just be empty.
+        if (data.utilization) {
+            setChartData(data.utilization);
+        }
+      }
     } catch (err: any) {
-
-      console.log("API Failed → Using MOCK DATA");
-
-      setError(err?.message || "Mock Data Used");
-
+      console.error("Dashboard API Error:", err);
+      setError(err?.message || "Failed to load dashboard data");
     } finally {
-
       setFetching(false);
-
     }
-
-    // }, [fetchStats, scope, setError]);
-  }, [fetchDashboard, setError]);
-
-
+  }, [employeeId, fetchDashboard, setError]);
 
   useEffect(() => {
-
     loadDashboardData();
-
   }, [loadDashboardData]);
 
 
@@ -196,7 +191,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* RECENT LEAVES */}
 
-      {recentLeaves.map((req) => {
+      {/* {recentLeaves.map((req) => {
 
         const config = statusConfig[req.status];
 
@@ -216,7 +211,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
         );
 
-      })}
+      })} */}
 
 
 
@@ -305,7 +300,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* POPUP */}
 
-      <RecentLeavePopup latestLeave={recentLeaves[0]} />
+      {/* <RecentLeavePopup latestLeave={recentLeaves[0]} /> */}
 
 
 

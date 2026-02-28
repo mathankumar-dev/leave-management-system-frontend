@@ -8,11 +8,19 @@ import { ENV } from '../config/environment';
  * Create an Axios instance with base configuration
  */
 const api: AxiosInstance = axios.create({
-  baseURL: ENV.API_BASE_URL,
+    baseURL: ENV.API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+export const getEmployeeId = () => {
+
+  const id = Cookies.get("employee_id");
+
+  return id ? Number(id) : null;
+
+};
 
 /**
  * REQUEST INTERCEPTOR
