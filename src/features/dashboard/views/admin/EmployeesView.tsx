@@ -12,9 +12,12 @@ import { useDashboard } from "../../hooks/useDashboard";
 import type { Employee } from "../../types";
 import AddEmployeeForm from "../../components/AddEmployeeForm";
 import { getEmployeeId } from "../../../../api/axiosInstance";
+import { useAuth } from "../../../auth/hooks/useAuth";
 
 const EmployeesView = () => {
   const { fetchEmployees, loading } = useDashboard();
+
+  const {user} = useAuth();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,7 +28,7 @@ const EmployeesView = () => {
   const [openAddEmployee, setOpenAddEmployee] = useState(false);
 
    useEffect(() => {
-  const employeeId = getEmployeeId();
+  const employeeId = user?.id;
 
   if (!employeeId) {
     console.warn("Employee ID not ready yet");

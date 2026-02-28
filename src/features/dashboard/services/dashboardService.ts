@@ -17,36 +17,18 @@ import type {
   LeaveDecisionRequest
 
 } from '../types';
+import { getEmployeeId } from '../../auth/pages/services/AuthService';
 
 
 
 export const dashboardService = {
 
 
-// getEmployeeDashboard: async (employeeId: number) => {
-
-//   const response = await api.get(`/dashboard/employee/${employeeId}`);
-
-//   return response.data;
-
-// },
 
 
-//   // =============================
-//   // Dashboard Summary
-//   // =============================
 
-//  getLeaveSummary: async () => {
 
-//   const employeeId = Cookies.get("employee_id");
-
-//   const response = await api.get(
-//     `/dashboard/employee/${employeeId}`
-//   );
-
-//   return response.data;
-
-  },
+ 
   getEmpDashboard: async (employeeId: number) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
@@ -116,8 +98,10 @@ export const dashboardService = {
   // =============================
 
   getMyLeaveHistory: async (employeeId: number): Promise<LeaveRecord[]> => {
+    console.log("get my leaves here vanthuruchu");
+    
 
-    const response = await api.get(`leaves/employee/${employeeId}`);
+    const response = await api.get(`/leaves/employee/${employeeId}`);
 
     return response.data;
 
@@ -297,5 +281,6 @@ return response.data;
 
   },
 
-
+ 
 };
+ 

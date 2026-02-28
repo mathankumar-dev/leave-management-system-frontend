@@ -8,7 +8,7 @@ import { ENV } from '../config/environment';
  * Create an Axios instance with base configuration
  */
 const api: AxiosInstance = axios.create({
-    baseURL: "https://jgpq493j-8080.inc1.devtunnels.ms/api",
+    baseURL: ENV.API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
