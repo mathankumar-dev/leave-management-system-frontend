@@ -181,7 +181,7 @@ export interface AuditLog {
 // ==============================
 
 export interface ProfileData {
-  // Identity & Basic Info
+
   name?: string;
   role: string;
 
@@ -189,7 +189,7 @@ export interface ProfileData {
 
   phone: string;
 
-  employeeId: string;
+  id: number;
 
   photo: string;
 
@@ -202,6 +202,7 @@ export interface ProfileData {
   workLocation: string;
 
   managerName: string;
+  managerId? : number;
 
   employmentType: 'Full-time' | 'Contract' | 'Intern';
 

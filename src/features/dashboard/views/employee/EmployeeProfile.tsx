@@ -34,9 +34,26 @@ const EmployeeProfile: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      const userData = user as unknown as ProfileData;
-      setProfile(userData);
-      setOriginalProfile(userData);
+      setProfile({
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        email: user.email,
+        phone: "",
+        photo: "",
+        department: user.department ?? "",
+        designation: "",
+        joiningDate: user.joiningDate,
+        workLocation: "",
+        managerName: "",
+        managerId: user.managerId ?? undefined,
+        employmentType: "Full-time",
+        dob: "",
+        gender: "",
+        nationality: "",
+        address: "",
+        skills: [],
+      });
     }
   }, [user]);
 
@@ -104,7 +121,7 @@ const EmployeeProfile: React.FC = () => {
                 {profile.employmentType}
               </span>
               <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold uppercase">
-                ID: {profile.employeeId || 'N/A'}
+                ID: {profile.id || 'N/A'}
               </span>
             </div>
 
@@ -116,7 +133,7 @@ const EmployeeProfile: React.FC = () => {
 
               <div className="flex items-center gap-3 text-slate-600">
                 <FaShieldAlt className="text-slate-400 text-xs shrink-0" />
-                <span className="text-xs">Reports to: {profile.managerName || 'Direct Manager'}</span>
+                <span className="text-xs">Reports to: {profile.managerId || 'Direct Manager'}</span>
               </div>
             </div>
           </motion.div>
@@ -139,13 +156,13 @@ const EmployeeProfile: React.FC = () => {
                 onChange={handleChange}
                 onPhotoChange={handlePhotoChange}
                 onStartEdit={() => {
-                    setOriginalProfile(profile);
-                    setIsEditing(true);
+                  setOriginalProfile(profile);
+                  setIsEditing(true);
                 }}
                 onSave={() => setIsEditing(false)}
                 onCancel={() => {
-                    setProfile(originalProfile);
-                    setIsEditing(false);
+                  setProfile(originalProfile);
+                  setIsEditing(false);
                 }}
               />
             </div>

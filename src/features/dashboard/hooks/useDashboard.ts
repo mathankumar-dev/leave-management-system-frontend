@@ -87,7 +87,6 @@ const processApproval = async (
     setLoading(true);
     try {
       const response = await service.getEmpDashboard(employeeId);
-      console.log("API Response Success:", response); // Look for this in console
       return response;
     } catch (err: any) {
       console.error("API ERROR DETAILS:", err.response?.data || err.message);
