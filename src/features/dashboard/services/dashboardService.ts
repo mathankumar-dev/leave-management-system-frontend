@@ -14,7 +14,8 @@ import type {
   AuditLog,
   LeaveApplication,
   LeaveDecision,
-  LeaveDecisionRequest
+  LeaveDecisionRequest,
+  TeamCalendarResponse
 
 } from '../types';
 import { getEmployeeId } from '../../auth/pages/services/AuthService';
@@ -23,7 +24,12 @@ import { getEmployeeId } from '../../auth/pages/services/AuthService';
 
 export const dashboardService = {
 
-
+getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
+    const response = await api.get<TeamCalendarResponse>(
+      `/dashboard/manager/team-calendar/${managerId}`
+    );
+    return response.data;
+  },
 
 
 

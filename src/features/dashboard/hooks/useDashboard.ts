@@ -11,6 +11,7 @@ import type {
   LeaveApplication,
   LeaveDecision,
   LeaveDecisionRequest,
+  TeamCalendarResponse,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
 // import type { CalendarScope } from "../types/scope";
@@ -22,6 +23,7 @@ const service = dashboardService;
 export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
 
   /* ================= APPROVALS ================= */
 
@@ -245,28 +247,19 @@ const processApproval = async (
 
   /* ================= TEAM ================= */
 
-  // const fetchTeamSchedule = useCallback(
-  //   async (
-  //     year: number,
-  //     month: number,
-  //     scope: CalendarScope = "TEAM"
-  //   ) => {
-  //     setLoading(true);
-  //     try {
-  //       const [calendar, members] = await Promise.all([
-  //         service.getCalendarLeaves(year, month,scope),
-  //         service.getAllEmployees(),
-  //       ]);
-  //       return { calendar, members };
-  //     } catch (err: any) {
-  //       setError(err.message || "Failed to sync team schedule");
-  //       return null;
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   },
-  //   []
-  // );
+  const fetchTeamSchedule = useCallback(async (managerId: number) => {
+    setLoading(true);
+    try {
+      const data = await dashboardService.getTeamCalendar(managerId);
+      setTeamCalendar(data);
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch team calendar", error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Add this to your useDashboard.ts
   const fetchManagerDashboard = useCallback(async (id: number) => {
@@ -355,7 +348,8 @@ const processApproval = async (
     fetchLeaveTypes,
     addLeaveType,
     removeLeaveType,
-    // fetchTeamSchedule,
+    fetchTeamSchedule,
+    teamCalendar,
 
     // topDepartment,
     

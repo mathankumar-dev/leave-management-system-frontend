@@ -21,12 +21,6 @@ const PendingApprovalsView: React.FC = () => {
         status: LeaveDecision | null;
     }>({ isOpen: false, req: null, status: null });
 
-    console.log("Printing reqs");
-
-    requests.forEach((r) => {
-        console.log(r);
-    })
-
     const onActionTriggered = (req: any, status: LeaveDecision) => {
         if (status === 'REJECTED' || status === 'MEETING_REQUIRED') {
             setDialogConfig({
