@@ -10,7 +10,7 @@ export const authService = {
 
 
 getEmployeeProfile: async (id: number): Promise<User> => {
-    const response = await api.get<User>(`/employees/profile?employeeId=${id}`);
+    const response = await api.get<User>(`/employees/profile/${id}`);
     return response.data;
   }
 };
