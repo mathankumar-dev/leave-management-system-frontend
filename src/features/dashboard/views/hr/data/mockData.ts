@@ -24,14 +24,14 @@
 // export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 // export const DEPARTMENTS = ['Engineering', 'Product', 'Design', 'Marketing', 'Sales', 'HR'];
 
-// export const departmentLeaveData = [
-//   { department: 'Engineering', leaves: 18, employees: 45 },
-//   { department: 'Product', leaves: 9, employees: 22 },
-//   { department: 'Design', leaves: 5, employees: 15 },
-//   { department: 'Marketing', leaves: 11, employees: 28 },
-//   { department: 'Sales', leaves: 7, employees: 32 },
-//   { department: 'HR', leaves: 3, employees: 14 },
-// ];
+export const departmentLeaveData = [
+  { department: 'Engineering', leaves: 18, employees: 45 },
+  { department: 'Product', leaves: 9, employees: 22 },
+  { department: 'Design', leaves: 5, employees: 15 },
+  { department: 'Marketing', leaves: 11, employees: 28 },
+  { department: 'Sales', leaves: 7, employees: 32 },
+  { department: 'HR', leaves: 3, employees: 14 },
+];
 
 // export const leaveTypeDistribution = [
 //   { name: 'Casual', value: 28, color: '#8B5CF6' },
@@ -41,13 +41,13 @@
 //   { name: 'Loss of Pay', value: 4, color: '#6B7280' },
 // ];
 
-// export const managerTrackingData = [
-//   { name: 'Sarah Wilson', department: 'Engineering', approved: 24, pending: 3, rejected: 2, avgApprovalHrs: 4.2 },
-//   { name: 'John Peters', department: 'Marketing', approved: 18, pending: 5, rejected: 4, avgApprovalHrs: 8.1 },
-//   { name: 'Lisa Chen', department: 'Product', approved: 15, pending: 1, rejected: 1, avgApprovalHrs: 2.5 },
-//   { name: 'Mike Brown', department: 'Sales', approved: 20, pending: 4, rejected: 3, avgApprovalHrs: 6.3 },
-//   { name: 'Anna Davis', department: 'Design', approved: 10, pending: 2, rejected: 0, avgApprovalHrs: 3.8 },
-// ];
+export const managerTrackingData = [
+  { name: 'Sarah Wilson', department: 'Engineering', approved: 24, pending: 3, rejected: 2, avgApprovalHrs: 4.2 },
+  { name: 'John Peters', department: 'Marketing', approved: 18, pending: 5, rejected: 4, avgApprovalHrs: 8.1 },
+  { name: 'Lisa Chen', department: 'Product', approved: 15, pending: 1, rejected: 1, avgApprovalHrs: 2.5 },
+  { name: 'Mike Brown', department: 'Sales', approved: 20, pending: 4, rejected: 3, avgApprovalHrs: 6.3 },
+  { name: 'Anna Davis', department: 'Design', approved: 10, pending: 2, rejected: 0, avgApprovalHrs: 3.8 },
+];
 
 // // ---------------- LOW LEAVE BALANCE ----------------
 

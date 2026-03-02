@@ -325,11 +325,11 @@ const processApproval = async (
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  // const stats = useMemo(() => ({
-  //   topDepartment: departmentLeaveData.reduce((max, d) => (d.leaves > max.leaves ? d : max), departmentLeaveData[0]),
-  //   topApprover: managerTrackingData.reduce((max, m) => (m.approved > max.approved ? m : max), managerTrackingData[0]),
-  //   topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
-  // }), []);
+  const stats = useMemo(() => ({
+    topDepartment: departmentLeaveData.reduce((max, d) => (d.leaves > max.leaves ? d : max), departmentLeaveData[0]),
+    topApprover: managerTrackingData.reduce((max, m) => (m.approved > max.approved ? m : max), managerTrackingData[0]),
+    topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
+  }), []);
 
   /* ================= EXPORT ================= */
 

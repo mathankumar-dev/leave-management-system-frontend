@@ -8,7 +8,7 @@ import { ManagerTrackingTable } from '../components/ManagerTrackingTable';
 import { MonitoringSection } from '../components/MonitoringSection';
 import { ExportActions } from '../components/ExportActions';
 import OnboardingStats from '../components/OnboardingStats';
-import { LowBalanceTable } from '../components/LowBalanceTable';
+import { LowBalanceTable } from '../components/Lowbalancetable';
 
 interface HRDashboardProps {
   userName?: string;

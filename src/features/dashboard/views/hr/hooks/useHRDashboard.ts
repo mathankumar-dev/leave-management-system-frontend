@@ -28,12 +28,12 @@ export function useHRDashboard() {
     error:             null,
   });
 
-  const loadDashboard = useCallback(async (signal?: AbortSignal) => {
+  const loadDashboard = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, lowBalanceLoading: true, error: null }));
 
     try {
       // Main dashboard — must succeed
-      const data = await hrDashboardService.getDashboardData(signal);
+      const data = await hrDashboardService.getDashboardData();
 
       const departmentStats: DepartmentStat[] = data.teamStructure.map((team) => ({
         department: team.managerName,
