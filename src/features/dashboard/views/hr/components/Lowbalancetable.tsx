@@ -59,19 +59,19 @@ export function LowBalanceTable({ data, loading, error }: LowBalanceTableProps) 
     }
 
     // Backend error — show message, not crash
-    if (error) {
-      return (
-        <tr>
-          <td colSpan={7} className="py-8 text-center">
-            <div className="flex flex-col items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-400" />
-              <p className="text-sm text-slate-400">{error}</p>
-              <p className="text-xs text-slate-300">Backend team-கிட்ட confirm பண்ணுங்க</p>
-            </div>
-          </td>
-        </tr>
-      );
-    }
+    // if (error) {
+    //   return (
+    //     <tr>
+    //       <td colSpan={7} className="py-8 text-center">
+    //         <div className="flex flex-col items-center gap-2">
+    //           <AlertTriangle className="h-5 w-5 text-amber-400" />
+    //           <p className="text-sm text-slate-400">{error}</p>
+    //           <p className="text-xs text-slate-300">Backend team-கிட்ட confirm பண்ணுங்க</p>
+    //         </div>
+    //       </td>
+    //     </tr>
+    //   );
+    // }
 
     // Empty state
     if (data.length === 0) {
@@ -131,13 +131,13 @@ export function LowBalanceTable({ data, loading, error }: LowBalanceTableProps) 
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             Low Leave Balance
           </CardTitle>
-          <CardDescription className="text-xs text-slate-500">
+          {/* <CardDescription className="text-xs text-slate-500">
             {error ? (
               <span className="text-amber-500">Backend unavailable</span>
             ) : (
               <>Total: <span className="font-bold text-slate-700">{data.length}</span> employees</>
             )}
-          </CardDescription>
+          </CardDescription> */}
         </div>
       </CardHeader>
 
