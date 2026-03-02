@@ -1,116 +1,134 @@
+import { useCallback, useState } from 'react';
 import { useHRDashboard } from '../hooks/useHRDashboard';
+import { DashboardSkeleton } from '../components/Dashboardskeleton';
 import { DashboardFilters } from '../components/DashboardFilters';
 import { SummarySection } from '../components/SummarySection';
-// import { LeaveInsights } from '../components/LeaveInsights';
 import { DepartmentChart } from '../components/DepartmentChart';
-import { LeaveTypeChart } from '../components/LeaveTypeChart';
-import { MonthlyTrendChart } from '../components/MonthlyTrendChart';
 import { ManagerTrackingTable } from '../components/ManagerTrackingTable';
 import { MonitoringSection } from '../components/MonitoringSection';
-import { QuickStatsRow } from '../components/QuickStatsRow';
 import { ExportActions } from '../components/ExportActions';
+import OnboardingStats from '../components/OnboardingStats';
+import { LowBalanceTable } from '../components/Lowbalancetable';
 
+interface HRDashboardProps {
+  userName?: string;
+}
 
-export function HRDashboard() {
-  const { filters, updateFilter, stats } = useHRDashboard();
+export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
+  const {
+    data,
+    departmentStats,
+    lowBalanceData,
+    lowBalanceError,
+    lowBalanceLoading,
+    loading,
+    error,
+    reload,
+  } = useHRDashboard();
+
+  const [filters, setFilters] = useState({
+    month:      '',
+    year:       '',
+    department: '',
+    leaveType:  '',
+    manager:    '',
+  });
+
+  const updateFilter = useCallback((
+    key: keyof typeof filters,
+    value: string
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  // ─── Skeleton Loading ─────────────────────────────────────────────
+  if (loading) return <DashboardSkeleton />;
+
+  // ─── Error ───────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+          <p className="text-slate-500 text-sm font-medium">Loading HR Dashboard...</p>
+          {/* <button
+            onClick={reload}
+            className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button> */}
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-6 lg:p-8 space-y-6 animate-fade-in">
+
+      {/* Header */}
       <div className="flex flex-col mb-2">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back, Priya</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          Welcome back, {userName}
+        </h1>
         <p className="text-sm text-slate-500">HR analytics and workforce insights</p>
+        <span className="text-xs text-slate-400 mt-1">
+          Last updated: {new Date(data.lastUpdated).toLocaleString()}
+        </span>
       </div>
 
+      {/* Filters */}
       <DashboardFilters filters={filters} updateFilter={updateFilter} />
-      
-      <SummarySection />
-      
-      {/* 3-Column Chart Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-            <DepartmentChart topDepartment={stats.topDepartment} />
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-            <LeaveTypeChart />
-        </div>
-        <MonthlyTrendChart />
-      </div>
 
-      {/* Table Section */}
-      <div className="grid grid-cols-1 gap-6">
-          <ManagerTrackingTable 
-            topApprover={stats.topApprover} 
-            topPending={stats.topPending} 
+      {/* Summary Cards */}
+      <SummarySection
+        totalEmployees={data.totalEmployees}
+        activeEmployees={data.activeEmployees}
+        employeesOnLeaveToday={data.employeesOnLeaveToday}
+        totalPendingLeaves={data.totalPendingLeaves}
+        totalApprovedLeaves={data.totalApprovedLeaves}
+      />
+
+      {/* Team Chart + Onboarding */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <DepartmentChart
+            data={departmentStats}
+            topDepartment={departmentStats[0]?.department}
           />
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <OnboardingStats
+            newEmployeesCount={data.newEmployeesCount}
+            pendingBiometricCount={data.pendingBiometricCount}
+            pendingVPNCount={data.pendingVPNCount}
+          />
+        </div>
       </div>
 
-      <MonitoringSection />
-      
-      <div className="pt-4 border-t border-slate-200">
-        <QuickStatsRow />
-      </div>
-      
+      {/* Low Balance Table */}
+      <LowBalanceTable
+        data={lowBalanceData}
+        loading={lowBalanceLoading}
+        error={lowBalanceError}
+      />
+
+      {/* Manager Tracking */}
+      <ManagerTrackingTable
+        totalManagers={data.totalManagersWithApprovals}
+        managerStats={data.managerApprovalStats}
+      />
+
+      {/* Monitoring */}
+      <MonitoringSection
+        onboardingList={data.onboardingPendingList}
+        employeesOnLeave={data.employeesOnLeave}
+      />
+
+      {/* Export */}
       <ExportActions />
+
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useState } from "react";
-// import { DashboardFilters } from "../components/DashboardFilters";
-// import { SummarySection } from "../components/SummarySection";
-// import { ChartsSection } from "../components/ChartsSection";
-// import { ManagerTrackingTable } from "../components/ManagerTrackingTable";
-// import { MonitoringSection } from "../components/MonitoringSection";
-// import { QuickStatsRow } from "../components/QuickStatsRow";
-// import { ExportActions } from "../components/ExportActions";
-// import { useDashboard } from "../../../hooks/useDashboard";
-// // import { useDashboard } from "../dashboard/hooks/useDashboard";
-
-// export default function HRDashboard() {
-//   const [filterMonth, setFilterMonth] = useState("All");
-
-//   const { topDepartment, topApprover } = useDashboard();
-
-//   return (
-//     <div className="space-y-6 p-6">
-//       <DashboardFilters
-//         filterMonth={filterMonth}
-//         setFilterMonth={setFilterMonth}
-//       />
-
-//       <SummarySection />
-//       <ChartsSection />
-//       <ManagerTrackingTable />
-//       <MonitoringSection />
-//       <QuickStatsRow />
-//       <ExportActions />
-
-//       <div className="p-4 bg-gray-100 rounded">
-//         Top Department: {topDepartment.name}
-//         <br />
-//         Top Approver: {topApprover.name}
-//       </div>
-//     </div>
-//   );
-// }

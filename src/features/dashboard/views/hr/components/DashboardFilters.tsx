@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import { MONTHS, DEPARTMENTS, managerTrackingData } from '../data/mockData';
+// import { MONTHS, DEPARTMENTS } from '../data/mockData';
 
 interface DashboardFiltersProps {
   filters: {
@@ -17,7 +17,11 @@ interface DashboardFiltersProps {
     leaveType: string;
     manager: string;
   };
-  updateFilter: (key: string, value: string) => void;
+  updateFilter: (
+  key: keyof DashboardFiltersProps["filters"],
+  value: string
+) => void;
+
 }
 
 export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProps) {
@@ -35,7 +39,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
           </div>
 
           {/* Month Filter */}
-          <Select 
+          {/* <Select 
             value={filters.month} 
             onValueChange={(v) => updateFilter('month', v)}
           >
@@ -50,7 +54,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
 
           {/* Year Filter */}
           <Select 
@@ -67,7 +71,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
           </Select>
 
           {/* Department Filter */}
-          <Select 
+          {/* <Select 
             value={filters.department} 
             onValueChange={(v) => updateFilter('department', v)}
           >
@@ -82,7 +86,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
 
           {/* Leave Type Filter */}
           <Select 
@@ -110,14 +114,14 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue placeholder="Manager" />
             </SelectTrigger>
-            <SelectContent>
+            {/* <SelectContent>
               <SelectItem value="all">All Managers</SelectItem>
               {managerTrackingData.map((m) => (
                 <SelectItem key={m.name} value={m.name}>
                   {m.name}
                 </SelectItem>
               ))}
-            </SelectContent>
+            </SelectContent> */}
           </Select>
         </div>
       </CardContent>

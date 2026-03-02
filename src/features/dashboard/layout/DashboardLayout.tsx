@@ -10,6 +10,8 @@ import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
 
 /* ---------------- HR VIEWS ---------------- */
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
+import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
+import { LowBalanceTable } from "../views/hr/components/LowBalanceTable";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -29,9 +31,9 @@ import TeamMembersView from "../views/manager/TeamMembersView";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
-  ADMIN: "ADMIN",
-  HR: "HR",
-  MANAGER: "MANAGER",
+  ADMIN:    "ADMIN",
+  HR:       "HR",
+  MANAGER:  "MANAGER",
   EMPLOYEE: "EMPLOYEE",
 };
 
@@ -51,19 +53,17 @@ const DashboardLayout: React.FC = () => {
     }
   }, [userRole, activeTab]);
 
-  /* ---------------- SCROLL RESET ON TAB CHANGE ---------------- */
+  /* Scroll reset on tab change */
   useEffect(() => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top: 0,
-        behavior: "auto",
-      });
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "auto" });
     }
   }, [activeTab]);
 
   /* ---------------- VIEW RENDERER ---------------- */
   const renderView = () => {
     switch (activeTab) {
+
       case "Dashboard":
         if (userRole === ROLES.MANAGER) return <ManagerDashboardView />;
         if (userRole === ROLES.HR) return <HRDashboard />;
@@ -71,13 +71,19 @@ const DashboardLayout: React.FC = () => {
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
-        if (userRole === ROLES.ADMIN) return <LeaveReportDashboard />;
+        if (userRole === ROLES.ADMIN)   return <LeaveReportDashboard />;
         if (userRole === ROLES.MANAGER) return <ManagerDashboardView />;
-        if (userRole === ROLES.HR) return <HRDashboard />;
+        if (userRole === ROLES.HR)      return <HRDashboard />;
         return null;
 
-      case "Employees":
+      // HR sees HREmployeesPage, Admin sees EmployeesView
+      case "All Employees":
+        if (userRole === ROLES.HR) return <HREmployeesPage />;
         return <EmployeesView />;
+
+      // HR Low Balance — real API via useHRDashboard
+      case "LowBalance Employee":
+        return <LowBalancePageWrapper />;
 
       case "Calendar":
         return <CalendarView />;
@@ -100,6 +106,7 @@ const DashboardLayout: React.FC = () => {
       case "Notifications":
         return <NotificationsView />;
 
+
       case "Team Members":
         return <TeamMembersView />;
 
@@ -117,7 +124,11 @@ const DashboardLayout: React.FC = () => {
     return <ChangePasswordDialog />;
   }
 
-  /* ---------------- LAYOUT ---------------- */
+  /* ---------------- STRICT PASSWORD LOCK ---------------- */
+  if (mustChangePassword) {
+    return <ChangePasswordDialog />;
+  }
+
   return (
     <div className="flex h-screen bg-neutral-25 overflow-hidden">
       <Sidebar
@@ -150,3 +161,28 @@ const DashboardLayout: React.FC = () => {
 };
 
 export default DashboardLayout;
+// ─── LowBalance Wrapper — fetches real API ────────────────────────
+// Separate component so it has its own loading state
+import { useEffect as useEff, useState as useSt } from "react";
+import { hrDashboardService } from "../views/hr/service/hrDashboardService";
+import type { LowBalanceEmployee } from "../views/hr/types";
+
+function LowBalancePageWrapper() {
+  const [data, setData]     = useSt<LowBalanceEmployee[]>([]);
+  const [loading, setLoading] = useSt(true);
+  const [error, setError]   = useSt<string | null>(null);
+
+  useEff(() => {
+    const controller = new AbortController();
+    hrDashboardService.getLowBalanceEmployees(controller.signal)
+      .then((res) => { setData(res); setLoading(false); })
+      .catch((err) => {
+        if (err instanceof Error && err.name === 'CanceledError') return;
+        setError(err instanceof Error ? err.message : 'Failed to load');
+        setLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+
+  return <LowBalanceTable data={data} loading={loading} error={error} />;
+}
