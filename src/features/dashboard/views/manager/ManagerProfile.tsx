@@ -49,7 +49,7 @@ const ManagerProfile: React.FC = () => {
         designation: "",
         joiningDate: user.joiningDate,
         workLocation: "",
-        managerName: "",
+        managerName: user.managerName,
         managerId: user.managerId ?? undefined,
         employmentType: "Full-time",
         dob: "",
@@ -112,6 +112,7 @@ const ManagerProfile: React.FC = () => {
               <h2 className="text-xl font-bold text-slate-900">{profile.name}</h2>
               <p className="text-sm font-semibold text-amber-600 mb-4">{profile.role}</p>
               <p className="text-sm font-semibold text-amber-600 mb-4">ID: {profile.id}</p>
+              <p className="text-sm font-semibold text-amber-600 mb-4">Reports To: {profile.managerName}</p>
             </div>
 
           </motion.div>

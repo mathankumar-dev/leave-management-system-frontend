@@ -111,10 +111,7 @@ const ManagerDashboardView: React.FC = () => {
             <h2 className="text-xl font-bold tracking-tight text-slate-900">Manager Dashboard</h2>
             <p className="text-sm text-slate-500">Welcome back, {user?.name || "Manager"}</p>
           </div>
-          <div className="flex w-full md:w-auto gap-2">
-            <button className="flex-1 md:flex-none px-4 py-2 bg-white border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">Team Schedule</button>
-            <button className="flex-1 md:flex-none px-4 py-2 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700 transition-all shadow-sm">Export Data</button>
-          </div>
+
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
@@ -123,7 +120,7 @@ const ManagerDashboardView: React.FC = () => {
             { label: "On Leave Today", value: dashboardData?.teamOnLeaveCount || 0, icon: <FaCalendarAlt />, color: "text-indigo-600" },
             { label: "Approved (Year)", value: dashboardData?.approvedCount || 0, icon: <FaCheck />, color: "text-emerald-600" },
           ].map((stat, i) => (
-            <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div key={i} className="bg-white p-4 rounded-sm border border-slate-200 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
                 <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>

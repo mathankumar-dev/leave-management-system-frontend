@@ -20,6 +20,7 @@ export interface User {
   role: UserRole; 
   department : string | null;
   managerId: number | null;
+  managerName : string;
   active: boolean;
   joiningDate: string;
   biometricStatus: string;

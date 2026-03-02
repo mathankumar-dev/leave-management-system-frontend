@@ -45,7 +45,7 @@ const EmployeeProfile: React.FC = () => {
         designation: "",
         joiningDate: user.joiningDate,
         workLocation: "",
-        managerName: "",
+        managerName: user.managerName ,
         managerId: user.managerId ?? undefined,
         employmentType: "Full-time",
         dob: "",
@@ -85,6 +85,9 @@ const EmployeeProfile: React.FC = () => {
     };
     reader.readAsDataURL(file);
   };
+
+  console.log(profile);
+  
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -133,7 +136,7 @@ const EmployeeProfile: React.FC = () => {
 
               <div className="flex items-center gap-3 text-slate-600">
                 <FaShieldAlt className="text-slate-400 text-xs shrink-0" />
-                <span className="text-xs">Reports to: {profile.managerId || 'Direct Manager'}</span>
+                <span className="text-xs">Reports to: {profile.managerName }</span>
               </div>
             </div>
           </motion.div>

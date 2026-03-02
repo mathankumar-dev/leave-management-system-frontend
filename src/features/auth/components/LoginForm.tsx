@@ -11,8 +11,8 @@ import { authService } from "../services/AuthService";
 import { Link } from "react-router-dom";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState<string>("employee1@wenxttech.com");
-  const [password, setPassword] = useState<string>("1234");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showError, setShowError] = useState<boolean>(false);
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
@@ -39,8 +39,6 @@ const LoginForm: React.FC = () => {
     return () => clearInterval(interval);
   }, [showSuccess]);
 
-
-  // Change e: React.SubmitEvent to e: React.FormEvent
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -49,12 +47,9 @@ const LoginForm: React.FC = () => {
     try {
       const credentials: LoginCredentials = { email, password };
 
-      // FIX 1: Use authService instead of loginUser
       const response = await authService.loginUser(credentials);
 
-      // FIX 2: Trigger success UI
       setShowSuccess(true);
-
 
       setTimeout(async () => {
         try {
@@ -124,7 +119,7 @@ const LoginForm: React.FC = () => {
         {/* Password Field */}
         <div className="space-y-2">
           <div className="flex justify-between items-center ml-1">
-            <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700">Password</label>
+            <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700" >Password</label>
             {/* <button type="button" className="text-[11px] font-bold text-primary-600 hover:text-primary-700 hover:underline">
               Forgot?
             </button> */}
@@ -135,6 +130,7 @@ const LoginForm: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="****"
               className="w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 transition-all text-sm text-neutral-900 shadow-sm"
               required
             />
