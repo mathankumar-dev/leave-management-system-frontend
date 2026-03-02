@@ -14,3 +14,4 @@ export const ENV: EnvironmentConfig = {
     LOGIN: "/auth/login",
   },
 };
+
