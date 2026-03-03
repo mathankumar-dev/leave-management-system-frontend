@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaCalendarAlt, FaChevronRight } from "react-icons/fa";
+import { FaCalendarAlt, FaChevronRight, FaEllipsisV, FaEdit, FaTimes } from "react-icons/fa";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuth } from "../../auth/hooks/useAuth";
 import type { LeaveRecord } from "../types";
@@ -11,6 +11,9 @@ const MyLeavesView: React.FC = () => {
   const { user } = useAuth();
   const [history, setHistory] = useState<LeaveRecord[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
+  
+  // Track which item's menu is open
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.id) {
@@ -18,19 +21,20 @@ const MyLeavesView: React.FC = () => {
     }
   }, [fetchMyLeaves, user?.id]);
 
-  // Transform and Filter data in one place
+  // Close menu when clicking outside
+  useEffect(() => {
+    const closeMenu = () => setActiveMenu(null);
+    window.addEventListener("click", closeMenu);
+    return () => window.removeEventListener("click", closeMenu);
+  }, []);
+
   const filteredHistory = useMemo(() => {
     let list = [...history];
-
-    // 1. Filter
     if (statusFilter !== "ALL") {
       list = list.filter((item) => item.status === statusFilter);
     }
-
-    // 2. Sort (Newest first)
     list.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 
-    // 3. Map to UI properties
     return list.map((item) => ({
       ...item,
       displayType: item.leaveType.replace("_", " "),
@@ -45,11 +49,22 @@ const MyLeavesView: React.FC = () => {
     }));
   }, [history, statusFilter]);
 
+  const handleEdit = (id: string) => {
+    console.log("Edit leave:", id);
+    // Logic for opening edit modal goes here
+  };
+
+  const handleCancel = (id: string) => {
+    console.log("Cancel leave:", id);
+    // Logic for cancellation API call goes here
+  };
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
       <CustomLoader label="Loading Leaves History" />
     </div>
   );
+
   return (
     <div className="w-full space-y-6">
       <header className="px-1 md:px-0">
@@ -62,8 +77,9 @@ const MyLeavesView: React.FC = () => {
               <button
                 key={tab}
                 onClick={() => setStatusFilter(tab)}
-                className={`px-5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${statusFilter === tab ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
-                  }`}
+                className={`px-5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                  statusFilter === tab ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
+                }`}
               >
                 {tab}
               </button>
@@ -79,10 +95,7 @@ const MyLeavesView: React.FC = () => {
             <motion.div
               layout
               key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"
+              className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="min-w-0">
@@ -91,7 +104,18 @@ const MyLeavesView: React.FC = () => {
                   </span>
                   <h3 className="text-lg font-bold text-slate-900 truncate">{item.days} Days Total</h3>
                 </div>
-                <StatusBadge status={item.status} />
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={item.status} />
+                  {item.status === "PENDING" && (
+                     <ActionMenu 
+                        id={item.id} 
+                        activeMenu={activeMenu} 
+                        setActiveMenu={setActiveMenu} 
+                        onEdit={handleEdit} 
+                        onCancel={handleCancel}
+                     />
+                  )}
+                </div>
               </div>
 
               <div className="space-y-3 border-t border-slate-50 pt-4">
@@ -101,7 +125,6 @@ const MyLeavesView: React.FC = () => {
                 </div>
                 <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
                   <span className="uppercase">Applied: {item.displayApplied}</span>
-                  <FaChevronRight size={12} className="text-slate-300" />
                 </div>
               </div>
             </motion.div>
@@ -110,7 +133,7 @@ const MyLeavesView: React.FC = () => {
       </div>
 
       {/* DESKTOP TABLE */}
-      <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-visible">
         <table className="w-full text-left">
           <thead className="bg-slate-50/80 border-b border-slate-200">
             <tr>
@@ -118,45 +141,81 @@ const MyLeavesView: React.FC = () => {
               <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Duration</th>
               <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Date Range</th>
               <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Reason</th>
-              <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider text-right">
-                Status
-              </th>
+              <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredHistory.map((item) => (
               <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                <td className="px-6 py-5 font-bold text-slate-900 uppercase text-xs">
-                  {item.displayType}
-                </td>
-                <td className="px-6 py-5 text-indigo-600 font-bold text-sm">
-                  {item.days} Days
-                </td>
-                <td className="px-6 py-5 text-slate-600 text-sm">
-                  {item.displayRange}
-                </td>
-                {/* Added the missing Reason cell */}
-                <td className="px-6 py-5 text-slate-500 text-sm max-w-xs truncate">
-                  {item.reason || "—"}
-                </td>
-                <td className="px-6 py-5 text-right">
-                  <StatusBadge status={item.status} />
+                <td className="px-6 py-5 font-bold text-slate-900 uppercase text-xs">{item.displayType}</td>
+                <td className="px-6 py-5 text-indigo-600 font-bold text-sm">{item.days} Days</td>
+                <td className="px-6 py-5 text-slate-600 text-sm">{item.displayRange}</td>
+                <td className="px-6 py-5 text-slate-500 text-sm max-w-xs truncate">{item.reason || "—"}</td>
+                <td className="px-6 py-5"><StatusBadge status={item.status} /></td>
+                <td className="px-6 py-5 text-right relative">
+                  {item.status === "PENDING" ? (
+                    <ActionMenu 
+                      id={item.id} 
+                      activeMenu={activeMenu} 
+                      setActiveMenu={setActiveMenu} 
+                      onEdit={handleEdit} 
+                      onCancel={handleCancel}
+                    />
+                  ) : (
+                    <span className="text-slate-300 text-[10px] font-bold uppercase">Locked</span>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      {filteredHistory.length === 0 && (
-        <div className="py-20 text-center text-slate-400 font-medium bg-white rounded-2xl border border-dashed border-slate-200">
-          No {statusFilter !== "ALL" ? statusFilter.toLowerCase() : ""} leave records found.
-        </div>
-      )}
     </div>
   );
 };
 
+// SUB-COMPONENT: ACTION MENU
+const ActionMenu = ({ id, activeMenu, setActiveMenu, onEdit, onCancel }: any) => {
+  const isOpen = activeMenu === id;
+
+  return (
+    <div className="relative inline-block text-left" onClick={(e) => e.stopPropagation()}>
+      <button
+        onClick={() => setActiveMenu(isOpen ? null : id)}
+        className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+      >
+        <FaEllipsisV size={14} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            className="absolute right-0 mt-2 w-36 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden"
+          >
+            <div className="py-1">
+              <button
+                onClick={() => { onEdit(id); setActiveMenu(null); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <FaEdit className="text-indigo-500" /> Edit Request
+              </button>
+              <button
+                onClick={() => { onCancel(id); setActiveMenu(null); }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors border-t border-slate-50"
+              >
+                <FaTimes /> Cancel
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {

@@ -104,13 +104,8 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
   // =============================
 
   getMyLeaveHistory: async (employeeId: number): Promise<LeaveRecord[]> => {
-    console.log("get my leaves here vanthuruchu");
-    
-
     const response = await api.get(`/leaves/employee/${employeeId}`);
-
     return response.data;
-
   },
 
 

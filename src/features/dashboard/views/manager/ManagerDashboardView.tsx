@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FaCheck, FaClock, FaCalendarAlt,
   FaUsers, FaCheckDouble,
-  FaCommentDots
+  FaCommentDots, FaArrowRight
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../../auth/hooks/useAuth";
@@ -12,7 +12,11 @@ import type { LeaveDecision, LeaveDecisionRequest } from "../../types";
 import { notify } from "../../../../utils/notifications"; 
 import CommentDialog from "../../../../components/ui/CommentDialog";
 
-const ManagerDashboardView: React.FC = () => {
+interface ManagerDashboardViewProps {
+  onNavigate?: (tab: string) => void;
+}
+
+const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({ onNavigate }) => {
   const { user, isLoading } = useAuth();
   const { fetchManagerDashboard, processApproval, loading } = useDashboard();
 
@@ -50,11 +54,9 @@ const ManagerDashboardView: React.FC = () => {
       return;
     }
 
-    // Process approval immediately
     executeDecision(req, status);
   };
 
-  // Step 2: Final API Execution
   const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
     const decisionPayload: LeaveDecisionRequest = {
       leaveId: req.leaveId,
@@ -67,8 +69,7 @@ const ManagerDashboardView: React.FC = () => {
 
     if (success) {
       notify.leaveAction(status, req.employeeName || req.employee);
-      
-      // Update UI state
+
       setApprovals((prev) => prev.filter((item) => item.leaveId !== req.leaveId));
       setDashboardData((prev: any) => ({
         ...prev,
@@ -77,7 +78,6 @@ const ManagerDashboardView: React.FC = () => {
         rejectedCount: status === 'REJECTED' ? prev.rejectedCount + 1 : prev.rejectedCount,
       }));
 
-      // Close Dialog
       setDialogConfig({ isOpen: false, req: null, status: null });
     } else {
       notify.error("Update Failed", "Please try again later.");
@@ -112,13 +112,25 @@ const ManagerDashboardView: React.FC = () => {
             <p className="text-sm text-slate-500">Welcome back, {user?.name || "Manager"}</p>
           </div>
 
+          {/* NEW BUTTON ADDED HERE */}
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate("Team Calendar")}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded text-xs font-bold text-slate-700 hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm"
+            >
+              <FaCalendarAlt className="text-indigo-600" />
+              View Team Calendar
+            </button>
+          )}
         </div>
+
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Team Size", value: dashboardData?.teamSize || 0, icon: <FaUsers />, color: "text-blue-600" },
             { label: "Pending Requests", value: dashboardData?.teamPendingRequestCount || 0, icon: <FaClock />, color: "text-amber-600" },
             { label: "On Leave Today", value: dashboardData?.teamOnLeaveCount || 0, icon: <FaCalendarAlt />, color: "text-indigo-600" },
-            { label: "Approved (Year)", value: dashboardData?.approvedCount || 0, icon: <FaCheck />, color: "text-emerald-600" },
+            { label: "Approved", value: dashboardData?.approvedCount || 0, icon: <FaCheck />, color: "text-emerald-600" },
           ].map((stat, i) => (
             <div key={i} className="bg-white p-4 rounded-sm border border-slate-200 shadow-sm flex items-center justify-between">
               <div>
@@ -130,13 +142,28 @@ const ManagerDashboardView: React.FC = () => {
           ))}
         </div>
 
+        {/* Main Content Area */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-12 space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Action Required ({approvals.length})
-              </h3>
+            
+            {/* Action Required Header with View All Button */}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Action Required ({approvals.length})
+                </h3>
+              </div>
+              
+              {onNavigate && (
+                <button 
+                  onClick={() => onNavigate("Pending Approvals")}
+                  className="flex items-center gap-1.5 text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-widest transition-all group"
+                >
+                  View All Requests 
+                  <FaArrowRight className="text-[8px] group-hover:translate-x-1 transition-transform" />
+                </button>
+              )}
             </div>
 
             <div className="space-y-3">

@@ -39,6 +39,7 @@ function Sidebar({
 
   const tabs = [
     { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
+    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER"] },
     { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER"] },
     { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE"] },
@@ -48,7 +49,6 @@ function Sidebar({
     { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
     { name: "Leave Config", icon: <FaCog />, roles: ["HR"] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
-    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] }
     
   ];
