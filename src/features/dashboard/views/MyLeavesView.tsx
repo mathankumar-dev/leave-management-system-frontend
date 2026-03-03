@@ -13,12 +13,10 @@ const MyLeavesView: React.FC = () => {
   const [history, setHistory] = useState<LeaveRecord[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
   
-  // Track which item's menu is open
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
   const [formData, setFormData] = useState<Partial<LeaveRecord>>({});
 
-  // ✅ Fixed useEffect (no infinite loop)
   useEffect(() => {
     if (!user?.id) return;
 
@@ -73,10 +71,6 @@ const MyLeavesView: React.FC = () => {
     // Logic for opening edit modal goes here
   };
 
-  const handleCancel = (id: string) => {
-    console.log("Cancel leave:", id);
-    // Logic for cancellation API call goes here
-  };
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
