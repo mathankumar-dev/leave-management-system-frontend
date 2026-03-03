@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import api from '../../../api/axiosInstance';
+import Cookies from "js-cookie";
 
 import type {
 
@@ -70,6 +71,37 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
     const response = await api.post('/leaves/apply', leaveData);
     return response.data;
   },
+
+updateLeave: async (id: number, data: any) => {
+  const res = await api.put(
+    `/leaves/${id}`,
+    null,   // body must be null
+    {
+      params: {
+        employeeId: data.employeeId,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        reason: data.reason,
+        halfDayType: data.halfDayType
+      }
+    }
+  );
+
+  
+
+  return res.data;
+},
+
+cancelLeave: async (id: number,employeeId : number) => {
+  const res = await api.patch(
+    `/leaves/${id}/cancel?employeeId=${employeeId}`
+   
+    
+  );
+
+  console.log(res.data);
+  return res.data;
+},
 
 
   // =============================
@@ -245,6 +277,8 @@ return response.data;
       data
 
     );
+
+    
 
     return response.data;
 

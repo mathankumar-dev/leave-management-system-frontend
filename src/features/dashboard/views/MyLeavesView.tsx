@@ -7,19 +7,38 @@ import type { LeaveRecord } from "../types";
 import CustomLoader from "../../../components/ui/CustomLoader";
 
 const MyLeavesView: React.FC = () => {
-  const { fetchMyLeaves, loading } = useDashboard();
+  const { fetchMyLeaves, cancelLeave, editLeave, loading } = useDashboard();
   const { user } = useAuth();
+
   const [history, setHistory] = useState<LeaveRecord[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
   
   // Track which item's menu is open
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
+  const [formData, setFormData] = useState<Partial<LeaveRecord>>({});
 
+  // ✅ Fixed useEffect (no infinite loop)
   useEffect(() => {
-    if (user?.id) {
-      fetchMyLeaves(user.id).then(setHistory);
+    if (!user?.id) return;
+
+    const loadLeaves = async () => {
+      const data = await fetchMyLeaves(user.id);
+      setHistory(data);
+    };
+
+    loadLeaves();
+  }, [user?.id]); // removed fetchMyLeaves dependency
+
+  const handleCancel = async (id: number) => {
+    if (!user?.id) return;
+
+    const success = await cancelLeave(id, user.id);
+    if (success) {
+      const updated = await fetchMyLeaves(user.id);
+      setHistory(updated);
     }
-  }, [fetchMyLeaves, user?.id]);
+  };
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -38,13 +57,13 @@ const MyLeavesView: React.FC = () => {
     return list.map((item) => ({
       ...item,
       displayType: item.leaveType.replace("_", " "),
-      displayRange: `${new Date(item.startDate).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-      })} - ${new Date(item.endDate).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-      })}`,
+      displayRange: `${new Date(item.startDate).toLocaleDateString(
+        "en-GB",
+        { day: "2-digit", month: "short" }
+      )} - ${new Date(item.endDate).toLocaleDateString(
+        "en-GB",
+        { day: "2-digit", month: "short" }
+      )}`,
       displayApplied: new Date(item.createdAt).toLocaleDateString(),
     }));
   }, [history, statusFilter]);
@@ -135,7 +154,7 @@ const MyLeavesView: React.FC = () => {
       {/* DESKTOP TABLE */}
       <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-visible">
         <table className="w-full text-left">
-          <thead className="bg-slate-50/80 border-b border-slate-200">
+          <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
               <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Type</th>
               <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Duration</th>
@@ -145,7 +164,7 @@ const MyLeavesView: React.FC = () => {
               <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {filteredHistory.map((item) => (
               <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                 <td className="px-6 py-5 font-bold text-slate-900 uppercase text-xs">{item.displayType}</td>
@@ -171,62 +190,98 @@ const MyLeavesView: React.FC = () => {
           </tbody>
         </table>
       </div>
-    </div>
-  );
-};
 
-// SUB-COMPONENT: ACTION MENU
-const ActionMenu = ({ id, activeMenu, setActiveMenu, onEdit, onCancel }: any) => {
-  const isOpen = activeMenu === id;
+      {/* Empty State */}
+      {filteredHistory.length === 0 && (
+        <div className="py-20 text-center text-slate-400">
+          No records found.
+        </div>
+      )}
 
-  return (
-    <div className="relative inline-block text-left" onClick={(e) => e.stopPropagation()}>
-      <button
-        onClick={() => setActiveMenu(isOpen ? null : id)}
-        className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
-      >
-        <FaEllipsisV size={14} />
-      </button>
+      {/* Edit Modal */}
+      {editingLeave && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-xl w-[400px] space-y-4">
+            <h3 className="text-lg font-bold">Edit Leave</h3>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-            className="absolute right-0 mt-2 w-36 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden"
-          >
-            <div className="py-1">
+            <input
+              type="date"
+              value={formData.startDate || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, startDate: e.target.value })
+              }
+              className="w-full border rounded-lg p-2"
+            />
+
+            <input
+              type="date"
+              value={formData.endDate || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, endDate: e.target.value })
+              }
+              className="w-full border rounded-lg p-2"
+            />
+
+            <input
+              type="text"
+              value={formData.reason || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, reason: e.target.value })
+              }
+              className="w-full border rounded-lg p-2"
+            />
+
+            <div className="flex justify-end gap-3">
               <button
-                onClick={() => { onEdit(id); setActiveMenu(null); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                onClick={() => setEditingLeave(null)}
+                className="text-sm font-bold text-slate-500"
               >
-                <FaEdit className="text-indigo-500" /> Edit Request
+                Cancel
               </button>
+
               <button
-                onClick={() => { onCancel(id); setActiveMenu(null); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors border-t border-slate-50"
+                onClick={async () => {
+                  if (!user?.id || !editingLeave) return;
+
+                  const success = await editLeave(
+                    editingLeave.id,
+                    {
+                      ...formData,
+                      employeeId: user.id,
+                    }
+                  );
+
+                  if (success) {
+                    const updated = await fetchMyLeaves(user.id);
+                    setHistory(updated);
+                    setEditingLeave(null);
+                  }
+                }}
+                className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg font-bold"
               >
-                <FaTimes /> Cancel
+                Save
               </button>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {
-    APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    REJECTED: "bg-rose-50 text-rose-700 border-rose-100",
-    PENDING: "bg-amber-50 text-amber-700 border-amber-100",
+    APPROVED: "bg-emerald-50 text-emerald-700",
+    REJECTED: "bg-rose-50 text-rose-700",
+    PENDING: "bg-amber-50 text-amber-700",
   };
-  const currentStyle = styles[status.toUpperCase()] || "bg-slate-50 text-slate-600";
 
   return (
-    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-wider whitespace-nowrap ${currentStyle}`}>
+    <span
+      className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
+        styles[status.toUpperCase()] || "bg-slate-50 text-slate-600"
+      }`}
+    >
       {status}
     </span>
   );
