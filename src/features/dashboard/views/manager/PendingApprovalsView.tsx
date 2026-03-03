@@ -15,7 +15,6 @@ import { useDashboard } from '../../hooks/useDashboard';
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
     const { requests, loading, handleDecision } = useManagerApprovals(user?.id || 0);
-
     const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useDashboard();
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -34,7 +33,17 @@ const PendingApprovalsView: React.FC = () => {
         status: LeaveDecision | null;
     }>({ isOpen: false, req: null, status: null });
 
-    // Filter Logic
+    /**
+     * Helper to format dates to "Jan 31 - Feb 02"
+     */
+    const formatDateRange = (start: string, end: string) => {
+        const options: Intl.DateTimeFormatOptions = { month: 'short', day: '2-digit' };
+        const startDate = new Date(start).toLocaleDateString('en-US', options);
+        const endDate = new Date(end).toLocaleDateString('en-US', options);
+
+        return start === end ? startDate : `${startDate} - ${endDate}`;
+    };
+
     const filteredRequests = useMemo(() => {
         return requests.filter((req) => {
             const matchesSearch =
@@ -84,6 +93,8 @@ const PendingApprovalsView: React.FC = () => {
         }
     };
 
+
+
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
             <CustomLoader label="Loading pending approvals" />
@@ -91,7 +102,7 @@ const PendingApprovalsView: React.FC = () => {
     );
 
     return (
-        <div className='flex flex-col gap-4'>
+        <div className='flex flex-col gap-4 w-full max-w-full overflow-x-hidden'>
             <CommentDialog
                 isOpen={dialogConfig.isOpen}
                 onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
@@ -104,14 +115,49 @@ const PendingApprovalsView: React.FC = () => {
                 confirmLabel={dialogConfig.status === 'REJECTED' ? 'Reject Request' : 'Schedule Discussion'}
                 onSubmit={(comment) => handleConfirmDecision(dialogConfig.req, dialogConfig.status!, comment)}
             />
-            <div className='min-h-20 py-4 w-full flex justify-between items-center bg-[#F1F5F9] px-6 rounded-lg border border-slate-200'>
-                <MetricTile value={requests.length.toString().padStart(2, '0')} firstLabel="Pending" secondLabel="Approvals" />
-                <Divider />
-                <MetricTile value={(teamOnLeave?.length || 0).toString().padStart(2, '0')} firstLabel="Members" secondLabel="out Today" />
-                <Divider />
-                <MetricTile value={(weeklyLeaveSummary?.length || 0).toString().padStart(2, '0')} firstLabel="Weekly Absence" secondLabel="Summary" />
+
+            {/* Header Stats Section - Optimized Grid for Mobile */}
+            <div className='py-6 w-full bg-[#F1F5F9] px-4 md:px-8 rounded-sm border border-slate-200 shadow-sm'>
+                <div className='grid grid-cols-2 md:flex md:flex-row md:justify-between items-center gap-y-8 gap-x-4'>
+
+                    {/* Pending Approvals */}
+                    <div className='flex justify-start md:justify-center'>
+                        <MetricTile
+                            value={requests.length.toString().padStart(2, '0')}
+                            firstLabel="Pending"
+                            secondLabel="Approvals"
+                        />
+                    </div>
+
+                    {/* Divider - Desktop Only */}
+                    <div className="hidden md:block h-12 w-px bg-slate-300"></div>
+
+                    {/* Members Out Today */}
+                    <div className='flex justify-start md:justify-center'>
+                        <MetricTile
+                            value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
+                            firstLabel="Members"
+                            secondLabel="out Today"
+                        />
+                    </div>
+
+                    {/* Divider - Desktop Only */}
+                    <div className="hidden md:block h-12 w-px bg-slate-300"></div>
+
+                    {/* Weekly Absence - Spans 2 columns on mobile for better balance */}
+                    <div className='col-span-2 md:col-span-1 flex justify-center md:justify-end border-t border-slate-200 pt-6 md:border-none md:pt-0'>
+                        <MetricTile
+                            value={(weeklyLeaveSummary?.length || 0).toString().padStart(2, '0')}
+                            firstLabel="Weekly Absence"
+                            secondLabel="Summary"
+                        />
+                    </div>
+
+                </div>
             </div>
-            <div className="flex flex-col md:flex-row gap-3 items-center">
+
+            {/* Search and Filters - Stacks on mobile */}
+            <div className="flex flex-col md:flex-row gap-3 items-center w-full">
                 {/* Search Box */}
                 <div className="relative flex-1 w-full">
                     <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
@@ -120,14 +166,16 @@ const PendingApprovalsView: React.FC = () => {
                         placeholder="Search employee or leave type..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-11 pr-4 py-2.5 bg-[#F1F5F9] border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                        className="w-full pl-11 pr-4 py-2.5 bg-[#F1F5F9] border border-slate-200 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
                     />
                 </div>
+
+                {/* Filter Dropdown */}
                 <div className="relative w-full md:w-48 group">
                     <select
                         value={timeFilter}
                         onChange={(e) => setTimeFilter(e.target.value)}
-                        className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 appearance-none cursor-pointer transition-all shadow-sm"
+                        className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-sm text-sm font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 appearance-none cursor-pointer transition-all shadow-sm"
                     >
                         <option value="all">All Requests</option>
                         <option value="today">Today</option>
@@ -142,26 +190,19 @@ const PendingApprovalsView: React.FC = () => {
             </div>
 
             {/* List Section */}
-            <div className='flex flex-col gap-3 bg-[#F1F5F9] py-4 px-4 rounded-lg border border-slate-200'>
-                <div className="flex items-center gap-2 mb-2 ml-2">
-                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                    <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                        Action Required ({filteredRequests.length})
-                    </h3>
-                </div>
+            <div className='flex flex-col gap-3 bg-[#F1F5F9] py-4 px-2 md:px-4 rounded-sm border border-slate-200'>
 
                 {filteredRequests.length > 0 ? (
                     filteredRequests.map((req) => (
                         <RequestTile
                             key={req.id}
-                            employeeName={req.employeeName || `Employee #${req.employeeId}`}
+                            employeeName={req.employeeName}
                             leaveType={req.leaveType}
-                            reasonMessage={req.reason || "No reason provided"}
-                            dateRange={
-                                req.startDate === req.endDate
-                                    ? req.startDate
-                                    : `${req.startDate} - ${req.endDate}`
-                            }
+                            reasonMessage={req.reason}
+                            dateRange={formatDateRange(req.startDate, req.endDate)}
+                            startDate={req.startDate}
+                            endDate={req.endDate}
+                            halfDayType={req.halfDayType} // Pass the half-day status here
                             createdAt={formatTimeAgo(req.createdAt)}
                             onAccept={() => onActionTriggered(req, 'APPROVED')}
                             onReject={() => onActionTriggered(req, 'REJECTED')}
@@ -169,7 +210,7 @@ const PendingApprovalsView: React.FC = () => {
                         />
                     ))
                 ) : (
-                    <div className="py-16 bg-white rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400">
+                    <div className="py-16 bg-white rounded-sm border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400">
                         <FaCheckDouble className="mb-3 opacity-20 text-4xl" />
                         <p className="text-[10px] font-black uppercase tracking-widest">
                             {searchQuery ? "No matches found" : "Everything Caught Up"}

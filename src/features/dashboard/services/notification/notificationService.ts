@@ -8,4 +8,23 @@ export const notificationService = {
     });
     return response.data;
   },
+
+    getUnreadNotificationsCount: async (employeeId: number): Promise<number> => {
+    const response = await api.get(`/notifications/user/${employeeId}/unread-count`);
+    return response.data;
+  },
+
+
+  markAsRead : async (notificationId: number): Promise<void> => {
+    await api.patch(`/notifications/${notificationId}/read`);    
+  },
+
+  markAllAsRead : async (userId: number): Promise<void> => {
+    await api.put(`/notifications/${userId}/mark-all-read`);    
+  },
+
+
+  
+
+
 }
