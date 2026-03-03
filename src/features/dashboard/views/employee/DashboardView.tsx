@@ -10,23 +10,22 @@ import {
 } from "recharts";
 import {
   FaChartLine,
-  FaCheckCircle,
-  FaClock,
+ 
   FaPlus,
-  FaTimesCircle,
+  
 } from "react-icons/fa";
 
 import StatCard from "../../components/StatCard";
-import RecentLeavePopup from "../../components/popup";
+
 import LeaveDetailsDrawer from "../../components/LeaveDetailsDrawer";
 
 import { useDashboard } from "../../hooks/useDashboard";
 
 
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
-import ActivityCard from "../../../../components/ui/ActivityCard";
+
 import { useAuth } from "../../../auth/hooks/useAuth";
-import { MOCK_DASHBOARD_STATS, MOCK_LEAVE_HISTORY } from "../../../../mockData";
+
 
 
 export type DashboardScope = "SELF" | "TEAM" | "ALL";
@@ -52,24 +51,24 @@ const itemVariants = {
 };
 
 
-const statusConfig: Record<
-  string,
-  { type: "success" | "warning" | "danger"; icon: React.ReactNode }
-> = {
-  Approved: { type: "success", icon: <FaCheckCircle /> },
-  Pending: { type: "warning", icon: <FaClock /> },
-  Rejected: { type: "danger", icon: <FaTimesCircle /> },
-};
+// const statusConfig: Record<
+//   string,
+//   { type: "success" | "warning" | "danger"; icon: React.ReactNode }
+// > = {
+//   Approved: { type: "success", icon: <FaCheckCircle /> },
+//   Pending: { type: "warning", icon: <FaClock /> },
+//   Rejected: { type: "danger", icon: <FaTimesCircle /> },
+// };
 
 
 
 
 
 const DashboardView: React.FC<DashboardViewProps> = ({
-  scope = "SELF",
+  
   onNavigate,
 }) => {
-  const { fetchStats, fetchDashboard, setError } = useDashboard();
+  const {  fetchDashboard, setError } = useDashboard();
 
   // 1. Initialized with empty arrays
   const [stats, setStats] = useState<any[]>([]);
@@ -170,11 +169,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
 
-  const handleSelectLeave = (id: number) => {
-
-    console.log("Selected Leave:", id);
-
-  };
 
 
 

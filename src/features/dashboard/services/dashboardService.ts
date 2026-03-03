@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import api from '../../../api/axiosInstance';
+import Cookies from "js-cookie";
 
 import type {
 
@@ -22,11 +23,6 @@ import { getEmployeeId } from '../../auth/pages/services/AuthService';
 
 
 export const dashboardService = {
-
-
-
-
-
 
  
   getEmpDashboard: async (employeeId: number) => {
@@ -63,6 +59,24 @@ export const dashboardService = {
     const response = await api.post('/leaves/apply', leaveData);
     return response.data;
   },
+
+ updateLeave: async (id: number, data: any) => {
+  const res = await api.put(`/leaves/${id}`, data);
+   console.log(res.data);
+  return res.data;
+ 
+},
+
+cancelLeave: async (id: number,employeeId : number) => {
+  const res = await api.patch(
+    `/leaves/${id}/cancel?employeeId =${employeeId}`
+   
+    
+  );
+
+  console.log(res.data);
+  return res.data;
+},
 
 
   // =============================

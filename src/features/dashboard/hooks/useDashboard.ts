@@ -13,6 +13,8 @@ import type {
   LeaveDecisionRequest,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
+import axios from "axios";
+import api from "../../../api/axiosInstance";
 // import type { CalendarScope } from "../types/scope";
 
 // toggle this to false when the API is ready
@@ -67,6 +69,8 @@ const processApproval = async (
     setLoading(false);
   }
 };
+
+
 
 //   const fetchStats = useCallback(
 //   async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
@@ -303,6 +307,32 @@ const processApproval = async (
     manager: 'all',
   });
 
+  const cancelLeave = useCallback(async (id: number,employeeId : number) => {
+  setLoading(true);
+  try {
+    await service.cancelLeave(id , employeeId);
+    return true;
+  } catch (err: any) {
+    setError(err.message || "Cancel failed");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
+const editLeave = useCallback(async (id: number, data: any) => {
+  setLoading(true);
+  try {
+    await service.updateLeave(id, data);
+    return true;
+  } catch (err: any) {
+    setError(err.message || "Update failed");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
 
   const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
     setLoading(true);
@@ -345,6 +375,7 @@ const processApproval = async (
     processApproval,
     fetchEmployees,
     fetchMyLeaves,
+   
     // fetchStats,
     // fetchDeptDistribution,
     fetchNotifications,
@@ -355,6 +386,8 @@ const processApproval = async (
     fetchLeaveTypes,
     addLeaveType,
     removeLeaveType,
+     cancelLeave,
+  editLeave,
     // fetchTeamSchedule,
 
     // topDepartment,

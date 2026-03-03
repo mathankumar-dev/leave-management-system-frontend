@@ -3,20 +3,47 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaCalendarAlt, FaChevronRight } from "react-icons/fa";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuth } from "../../auth/hooks/useAuth";
-import type { LeaveRecord } from "../types";
+import type { LeaveRecord, LeaveStatus, LeaveType } from "../types";
 import CustomLoader from "../../../components/ui/CustomLoader";
 
+
 const MyLeavesView: React.FC = () => {
-  const { fetchMyLeaves, loading } = useDashboard();
+  const { fetchMyLeaves, cancelLeave, editLeave, loading } = useDashboard();
   const { user } = useAuth();
   const [history, setHistory] = useState<LeaveRecord[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
+  
 
   useEffect(() => {
-    if (user?.id) {
-      fetchMyLeaves(user.id).then(setHistory);
-    }
-  }, [fetchMyLeaves, user?.id]);
+  if (!user?.id) return;
+  fetchMyLeaves(user.id).then(setHistory);
+}, [fetchMyLeaves, user?.id]);
+
+ const handleCancel = async (id: number) => {
+  if (!user?.id) return;
+  const success = await cancelLeave(id,user.id);
+  if (success && user?.id) {
+    const updated = await fetchMyLeaves(user.id);
+    setHistory(updated);
+  }
+};
+
+
+
+const handleEdit = async (item: LeaveRecord) => {
+  const updatedData = {
+    ...item,
+    reason: "Updated reason",
+  };
+
+  const success = await editLeave(item.id, updatedData);
+
+  if (success && user?.id) {
+    const updated = await fetchMyLeaves(user.id);
+    setHistory(updated);
+  }
+};
+
 
   // Transform and Filter data in one place
   const filteredHistory = useMemo(() => {
@@ -139,9 +166,26 @@ const MyLeavesView: React.FC = () => {
                 <td className="px-6 py-5 text-slate-500 text-sm max-w-xs truncate">
                   {item.reason || "—"}
                 </td>
-                <td className="px-6 py-5 text-right">
-                  <StatusBadge status={item.status} />
-                </td>
+                <td className="px-6 py-5 text-right space-y-2">
+  <StatusBadge status={item.status} />
+
+  {item.status === "PENDING" && (
+    <div className="flex justify-end gap-2 mt-2">
+      <button
+        onClick={() => handleEdit(item)}
+        className="text-xs font-bold text-indigo-600 hover:underline"
+      >
+        Edit
+      </button>
+      <button
+        onClick={() => handleCancel(item.id)}
+        className="text-xs font-bold text-rose-600 hover:underline"
+      >
+        Cancel
+      </button>
+    </div>
+  )}
+</td>
               </tr>
             ))}
           </tbody>
@@ -174,3 +218,5 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 export default MyLeavesView;
+
+
