@@ -12,6 +12,8 @@ const MyLeavesView: React.FC = () => {
   const { user } = useAuth();
   const [history, setHistory] = useState<LeaveRecord[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
+const [formData, setFormData] = useState<any>({});
   
 
   useEffect(() => {
@@ -33,6 +35,7 @@ const MyLeavesView: React.FC = () => {
 const handleEdit = async (item: LeaveRecord) => {
   const updatedData = {
     ...item,
+    employeeId: user?.id,
     reason: "Updated reason",
   };
 
@@ -43,7 +46,6 @@ const handleEdit = async (item: LeaveRecord) => {
     setHistory(updated);
   }
 };
-
 
   // Transform and Filter data in one place
   const filteredHistory = useMemo(() => {
@@ -171,10 +173,10 @@ const handleEdit = async (item: LeaveRecord) => {
 
   {item.status === "PENDING" && (
     <div className="flex justify-end gap-2 mt-2">
-      <button
-        onClick={() => handleEdit(item)}
-        className="text-xs font-bold text-indigo-600 hover:underline"
-      >
+            <button onClick={() => {
+        setEditingLeave(item);
+        setFormData(item);
+      }}>
         Edit
       </button>
       <button
@@ -190,6 +192,7 @@ const handleEdit = async (item: LeaveRecord) => {
             ))}
           </tbody>
         </table>
+        
       </div>
 
       {filteredHistory.length === 0 && (
@@ -197,6 +200,78 @@ const handleEdit = async (item: LeaveRecord) => {
           No {statusFilter !== "ALL" ? statusFilter.toLowerCase() : ""} leave records found.
         </div>
       )}
+      {editingLeave && (
+  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-2xl shadow-xl w-[400px] space-y-4">
+      <h3 className="text-lg font-bold">Edit Leave</h3>
+
+      <div>
+        <label className="text-xs font-bold">Start Date</label>
+        <input
+          type="date"
+          value={formData.startDate}
+          onChange={(e) =>
+            setFormData({ ...formData, startDate: e.target.value })
+          }
+          className="w-full border rounded-lg p-2 mt-1"
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-bold">End Date</label>
+        <input
+          type="date"
+          value={formData.endDate}
+          onChange={(e) =>
+            setFormData({ ...formData, endDate: e.target.value })
+          }
+          className="w-full border rounded-lg p-2 mt-1"
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-bold">Reason</label>
+        <input
+          type="text"
+          value={formData.reason || ""}
+          onChange={(e) =>
+            setFormData({ ...formData, reason: e.target.value })
+          }
+          className="w-full border rounded-lg p-2 mt-1"
+        />
+      </div>
+
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          onClick={() => setEditingLeave(null)}
+          className="text-sm font-bold text-slate-500"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={async () => {
+            if (!user?.id) return;
+
+            const success = await editLeave(editingLeave.id, {
+              ...formData,
+              employeeId: user.id,
+            });
+
+            if (success) {
+              const updated = await fetchMyLeaves(user.id);
+              setHistory(updated);
+              setEditingLeave(null);
+            }
+          }}
+          className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg font-bold"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };
@@ -216,6 +291,8 @@ const StatusBadge = ({ status }: { status: string }) => {
     </span>
   );
 };
+
+
 
 export default MyLeavesView;
 

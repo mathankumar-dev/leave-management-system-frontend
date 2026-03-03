@@ -60,16 +60,29 @@ export const dashboardService = {
     return response.data;
   },
 
- updateLeave: async (id: number, data: any) => {
-  const res = await api.put(`/leaves/${id}`, data);
-   console.log(res.data);
+updateLeave: async (id: number, data: any) => {
+  const res = await api.put(
+    `/leaves/${id}`,
+    null,   // body must be null
+    {
+      params: {
+        employeeId: data.employeeId,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        reason: data.reason,
+        halfDayType: data.halfDayType
+      }
+    }
+  );
+
+  
+
   return res.data;
- 
 },
 
 cancelLeave: async (id: number,employeeId : number) => {
   const res = await api.patch(
-    `/leaves/${id}/cancel?employeeId =${employeeId}`
+    `/leaves/${id}/cancel?employeeId=${employeeId}`
    
     
   );
@@ -249,6 +262,8 @@ return response.data;
       data
 
     );
+
+    
 
     return response.data;
 
