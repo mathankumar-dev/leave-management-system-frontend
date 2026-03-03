@@ -62,11 +62,10 @@ export function LowBalanceTable({ data, loading, error }: LowBalanceTableProps) 
     // if (error) {
     //   return (
     //     <tr>
-    //       <td colSpan={7} className="py-8 text-center">
-    //         <div className="flex flex-col items-center gap-2">
-    //           <AlertTriangle className="h-5 w-5 text-amber-400" />
-    //           <p className="text-sm text-slate-400">{error}</p>
-    //           <p className="text-xs text-slate-300">Backend team-கிட்ட confirm பண்ணுங்க</p>
+    //       <td colSpan={7} className="py-8 text-center text-slate-400">
+    //         <div className="flex items-center justify-center gap-2">
+    //           <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
+    //           Loading...
     //         </div>
     //       </td>
     //     </tr>

@@ -11,7 +11,7 @@ import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
 /* ---------------- HR VIEWS ---------------- */
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
-import { LowBalanceTable } from "../views/hr/components/LowBalanceTable";
+import { LowBalanceTable } from "../views/hr/components/Lowbalancetable";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
