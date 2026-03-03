@@ -6,12 +6,12 @@ import Topbar from "../components/Topbar";
 /* ---------------- ADMIN VIEWS ---------------- */
 import EmployeesView from "../views/admin/EmployeesView";
 import LeaveTypesView from "../views/admin/LeaveTypesView";
-import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
+// import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
 
 /* ---------------- HR VIEWS ---------------- */
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
-import { LowBalanceTable } from "../views/hr/components/LowBalanceTable";
+import { LowBalanceTable } from "../views/hr/components/Lowbalancetable";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -71,7 +71,7 @@ const DashboardLayout: React.FC = () => {
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
-        if (userRole === ROLES.ADMIN) return <LeaveReportDashboard />;
+        // if (userRole === ROLES.ADMIN) return <LeaveReportDashboard />;
         if (userRole === ROLES.MANAGER) return <ManagerDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
         return null;

@@ -15,8 +15,8 @@ export interface LeaveRecord {
   leaveType: LeaveType;
   halfDayType: string | null; // e.g., "FIRST_HALF" or "SECOND_HALF"
   year: number;
-  startDate: string; // ISO Date string
-  endDate: string;   // ISO Date string
+  startDate: string;
+  endDate: string;   
   days: number;
   reason: string;
   status: LeaveStatus;
@@ -50,7 +50,7 @@ export interface LeaveDecisionRequest{
 export interface Employee {
   employeeId: number;
   employeeName: string;
-  totalAllocated: number;   // Handles 0.0 or other decimals
+  totalAllocated: number;   
   totalUsed: number;
   totalRemaining: number;
   compOffBalance: number;

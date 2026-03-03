@@ -24,9 +24,7 @@ import { useDashboard } from "../../hooks/useDashboard";
 
 
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
-import ActivityCard from "../../../../components/ui/ActivityCard";
 import { useAuth } from "../../../auth/hooks/useAuth";
-import { MOCK_DASHBOARD_STATS, MOCK_LEAVE_HISTORY } from "../../../../mockData";
 
 
 export type DashboardScope = "SELF" | "TEAM" | "ALL";
@@ -69,7 +67,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   scope = "SELF",
   onNavigate,
 }) => {
-  const { fetchStats, fetchDashboard, setError } = useDashboard();
+  const { fetchDashboard, setError } = useDashboard();
 
   // 1. Initialized with empty arrays
   const [stats, setStats] = useState<any[]>([]);

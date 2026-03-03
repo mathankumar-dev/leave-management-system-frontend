@@ -15,7 +15,8 @@ import type {
   LeaveApplication,
   LeaveDecision,
   LeaveDecisionRequest,
-  TeamCalendarResponse
+  TeamCalendarResponse,
+  TeamMemberBalance
 
 } from '../types';
 import { getEmployeeId } from '../../auth/pages/services/AuthService';
@@ -105,6 +106,17 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
 
   getMyLeaveHistory: async (employeeId: number): Promise<LeaveRecord[]> => {
     const response = await api.get(`/leaves/employee/${employeeId}`);
+    return response.data;
+  },
+
+
+  getWeeklyLeaveSummary : async (managerId : number) : Promise<LeaveRecord[]> => {
+    const response = await api.get(`/manager/${managerId}/team-leaves/week`);
+    return response.data;
+  },
+    getTeamOnLeave : async (managerId : number) : Promise<TeamMemberBalance[]> => {
+    const response = await api.get(`/dashboard/manager/team-on-leave/${managerId}`);
+    console.log(response.data);
     return response.data;
   },
 

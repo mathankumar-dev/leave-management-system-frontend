@@ -12,6 +12,7 @@ import type {
   LeaveDecision,
   LeaveDecisionRequest,
   TeamCalendarResponse,
+  TeamMemberBalance,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
 // import type { CalendarScope } from "../types/scope";
@@ -24,6 +25,8 @@ export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
+  const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
+  const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
 
   /* ================= APPROVALS ================= */
 
@@ -121,6 +124,34 @@ const processApproval = async (
     setLoading(true);
     try {
       return await service.getMyLeaveHistory(employeeId);
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch leave history");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
+const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<LeaveRecord[]> => {
+    setLoading(true);
+    try {
+      const data = await service.getWeeklyLeaveSummary(managerId);
+      setWeeklyLeaveSummary(data); 
+      return data;
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch leave history");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  const fetchTeamOnLeave = useCallback(async (managerId: number): Promise<TeamMemberBalance[]> => {
+    setLoading(true);
+    try {
+      const data = await service.getTeamOnLeave(managerId);
+      setTeamOnLeave(data);
+      return data;
     } catch (err: any) {
       setError(err.message || "Failed to fetch leave history");
       return [];
@@ -350,6 +381,10 @@ const processApproval = async (
     removeLeaveType,
     fetchTeamSchedule,
     teamCalendar,
+    fetchWeeklyLeaveSummary,
+    weeklyLeaveSummary,
+    fetchTeamOnLeave,
+    teamOnLeave,
 
     // topDepartment,
     
