@@ -30,31 +30,26 @@ const Topbar: React.FC<TopbarProps> = ({
 
   const { user } = useAuth();
 
-  const { notifications, isLoading, pageInfo, unreadCount } = useNotifications(user?.id || 0);
+  const { notifications, isLoading, pageInfo, unreadCount } =
+    useNotifications(user?.id || 0);
 
   const userRole = user?.role;
   const userName = user?.name;
 
-  // Function to handle switching to notification page and closing dropdown
+  // ✅ FIXED: Removed markAllAsRead() so navigating doesn't clear everything
   const handleViewNotifications = () => {
     setActiveTab("Notifications");
     setIsNotifOpen(false);
   };
 
   return (
-    <div className="sticky top-0 z-30 flex items-center justify-between 
-                bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 
-                border-b border-neutral-200 w-full transition-all duration-300">
+    <div className="sticky top-0 z-30 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 border-b border-neutral-200 w-full transition-all duration-300">
 
       {/* LEFT: Menu & Title */}
       <div className="flex items-center gap-3 min-w-0">
-        <button
-          onClick={onMenuClick}
-          className="md:hidden p-2.5 rounded-lg text-slate-500 active:bg-slate-100"
-        >
+        <button onClick={onMenuClick} className="md:hidden p-2.5 rounded-lg text-slate-500 active:bg-slate-100">
           <FaBars size={18} />
         </button>
-
         <div className="min-w-0">
           <h1 className="text-xl md:text-2xl font-bold text-primary-500 uppercase italic truncate">
             {activeTab}
@@ -72,25 +67,28 @@ const Topbar: React.FC<TopbarProps> = ({
               setIsNotifOpen(!isNotifOpen);
               setIsProfileOpen(false);
             }}
-            className={`relative p-2.5 rounded-xl transition-all ${isNotifOpen
-                ? "bg-indigo-50 text-indigo-600"
-                : "text-slate-400 hover:text-indigo-600"
-              }`}
+            className={`relative p-2.5 rounded-xl transition-all ${isNotifOpen ? "bg-indigo-50 text-indigo-600" : "text-slate-400 hover:text-indigo-600"}`}
           >
             <FaBell className="w-4 h-4" />
 
-            {/* Numeric Badge */}
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-rose-500 text-[9px] font-black text-white border-2 border-white shadow-sm">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
+            {/* Numeric Badge with Exit Animation */}
+            <AnimatePresence>
+              {unreadCount > 0 && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-rose-500 text-[9px] font-black text-white border-2 border-white shadow-sm"
+                >
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
 
           <AnimatePresence>
             {isNotifOpen && (
               <>
-                {/* Fixed Backdrop to allow closing by clicking anywhere else */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -106,13 +104,11 @@ const Topbar: React.FC<TopbarProps> = ({
                   className="fixed top-16 left-4 right-4 z-[60] sm:absolute sm:top-full sm:right-0 sm:left-auto sm:mt-3 sm:w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden"
                 >
                   <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                        Recent Activity
-                      </span>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Recent Activity</span>
                       {pageInfo.totalElements > 0 && (
                         <span className="text-[8px] font-bold text-slate-400 uppercase">
-                          {pageInfo.totalElements} Total Notifications
+                          {pageInfo.totalElements} Notifications
                         </span>
                       )}
                     </div>
@@ -136,14 +132,11 @@ const Topbar: React.FC<TopbarProps> = ({
                           <div
                             key={n.id}
                             onClick={handleViewNotifications}
-                            className={`p-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer ${isUnread ? "bg-indigo-50/20" : ""
+                            className={`p-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer text-left ${isUnread ? "bg-indigo-50/20" : ""
                               }`}
                           >
                             <div className="flex gap-3">
-                              <FaCircle
-                                className={`mt-1.5 w-1.5 h-1.5 shrink-0 ${isUnread ? "text-indigo-500" : "text-slate-200"
-                                  }`}
-                              />
+                              <FaCircle className={`mt-1.5 w-1.5 h-1.5 shrink-0 ${isUnread ? "text-indigo-500" : "text-slate-200"}`} />
                               <div className="min-w-0">
                                 <p className={`text-xs font-bold truncate ${isUnread ? "text-slate-900" : "text-slate-500"}`}>
                                   {n.eventType?.replace(/_/g, ' ')}
@@ -158,7 +151,7 @@ const Topbar: React.FC<TopbarProps> = ({
                       })
                     ) : (
                       <div className="p-12 text-center">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No Recent Updates</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No Updates</p>
                       </div>
                     )}
                   </div>
@@ -182,17 +175,10 @@ const Topbar: React.FC<TopbarProps> = ({
             </div>
 
             <div className="hidden lg:flex flex-col items-start">
-              <span className="text-xs font-black text-slate-700 leading-none">
-                {userName}
-              </span>
+              <span className="text-xs font-black text-slate-700 leading-none">{userName}</span>
               <div className="flex items-center gap-1 mt-1">
-                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-wider">
-                  {userRole}
-                </span>
-                <FaChevronDown
-                  className={`text-[8px] text-slate-400 transition-transform ${isProfileOpen ? "rotate-180" : ""
-                    }`}
-                />
+                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-wider">{userRole}</span>
+                <FaChevronDown className={`text-[8px] text-slate-400 transition-transform ${isProfileOpen ? "rotate-180" : ""}`} />
               </div>
             </div>
           </button>
@@ -200,7 +186,6 @@ const Topbar: React.FC<TopbarProps> = ({
           <AnimatePresence>
             {isProfileOpen && (
               <>
-                {/* Backdrop for profile */}
                 <div className="fixed inset-0 z-10 bg-transparent" onClick={() => setIsProfileOpen(false)} />
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}

@@ -20,7 +20,7 @@ export const notificationService = {
   },
 
   markAllAsRead : async (userId: number): Promise<void> => {
-    await api.put(`/notifications/${userId}/mark-all-read`);    
+    await api.post(`/notifications/user/${userId}/mark-all-read`);    
   },
 
 
