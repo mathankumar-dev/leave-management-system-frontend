@@ -3,297 +3,254 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaCalendarAlt, FaChevronRight } from "react-icons/fa";
 import { useDashboard } from "../hooks/useDashboard";
 import { useAuth } from "../../auth/hooks/useAuth";
-import type { LeaveRecord, LeaveStatus, LeaveType } from "../types";
+import type { LeaveRecord } from "../types";
 import CustomLoader from "../../../components/ui/CustomLoader";
-
 
 const MyLeavesView: React.FC = () => {
   const { fetchMyLeaves, cancelLeave, editLeave, loading } = useDashboard();
   const { user } = useAuth();
+
   const [history, setHistory] = useState<LeaveRecord[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
-const [formData, setFormData] = useState<any>({});
-  
+  const [formData, setFormData] = useState<Partial<LeaveRecord>>({});
 
+  // ✅ Fixed useEffect (no infinite loop)
   useEffect(() => {
-  if (!user?.id) return;
-  fetchMyLeaves(user.id).then(setHistory);
-}, [fetchMyLeaves, user?.id]);
+    if (!user?.id) return;
 
- const handleCancel = async (id: number) => {
-  if (!user?.id) return;
-  const success = await cancelLeave(id,user.id);
-  if (success && user?.id) {
-    const updated = await fetchMyLeaves(user.id);
-    setHistory(updated);
-  }
-};
+    const loadLeaves = async () => {
+      const data = await fetchMyLeaves(user.id);
+      setHistory(data);
+    };
 
+    loadLeaves();
+  }, [user?.id]); // removed fetchMyLeaves dependency
 
+  const handleCancel = async (id: number) => {
+    if (!user?.id) return;
 
-const handleEdit = async (item: LeaveRecord) => {
-  const updatedData = {
-    ...item,
-    employeeId: user?.id,
-    reason: "Updated reason",
+    const success = await cancelLeave(id, user.id);
+    if (success) {
+      const updated = await fetchMyLeaves(user.id);
+      setHistory(updated);
+    }
   };
 
-  const success = await editLeave(item.id, updatedData);
-
-  if (success && user?.id) {
-    const updated = await fetchMyLeaves(user.id);
-    setHistory(updated);
-  }
-};
-
-  // Transform and Filter data in one place
   const filteredHistory = useMemo(() => {
     let list = [...history];
 
-    // 1. Filter
     if (statusFilter !== "ALL") {
       list = list.filter((item) => item.status === statusFilter);
     }
 
-    // 2. Sort (Newest first)
-    list.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+    list.sort(
+      (a, b) =>
+        new Date(b.startDate).getTime() -
+        new Date(a.startDate).getTime()
+    );
 
-    // 3. Map to UI properties
     return list.map((item) => ({
       ...item,
       displayType: item.leaveType.replace("_", " "),
-      displayRange: `${new Date(item.startDate).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-      })} - ${new Date(item.endDate).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-      })}`,
+      displayRange: `${new Date(item.startDate).toLocaleDateString(
+        "en-GB",
+        { day: "2-digit", month: "short" }
+      )} - ${new Date(item.endDate).toLocaleDateString(
+        "en-GB",
+        { day: "2-digit", month: "short" }
+      )}`,
       displayApplied: new Date(item.createdAt).toLocaleDateString(),
     }));
   }, [history, statusFilter]);
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
-      <CustomLoader label="Loading Leaves History" />
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
+        <CustomLoader label="Loading Leaves History" />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full space-y-6">
-      <header className="px-1 md:px-0">
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">My Leave History</h2>
-        <p className="text-xs font-medium text-slate-500 mt-1">Track and manage your requests</p>
+      <header>
+        <h2 className="text-2xl font-black text-slate-900">
+          My Leave History
+        </h2>
+        <p className="text-xs font-medium text-slate-500 mt-1">
+          Track and manage your requests
+        </p>
 
-        <div className="mt-4 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
-          <div className="flex bg-slate-100 p-1 rounded-xl w-max md:w-auto">
-            {["ALL", "PENDING", "APPROVED", "REJECTED"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setStatusFilter(tab)}
-                className={`px-5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${statusFilter === tab ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
-                  }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+        <div className="mt-4 flex bg-slate-100 p-1 rounded-xl w-max">
+          {["ALL", "PENDING", "APPROVED", "REJECTED"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setStatusFilter(tab)}
+              className={`px-5 py-2 rounded-lg text-xs font-bold ${
+                statusFilter === tab
+                  ? "bg-white text-indigo-600 shadow-sm"
+                  : "text-slate-500"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
       </header>
 
-      {/* MOBILE LIST */}
-      <div className="md:hidden space-y-4">
-        <AnimatePresence mode="popLayout">
-          {filteredHistory.map((item) => (
-            <motion.div
-              layout
-              key={item.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="min-w-0">
-                  <span className="text-[10px] font-black text-indigo-500 uppercase block mb-1">
-                    {item.displayType}
-                  </span>
-                  <h3 className="text-lg font-bold text-slate-900 truncate">{item.days} Days Total</h3>
-                </div>
-                <StatusBadge status={item.status} />
-              </div>
-
-              <div className="space-y-3 border-t border-slate-50 pt-4">
-                <div className="flex items-center gap-3 text-slate-600">
-                  <FaCalendarAlt className="text-slate-400 shrink-0" size={14} />
-                  <span className="text-sm font-medium truncate">PERIOD: {item.displayRange}</span>
-                </div>
-                <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
-                  <span className="uppercase">Applied: {item.displayApplied}</span>
-                  <FaChevronRight size={12} className="text-slate-300" />
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* DESKTOP TABLE */}
-      <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Desktop Table */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-slate-50/80 border-b border-slate-200">
+          <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Type</th>
-              <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Duration</th>
-              <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Date Range</th>
-              <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider">Reason</th>
-              <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase tracking-wider text-right">
+              <th className="px-6 py-4 text-xs font-black">Type</th>
+              <th className="px-6 py-4 text-xs font-black">Duration</th>
+              <th className="px-6 py-4 text-xs font-black">Date Range</th>
+              <th className="px-6 py-4 text-xs font-black">Reason</th>
+              <th className="px-6 py-4 text-xs font-black text-right">
                 Status
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody>
             {filteredHistory.map((item) => (
-              <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                <td className="px-6 py-5 font-bold text-slate-900 uppercase text-xs">
+              <tr key={item.id}>
+                <td className="px-6 py-4 text-xs font-bold uppercase">
                   {item.displayType}
                 </td>
-                <td className="px-6 py-5 text-indigo-600 font-bold text-sm">
+                <td className="px-6 py-4 text-sm font-bold text-indigo-600">
                   {item.days} Days
                 </td>
-                <td className="px-6 py-5 text-slate-600 text-sm">
+                <td className="px-6 py-4 text-sm">
                   {item.displayRange}
                 </td>
-                {/* Added the missing Reason cell */}
-                <td className="px-6 py-5 text-slate-500 text-sm max-w-xs truncate">
+                <td className="px-6 py-4 text-sm">
                   {item.reason || "—"}
                 </td>
-                <td className="px-6 py-5 text-right space-y-2">
-  <StatusBadge status={item.status} />
+                <td className="px-6 py-4 text-right space-y-2">
+                  <StatusBadge status={item.status} />
 
-  {item.status === "PENDING" && (
-    <div className="flex justify-end gap-2 mt-2">
-            <button onClick={() => {
-        setEditingLeave(item);
-        setFormData(item);
-      }}>
-        Edit
-      </button>
-      <button
-        onClick={() => handleCancel(item.id)}
-        className="text-xs font-bold text-rose-600 hover:underline"
-      >
-        Cancel
-      </button>
-    </div>
-  )}
-</td>
+                  {item.status === "PENDING" && (
+                    <div className="flex justify-end gap-2 mt-2">
+                      <button
+                        onClick={() => {
+                          setEditingLeave(item);
+                          setFormData(item);
+                        }}
+                        className="text-xs font-bold text-indigo-600"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleCancel(item.id)}
+                        className="text-xs font-bold text-rose-600"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
-        
       </div>
 
+      {/* Empty State */}
       {filteredHistory.length === 0 && (
-        <div className="py-20 text-center text-slate-400 font-medium bg-white rounded-2xl border border-dashed border-slate-200">
-          No {statusFilter !== "ALL" ? statusFilter.toLowerCase() : ""} leave records found.
+        <div className="py-20 text-center text-slate-400">
+          No records found.
         </div>
       )}
+
+      {/* Edit Modal */}
       {editingLeave && (
-  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-2xl shadow-xl w-[400px] space-y-4">
-      <h3 className="text-lg font-bold">Edit Leave</h3>
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-xl w-[400px] space-y-4">
+            <h3 className="text-lg font-bold">Edit Leave</h3>
 
-      <div>
-        <label className="text-xs font-bold">Start Date</label>
-        <input
-          type="date"
-          value={formData.startDate}
-          onChange={(e) =>
-            setFormData({ ...formData, startDate: e.target.value })
-          }
-          className="w-full border rounded-lg p-2 mt-1"
-        />
-      </div>
+            <input
+              type="date"
+              value={formData.startDate || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, startDate: e.target.value })
+              }
+              className="w-full border rounded-lg p-2"
+            />
 
-      <div>
-        <label className="text-xs font-bold">End Date</label>
-        <input
-          type="date"
-          value={formData.endDate}
-          onChange={(e) =>
-            setFormData({ ...formData, endDate: e.target.value })
-          }
-          className="w-full border rounded-lg p-2 mt-1"
-        />
-      </div>
+            <input
+              type="date"
+              value={formData.endDate || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, endDate: e.target.value })
+              }
+              className="w-full border rounded-lg p-2"
+            />
 
-      <div>
-        <label className="text-xs font-bold">Reason</label>
-        <input
-          type="text"
-          value={formData.reason || ""}
-          onChange={(e) =>
-            setFormData({ ...formData, reason: e.target.value })
-          }
-          className="w-full border rounded-lg p-2 mt-1"
-        />
-      </div>
+            <input
+              type="text"
+              value={formData.reason || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, reason: e.target.value })
+              }
+              className="w-full border rounded-lg p-2"
+            />
 
-      <div className="flex justify-end gap-3 pt-2">
-        <button
-          onClick={() => setEditingLeave(null)}
-          className="text-sm font-bold text-slate-500"
-        >
-          Cancel
-        </button>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setEditingLeave(null)}
+                className="text-sm font-bold text-slate-500"
+              >
+                Cancel
+              </button>
 
-        <button
-          onClick={async () => {
-            if (!user?.id) return;
+              <button
+                onClick={async () => {
+                  if (!user?.id || !editingLeave) return;
 
-            const success = await editLeave(editingLeave.id, {
-              ...formData,
-              employeeId: user.id,
-            });
+                  const success = await editLeave(
+                    editingLeave.id,
+                    {
+                      ...formData,
+                      employeeId: user.id,
+                    }
+                  );
 
-            if (success) {
-              const updated = await fetchMyLeaves(user.id);
-              setHistory(updated);
-              setEditingLeave(null);
-            }
-          }}
-          className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg font-bold"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+                  if (success) {
+                    const updated = await fetchMyLeaves(user.id);
+                    setHistory(updated);
+                    setEditingLeave(null);
+                  }
+                }}
+                className="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg font-bold"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-
 const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {
-    APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    REJECTED: "bg-rose-50 text-rose-700 border-rose-100",
-    PENDING: "bg-amber-50 text-amber-700 border-amber-100",
+    APPROVED: "bg-emerald-50 text-emerald-700",
+    REJECTED: "bg-rose-50 text-rose-700",
+    PENDING: "bg-amber-50 text-amber-700",
   };
-  const currentStyle = styles[status.toUpperCase()] || "bg-slate-50 text-slate-600";
 
   return (
-    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-wider whitespace-nowrap ${currentStyle}`}>
+    <span
+      className={`inline-flex px-3 py-1 rounded-full text-xs font-bold ${
+        styles[status.toUpperCase()] || "bg-slate-50 text-slate-600"
+      }`}
+    >
       {status}
     </span>
   );
 };
 
-
-
 export default MyLeavesView;
-
-
