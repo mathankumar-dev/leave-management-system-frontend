@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import Divider from '../../../../components/ui/Divider';
 import MetricTile from '../../components/tiles/MetricTile';
 import RequestTile from '../../components/tiles/RequestTile';
 import { useManagerApprovals } from '../../hooks/manager/useManagerApprovals';
@@ -20,12 +19,15 @@ const PendingApprovalsView: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
 
+    // HR-ku manager API calls போகக்கூடாது
+    const isManager = user?.role?.toUpperCase() === 'MANAGER';
+
     useEffect(() => {
-        if (user?.id) {
+        if (user?.id && isManager) {
             fetchWeeklyLeaveSummary(user.id);
             fetchTeamOnLeave(user.id);
         }
-    }, [fetchWeeklyLeaveSummary, fetchTeamOnLeave, user?.id]);
+    }, [fetchWeeklyLeaveSummary, fetchTeamOnLeave, user?.id, isManager]);
 
     const [dialogConfig, setDialogConfig] = useState<{
         isOpen: boolean;
@@ -33,14 +35,10 @@ const PendingApprovalsView: React.FC = () => {
         status: LeaveDecision | null;
     }>({ isOpen: false, req: null, status: null });
 
-    /**
-     * Helper to format dates to "Jan 31 - Feb 02"
-     */
     const formatDateRange = (start: string, end: string) => {
         const options: Intl.DateTimeFormatOptions = { month: 'short', day: '2-digit' };
         const startDate = new Date(start).toLocaleDateString('en-US', options);
         const endDate = new Date(end).toLocaleDateString('en-US', options);
-
         return start === end ? startDate : `${startDate} - ${endDate}`;
     };
 
@@ -93,8 +91,6 @@ const PendingApprovalsView: React.FC = () => {
         }
     };
 
-
-
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
             <CustomLoader label="Loading pending approvals" />
@@ -116,11 +112,11 @@ const PendingApprovalsView: React.FC = () => {
                 onSubmit={(comment) => handleConfirmDecision(dialogConfig.req, dialogConfig.status!, comment)}
             />
 
-            {/* Header Stats Section - Optimized Grid for Mobile */}
+            {/* Header Stats */}
             <div className='py-6 w-full bg-[#F1F5F9] px-4 md:px-8 rounded-sm border border-slate-200 shadow-sm'>
                 <div className='grid grid-cols-2 md:flex md:flex-row md:justify-between items-center gap-y-8 gap-x-4'>
 
-                    {/* Pending Approvals */}
+                    {/* Pending Approvals — HR + Manager both see this */}
                     <div className='flex justify-start md:justify-center'>
                         <MetricTile
                             value={requests.length.toString().padStart(2, '0')}
@@ -129,36 +125,37 @@ const PendingApprovalsView: React.FC = () => {
                         />
                     </div>
 
-                    {/* Divider - Desktop Only */}
-                    <div className="hidden md:block h-12 w-px bg-slate-300"></div>
+                    {/* Manager-only tiles */}
+                    {isManager && (
+                        <>
+                            <div className="hidden md:block h-12 w-px bg-slate-300" />
 
-                    {/* Members Out Today */}
-                    <div className='flex justify-start md:justify-center'>
-                        <MetricTile
-                            value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
-                            firstLabel="Members"
-                            secondLabel="out Today"
-                        />
-                    </div>
+                            {/* Members Out Today */}
+                            <div className='flex justify-start md:justify-center'>
+                                <MetricTile
+                                    value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
+                                    firstLabel="Members"
+                                    secondLabel="out Today"
+                                />
+                            </div>
 
-                    {/* Divider - Desktop Only */}
-                    <div className="hidden md:block h-12 w-px bg-slate-300"></div>
+                            <div className="hidden md:block h-12 w-px bg-slate-300" />
 
-                    {/* Weekly Absence - Spans 2 columns on mobile for better balance */}
-                    <div className='col-span-2 md:col-span-1 flex justify-center md:justify-end border-t border-slate-200 pt-6 md:border-none md:pt-0'>
-                        <MetricTile
-                            value={(weeklyLeaveSummary?.length || 0).toString().padStart(2, '0')}
-                            firstLabel="Weekly Absence"
-                            secondLabel="Summary"
-                        />
-                    </div>
-
+                            {/* Weekly Absence */}
+                            <div className='col-span-2 md:col-span-1 flex justify-center md:justify-end border-t border-slate-200 pt-6 md:border-none md:pt-0'>
+                                <MetricTile
+                                    value={(weeklyLeaveSummary?.length || 0).toString().padStart(2, '0')}
+                                    firstLabel="Weekly Absence"
+                                    secondLabel="Summary"
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
-            {/* Search and Filters - Stacks on mobile */}
+            {/* Search and Filters */}
             <div className="flex flex-col md:flex-row gap-3 items-center w-full">
-                {/* Search Box */}
                 <div className="relative flex-1 w-full">
                     <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
                     <input
@@ -170,7 +167,6 @@ const PendingApprovalsView: React.FC = () => {
                     />
                 </div>
 
-                {/* Filter Dropdown */}
                 <div className="relative w-full md:w-48 group">
                     <select
                         value={timeFilter}
@@ -182,16 +178,14 @@ const PendingApprovalsView: React.FC = () => {
                         <option value="week">This Week</option>
                         <option value="month">This Month</option>
                     </select>
-
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
                         <FaChevronDown size={12} />
                     </div>
                 </div>
             </div>
 
-            {/* List Section */}
+            {/* Requests List */}
             <div className='flex flex-col gap-3 bg-[#F1F5F9] py-4 px-2 md:px-4 rounded-sm border border-slate-200'>
-
                 {filteredRequests.length > 0 ? (
                     filteredRequests.map((req) => (
                         <RequestTile
@@ -202,7 +196,7 @@ const PendingApprovalsView: React.FC = () => {
                             dateRange={formatDateRange(req.startDate, req.endDate)}
                             startDate={req.startDate}
                             endDate={req.endDate}
-                            halfDayType={req.halfDayType} // Pass the half-day status here
+                            halfDayType={req.halfDayType}
                             createdAt={formatTimeAgo(req.createdAt)}
                             onAccept={() => onActionTriggered(req, 'APPROVED')}
                             onReject={() => onActionTriggered(req, 'REJECTED')}

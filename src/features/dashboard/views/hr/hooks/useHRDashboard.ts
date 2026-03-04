@@ -49,7 +49,7 @@ export function useHRDashboard() {
       } catch (err) {
         // Backend 500 — show empty table with error message, don't crash dashboard
         lowBalanceError = 'Low balance data unavailable — backend error';
-        console.warn('Low balance fetch failed:', err);
+        // console.warn('Low balance fetch failed:', err);
       }
 
       setState({

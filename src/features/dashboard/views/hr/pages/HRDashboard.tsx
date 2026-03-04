@@ -76,9 +76,9 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
           Welcome back, {userName}
         </h1>
         <p className="text-sm text-slate-500">HR analytics and workforce insights</p>
-        <span className="text-xs text-slate-400 mt-1">
+        {/* <span className="text-xs text-slate-400 mt-1">
           Last updated: {new Date(data.lastUpdated).toLocaleString()}
-        </span>
+        </span> */}
       </div>
 
       {/* Filters */}
@@ -95,7 +95,7 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
 
       {/* Team Chart + Onboarding */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 min-w-0">
           <DepartmentChart
             data={departmentStats}
             topDepartment={departmentStats[0]?.department}

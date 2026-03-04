@@ -11,7 +11,7 @@ import LeaveTypesView from "../views/admin/LeaveTypesView";
 /* ---------------- HR VIEWS ---------------- */
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
-import { LowBalanceTable } from "../views/hr/components/Lowbalancetable";
+import { LowBalanceTable } from "../views/hr/components/LowBalanceTable";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -166,27 +166,37 @@ export default DashboardLayout;
 import { useEffect as useEff, useState as useSt } from "react";
 import { hrDashboardService } from "../views/hr/service/hrDashboardService";
 import type { LowBalanceEmployee } from "../views/hr/types";
+// import { set } from "react-datepicker/dist/dist/date_utils.js";
 
 function LowBalancePageWrapper() {
   const [data, setData] = useSt<LowBalanceEmployee[]>([]);
   const [loading, setLoading] = useSt(true);
   const [error, setError] = useSt<string | null>(null);
+  const isMounted = useRef(false);
 
   useEff(() => {
-    const controller = new AbortController();
-    hrDashboardService.getLowBalanceEmployees(controller.signal)
-      .then((res) => { setData(res); setLoading(false); })
-      .catch((err) => {
-        if (err instanceof Error && err.name === 'CanceledError') return;
-        setError(err instanceof Error ? err.message : 'Failed to load');
-        setLoading(false);
-      });
-    return () => controller.abort();
+    isMounted.current = true;
+
+    const timer = setTimeout(() => {        // ← 100ms delay
+      if (!isMounted.current) return;
+      
+      hrDashboardService.getLowBalanceEmployees()  // signal illama
+        .then((res) => {
+          if (isMounted.current) { setData(res); setLoading(false); }
+        })
+        .catch((err) => {
+          if (isMounted.current) {
+            setError(err instanceof Error ? err.message : 'Failed to load');
+            setLoading(false);
+          }
+        });
+    }, 100);
+
+    return () => {
+      isMounted.current = false;
+      clearTimeout(timer);               // ← timer cancel
+    };
   }, []);
 
-  console.log("from leyout");
-  console.log(data);
-  
-  
   return <LowBalanceTable data={data} loading={loading} error={error} />;
 }
