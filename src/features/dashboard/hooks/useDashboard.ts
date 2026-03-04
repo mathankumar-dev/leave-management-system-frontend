@@ -384,6 +384,23 @@ const editLeave = useCallback(async (id: number, data: any) => {
     topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
   }), []);
 
+
+
+  const bankCompOff = useCallback(async (payload: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await service.submitCompOffRequest(payload);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || "Comp-Off banking failed";
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   /* ================= EXPORT ================= */
 
 
@@ -399,6 +416,7 @@ const editLeave = useCallback(async (id: number, data: any) => {
     processApproval,
     fetchEmployees,
     fetchMyLeaves,
+    bankCompOff,
    
     // fetchStats,
     // fetchDeptDistribution,

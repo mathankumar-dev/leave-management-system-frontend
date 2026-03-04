@@ -17,7 +17,8 @@ import type {
   LeaveDecision,
   LeaveDecisionRequest,
   TeamCalendarResponse,
-  TeamMemberBalance
+  TeamMemberBalance,
+  CompOffRequest
 
 } from '../types';
 
@@ -314,6 +315,9 @@ return response.data;
 
   },
 
- 
+ submitCompOffRequest: async (payload: CompOffRequest) => {
+    const response = await api.post('/compoff/request', payload);
+    return response.data;
+  },
 };
  

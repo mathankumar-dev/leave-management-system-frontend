@@ -250,3 +250,15 @@ export interface TeamMemberBalance {
 
 // The API returns Map<String, List<TeamMemberBalance>>
 export type TeamCalendarResponse = Record<string, TeamMemberBalance[]>;
+
+
+export type CompOffEntry = {
+  workedDate: string;       
+  plannedLeaveDate?: string | null;
+  days: number;            
+};
+
+export type CompOffRequest = {
+  employeeId: number;
+  entries: CompOffEntry[];
+};
