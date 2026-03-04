@@ -11,7 +11,7 @@ import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
 /* ---------------- HR VIEWS ---------------- */
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
-import { LowBalanceTable } from "../views/hr/components/Lowbalancetable";
+import { LowBalanceTable } from "../views/hr/components/LowBalanceTable";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -184,5 +184,9 @@ function LowBalancePageWrapper() {
     return () => controller.abort();
   }, []);
 
+  console.log("from leyout");
+  console.log(data);
+  
+  
   return <LowBalanceTable data={data} loading={loading} error={error} />;
 }

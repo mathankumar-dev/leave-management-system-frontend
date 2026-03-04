@@ -28,7 +28,7 @@ export function useHRDashboard() {
     error:             null,
   });
 
-  const loadDashboard = useCallback(async () => {
+  const loadDashboard = useCallback(async (signal: AbortSignal) => {
     setState((prev) => ({ ...prev, loading: true, lowBalanceLoading: true, error: null }));
 
     try {
@@ -81,6 +81,9 @@ export function useHRDashboard() {
 
   return {
     ...state,
-    reload: () => loadDashboard(),
+    reload: () => {
+      const controller = new AbortController();
+      loadDashboard(controller.signal);
+    },
   };
 }

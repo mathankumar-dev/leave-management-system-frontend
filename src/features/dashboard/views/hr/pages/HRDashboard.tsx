@@ -8,7 +8,7 @@ import { ManagerTrackingTable } from '../components/ManagerTrackingTable';
 import { MonitoringSection } from '../components/MonitoringSection';
 import { ExportActions } from '../components/ExportActions';
 import OnboardingStats from '../components/OnboardingStats';
-import { LowBalanceTable } from '../components/Lowbalancetable';
+import { LowBalanceTable } from '../components/LowBalanceTable';
 
 interface HRDashboardProps {
   userName?: string;
@@ -25,6 +25,9 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
     error,
     reload,
   } = useHRDashboard();
+
+  console.log(lowBalanceData);
+  
 
   const [filters, setFilters] = useState({
     month:      '',
@@ -92,13 +95,13 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
 
       {/* Team Chart + Onboarding */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <DepartmentChart
             data={departmentStats}
             topDepartment={departmentStats[0]?.department}
           />
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <OnboardingStats
             newEmployeesCount={data.newEmployeesCount}
             pendingBiometricCount={data.pendingBiometricCount}
