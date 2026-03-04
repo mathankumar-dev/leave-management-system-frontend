@@ -9,7 +9,8 @@ const AuthPage: React.FC = () => {
       <div className="flex min-h-screen w-full">
 
         {/* Left Side */}
-        <div className="hidden lg:flex w-1/2 bg-[#60466C] relative overflow-hidden items-center justify-center p-16">
+        {/* <div className="hidden lg:flex w-1/2 bg-[#60466C] relative overflow-hidden items-center justify-center p-16"> */}
+        <div className="hidden lg:flex w-1/2 bg-primary-900 relative overflow-hidden items-center justify-center p-16">
           <motion.div initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{

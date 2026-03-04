@@ -112,9 +112,7 @@ const NotificationsView: React.FC = () => {
           >
             <RiCheckDoubleFill size={18} />
           </button>
-          <button className="p-2.5 bg-white border border-slate-200 text-rose-500 rounded-sm hover:bg-rose-50 transition-all flex-1 md:flex-none flex justify-center">
-            <FaTrashAlt size={14} />
-          </button>
+
         </div>
       </div>
 
