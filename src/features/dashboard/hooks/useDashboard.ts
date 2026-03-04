@@ -12,8 +12,11 @@ import type {
   LeaveDecision,
   LeaveDecisionRequest,
   TeamCalendarResponse,
+  TeamMemberBalance,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
+import axios from "axios";
+import api from "../../../api/axiosInstance";
 // import type { CalendarScope } from "../types/scope";
 
 // toggle this to false when the API is ready
@@ -24,6 +27,8 @@ export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
+  const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
+  const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
 
   /* ================= APPROVALS ================= */
 
@@ -69,6 +74,8 @@ const processApproval = async (
     setLoading(false);
   }
 };
+
+
 
 //   const fetchStats = useCallback(
 //   async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
@@ -121,6 +128,34 @@ const processApproval = async (
     setLoading(true);
     try {
       return await service.getMyLeaveHistory(employeeId);
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch leave history");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
+const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<LeaveRecord[]> => {
+    setLoading(true);
+    try {
+      const data = await service.getWeeklyLeaveSummary(managerId);
+      setWeeklyLeaveSummary(data); 
+      return data;
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch leave history");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  const fetchTeamOnLeave = useCallback(async (managerId: number): Promise<TeamMemberBalance[]> => {
+    setLoading(true);
+    try {
+      const data = await service.getTeamOnLeave(managerId);
+      setTeamOnLeave(data);
+      return data;
     } catch (err: any) {
       setError(err.message || "Failed to fetch leave history");
       return [];
@@ -296,6 +331,32 @@ const processApproval = async (
     manager: 'all',
   });
 
+  const cancelLeave = useCallback(async (id: number,employeeId : number) => {
+  setLoading(true);
+  try {
+    await service.cancelLeave(id , employeeId);
+    return true;
+  } catch (err: any) {
+    setError(err.message || "Cancel failed");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
+const editLeave = useCallback(async (id: number, data: any) => {
+  setLoading(true);
+  try {
+    await service.updateLeave(id, data);
+    return true;
+  } catch (err: any) {
+    setError(err.message || "Update failed");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
 
   const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
     setLoading(true);
@@ -338,6 +399,7 @@ const processApproval = async (
     processApproval,
     fetchEmployees,
     fetchMyLeaves,
+   
     // fetchStats,
     // fetchDeptDistribution,
     fetchNotifications,
@@ -348,8 +410,14 @@ const processApproval = async (
     fetchLeaveTypes,
     addLeaveType,
     removeLeaveType,
+     cancelLeave,
+  editLeave,
     fetchTeamSchedule,
     teamCalendar,
+    fetchWeeklyLeaveSummary,
+    weeklyLeaveSummary,
+    fetchTeamOnLeave,
+    teamOnLeave,
 
     // topDepartment,
     

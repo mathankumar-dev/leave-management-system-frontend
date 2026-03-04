@@ -6,12 +6,12 @@ import Topbar from "../components/Topbar";
 /* ---------------- ADMIN VIEWS ---------------- */
 import EmployeesView from "../views/admin/EmployeesView";
 import LeaveTypesView from "../views/admin/LeaveTypesView";
-import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
+// import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
 
 /* ---------------- HR VIEWS ---------------- */
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
-import { LowBalanceTable } from "../views/hr/components/LowBalanceTable";
+import { LowBalanceTable } from "../views/hr/components/Lowbalancetable";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -31,9 +31,9 @@ import TeamMembersView from "../views/manager/TeamMembersView";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
-  ADMIN:    "ADMIN",
-  HR:       "HR",
-  MANAGER:  "MANAGER",
+  ADMIN: "ADMIN",
+  HR: "HR",
+  MANAGER: "MANAGER",
   EMPLOYEE: "EMPLOYEE",
 };
 
@@ -65,15 +65,15 @@ const DashboardLayout: React.FC = () => {
     switch (activeTab) {
 
       case "Dashboard":
-        if (userRole === ROLES.MANAGER) return <ManagerDashboardView />;
+        if (userRole === ROLES.MANAGER) return <ManagerDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
         if (userRole === ROLES.ADMIN) return <EmployeesView />;
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
-        if (userRole === ROLES.ADMIN)   return <LeaveReportDashboard />;
-        if (userRole === ROLES.MANAGER) return <ManagerDashboardView />;
-        if (userRole === ROLES.HR)      return <HRDashboard />;
+        // if (userRole === ROLES.ADMIN) return <LeaveReportDashboard />;
+        if (userRole === ROLES.MANAGER) return <ManagerDashboardView onNavigate={setActiveTab} />;
+        if (userRole === ROLES.HR) return <HRDashboard />;
         return null;
 
       // HR sees HREmployeesPage, Admin sees EmployeesView
@@ -168,9 +168,9 @@ import { hrDashboardService } from "../views/hr/service/hrDashboardService";
 import type { LowBalanceEmployee } from "../views/hr/types";
 
 function LowBalancePageWrapper() {
-  const [data, setData]     = useSt<LowBalanceEmployee[]>([]);
+  const [data, setData] = useSt<LowBalanceEmployee[]>([]);
   const [loading, setLoading] = useSt(true);
-  const [error, setError]   = useSt<string | null>(null);
+  const [error, setError] = useSt<string | null>(null);
 
   useEff(() => {
     const controller = new AbortController();

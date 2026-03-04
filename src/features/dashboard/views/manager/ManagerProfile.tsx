@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaUserShield, FaUsers, FaChartLine, FaEnvelopeOpenText } from "react-icons/fa";
 
 // Components & Types
 import BaseProfile from "../../layout/BaseProfile";
-import { MOCK_PROFILE } from "../../../../mockData";
 import type { ProfileData } from "../../types";
 import { useAuth } from "../../../auth/hooks/useAuth";
 

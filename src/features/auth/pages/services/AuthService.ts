@@ -42,8 +42,3 @@ export const getProfile = async () => {
     };
   }
 };
-
-export const getEmployeeId = () => {
-  const id = Cookies.get("employee_id");
-  return id ? Number(id) : null;
-};

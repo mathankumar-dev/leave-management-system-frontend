@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import api from '../../../api/axiosInstance';
+import Cookies from "js-cookie";
 
 import type {
 
@@ -15,10 +16,10 @@ import type {
   LeaveApplication,
   LeaveDecision,
   LeaveDecisionRequest,
-  TeamCalendarResponse
+  TeamCalendarResponse,
+  TeamMemberBalance
 
 } from '../types';
-import { getEmployeeId } from '../../auth/pages/services/AuthService';
 
 
 
@@ -30,8 +31,6 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
     );
     return response.data;
   },
-
-
 
 
  
@@ -51,10 +50,8 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
   },
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
-    // Note: Assuming your endpoint follows this pattern based on your summary URL
     const response = await api.get(`/dashboard/manager/team-balances/${managerId}?year=2026`);
 
-    // If your backend returns the array directly:
     return response.data;
   },
 
@@ -69,6 +66,34 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
     const response = await api.post('/leaves/apply', leaveData);
     return response.data;
   },
+
+updateLeave: async (id: number, data: any) => {
+  const res = await api.put(
+    `/leaves/${id}`,
+    null,   
+    {
+      params: {
+        employeeId: data.employeeId,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        reason: data.reason,
+        halfDayType: data.halfDayType
+      }
+    }
+  );  
+
+  return res.data;
+},
+
+cancelLeave: async (id: number,employeeId : number) => {
+  const res = await api.patch(
+    `/leaves/${id}/cancel?employeeId=${employeeId}` 
+    
+  );
+
+  console.log(res.data);
+  return res.data;
+},
 
 
   // =============================
@@ -104,13 +129,19 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
   // =============================
 
   getMyLeaveHistory: async (employeeId: number): Promise<LeaveRecord[]> => {
-    console.log("get my leaves here vanthuruchu");
-    
-
     const response = await api.get(`/leaves/employee/${employeeId}`);
-
     return response.data;
+  },
 
+
+  getWeeklyLeaveSummary : async (managerId : number) : Promise<LeaveRecord[]> => {
+    const response = await api.get(`/manager/${managerId}/team-leaves/week`);
+    return response.data;
+  },
+    getTeamOnLeave : async (managerId : number) : Promise<TeamMemberBalance[]> => {
+    const response = await api.get(`/dashboard/manager/team-on-leave/${managerId}`);
+    console.log(response.data);
+    return response.data;
   },
 
 
@@ -174,11 +205,8 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
   // =============================
 
   getNotifications: async (): Promise<Notification[]> => {
-
     const response = await api.get('/notifications');
-
     return response.data;
-
   },
 
 
@@ -242,15 +270,15 @@ return response.data;
 
     );
 
+    
+
     return response.data;
 
   },
   
 
  getEmployeeDashboard: async (employeeId?: number): Promise<Employee[]> => {
-  // Use parameter if passed, otherwise fallback to cookie
-  const id = employeeId ?? getEmployeeId();
-
+  const id = employeeId ;
   if (!id) {
     console.error("Employee ID is missing! Cannot fetch dashboard.");
     return [];
@@ -258,7 +286,6 @@ return response.data;
 
   try {
     const response = await api.get(`/dashboard/employee/${id}`);
-    console.log("Dashboard data:", response.data);
     return [response.data];
   } catch (error: any) {
     console.error("Failed to fetch dashboard:", error.message || error);
