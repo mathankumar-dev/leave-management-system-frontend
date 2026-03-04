@@ -20,7 +20,6 @@ import type {
   TeamMemberBalance
 
 } from '../types';
-import { getEmployeeId } from '../../auth/pages/services/AuthService';
 
 
 
@@ -32,8 +31,6 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
     );
     return response.data;
   },
-
-
 
 
  
@@ -53,10 +50,8 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
   },
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
-    // Note: Assuming your endpoint follows this pattern based on your summary URL
     const response = await api.get(`/dashboard/manager/team-balances/${managerId}?year=2026`);
 
-    // If your backend returns the array directly:
     return response.data;
   },
 
@@ -75,7 +70,7 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
 updateLeave: async (id: number, data: any) => {
   const res = await api.put(
     `/leaves/${id}`,
-    null,   // body must be null
+    null,   
     {
       params: {
         employeeId: data.employeeId,
@@ -85,17 +80,14 @@ updateLeave: async (id: number, data: any) => {
         halfDayType: data.halfDayType
       }
     }
-  );
-
-  
+  );  
 
   return res.data;
 },
 
 cancelLeave: async (id: number,employeeId : number) => {
   const res = await api.patch(
-    `/leaves/${id}/cancel?employeeId=${employeeId}`
-   
+    `/leaves/${id}/cancel?employeeId=${employeeId}` 
     
   );
 
@@ -286,9 +278,7 @@ return response.data;
   
 
  getEmployeeDashboard: async (employeeId?: number): Promise<Employee[]> => {
-  // Use parameter if passed, otherwise fallback to cookie
-  const id = employeeId ?? getEmployeeId();
-
+  const id = employeeId ;
   if (!id) {
     console.error("Employee ID is missing! Cannot fetch dashboard.");
     return [];
@@ -296,7 +286,6 @@ return response.data;
 
   try {
     const response = await api.get(`/dashboard/employee/${id}`);
-    console.log("Dashboard data:", response.data);
     return [response.data];
   } catch (error: any) {
     console.error("Failed to fetch dashboard:", error.message || error);

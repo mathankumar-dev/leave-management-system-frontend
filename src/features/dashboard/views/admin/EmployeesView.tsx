@@ -17,7 +17,7 @@ import { useAuth } from "../../../auth/hooks/useAuth";
 const EmployeesView = () => {
   const { fetchEmployees, loading } = useDashboard();
 
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,35 +27,32 @@ const EmployeesView = () => {
   /* ----------------------- LOAD MOCK DATA ----------------------- */
   const [openAddEmployee, setOpenAddEmployee] = useState(false);
 
-   useEffect(() => {
-  // const employeeId = user?.id;
+  useEffect(() => {
+    const employeeId = user?.id;
 
-  const employeeId = getEmployeeId();
 
-  if (!employeeId) {
-    console.warn("Employee ID not ready yet");
-    return;
-  }
-  
-  let isMounted = true;
-
-  fetchEmployees().then((data: Employee[]) => {
-    if (isMounted) {
-      setEmployees(data);   // ❌ THIS LINE CAUSING ERROR
+    if (!employeeId) {
+      console.warn("Employee ID not ready yet");
+      return;
     }
-  });
 
-  return () => {
-    isMounted = false;
-  };
-}, []);
+    let isMounted = true;
+
+    fetchEmployees().then((data: Employee[]) => {
+      if (isMounted) {
+        setEmployees(data);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filteredEmployees = useMemo(() => {
     return employees.filter((emp) => {
       return (
-        emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.dept?.toLowerCase().includes(searchTerm.toLowerCase())
+        emp.employeeName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     });
   }, [employees, searchTerm]);
@@ -82,7 +79,7 @@ const EmployeesView = () => {
           </p>
         </div>
 
-        <button  className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+        <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
           <FaUserPlus /> Add Employee
         </button>
       </div>
@@ -158,11 +155,10 @@ const EmployeesView = () => {
 
                     <td className="px-6 py-4 text-center">
                       <span
-                        className={`px-3 py-1 rounded-md text-[10px] font-bold ${
-                          emp.status === "ACTIVE"
+                        className={`px-3 py-1 rounded-md text-[10px] font-bold ${emp.status === "ACTIVE"
                             ? "bg-emerald-50 text-emerald-700"
                             : "bg-amber-50 text-amber-700"
-                        }`}
+                          }`}
                       >
                         {emp.status}
                       </span>
@@ -211,9 +207,8 @@ const MenuItem = ({
 }) => (
   <button
     onClick={onClick}
-    className={`w-full px-4 py-2 flex items-center gap-3 text-sm hover:bg-slate-50 ${
-      danger ? "text-rose-600" : ""
-    }`}
+    className={`w-full px-4 py-2 flex items-center gap-3 text-sm hover:bg-slate-50 ${danger ? "text-rose-600" : ""
+      }`}
   >
     {icon} {label}
   </button>
