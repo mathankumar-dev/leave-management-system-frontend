@@ -6,6 +6,7 @@ import AuthPage from "../features/auth/pages/AuthPage";
 import DashboardLayout from "../features/dashboard/layout/DashboardLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import ForgotPassword from "../features/auth/pages/ForgotPassword";
+import NotFoundPage from "../components/pages/NotFoundPage";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -38,6 +39,7 @@ const AppRoutes: React.FC = () => {
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="*" element={<NotFoundPage />} />
 
     </Routes>
   );

@@ -7,7 +7,6 @@ const App: React.FC = () => {
   return (
     <div className="antialiased text-slate-900">
       <Toaster position="top-right" richColors closeButton />
-
       <AppRoutes />
     </div>
   );
