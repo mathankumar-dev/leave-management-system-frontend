@@ -48,6 +48,14 @@ export interface LeaveDecisionRequest{
 // ==============================
 
 export interface Employee {
+  id: number | null | undefined;
+  color: string;
+  initial?: string | null;
+  name: string ;
+  email: string ;
+  dept: string;
+  role: string;
+  status: string;
   employeeId: number;
   employeeName: string;
   totalAllocated: number;   

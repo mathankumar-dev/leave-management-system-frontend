@@ -11,7 +11,7 @@ import {
 import { useDashboard } from "../../hooks/useDashboard";
 import type { Employee } from "../../types";
 import AddEmployeeForm from "../../components/AddEmployeeForm";
-import { getEmployeeId } from "../../../../api/axiosInstance";
+
 import { useAuth } from "../../../auth/hooks/useAuth";
 
 const EmployeesView = () => {
@@ -21,8 +21,7 @@ const EmployeesView = () => {
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-  const [hiddenIds, setHiddenIds] = useState<number[]>([]); // soft delete UI-only
+
 
   /* ----------------------- LOAD MOCK DATA ----------------------- */
   const [openAddEmployee, setOpenAddEmployee] = useState(false);

@@ -159,7 +159,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <FaChartLine className="text-slate-300" />
         </div>
 
-        <div className="w-full h-[250px] min-w-0">
+        <div className="w-full h-62 min-w-0">
           {chartReady && (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
