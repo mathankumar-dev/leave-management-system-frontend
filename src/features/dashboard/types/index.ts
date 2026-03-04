@@ -5,7 +5,7 @@
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF" ;
-export type LeaveType = "SICK" | "CASUAL" | "EARNED" | "COMP_OFF"; 
+export type LeaveType = "SICK" | "CASUAL" | "EARNED_LEAVES" | "COMP_OFF"; 
 
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
