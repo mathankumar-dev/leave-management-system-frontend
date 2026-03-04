@@ -1,192 +1,187 @@
 import React, { useState } from "react";
-import Cookies from "js-cookie"; // Ensure this is installed
+import Cookies from "js-cookie";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
 import type { LeaveApplication, LeaveType } from "../types";
-import { Calendar, Clock, MessageSquare, Send, CheckCircle2 } from "lucide-react";
+import { Clock, MessageSquare, Send, CheckCircle2, ShieldCheck } from "lucide-react";
+import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
   const { applyLeave, loading } = useDashboard();
   const [submitted, setSubmitted] = useState(false);
 
+  const today = new Date();
+  const oneMonthFromNow = new Date();
+  oneMonthFromNow.setMonth(today.getMonth() + 1);
+
   const [formData, setFormData] = useState({
     category: "CASUAL" as LeaveType,
-    startDate: "",
-    endDate: "",
+    startDate: null as Date | null,
+    endDate: null as Date | null,
     isHalfDay: false,
     halfDayType: "FIRST_HALF" as "FIRST_HALF" | "SECOND_HALF",
     reason: "",
   });
 
+  const leaveLabels: Record<string, string> = {
+    SICK: "SICK",
+    CASUAL: "CASUAL",
+    EARNED_LEAVES: "EARNED",
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.startDate || (!formData.isHalfDay && !formData.endDate)) return;
+
     const rawBackupId = Cookies.get("lms_user_id");
     const employeeId = user?.id || (rawBackupId ? parseInt(rawBackupId) : 4);
 
     const payload: LeaveApplication = {
       employeeId,
       leaveType: formData.category,
-      startDate: formData.startDate,
-      endDate: formData.isHalfDay ? formData.startDate : formData.endDate,
+      // Converting Date object to YYYY-MM-DD string
+      startDate: formData.startDate.toISOString().split('T')[0],
+      endDate: formData.isHalfDay
+        ? formData.startDate.toISOString().split('T')[0]
+        : formData.endDate!.toISOString().split('T')[0],
       reason: formData.reason,
       confirmLossOfPay: false,
     };
 
-    if (formData.isHalfDay) {
-      payload.halfDayType = formData.halfDayType;
-    }
+    if (formData.isHalfDay) payload.halfDayType = formData.halfDayType;
 
     const result = await applyLeave(payload);
-
-    // Show success state if submission worked
     if (result) {
       setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 5000); // Reset after 5s
+      setTimeout(() => setSubmitted(false), 5000);
     }
   };
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto my-10 p-12 text-center bg-white rounded-xl shadow-sm border border-slate-200">
-        <div className="flex justify-center mb-4">
-          <CheckCircle2 size={64} className="text-emerald-500 animate-bounce" />
-        </div>
-        <h2 className="text-2xl font-bold text-slate-800">Application Submitted!</h2>
-        <p className="text-slate-500 mt-2">Your leave request has been sent for approval.</p>
-        <button
-          onClick={() => setSubmitted(false)}
-          className="mt-6 text-indigo-600 font-medium hover:underline"
-        >
-          Submit another request
-        </button>
+      <div className="max-w-2xl mx-auto my-6 p-8 text-center bg-white border border-slate-200 shadow-sm rounded-sm">
+        <CheckCircle2 size={40} className="text-emerald-500 mx-auto mb-3" />
+        <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Transmission Sent</h2>
+        <button onClick={() => setSubmitted(false)} className="mt-4 text-[10px] font-black uppercase text-indigo-600 underline">New Application +</button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto my-10">
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all hover:shadow-md">
+    <div className="max-w-4xl mx-auto py-2 px-4">
+      <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="px-8 py-6 bg-slate-50 border-b border-slate-200">
-          <h1 className="text-xl font-semibold text-slate-800 tracking-tight">Apply for Leave</h1>
-          <p className="text-sm text-slate-500 mt-1">Submit your request to the management team.</p>
+        <div className="px-6 py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <div>
+            <h1 className="text-lg font-black text-slate-900 uppercase tracking-tighter leading-none">Apply for Leave</h1>
+            {/* <p className="text-[9px] font-bold text-slate-500 uppercase mt-1">Reviewer: {user?.managerName || "HR"}</p> */}
+          </div>
+          <div className="flex items-center gap-2 bg-white border border-slate-200 px-2 py-1 rounded-sm">
+            <ShieldCheck size={12} className="text-indigo-600" />
+            <span className="text-[9px] font-black uppercase text-slate-600 italic">Reviewer: {user?.managerName}</span>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          {/* Leave Type Grid */}
-          <div className="space-y-3">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-              <Clock size={14} /> Select Category
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Row 1: Category Selection */}
+          <div className="space-y-2">
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <Clock size={12} className="text-indigo-600" /> 01. Select Category
             </label>
-            <div className="grid grid-cols-3 gap-3">
-              {(["SICK", "CASUAL", "EARNED"] as LeaveType[]).map((type) => (
+            <div className="grid grid-cols-3 gap-2">
+              {(["SICK", "CASUAL", "EARNED_LEAVES"] as LeaveType[]).map((type) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => setFormData({ ...formData, category: type })}
-                  className={`py-3 px-4 text-sm font-semibold rounded-xl border transition-all duration-200 ${formData.category === type
-                      ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100"
-                      : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300 hover:bg-indigo-50/30"
+                  className={`py-2 text-[10px] font-black uppercase border rounded-sm transition-all ${formData.category === type
+                      ? "bg-primary-900 border-primary-900 text-white shadow-sm"
+                      : "bg-white border-slate-200 text-slate-400 hover:text-slate-600"
                     }`}
                 >
-                  {type}
+                  {leaveLabels[type]}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Date Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Start Date</label>
-              <div className="relative">
-                <input
-                  type="date"
-                  min={new Date().toISOString().split("T")[0]} // Prevent past dates
-                  className="w-full pl-3 pr-3 py-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-sm"
-                  value={formData.startDate}
-                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  required
-                />
-              </div>
-            </div>
+          {/* Row 2: Dates using MyDatePicker */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MyDatePicker
+              label="02. Start Date"
+              selected={formData.startDate}
+              onChange={(date) => setFormData({ ...formData, startDate: date })}
+              placeholder="DD / MM / YYYY"
+              required
+              minDate={today} // Prevents backdating
+              maxDate={oneMonthFromNow} // Restricts to 1 month ahead
+            />
 
             {!formData.isHalfDay && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">End Date</label>
-                <input
-                  type="date"
-                  min={formData.startDate || new Date().toISOString().split("T")[0]}
-                  className="w-full p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-sm"
-                  value={formData.endDate}
-                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  required
-                />
+              <MyDatePicker
+                label="03. End Date"
+                selected={formData.endDate}
+                onChange={(date) => setFormData({ ...formData, endDate: date })}
+                placeholder="DD / MM / YYYY"
+                required
+                minDate={formData.startDate || today} // End date can't be before start
+                maxDate={oneMonthFromNow}
+              />
+            )}
+          </div>
+
+          {/* Row 3: Half Day Toggle */}
+          <div className="py-2 border-y border-slate-100 flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="checkbox"
+                className="w-4 h-4 border-slate-300 rounded-sm text-indigo-600 focus:ring-0 cursor-pointer"
+                checked={formData.isHalfDay}
+                onChange={(e) => setFormData({ ...formData, isHalfDay: e.target.checked })}
+              />
+              <span className="text-[10px] font-black text-slate-700 uppercase tracking-tight group-hover:text-indigo-600 transition-colors">Partial Day Assignment</span>
+            </label>
+
+            {formData.isHalfDay && (
+              <div className="flex bg-slate-100 p-0.5 rounded-sm border border-slate-200">
+                {["FIRST_HALF", "SECOND_HALF"].map((h) => (
+                  <button
+                    key={h}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, halfDayType: h as any })}
+                    className={`px-3 py-1 text-[8px] font-black uppercase transition-all rounded-sm ${formData.halfDayType === h ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400"
+                      }`}
+                  >
+                    {h.replace("_", " ")}
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Half Day Custom Selector */}
-          <div className={`p-1 rounded-xl transition-all ${formData.isHalfDay ? 'bg-indigo-50 border border-indigo-100' : 'bg-slate-50 border border-slate-100'}`}>
-            <div className="flex items-center justify-between p-3">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <div className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={formData.isHalfDay}
-                    onChange={(e) => setFormData({ ...formData, isHalfDay: e.target.checked })}
-                  />
-                  <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </div>
-                <span className="text-sm font-semibold text-slate-700">Partial Day (Half Day)</span>
-              </label>
-
-              {formData.isHalfDay && (
-                <div className="flex bg-white rounded-lg p-1 shadow-sm border border-indigo-100">
-                  {["FIRST_HALF", "SECOND_HALF"].map((h) => (
-                    <button
-                      key={h}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, halfDayType: h as any })}
-                      className={`px-3 py-1.5 text-[10px] uppercase tracking-tighter font-bold rounded-md transition-all ${formData.halfDayType === h ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-slate-600"
-                        }`}
-                    >
-                      {h.replace("_", " ")}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Reason Field */}
+          {/* Row 4: Reason */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Reason for Request</label>
+            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <MessageSquare size={12} className="text-indigo-600" /> 04. Justification
+            </label>
             <textarea
-              rows={4}
-              placeholder="Please explain the necessity of this leave..."
-              className="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all text-sm resize-none"
+              rows={2}
+              placeholder="ENTER REASON..."
+              className="w-full bg-slate-50 border border-slate-200 p-3 rounded-sm font-bold text-xs outline-none focus:bg-white resize-none transition-all"
               value={formData.reason}
               onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
               required
             />
           </div>
 
-          {/* Submit Action */}
           <button
             type="submit"
             disabled={loading}
-            className="group w-full bg-slate-900 hover:bg-indigo-600 text-white p-4 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 shadow-xl shadow-slate-200 active:scale-[0.98]"
+            className="w-full bg-primary-900 text-white py-3 rounded-sm font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-indigo-600 transition-all disabled:opacity-50"
           >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <span className="tracking-wide">Submit Application</span>
-                <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              </>
+            {loading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : (
+              <>Submit Application <Send size={14} /></>
             )}
           </button>
         </form>
