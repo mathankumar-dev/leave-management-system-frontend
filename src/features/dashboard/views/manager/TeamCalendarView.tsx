@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -7,6 +7,7 @@ import {
   FaCalendarCheck,
   FaInfoCircle,
   FaUmbrellaBeach,
+  FaUserCheck,
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../../auth/hooks/useAuth";
@@ -15,7 +16,6 @@ import { PUBLIC_HOLIDAYS_2026 } from "../../../../constants/holidays";
 const TeamCalendarView: React.FC = () => {
   const { user } = useAuth();
   const managerId = user?.id;
-
   const { fetchTeamSchedule, teamCalendar, loading } = useDashboard();
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -24,24 +24,22 @@ const TeamCalendarView: React.FC = () => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // 1. Fetch data with Type Guard to fix "number | undefined" error
   useEffect(() => {
     if (typeof managerId === 'number') {
       fetchTeamSchedule(managerId);
     }
   }, [year, month, fetchTeamSchedule, managerId]);
 
-  // 2. Helper to match Backend & Holiday Keys
   const getFormattedDateKey = (day: number) => {
     const mm = String(month + 1).padStart(2, "0");
     const dd = String(day).padStart(2, "0");
     return `${year}-${mm}-${dd}`;
   };
 
-  // Calendar Math
   const daysInMonthCount = new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const monthName = currentDate.toLocaleString("default", { month: "long" });
+  
   const daysArray = useMemo(
     () => Array.from({ length: daysInMonthCount }, (_, i) => i + 1),
     [daysInMonthCount]
@@ -55,179 +53,183 @@ const TeamCalendarView: React.FC = () => {
   const selectedDayHoliday = PUBLIC_HOLIDAYS_2026[selectedDateKey];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col xl:flex-row gap-6 p-2 md:p-4 pb-24"
-    >
-      {/* 1. CALENDAR GRID SECTION */}
-      <div className="flex-1 bg-white border border-slate-200 rounded-2xl md:rounded-xl p-4 md:p-6 shadow-sm relative">
-        {loading && (
-          <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-xl">
-            <FaSpinner className="animate-spin text-indigo-600 text-2xl" />
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+    <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20">
+      
+      {/* LEFT: CALENDAR MAIN */}
+      <div className="flex-1 bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
+        
+        {/* TOP TOOLBAR */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 gap-4 bg-slate-50/30">
           <div>
-            <h2 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-xl font-black text-slate-900 uppercase italic tracking-tighter">
               {monthName} {year}
             </h2>
-            <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest">
-              Team Absence Tracker
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+               <span className="inline-block w-2 h-2 rounded-full bg-indigo-500"></span>
+               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Attendance Overview</p>
+            </div>
           </div>
-          <div className="flex bg-slate-100 p-1 rounded-xl">
-            <button onClick={prevMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-600 transition-all">
-              <FaChevronLeft size={14} />
+
+          <div className="flex items-center justify-between sm:justify-end gap-2">
+            <button onClick={prevMonth} className="p-2 border border-slate-200 bg-white hover:bg-slate-50 rounded-sm transition-all active:scale-90">
+              <FaChevronLeft size={10} className="text-slate-600" />
             </button>
-            <button onClick={nextMonth} className="p-2 hover:bg-white hover:shadow-sm rounded-lg text-slate-600 transition-all">
-              <FaChevronRight size={14} />
+            <button onClick={() => { setCurrentDate(new Date()); setSelectedDay(new Date().getDate()); }} className="px-4 py-2 text-[10px] font-black uppercase tracking-wider border border-slate-200 bg-white hover:bg-slate-50 rounded-sm shadow-sm">
+              Current
+            </button>
+            <button onClick={nextMonth} className="p-2 border border-slate-200 bg-white hover:bg-slate-50 rounded-sm transition-all active:scale-90">
+              <FaChevronRight size={10} className="text-slate-600" />
             </button>
           </div>
         </div>
 
-        {/* GRID */}
-        <div className="grid grid-cols-7 gap-px bg-slate-100 border border-slate-100 rounded-xl overflow-hidden shadow-inner">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <div key={d} className="bg-slate-50 py-2 text-center text-[10px] font-black text-slate-400 uppercase">
-              {d}
+        {/* CALENDAR BODY */}
+        <div className="relative">
+          {loading && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-30 flex items-center justify-center">
+              <FaSpinner className="animate-spin text-indigo-600 text-2xl" />
             </div>
-          ))}
+          )}
 
-          {/* Spacers */}
-          {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-            <div key={`empty-${i}`} className="h-14 md:h-28 bg-slate-50/30" />
-          ))}
+          <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+              <div key={d} className="py-3 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 last:border-0">
+                {d}
+              </div>
+            ))}
+          </div>
 
-          {/* Days */}
-          {daysArray.map((day) => {
-            const dateKey = getFormattedDateKey(day);
-            const holiday = PUBLIC_HOLIDAYS_2026[dateKey];
-            const isSelected = selectedDay === day;
-            const dailyLeaves = teamCalendar[dateKey] || [];
-            const isToday =
-              new Date().getDate() === day &&
-              new Date().getMonth() === month &&
-              new Date().getFullYear() === year;
+          <div className="grid grid-cols-7 gap-px bg-slate-200 border-b border-slate-200">
+            {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+              <div key={`empty-${i}`} className="h-16 sm:h-24 md:h-32 bg-slate-50/30" />
+            ))}
 
-            return (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(day)}
-                className={`h-14 md:h-28 p-1 md:p-2 text-left flex flex-col transition-all relative group
-                  ${isSelected ? "ring-2 ring-inset ring-indigo-500 z-10 bg-indigo-50/30" : "bg-white hover:bg-slate-50"}
-                  ${holiday ? "bg-rose-50/40" : ""}
-                `}
-              >
-                <div className="flex justify-between items-start">
-                  <span className={`text-[11px] md:text-xs font-bold h-6 w-6 flex items-center justify-center rounded-lg
-                    ${isToday ? "bg-indigo-600 text-white shadow-md" : isSelected ? "text-indigo-600" : "text-slate-700"}
+            {daysArray.map((day) => {
+              const dateKey = getFormattedDateKey(day);
+              const holiday = PUBLIC_HOLIDAYS_2026[dateKey];
+              const isSelected = selectedDay === day;
+              const dailyLeaves = teamCalendar[dateKey] || [];
+              const isToday = 
+                new Date().getDate() === day && 
+                new Date().getMonth() === month && 
+                new Date().getFullYear() === year;
+
+              return (
+                <button
+                  key={day}
+                  onClick={() => setSelectedDay(day)}
+                  className={`h-16 sm:h-24 md:h-32 p-1 sm:p-2 text-left flex flex-col transition-all relative
+                    ${isSelected ? "bg-indigo-50/50 ring-2 ring-inset ring-indigo-500 z-10" : "bg-white hover:bg-slate-50"}
+                    ${holiday ? "bg-rose-50/30" : ""}
+                  `}
+                >
+                  <span className={`
+                    text-[11px] sm:text-xs font-black h-5 w-5 sm:h-7 sm:w-7 flex items-center justify-center rounded-sm
+                    ${isToday ? "bg-slate-900 text-white shadow-md" : isSelected ? "text-indigo-600" : "text-slate-400"}
                   `}>
                     {day}
                   </span>
-                  {holiday && <FaUmbrellaBeach className="text-rose-400 mt-1 md:hidden" size={10} />}
-                </div>
 
-                {/* Holiday Label (Desktop) */}
-                {holiday && (
-                  <div className="mt-1 hidden md:block">
-                    <p className="text-[9px] font-black text-rose-600 bg-rose-100/50 px-1 py-0.5 rounded truncate uppercase">
-                      {holiday}
-                    </p>
+                  <div className="mt-1 hidden sm:block space-y-1 overflow-hidden">
+                    {holiday && (
+                       <div className="px-1.5 py-0.5 bg-rose-50 text-rose-600 text-[8px] font-black uppercase rounded-sm truncate border border-rose-100">
+                        {holiday}
+                       </div>
+                    )}
+                    {dailyLeaves.slice(0, 2).map((emp, i) => (
+                      <div key={i} className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[8px] font-black uppercase rounded-sm truncate">
+                        {emp.employeeName.split(" ")[0]}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-auto flex gap-1 sm:hidden justify-center pb-1">
+                    {holiday && <div className="w-1 h-1 bg-rose-500 rounded-full" />}
+                    {dailyLeaves.length > 0 && <div className="w-1 h-1 bg-indigo-500 rounded-full" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT: SIDEBAR (CLEAN STYLE) */}
+      <div className="w-full lg:w-80 space-y-3">
+        
+        {/* DETAILS CARD */}
+        <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Daily Activity</p>
+            <p className="text-[10px] font-black text-indigo-600 uppercase italic">{monthName.slice(0, 3)} {selectedDay}</p>
+          </div>
+
+          <div className="p-4 min-h-[300px]">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={selectedDateKey}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-3"
+              >
+                {selectedDayHoliday && (
+                  <div className="p-3 bg-rose-50 border border-rose-100 rounded-sm">
+                    <p className="text-[9px] font-black text-rose-500 uppercase mb-1">Public Holiday</p>
+                    <p className="text-xs font-bold text-rose-900 uppercase tracking-tight leading-none">{selectedDayHoliday}</p>
                   </div>
                 )}
 
-                {/* Employee Leaves */}
-                <div className="mt-auto space-y-1 hidden md:block overflow-hidden">
-                  {dailyLeaves.slice(0, 2).map((emp, idx) => (
-                    <div key={idx} className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 border border-amber-100">
-                      <div className="w-1 h-1 rounded-full bg-amber-500" />
-                      <span className="text-[9px] font-bold text-amber-800 truncate">
-                        {emp.employeeName.split(" ")[0]}
-                      </span>
+                {selectedDayLeaves.length > 0 ? (
+                  selectedDayLeaves.map((emp) => (
+                    <div key={emp.employeeId} className="border border-slate-100 p-3 rounded-sm hover:border-indigo-200 transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-slate-100 rounded-sm flex items-center justify-center text-[10px] font-black text-slate-600 border border-slate-200">
+                           {emp.employeeName.split(" ").map(n => n[0]).join("")}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black text-slate-900 uppercase tracking-tight truncate">{emp.employeeName}</p>
+                          <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Out of Office</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2 mt-3">
+                        <div className="flex-1 p-2 bg-slate-50 border border-slate-100 rounded-sm">
+                          <p className="text-[8px] font-black text-slate-400 uppercase">Balance</p>
+                          <p className="text-xs font-black text-slate-700 leading-none mt-1">{emp.totalRemaining?.toFixed(1)}d</p>
+                        </div>
+                        <div className="flex-1 p-2 bg-rose-50/50 border border-rose-100 rounded-sm">
+                          <p className="text-[8px] font-black text-rose-400 uppercase">LOP</p>
+                          <p className="text-xs font-black text-rose-600 leading-none mt-1">{emp.lopPercentage}%</p>
+                        </div>
+                      </div>
                     </div>
-                  ))}
-                  {dailyLeaves.length > 2 && (
-                    <p className="text-[9px] text-slate-400 font-bold pl-1">+ {dailyLeaves.length - 2}</p>
-                  )}
-                </div>
+                  ))
+                ) : !selectedDayHoliday ? (
+                  <div className="py-20 text-center flex flex-col items-center">
+                    <div className="w-10 h-10 bg-emerald-50 text-emerald-500 flex items-center justify-center rounded-sm mb-3">
+                      <FaUserCheck size={18} />
+                    </div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Team Fully Present</p>
+                  </div>
+                ) : null}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
 
-                {/* Mobile Dots */}
-                <div className="mt-auto flex gap-0.5 md:hidden justify-center pb-1">
-                  {dailyLeaves.length > 0 && <div className="w-1 h-1 rounded-full bg-amber-400" />}
-                </div>
-              </button>
-            );
-          })}
+        {/* SYSTEM INFO FOOTER */}
+        <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-sm">
+           <div className="flex items-center gap-2 mb-2 text-indigo-600">
+              <FaInfoCircle size={12} />
+              <p className="text-[9px] font-black uppercase tracking-widest">Help Center</p>
+           </div>
+           <p className="text-[10px] font-bold text-indigo-900/60 leading-relaxed uppercase tracking-tight italic">
+             Data is updated every 24 hours from the central payroll registry.
+           </p>
         </div>
       </div>
-
-      {/* 2. SIDEBAR SECTION */}
-      <div className="w-full xl:w-80 space-y-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-slate-800 text-sm">Details</h3>
-            <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase">
-              {monthName.slice(0, 3)} {selectedDay}
-            </span>
-          </div>
-
-          <div className="space-y-3 max-h-[450px] overflow-y-auto no-scrollbar">
-            {/* Show Holiday Info in Sidebar */}
-            {selectedDayHoliday && (
-              <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl">
-                <p className="text-[10px] font-black text-rose-500 uppercase">Public Holiday</p>
-                <p className="text-xs font-bold text-rose-900">{selectedDayHoliday}</p>
-              </div>
-            )}
-
-            {selectedDayLeaves.length > 0 ? (
-              selectedDayLeaves.map((emp) => (
-                <div key={emp.employeeId} className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center text-xs font-black text-indigo-600 border border-slate-200 shadow-sm">
-                      {emp.employeeName.split(" ").map((n) => n[0]).join("")}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-slate-900 truncate">{emp.employeeName}</p>
-                      <p className="text-[10px] font-bold text-amber-500 uppercase tracking-tight">On Leave</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60">
-                    <div>
-                      <p className="text-[8px] text-slate-400 uppercase font-black">Remaining</p>
-                      <p className="text-xs font-bold text-slate-700">{emp.totalRemaining ?? 0} Days</p>
-                    </div>
-                    <div>
-                      <p className="text-[8px] text-slate-400 uppercase font-black">LOP Impact</p>
-                      <p className="text-xs font-bold text-red-500">{emp.lopPercentage ?? 0}%</p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : !selectedDayHoliday ? (
-              <div className="text-center py-10 border-2 border-dashed border-slate-100 rounded-2xl">
-                <FaCalendarCheck className="mx-auto text-slate-200 mb-2" size={24} />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Absences</p>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="bg-indigo-600 rounded-2xl p-5 text-white shadow-lg shadow-indigo-100">
-          <div className="flex items-center gap-2 mb-2">
-            <FaInfoCircle size={14} />
-            <h4 className="text-xs font-bold uppercase tracking-wider">Quick Info</h4>
-          </div>
-          <p className="text-[11px] leading-relaxed opacity-90">
-            Selected dates show employee leave balances and Loss of Pay (LOP) calculations directly from the payroll system.
-          </p>
-        </div>
-      </div>
-    </motion.div>
+    </div>
   );
 };
 
-export default TeamCalendarView;           
+export default TeamCalendarView;

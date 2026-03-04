@@ -76,7 +76,6 @@ const DashboardLayout: React.FC = () => {
         if (userRole === ROLES.HR) return <HRDashboard />;
         return null;
 
-      // HR sees HREmployeesPage, Admin sees EmployeesView
       case "All Employees":
         if (userRole === ROLES.HR) return <HREmployeesPage />;
         return <EmployeesView />;
@@ -108,7 +107,7 @@ const DashboardLayout: React.FC = () => {
 
 
       case "Team Members":
-        return <TeamMembersView />;
+        return <TeamMembersView onNavigate={setActiveTab} />;
 
       case "Profile":
         if (userRole === ROLES.MANAGER) return <ManagerProfile />;
