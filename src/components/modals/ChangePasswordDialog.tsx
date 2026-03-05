@@ -62,7 +62,7 @@ const ChangePasswordDialog: React.FC = () => {
 
   return (
     <>
-      {/* 🔐 Password Dialog */}
+      {/* Password Dialog */}
       <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
 
@@ -112,7 +112,7 @@ const ChangePasswordDialog: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ Success Modal */}
+      {/* Success Modal */}
       {showSuccess && (
         <SuccessModal
           title="Password Updated"
@@ -122,7 +122,7 @@ const ChangePasswordDialog: React.FC = () => {
         />
       )}
 
-      {/* ❌ Failure Modal */}
+      {/* Failure Modal */}
       {showFailure && (
         <FailureModal
           title="Update Failed"

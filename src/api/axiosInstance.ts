@@ -1,7 +1,7 @@
 import Cookies from "js-cookie";
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { ENV } from '../config/environment';
-import { toast } from "sonner"; // Import the toast function
+import { toast } from "sonner"; 
 
 const api: AxiosInstance = axios.create({
   baseURL: ENV.API_BASE_URL,
@@ -10,7 +10,6 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// Helper for cleaning up auth state
 const handleLogout = () => {
   Cookies.remove("lms_token");
   if (window.location.pathname !== "/login") {
@@ -37,7 +36,6 @@ api.interceptors.response.use(
 
     // Global Error Handling Logic
     if (!error.response) {
-      // Network Error (No Internet / Server Down)
       toast.error("Network Error", {
         description: "Please check your internet connection or try again later.",
       });

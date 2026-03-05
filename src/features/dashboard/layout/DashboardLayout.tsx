@@ -6,12 +6,10 @@ import Topbar from "../components/Topbar";
 /* ---------------- ADMIN VIEWS ---------------- */
 import EmployeesView from "../views/admin/EmployeesView";
 import LeaveTypesView from "../views/admin/LeaveTypesView";
-// import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
 
 /* ---------------- HR VIEWS ---------------- */
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
-import { LowBalanceTable } from "../views/hr/components/Lowbalancetable";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -28,6 +26,7 @@ import ManagerProfile from "../views/manager/ManagerProfile";
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 import TeamMembersView from "../views/manager/TeamMembersView";
+import LowBalancePage from "../views/hr/pages/LowBalancePage";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -140,19 +139,16 @@ const [adminError, setAdminError] = useState<string | null>(null);
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
-        // if (userRole === ROLES.ADMIN) return <LeaveReportDashboard />;
         if (userRole === ROLES.MANAGER) return <ManagerDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
         return null;
 
-      // HR sees HREmployeesPage, Admin sees EmployeesView
       case "All Employees":
         if (userRole === ROLES.HR) return <HREmployeesPage />;
         return <EmployeesView />;
 
-      // HR Low Balance — real API via useHRDashboard
       case "LowBalance Employee":
-        return <LowBalancePageWrapper />;
+        return <LowBalancePage />;
 
       case "Calendar":
         return <CalendarView />;
@@ -177,7 +173,7 @@ const [adminError, setAdminError] = useState<string | null>(null);
 
 
       case "Team Members":
-        return <TeamMembersView />;
+        return <TeamMembersView onNavigate={setActiveTab} />;
 
       case "Profile":
         if (userRole === ROLES.MANAGER) return <ManagerProfile />;
@@ -188,12 +184,10 @@ const [adminError, setAdminError] = useState<string | null>(null);
     }
   };
 
-  /* ---------------- STRICT PASSWORD LOCK ---------------- */
   if (mustChangePassword) {
     return <ChangePasswordDialog />;
   }
 
-  /* ---------------- STRICT PASSWORD LOCK ---------------- */
   if (mustChangePassword) {
     return <ChangePasswordDialog />;
   }
@@ -230,29 +224,3 @@ const [adminError, setAdminError] = useState<string | null>(null);
 };
 
 export default DashboardLayout;
-// ─── LowBalance Wrapper — fetches real API ────────────────────────
-// Separate component so it has its own loading state
-import { useEffect as useEff, useState as useSt } from "react";
-import { hrDashboardService } from "../views/hr/service/hrDashboardService";
-import type { LowBalanceEmployee } from "../views/hr/types";
-import StatCard from "../components/StatCard";
-
-function LowBalancePageWrapper() {
-  const [data, setData] = useSt<LowBalanceEmployee[]>([]);
-  const [loading, setLoading] = useSt(true);
-  const [error, setError] = useSt<string | null>(null);
-
-  useEff(() => {
-    const controller = new AbortController();
-    hrDashboardService.getLowBalanceEmployees(controller.signal)
-      .then((res) => { setData(res); setLoading(false); })
-      .catch((err) => {
-        if (err instanceof Error && err.name === 'CanceledError') return;
-        setError(err instanceof Error ? err.message : 'Failed to load');
-        setLoading(false);
-      });
-    return () => controller.abort();
-  }, []);
-
-  return <LowBalanceTable data={data} loading={loading} error={error} />;
-}

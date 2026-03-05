@@ -3,23 +3,17 @@ import { dashboardService } from "../services/dashboardService";
 import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
 
 import type {
-  ApprovalRequest,
   LeaveRecord,
   Employee,
   Notification,
   AuditLog,
   LeaveApplication,
-  LeaveDecision,
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
-import axios from "axios";
-import api from "../../../api/axiosInstance";
-// import type { CalendarScope } from "../types/scope";
 
-// toggle this to false when the API is ready
 
 const service = dashboardService;
 
@@ -44,53 +38,38 @@ export const useDashboard = () => {
   //   }
   // }, []);
 
-const processApproval = async (
-  decisionRequest: LeaveDecisionRequest
-): Promise<boolean> => {
-  setLoading(true);
-  setError(null); 
-  try {
-    await service.updateDecision(decisionRequest);
-    return true;
-  } catch (err: any) {
-    console.error("Full Error Object:", err);
-    setError(err.message || "Action failed");
-    return false;
-  } finally {
-    setLoading(false);
-  }
-};
+  const processApproval = async (
+    decisionRequest: LeaveDecisionRequest
+  ): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await service.updateDecision(decisionRequest);
+      return true;
+    } catch (err: any) {
+      console.error("Full Error Object:", err);
+      setError(err.message || "Action failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ================= EMPLOYEES ================= */
 
- const fetchEmployees = async (): Promise<Employee[]> => {
-  setLoading(true);
-  try {
-    return await dashboardService.getEmployeeDashboard(); 
-  } catch (err: any) {
-    setError(err.message || "Failed to fetch employees");
-    return [];
-  } finally {
-    setLoading(false);
-  }
-};
+  const fetchEmployees = async (): Promise<Employee[]> => {
+    setLoading(true);
+    try {
+      return await dashboardService.getEmployeeDashboard();
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch employees");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
-
-//   const fetchStats = useCallback(
-//   async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
-//     setLoading(true);
-//     try {
-//       return await service.getHRStats(scope);
-//     } catch (err: any) {
-//       setError(err.message || "Failed to fetch HR analytics");
-//       return null;
-//     } finally {
-//       setLoading(false);
-//     }
-//   },
-//   []
-// );
 
   const fetchDashboard = useCallback(async (employeeId: number) => {
     setLoading(true);
@@ -106,20 +85,6 @@ const processApproval = async (
     }
   }, []);
 
-  // const fetchDashboard = useCallback(async (employeeId: number) => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await service.getEmpDashboard(employeeId);
-  //     console.log("API Response Success:", response); // Look for this in console
-  //     return response;
-  //   } catch (err: any) {
-  //     console.error("API ERROR DETAILS:", err.response?.data || err.message);
-  //     setError(err.message);
-  //     return null;
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, []);
 
 
   /* ================= LEAVES ================= */
@@ -137,11 +102,11 @@ const processApproval = async (
   }, []);
 
 
-const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<LeaveRecord[]> => {
+  const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<LeaveRecord[]> => {
     setLoading(true);
     try {
       const data = await service.getWeeklyLeaveSummary(managerId);
-      setWeeklyLeaveSummary(data); 
+      setWeeklyLeaveSummary(data);
       return data;
     } catch (err: any) {
       setError(err.message || "Failed to fetch leave history");
@@ -164,21 +129,7 @@ const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<L
     }
   }, []);
 
-  /* ================= Admin STATS ================= */
 
-
-
-  // const fetchDeptDistribution = useCallback(async () => {
-  //   setLoading(true);
-  //   try {
-  //     return await service.getDeptDistribution();
-  //   } catch (err: any) {
-  //     setError(err.message || "Failed to fetch department distribution");
-  //     return [];
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, []);
   /* ================= NOTIFICATIONS ================= */
 
   const fetchNotifications = useCallback(async (): Promise<Notification[]> => {
@@ -310,18 +261,7 @@ const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<L
       setLoading(false);
     }
   }, []);
-  // ================= HR ===========================
-  // const topDepartment = useMemo(() => {
-  //   return departmentLeaveData.reduce((max, d) =>
-  //     d.leaves > max.leaves ? d : max
-  //   );
-  // }, []);
 
-  // const topApprover = useMemo(() => {
-  //   return managerTrackingData.reduce((max, m) =>
-  //     m.approved > max.approved ? m : max
-  //   );
-  // }, []);
 
   const [filters, setFilters] = useState({
     month: 'all',
@@ -331,31 +271,31 @@ const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<L
     manager: 'all',
   });
 
-  const cancelLeave = useCallback(async (id: number,employeeId : number) => {
-  setLoading(true);
-  try {
-    await service.cancelLeave(id , employeeId);
-    return true;
-  } catch (err: any) {
-    setError(err.message || "Cancel failed");
-    return false;
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  const cancelLeave = useCallback(async (id: number, employeeId: number) => {
+    setLoading(true);
+    try {
+      await service.cancelLeave(id, employeeId);
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Cancel failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-const editLeave = useCallback(async (id: number, data: any) => {
-  setLoading(true);
-  try {
-    await service.updateLeave(id, data);
-    return true;
-  } catch (err: any) {
-    setError(err.message || "Update failed");
-    return false;
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  const editLeave = useCallback(async (id: number, data: any) => {
+    setLoading(true);
+    try {
+      await service.updateLeave(id, data);
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Update failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
 
   const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
@@ -384,6 +324,23 @@ const editLeave = useCallback(async (id: number, data: any) => {
     topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
   }), []);
 
+
+
+  const bankCompOff = useCallback(async (payload: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await service.submitCompOffRequest(payload);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || "Comp-Off banking failed";
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   /* ================= EXPORT ================= */
 
 
@@ -399,9 +356,7 @@ const editLeave = useCallback(async (id: number, data: any) => {
     processApproval,
     fetchEmployees,
     fetchMyLeaves,
-   
-    // fetchStats,
-    // fetchDeptDistribution,
+    bankCompOff,
     fetchNotifications,
     fetchAuditLogs,
     fetchCalendar,
@@ -410,18 +365,14 @@ const editLeave = useCallback(async (id: number, data: any) => {
     fetchLeaveTypes,
     addLeaveType,
     removeLeaveType,
-     cancelLeave,
-  editLeave,
+    cancelLeave,
+    editLeave,
     fetchTeamSchedule,
     teamCalendar,
     fetchWeeklyLeaveSummary,
     weeklyLeaveSummary,
     fetchTeamOnLeave,
     teamOnLeave,
-
-    // topDepartment,
-    
-    // topApprover,
     filters, updateFilter, stats
   };
 };

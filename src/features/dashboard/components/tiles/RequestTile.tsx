@@ -6,15 +6,15 @@ import CTAButton from '../../../../components/ui/CTAButton'
 export interface RequestTileProps {
     employeeName: string;
     leaveType: string;
-    dateRange: string; 
+    dateRange: string;
     startDate: string;
     endDate: string;
-    halfDayType?: "FIRST_HALF" | "SECOND_HALF" | string | null; 
+    halfDayType?: "FIRST_HALF" | "SECOND_HALF" | string | null;
     reasonMessage: string;
     createdAt: string;
     onAccept: () => void;
     onReject: () => void;
-    onDiscuss: () => void;
+    onDiscuss?: () => void;
 }
 
 const RequestTile: React.FC<RequestTileProps> = ({
@@ -30,8 +30,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
     onReject,
     onDiscuss,
 }) => {
-    
-    // Helper to format the display of half-day session
+
     const getHalfDayLabel = (type: string) => {
         if (type === "FIRST_HALF") return "Morning";
         if (type === "SECOND_HALF") return "Evening";
@@ -49,7 +48,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
         const start = new Date(startDate);
         const end = new Date(endDate);
         const diffTime = Math.abs(end.getTime() - start.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
         return {
             count: diffDays === 1 ? '1 Day' : `${diffDays} Days`,
             session: null
@@ -60,7 +59,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
 
     return (
         <div className='bg-white w-full rounded-sm flex flex-col md:flex-row md:items-center justify-between p-4 gap-3 md:gap-4 border border-slate-100 shadow-sm hover:border-slate-300 transition-all'>
-            
+
             {/* 1. Identity Section */}
             <div className='flex items-start gap-3 min-w-fit'>
                 <HiDotsCircleHorizontal size={35} className="text-slate-300 shrink-0 mt-0.5" />
@@ -96,39 +95,51 @@ const RequestTile: React.FC<RequestTileProps> = ({
                 </div>
             </div>
 
-            <div className="hidden md:block"><Divider /></div>
+            {leaveType !== "COMP_OFF" && (
+                <>
+                    <div className="hidden md:block">
+                        <Divider />
+                    </div>
 
-            {/* 3. Message Section */}
-            <div className='flex-1 min-w-0'>
-                <p className='text-xs md:text-sm text-slate-500 line-clamp-2 leading-relaxed italic md:not-italic'>
-                    <span className='font-bold text-slate-400 mr-1 md:hidden uppercase text-[9px] not-italic'>Reason:</span>
-                    "{reasonMessage}"
-                </p>
-            </div>
+                    {/* Reason Message */}
+                    <div className='flex-1 min-w-0'>
+                        <p className='text-xs md:text-sm text-slate-500 line-clamp-2 leading-relaxed italic md:not-italic'>
+                            <span className='font-bold text-slate-400 mr-1 md:hidden uppercase text-[9px] not-italic'>
+                                Reason:
+                            </span>
+                            "{reasonMessage}"
+                        </p>
+                    </div>
+                </>
+            )}
 
             <div className="hidden md:block"><Divider /></div>
 
             {/* 4. Actions Section */}
             <div className='flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto mt-2 md:mt-0'>
                 <div className='flex flex-1 md:flex-none gap-2'>
-                    <CTAButton 
-                        label='Accept' 
-                        className="flex-1 md:px-5 bg-green-600 hover:bg-green-700 text-[10px] uppercase font-bold h-9 rounded-sm shadow-sm" 
-                        onClick={onAccept} 
+                    <CTAButton
+                        label='Accept'
+                        className="flex-1 md:px-5 bg-green-600 hover:bg-green-700 text-[10px] uppercase font-bold h-9 rounded-sm shadow-sm"
+                        onClick={onAccept}
                     />
-                    <CTAButton 
-                        label='Reject' 
-                        isOutlineOnly 
-                        className='flex-1 md:px-5 border-red-200! text-red-500! hover:bg-red-50 text-[10px] uppercase font-bold h-9 rounded-sm' 
-                        onClick={onReject} 
+                    <CTAButton
+                        label='Reject'
+                        isOutlineOnly
+                        className='flex-1 md:px-5 border-red-200! text-red-500! hover:bg-red-50 text-[10px] uppercase font-bold h-9 rounded-sm'
+                        onClick={onReject}
                     />
                 </div>
-                <CTAButton 
-                    label='Discuss' 
-                    isOutlineOnly 
-                    className='flex-1 md:flex-none md:px-5 border-slate-200! text-slate-500! hover:bg-slate-50 text-[10px] uppercase font-bold h-9 rounded-sm' 
-                    onClick={onDiscuss} 
-                />
+
+                {onDiscuss && (
+
+                    <CTAButton
+                        label='Discuss'
+                        isOutlineOnly
+                        className='flex-1 md:flex-none md:px-5 border-slate-200! text-slate-500! hover:bg-slate-50 text-[10px] uppercase font-bold h-9 rounded-sm'
+                        onClick={onDiscuss}
+                    />
+                )}
             </div>
 
             {/* 5. Timestamp Footer */}

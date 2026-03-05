@@ -1,4 +1,4 @@
-// 1. Standardize the Role type to match your Backend JSON
+
 export type UserRole = "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN";
 
 export interface LoginCredentials {
