@@ -1,11 +1,12 @@
-// src/App.tsx
+
 import React from "react";
 import AppRoutes from "./routes/AppRoutes";
+import { Toaster } from "sonner";
 
 const App: React.FC = () => {
   return (
     <div className="antialiased text-slate-900">
-      {/* We no longer pass props here; AppRoutes will use the Context Hook instead */}
+      <Toaster position="top-right" richColors closeButton />
       <AppRoutes />
     </div>
   );

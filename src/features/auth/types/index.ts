@@ -10,6 +10,7 @@ export interface AuthResponse {
   token: string;
   id: number;
   role: UserRole; 
+  forcePasswordChange : boolean;
 }
 
 export interface User {
@@ -19,6 +20,7 @@ export interface User {
   role: UserRole; 
   department : string | null;
   managerId: number | null;
+  managerName : string;
   active: boolean;
   joiningDate: string;
   biometricStatus: string;
@@ -26,5 +28,6 @@ export interface User {
   onboardingCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  mustChangePassword? : boolean;
 }
 

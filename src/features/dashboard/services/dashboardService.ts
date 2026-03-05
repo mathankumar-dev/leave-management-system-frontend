@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import api from '../../../api/axiosInstance';
+import Cookies from "js-cookie";
 
 import type {
 
@@ -11,7 +12,12 @@ import type {
 
   Notification,
 
-  AuditLog
+  AuditLog,
+  LeaveApplication,
+  LeaveDecision,
+  LeaveDecisionRequest,
+  TeamCalendarResponse,
+  TeamMemberBalance
 
 } from '../types';
 
@@ -19,63 +25,84 @@ import type {
 
 export const dashboardService = {
 
-
-  // =============================
-  // Dashboard Summary
-  // =============================
-
-  getLeaveSummary: async () => {
-
-    const response = await api.get('/dashboard/summary');
-
+getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
+    const response = await api.get<TeamCalendarResponse>(
+      `/dashboard/manager/team-calendar/${managerId}`
+    );
     return response.data;
-
   },
-    getEmpDashboard: async (employeeId : number) => {
+
+
+ 
+  getEmpDashboard: async (employeeId: number) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
-      // console.log(response.data);
+    // console.log(response.data);
     return response.data;
 
   },
-    getManagerDashboard: async (managerId : number) => {
+  getManagerDashboard: async (managerId: number) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
-      // console.log(response.data);
+    // console.log(response.data);
     return response.data;
 
   },
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
-    // Note: Assuming your endpoint follows this pattern based on your summary URL
     const response = await api.get(`/dashboard/manager/team-balances/${managerId}?year=2026`);
-    
-    // If your backend returns the array directly:
-    return response.data;},
+
+    return response.data;
+  },
 
   // =============================
   // Apply Leave
   // =============================
 
-  submitLeaveRequest: async (leaveData: any) => {
 
+
+  // dashboardService.ts
+  submitLeaveRequest: async (leaveData: LeaveApplication) => {
     const response = await api.post('/leaves/apply', leaveData);
-
     return response.data;
-
   },
+
+updateLeave: async (id: number, data: any) => {
+  const res = await api.put(
+    `/leaves/${id}`,
+    null,   
+    {
+      params: {
+        employeeId: data.employeeId,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        reason: data.reason,
+        halfDayType: data.halfDayType
+      }
+    }
+  );  
+
+  return res.data;
+},
+
+cancelLeave: async (id: number,employeeId : number) => {
+  const res = await api.patch(
+    `/leaves/${id}/cancel?employeeId=${employeeId}` 
+    
+  );
+
+  console.log(res.data);
+  return res.data;
+},
 
 
   // =============================
   // Pending Approvals
   // =============================
 
-  getPendingApprovals: async (): Promise<ApprovalRequest[]> => {
-
-    const response = await api.get('/leaves/approvals/pending');
-
-    return response.data;
-
+  getPendingApprovals: async (managerId: number) => {
+    const response = await api.get(`/leave-approvals/pending/${managerId}`);   
+    return response.data.content;
   },
 
 
@@ -83,45 +110,38 @@ export const dashboardService = {
   // Approve / Reject
   // =============================
 
-  updateApprovalStatus: async (
-
-    id: number,
-
-    status: 'Approved' | 'Rejected',
-
-    comment?: string
-
-  ) => {
-
-    const response = await api.put(
-
-      `/leaves/approvals/${id}`,
-
-      {
-
-        status,
-
-        comment
-
-      }
-
+  updateDecision: async (
+    decisionRequest: LeaveDecisionRequest
+  ) : Promise<void> => {
+    console.log("came here");
+    
+    const response = await api.patch(
+      "/leave-approvals/decision",
+      decisionRequest
     );
-
-    return response.data;
-
   },
+
+
 
 
   // =============================
   // Leave History
   // =============================
 
-  getMyLeaveHistory: async (employeeId : number): Promise<LeaveRecord[]> => {
-
-    const response = await api.get(`leaves/employee/${employeeId}`);
-
+  getMyLeaveHistory: async (employeeId: number): Promise<LeaveRecord[]> => {
+    const response = await api.get(`/leaves/employee/${employeeId}`);
     return response.data;
+  },
 
+
+  getWeeklyLeaveSummary : async (managerId : number) : Promise<LeaveRecord[]> => {
+    const response = await api.get(`/manager/${managerId}/team-leaves/week`);
+    return response.data;
+  },
+    getTeamOnLeave : async (managerId : number) : Promise<TeamMemberBalance[]> => {
+    const response = await api.get(`/dashboard/manager/team-on-leave/${managerId}`);
+    console.log(response.data);
+    return response.data;
   },
 
 
@@ -177,7 +197,7 @@ export const dashboardService = {
   // },
 
 
-  
+
 
 
   // =============================
@@ -185,11 +205,8 @@ export const dashboardService = {
   // =============================
 
   getNotifications: async (): Promise<Notification[]> => {
-
     const response = await api.get('/notifications');
-
     return response.data;
-
   },
 
 
@@ -210,23 +227,15 @@ export const dashboardService = {
   // Calendar
   // =============================
 
-  getCalendarLeaves: async (
+  getCalendarLeaves: async (year: any, month: any, scope: any) => {
 
-    year: number,
+const response = await api.get(
+`/leaves/calendar?year=${year}&month=${month}&scope=${scope}`
+);
 
-    month: number
+return response.data;
 
-  ) => {
-
-    const response = await api.get(
-
-      `/leaves/calendar?year=${year}&month=${month}`
-
-    );
-
-    return response.data;
-
-  },
+},
 
 
   // =============================
@@ -261,8 +270,39 @@ export const dashboardService = {
 
     );
 
+    
+
     return response.data;
 
+  },
+  
+
+ getEmployeeDashboard: async (employeeId?: number): Promise<Employee[]> => {
+  const id = employeeId ;
+  if (!id) {
+    console.error("Employee ID is missing! Cannot fetch dashboard.");
+    return [];
+  }
+
+  try {
+    const response = await api.get(`/dashboard/employee/${id}`);
+    return [response.data];
+  } catch (error: any) {
+    console.error("Failed to fetch dashboard:", error.message || error);
+    return [];
+  }
+},
+
+  getLeaveSummary: async () => {
+    const id = Cookies.get("employee_id");
+    
+    if (!id) {
+      console.error("Employee ID is missing! Cannot fetch leave summary.");
+      return null;
+    }
+
+    const response = await api.get(`/dashboard/employee/${id}`);
+    return response.data;
   },
 
 
@@ -274,5 +314,6 @@ export const dashboardService = {
 
   },
 
-
+ 
 };
+ 

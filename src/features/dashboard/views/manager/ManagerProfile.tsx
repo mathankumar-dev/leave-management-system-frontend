@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaUserShield, FaUsers, FaChartLine, FaEnvelopeOpenText } from "react-icons/fa";
 
 // Components & Types
 import BaseProfile from "../../layout/BaseProfile";
-import { MOCK_PROFILE } from "../../../../mockData";
 import type { ProfileData } from "../../types";
 import { useAuth } from "../../../auth/hooks/useAuth";
 
@@ -38,9 +36,26 @@ const ManagerProfile: React.FC = () => {
   // SINGLE Sync Effect: Runs once when user data arrives or changes
   useEffect(() => {
     if (user) {
-      const userData = user as unknown as ProfileData;
-      setProfile(userData);
-      setOriginalProfile(userData);
+      setProfile({
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        email: user.email,
+        phone: "",
+        photo: "",
+        department: user.department ?? "",
+        designation: "",
+        joiningDate: user.joiningDate,
+        workLocation: "",
+        managerName: user.managerName,
+        managerId: user.managerId ?? undefined,
+        employmentType: "Full-time",
+        dob: "",
+        gender: "",
+        nationality: "",
+        address: "",
+        skills: [],
+      });
     }
   }, [user]);
 
@@ -70,7 +85,6 @@ const ManagerProfile: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] ">
 
-
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
         {/* Left Side: Leadership Summary */}
@@ -95,6 +109,8 @@ const ManagerProfile: React.FC = () => {
               </div>
               <h2 className="text-xl font-bold text-slate-900">{profile.name}</h2>
               <p className="text-sm font-semibold text-amber-600 mb-4">{profile.role}</p>
+              <p className="text-sm font-semibold text-amber-600 mb-4">ID: {profile.id}</p>
+              <p className="text-sm font-semibold text-amber-600 mb-4">Reports To: {profile.managerName}</p>
             </div>
 
           </motion.div>
