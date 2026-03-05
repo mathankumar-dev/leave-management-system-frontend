@@ -247,11 +247,9 @@ export const useDashboard = () => {
     }
   }, []);
 
-  // Add this to your useDashboard.ts
   const fetchManagerDashboard = useCallback(async (id: number) => {
     setLoading(true);
     try {
-      // Calling the service with the dynamic ID
       const response = await service.getManagerDashboard(id);
       return response;
     } catch (err: any) {
