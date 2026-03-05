@@ -38,12 +38,15 @@ const PendingApprovalsView: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
 
+    // HR-ku manager API calls போகக்கூடாது
+    const isManager = user?.role?.toUpperCase() === 'MANAGER';
+
     useEffect(() => {
-        if (user?.id) {
+        if (user?.id && isManager) {
             fetchWeeklyLeaveSummary(user.id);
             fetchTeamOnLeave(user.id);
         }
-    }, [fetchWeeklyLeaveSummary, fetchTeamOnLeave, user?.id]);
+    }, [fetchWeeklyLeaveSummary, fetchTeamOnLeave, user?.id, isManager]);
 
     const [dialogConfig, setDialogConfig] = useState<{
         isOpen: boolean;
@@ -140,23 +143,42 @@ const PendingApprovalsView: React.FC = () => {
 
             <div className='py-6 w-full bg-[#F1F5F9] px-4 md:px-8 rounded-sm border border-slate-200 shadow-sm'>
                 <div className='grid grid-cols-2 md:flex md:flex-row md:justify-between items-center gap-y-8 gap-x-4'>
-                    <MetricTile
-                        value={requests.length.toString().padStart(2, '0')}
-                        firstLabel="Pending"
-                        secondLabel="Approvals"
-                    />
-                    <div className="hidden md:block h-12 w-px bg-slate-300"></div>
-                    <MetricTile
-                        value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
-                        firstLabel="Members"
-                        secondLabel="out Today"
-                    />
-                    <div className="hidden md:block h-12 w-px bg-slate-300"></div>
-                    <MetricTile
-                        value={(weeklyLeaveSummary?.length || 0).toString().padStart(2, '0')}
-                        firstLabel="Weekly Absence"
-                        secondLabel="Summary"
-                    />
+
+                    {/* Pending Approvals — HR + Manager both see this */}
+                    <div className='flex justify-start md:justify-center'>
+                        <MetricTile
+                            value={requests.length.toString().padStart(2, '0')}
+                            firstLabel="Pending"
+                            secondLabel="Approvals"
+                        />
+                    </div>
+
+                    {/* Manager-only tiles */}
+                    {isManager && (
+                        <>
+                            <div className="hidden md:block h-12 w-px bg-slate-300" />
+
+                            {/* Members Out Today */}
+                            <div className='flex justify-start md:justify-center'>
+                                <MetricTile
+                                    value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
+                                    firstLabel="Members"
+                                    secondLabel="out Today"
+                                />
+                            </div>
+
+                            <div className="hidden md:block h-12 w-px bg-slate-300" />
+
+                            {/* Weekly Absence */}
+                            <div className='col-span-2 md:col-span-1 flex justify-center md:justify-end border-t border-slate-200 pt-6 md:border-none md:pt-0'>
+                                <MetricTile
+                                    value={(weeklyLeaveSummary?.length || 0).toString().padStart(2, '0')}
+                                    firstLabel="Weekly Absence"
+                                    secondLabel="Summary"
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 

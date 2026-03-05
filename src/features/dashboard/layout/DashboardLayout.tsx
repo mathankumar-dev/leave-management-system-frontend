@@ -26,6 +26,7 @@ import ManagerProfile from "../views/manager/ManagerProfile";
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 import TeamMembersView from "../views/manager/TeamMembersView";
+import LowBalancePage from "../views/hr/pages/LowBalancePage";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -78,7 +79,7 @@ const DashboardLayout: React.FC = () => {
         return <EmployeesView />;
 
       case "LowBalance Employee":
-        return <LowBalancePageWrapper />;
+        return <LowBalancePage />;
 
       case "Calendar":
         return <CalendarView />;
