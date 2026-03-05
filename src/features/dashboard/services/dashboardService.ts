@@ -118,8 +118,6 @@ export const dashboardService = {
   updateDecision: async (
     decisionRequest: LeaveDecisionRequest
   ): Promise<void> => {
-    console.log("came here");
-
     const response = await api.patch(
       "/leave-approvals/decision",
       decisionRequest
@@ -163,7 +161,6 @@ export const dashboardService = {
   },
   getTeamOnLeave: async (managerId: number): Promise<TeamMemberBalance[]> => {
     const response = await api.get(`/dashboard/manager/team-on-leave/${managerId}`);
-    console.log(response.data);
     return response.data;
   },
 
