@@ -38,7 +38,6 @@ const PendingApprovalsView: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
 
-    // HR-ku manager API calls போகக்கூடாது
     const isManager = user?.role?.toUpperCase() === 'MANAGER';
 
     useEffect(() => {
@@ -144,7 +143,6 @@ const PendingApprovalsView: React.FC = () => {
             <div className='py-6 w-full bg-[#F1F5F9] px-4 md:px-8 rounded-sm border border-slate-200 shadow-sm'>
                 <div className='grid grid-cols-2 md:flex md:flex-row md:justify-between items-center gap-y-8 gap-x-4'>
 
-                    {/* Pending Approvals — HR + Manager both see this */}
                     <div className='flex justify-start md:justify-center'>
                         <MetricTile
                             value={requests.length.toString().padStart(2, '0')}
@@ -153,12 +151,9 @@ const PendingApprovalsView: React.FC = () => {
                         />
                     </div>
 
-                    {/* Manager-only tiles */}
                     {isManager && (
                         <>
                             <div className="hidden md:block h-12 w-px bg-slate-300" />
-
-                            {/* Members Out Today */}
                             <div className='flex justify-start md:justify-center'>
                                 <MetricTile
                                     value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
@@ -169,7 +164,6 @@ const PendingApprovalsView: React.FC = () => {
 
                             <div className="hidden md:block h-12 w-px bg-slate-300" />
 
-                            {/* Weekly Absence */}
                             <div className='col-span-2 md:col-span-1 flex justify-center md:justify-end border-t border-slate-200 pt-6 md:border-none md:pt-0'>
                                 <MetricTile
                                     value={(weeklyLeaveSummary?.length || 0).toString().padStart(2, '0')}
