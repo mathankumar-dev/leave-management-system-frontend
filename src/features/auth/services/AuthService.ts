@@ -9,7 +9,7 @@ export const authService = {
   },
 
 
-getEmployeeProfile: async (id: number): Promise<User> => {
+  getEmployeeProfile: async (id: number): Promise<User> => {
     const response = await api.get<User>(`/employees/profile/${id}`);
     return response.data;
   },
@@ -22,6 +22,8 @@ getEmployeeProfile: async (id: number): Promise<User> => {
   },
 
   forgotPassword: async (email: string): Promise<void> => {
-    await api.post(`/password-reset/request?email=${email}`);
+    await api.post('/password-reset/request', null, {
+      params: { email }
+    });
   }
 };

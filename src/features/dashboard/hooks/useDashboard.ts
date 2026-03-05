@@ -3,23 +3,17 @@ import { dashboardService } from "../services/dashboardService";
 import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
 
 import type {
-  ApprovalRequest,
   LeaveRecord,
   Employee,
   Notification,
   AuditLog,
   LeaveApplication,
-  LeaveDecision,
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
-import axios from "axios";
-import api from "../../../api/axiosInstance";
-// import type { CalendarScope } from "../types/scope";
 
-// toggle this to false when the API is ready
 
 const service = dashboardService;
 

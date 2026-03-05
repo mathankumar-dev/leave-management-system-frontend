@@ -51,7 +51,13 @@ export const dashboardService = {
   },
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
-    const response = await api.get(`/dashboard/manager/team-balances/${managerId}?year=2026`);
+    const currentYear = new Date().getFullYear();
+
+    const response = await api.get(`/dashboard/manager/team-balances/${managerId}`, {
+      params: {
+        year: currentYear
+      }
+    });
 
     return response.data;
   },
@@ -86,14 +92,21 @@ export const dashboardService = {
     return res.data;
   },
 
-  cancelLeave: async (id: number, employeeId: number) => {
-    const res = await api.patch(
-      `/leaves/${id}/cancel?employeeId=${employeeId}`
+  cancelLeave: async (id: number, employeeId: number): Promise<any> => {
+    try {
+      const res = await api.patch(
+        `/leaves/${id}/cancel`,
+        null,
+        {
+          params: { employeeId }
+        }
+      );
 
-    );
-
-    console.log(res.data);
-    return res.data;
+      return res.data;
+    } catch (error) {
+      console.error(`Error cancelling leave ${id}:`, error);
+      throw error;
+    }
   },
 
 
@@ -132,25 +145,26 @@ export const dashboardService = {
 
 
   approveCompOff: async (
-    compOffId : number
+    compOffId: number
   ): Promise<void> => {
 
     const response = await api.patch(
-      `/compoff/approve/${compOffId}`,      
-      
-    );
-  },
-    rejectCompOff: async (
-    compOffId : number,
-    reason : string
-  ): Promise<void> => {
-    const response = await api.patch(
-      `/compoff/reject/${compOffId}?reason=${reason}`,            
-    );
-  },
-        
+      `/compoff/approve/${compOffId}`,
 
-  
+    );
+  },
+  rejectCompOff: async (compOffId: number, reason: string): Promise<void> => {
+    await api.patch(
+      `/compoff/reject/${compOffId}`,
+      null,
+      {
+        params: { reason }
+      }
+    );
+  },
+
+
+
 
 
 
