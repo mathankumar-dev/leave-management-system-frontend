@@ -119,7 +119,6 @@ function Sidebar({
 
           <ul className="space-y-1.5">
             {visibleTabs.map((tab) => {
-              const isActive = activeTab === tab.name;
               return (
                 
                 <li

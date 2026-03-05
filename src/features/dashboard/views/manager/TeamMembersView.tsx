@@ -4,7 +4,6 @@ import {
     FaSearch,
     FaChartPie,
     FaCalendarCheck,
-    FaFilter,
     FaUser,
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";

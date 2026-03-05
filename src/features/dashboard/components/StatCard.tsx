@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaProcedures, FaPlaneDeparture, FaHome, FaRegCalendarAlt, FaQuestionCircle } from "react-icons/fa";
+import { FaProcedures, FaPlaneDeparture, FaHome, FaRegCalendarAlt } from "react-icons/fa";
 
 interface StatCardProps {
   title: string;

@@ -118,7 +118,7 @@ export const dashboardService = {
   updateDecision: async (
     decisionRequest: LeaveDecisionRequest
   ): Promise<void> => {
-    const response = await api.patch(
+    await api.patch(
       "/leave-approvals/decision",
       decisionRequest
     );
@@ -130,7 +130,7 @@ export const dashboardService = {
     compOffId: number
   ): Promise<void> => {
 
-    const response = await api.patch(
+    await api.patch(
       `/compoff/approve/${compOffId}`,
 
     );

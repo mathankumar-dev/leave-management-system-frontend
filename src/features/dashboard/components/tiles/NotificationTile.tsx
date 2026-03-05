@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaCheckCircle, FaRegClock, FaTimesCircle, FaBell, FaCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaRegClock, FaTimesCircle, FaBell } from 'react-icons/fa';
 
 interface NotificationTileProps {
     eventType: string;

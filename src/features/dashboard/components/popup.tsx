@@ -6,7 +6,6 @@ import {
   FaClock,
   FaCheckCircle,
   FaTimesCircle,
-  FaInfoCircle
 } from "react-icons/fa";
 import type { LeaveRecord } from "../types";
 

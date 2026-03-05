@@ -4,9 +4,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaSpinner,
-  FaCalendarCheck,
   FaInfoCircle,
-  FaUmbrellaBeach,
   FaUserCheck,
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";

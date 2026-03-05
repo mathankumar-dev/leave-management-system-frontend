@@ -1,8 +1,7 @@
 import React from "react";
 import {
-  FaUser, FaEnvelope, FaPhone, FaCalendarAlt, FaBuilding,
-  FaMapMarkerAlt, FaLinkedin, FaGithub, FaBriefcase, FaUserTie
-} from "react-icons/fa";
+  FaUser, FaPhone, 
+  FaMapMarkerAlt, FaBriefcase} from "react-icons/fa";
 import type { ProfileData } from "../types";
 
 

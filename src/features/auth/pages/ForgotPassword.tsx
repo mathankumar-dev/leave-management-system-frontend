@@ -22,7 +22,7 @@ const ForgotPassword: React.FC = () => {
                 navigate("/login");
             }, 3000);
 
-        } catch (err) {
+        } catch (_) {
             setShowError(true);
         }
     };

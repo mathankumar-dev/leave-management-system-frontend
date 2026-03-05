@@ -31,7 +31,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose }) => {
 
       // On Success:
       setShowSuccess(true);
-    } catch (error) {
+    } catch (_) {
       // On Failure:
       setShowFailure(true);
     } finally {

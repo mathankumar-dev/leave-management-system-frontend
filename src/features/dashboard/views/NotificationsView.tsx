@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react"; // Added useMemo
-import { FaTrashAlt, FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { RiCheckDoubleFill } from "react-icons/ri";
 
 import { useNotifications } from "../hooks/useNotification";
