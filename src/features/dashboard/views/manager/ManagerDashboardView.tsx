@@ -11,8 +11,6 @@ import type { LeaveDecision } from "../../types";
 import { notify } from "../../../../utils/notifications";
 import CommentDialog from "../../../../components/ui/CommentDialog";
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
-
-// Import your new component here
 import ManagerStatCard from "../../components/ManagerStatCard";
 
 const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
@@ -134,7 +132,6 @@ const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> =
         </div>
       </section>
 
-      {/* ACTION ITEMS (The Approval Feed) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
           <div className="flex items-center gap-2">

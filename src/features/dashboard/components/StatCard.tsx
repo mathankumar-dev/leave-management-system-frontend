@@ -5,7 +5,7 @@ interface StatCardProps {
   title: string;
   used: number;
   total: number;
-  color?: string; // Supports Tailwind colors like 'indigo', 'rose', etc.
+  color?: string; 
   period?: string;
   onClick?: () => void;
 }
@@ -21,7 +21,6 @@ const StatCard: React.FC<StatCardProps> = ({
   const percent = total > 0 ? Math.round((used / total) * 100) : 0;
   const daysLeft = total - used;
   
-  // Professional Color Mapping
   const theme = {
     indigo: { text: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100", ring: "#4f46e5" },
     rose: { text: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100", ring: "#e11d48" },
@@ -30,7 +29,6 @@ const StatCard: React.FC<StatCardProps> = ({
     slate: { text: "text-slate-600", bg: "bg-slate-50", border: "border-slate-100", ring: "#475569" },
   }[color] || { text: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100", ring: "#4f46e5" };
 
-  // SVG Geometry
   const size = 56;
   const strokeWidth = 5;
   const radius = (size - strokeWidth) / 2;
@@ -55,7 +53,6 @@ const StatCard: React.FC<StatCardProps> = ({
       onClick={onClick}
       className="group relative bg-white border border-slate-200 rounded-sm p-5 shadow-sm hover:shadow-md hover:border-slate-400 transition-all cursor-pointer overflow-hidden"
     >
-      {/* 1. Header Area: Logical alignment */}
       <div className="flex justify-between items-start mb-6">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 ${theme.bg} ${theme.text} flex items-center justify-center rounded-sm text-lg border ${theme.border}`}>
@@ -69,7 +66,6 @@ const StatCard: React.FC<StatCardProps> = ({
           </div>
         </div>
 
-        {/* Ring: Smaller, secondary visual */}
         <div className="relative flex items-center justify-center">
           <svg width={size} height={size} className="transform -rotate-90">
             <circle cx={size/2} cy={size/2} r={radius} stroke="#f1f5f9" strokeWidth={strokeWidth} fill="none" />
@@ -84,7 +80,6 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
       </div>
 
-      {/* 2. Content Area: The "Hero" Metric */}
       <div className="flex items-end justify-between">
         <div className="flex items-baseline gap-2">
           <span className="text-5xl font-black text-slate-900 tracking-tighter italic">
@@ -96,7 +91,6 @@ const StatCard: React.FC<StatCardProps> = ({
           </div>
         </div>
 
-        {/* 3. Usage Log: Clean, horizontal, readable */}
         <div className="text-right pb-1">
           <div className="flex flex-col items-end">
             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Usage Log</span>
@@ -109,7 +103,6 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
       </div>
 
-      {/* 4. Interactive Decorative Bottom Bar */}
       <div className={`absolute bottom-0 left-0 h-1 w-0 group-hover:w-full transition-all duration-300`} style={{ backgroundColor: theme.ring }} />
     </div>
   );

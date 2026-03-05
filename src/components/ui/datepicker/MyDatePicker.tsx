@@ -10,8 +10,8 @@ interface DatePickerProps {
   placeholder?: string;
   label?: string;
   required?: boolean;
-  minDate?: Date; // Added for restriction
-  maxDate?: Date; // Added for restriction
+  minDate?: Date; 
+  maxDate?: Date; 
 }
 
 const CustomInput = forwardRef<HTMLButtonElement, { value?: string; onClick?: () => void; placeholder?: string }>(

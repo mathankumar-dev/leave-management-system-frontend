@@ -17,7 +17,6 @@ const AuditLogView: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  // 1. Fetch real data from Service via Hook
   useEffect(() => {
     const loadLogs = async () => {
       const data = await fetchAuditLogs();
@@ -26,7 +25,6 @@ const AuditLogView: React.FC = () => {
     loadLogs();
   }, [fetchAuditLogs]);
 
-  // 2. Helper to assign icons based on the action string from API
   const getActionIcon = (action: string) => {
     const act = action.toLowerCase();
     if (act.includes("approve")) return <FaCalendarCheck />;
@@ -59,7 +57,6 @@ const AuditLogView: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-10">
-      {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3 uppercase">
@@ -83,7 +80,6 @@ const AuditLogView: React.FC = () => {
         </div>
       </div>
 
-      {/* SEARCH BAR */}
       <div className="bg-white border-2 border-slate-50 rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4">
         <div className="relative flex-1 min-w-[240px]">
           <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
@@ -97,7 +93,6 @@ const AuditLogView: React.FC = () => {
         </div>
       </div>
 
-      {/* LOG TABLE / LOADING STATE */}
       <div className="bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-200/40">
         <div className="overflow-x-auto">
           {loading && logs.length === 0 ? (

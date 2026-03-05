@@ -3,12 +3,9 @@ import { Link } from "react-router-dom";
 const NotFoundPage = () => {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-slate-50 px-6 text-center">
-      {/* Background Large Text */}
       <h1 className="text-[12rem] md:text-[20rem] font-bold text-slate-200/60 select-none animate-pulse">
         404
       </h1>
-
-      {/* Foreground Content */}
       <div className="absolute flex flex-col items-center w-full max-w-md px-4">
         <h2 className="text-3xl font-bold text-slate-800 mt-4">
           Oops! Page not found

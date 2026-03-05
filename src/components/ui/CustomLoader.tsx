@@ -1,7 +1,7 @@
 const CustomLoader = ({ label = "Loading" }) => {
   return (
     <div className="flex flex-col items-center justify-center space-y-3">
-      {/* The Bouncing Dots */}
+  
       <div className="flex space-x-2">
         <div className="w-2 h-2 md:w-3 md:h-3 bg-blue-500 rounded-full bg-opacity-75 animate-bounce"></div>
         <div 
@@ -13,8 +13,6 @@ const CustomLoader = ({ label = "Loading" }) => {
           style={{ animationDelay: '0.2s' }}
         ></div>
       </div>
-
-      {/* The Dynamic Label */}
       {label && (
         <span className="text-sm md:text-base font-medium text-blue-600 animate-pulse">
           {label}

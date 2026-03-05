@@ -31,7 +31,6 @@ const RequestTile: React.FC<RequestTileProps> = ({
     onDiscuss,
 }) => {
 
-    // Helper to format the display of half-day session
     const getHalfDayLabel = (type: string) => {
         if (type === "FIRST_HALF") return "Morning";
         if (type === "SECOND_HALF") return "Evening";
@@ -98,7 +97,6 @@ const RequestTile: React.FC<RequestTileProps> = ({
 
             {leaveType !== "COMP_OFF" && (
                 <>
-                    {/* Divider shows on desktop only */}
                     <div className="hidden md:block">
                         <Divider />
                     </div>

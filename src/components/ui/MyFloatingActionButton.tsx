@@ -1,5 +1,5 @@
 import React from "react";
-import { Tooltip, Zoom } from "@mui/material"; // Keeping MUI Tooltip for the nice logic
+import { Tooltip, Zoom } from "@mui/material";
 import { FaBolt } from "react-icons/fa";
 
 interface MyFABProps {

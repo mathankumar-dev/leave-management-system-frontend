@@ -42,7 +42,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose }) => {
   const handleFinalClose = () => {
     setShowSuccess(false);
     setShowFailure(false);
-    handleClose(); // Reset form and close main popup
+    handleClose(); 
   };
 
   // 1. Centralized Form State

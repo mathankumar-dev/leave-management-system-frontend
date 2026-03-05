@@ -36,7 +36,6 @@ const Topbar: React.FC<TopbarProps> = ({
   const userRole = user?.role;
   const userName = user?.name;
 
-  // ✅ FIXED: Removed markAllAsRead() so navigating doesn't clear everything
   const handleViewNotifications = () => {
     setActiveTab("Notifications");
     setIsNotifOpen(false);
@@ -45,7 +44,6 @@ const Topbar: React.FC<TopbarProps> = ({
   return (
     <div className="sticky top-0 z-30 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 border-b border-neutral-200 w-full transition-all duration-300">
 
-      {/* LEFT: Menu & Title */}
       <div className="flex items-center gap-3 min-w-0">
         <button onClick={onMenuClick} className="md:hidden p-2.5 rounded-lg text-slate-500 active:bg-slate-100">
           <FaBars size={18} />
@@ -57,10 +55,8 @@ const Topbar: React.FC<TopbarProps> = ({
         </div>
       </div>
 
-      {/* RIGHT: Notifications & Profile */}
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
 
-        {/* Notifications Dropdown */}
         <div className="relative">
           <button
             onClick={() => {
@@ -71,7 +67,6 @@ const Topbar: React.FC<TopbarProps> = ({
           >
             <FaBell className="w-4 h-4" />
 
-            {/* Numeric Badge with Exit Animation */}
             <AnimatePresence>
               {unreadCount > 0 && (
                 <motion.span
@@ -161,7 +156,6 @@ const Topbar: React.FC<TopbarProps> = ({
           </AnimatePresence>
         </div>
 
-        {/* Profile Dropdown */}
         <div className="relative">
           <button
             onClick={() => {

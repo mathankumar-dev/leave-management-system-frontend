@@ -37,7 +37,6 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
   return (
     <div className="w-full space-y-10">
 
-      {/* SECTION 1: PERSONAL DETAILS (Editable) */}
       <div>
         <h3 className="text-xs font-black text-indigo-600 uppercase tracking-[0.2em]  flex items-center gap-3">
           <FaUser className="text-sm" /> Personal Details
@@ -69,7 +68,6 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
         </div>
       </div>
 
-      {/* SECTION 2: WORK INFORMATION (Mostly Read-Only) */}
       <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
         <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
           <FaBriefcase className="text-sm" /> Employment Info
@@ -79,10 +77,7 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
             <label className={labelClass}>Employee ID</label>
             <p className="mt-1 font-bold text-slate-700 text-sm">{profile.employeeId}</p>
           </div>
-          {/* <div>
-            <label className={labelClass}>Department</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.department}</p>
-          </div> */}
+
           <div>
             <label className={labelClass}>Manager</label>
             <p className="mt-1 font-bold text-slate-700 text-sm">{profile.managerName}</p>

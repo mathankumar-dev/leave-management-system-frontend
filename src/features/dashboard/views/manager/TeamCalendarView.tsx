@@ -55,10 +55,8 @@ const TeamCalendarView: React.FC = () => {
   return (
     <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20">
       
-      {/* LEFT: CALENDAR MAIN */}
       <div className="flex-1 bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
         
-        {/* TOP TOOLBAR */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 gap-4 bg-slate-50/30">
           <div>
             <h2 className="text-xl font-black text-slate-900 uppercase italic tracking-tighter">
@@ -83,7 +81,6 @@ const TeamCalendarView: React.FC = () => {
           </div>
         </div>
 
-        {/* CALENDAR BODY */}
         <div className="relative">
           {loading && (
             <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-30 flex items-center justify-center">
@@ -154,10 +151,8 @@ const TeamCalendarView: React.FC = () => {
         </div>
       </div>
 
-      {/* RIGHT: SIDEBAR (CLEAN STYLE) */}
       <div className="w-full lg:w-80 space-y-3">
         
-        {/* DETAILS CARD */}
         <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Daily Activity</p>
@@ -217,7 +212,6 @@ const TeamCalendarView: React.FC = () => {
           </div>
         </div>
 
-        {/* SYSTEM INFO FOOTER */}
         <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-sm">
            <div className="flex items-center gap-2 mb-2 text-indigo-600">
               <FaInfoCircle size={12} />

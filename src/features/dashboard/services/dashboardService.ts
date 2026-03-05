@@ -1,20 +1,10 @@
-import { useCallback } from 'react';
 import api from '../../../api/axiosInstance';
 import Cookies from "js-cookie";
 
 import type {
-
   LeaveRecord,
-
   Employee,
-
-  ApprovalRequest,
-
-  Notification,
-
-  AuditLog,
   LeaveApplication,
-  LeaveDecision,
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
@@ -38,14 +28,14 @@ export const dashboardService = {
   getEmpDashboard: async (employeeId: number) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
-    // console.log(response.data);
+
     return response.data;
 
   },
   getManagerDashboard: async (managerId: number) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
-    // console.log(response.data);
+
     return response.data;
 
   },
@@ -62,13 +52,7 @@ export const dashboardService = {
     return response.data;
   },
 
-  // =============================
-  // Apply Leave
-  // =============================
 
-
-
-  // dashboardService.ts
   submitLeaveRequest: async (leaveData: LeaveApplication) => {
     const response = await api.post('/leaves/apply', leaveData);
     return response.data;
@@ -163,12 +147,6 @@ export const dashboardService = {
     );
   },
 
-
-
-
-
-
-
   // =============================
   // Leave History
   // =============================
@@ -190,136 +168,6 @@ export const dashboardService = {
   },
 
 
-  // =============================
-  // Employees
-  // =============================
-
-  // getAllEmployees: async (): Promise<Employee[]> => {
-
-  //   const response = await api.get('/admin/employees');
-
-
-  //   return response.data.map((emp: any): Employee => ({
-
-  //     id: emp.id,
-
-  //     name: emp.name,
-
-  //     email: emp.email,
-
-  //     dept: emp.department ?? emp.dept,
-
-  //     role: emp.role,
-
-  //     status: emp.status,
-
-  //     designation: emp.designation ?? "",
-
-
-  //     initial: emp.name
-
-  //       .split(" ")
-
-  //       .map((n: string) => n[0])
-
-  //       .join(""),
-
-
-  //     color:
-
-  //       emp.role === "MANAGER"
-
-  //         ? "bg-indigo-600"
-
-  //         : emp.role === "HR"
-
-  //         ? "bg-rose-600"
-
-  //         : "bg-slate-500",
-
-  //   }));
-
-  // },
-
-
-
-
-
-  // =============================
-  // Notifications
-  // =============================
-
-  getNotifications: async (): Promise<Notification[]> => {
-    const response = await api.get('/notifications');
-    return response.data;
-  },
-
-
-  // =============================
-  // Audit Logs
-  // =============================
-
-  getAuditLogs: async (): Promise<AuditLog[]> => {
-
-    const response = await api.get('/admin/audit-logs');
-
-    return response.data;
-
-  },
-
-
-  // =============================
-  // Calendar
-  // =============================
-
-  getCalendarLeaves: async (year: any, month: any, scope: any) => {
-
-    const response = await api.get(
-      `/leaves/calendar?year=${year}&month=${month}&scope=${scope}`
-    );
-
-    return response.data;
-
-  },
-
-
-  // =============================
-  // Leave Types
-  // =============================
-
-  getLeaveTypes: async () => {
-
-    const response = await api.get('/settings/leave-types');
-
-    return response.data;
-
-  },
-
-
-  createLeaveType: async (data: any) => {
-
-    const response = await api.post('/settings/leave-types', data);
-
-    return response.data;
-
-  },
-
-
-  updateLeaveType: async (id: number, data: any) => {
-
-    const response = await api.put(
-
-      `/settings/leave-types/${id}`,
-
-      data
-
-    );
-
-
-
-    return response.data;
-
-  },
 
 
   getEmployeeDashboard: async (employeeId?: number): Promise<Employee[]> => {

@@ -37,7 +37,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
       className="group bg-white border border-slate-200 rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:bg-slate-50 cursor-pointer shadow-sm"
     >
       <div className="flex items-start gap-3">
-        {/* REPLACED: Removed vertical bar. Added Icon container for better alignment */}
         <div className="text-slate-400 mt-0.5 shrink-0">
           {icon}
         </div>
@@ -58,7 +57,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
             {subtitle}
           </div>
 
-          {/* INTERNAL STYLE: Admin/Manager note is now a subtle box instead of an italic quote */}
           {description && (
             <div className="mt-2 p-2 bg-slate-50 border border-slate-100 rounded text-[11px] text-slate-600 leading-normal">
               <span className="font-bold uppercase text-[9px] text-slate-400 mr-1.5">Note:</span>

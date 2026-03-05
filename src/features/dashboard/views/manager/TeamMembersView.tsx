@@ -43,7 +43,6 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
             <header className="px-1 md:px-0">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
@@ -59,7 +58,6 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                 </div>
             </header>
 
-            {/* Search & Stats Bar */}
             <div className="flex flex-col sm:flex-row gap-2 px-1 md:px-0">
                 <div className="flex-1 relative group">
                     <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={12} />
@@ -74,7 +72,6 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
  
             </div>
 
-            {/* MOBILE VIEW (Card List) */}
             <div className="md:hidden space-y-3">
                 <AnimatePresence mode="popLayout">
                     {filteredMembers.map((emp) => (
@@ -119,7 +116,6 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                 </AnimatePresence>
             </div>
 
-            {/* DESKTOP VIEW (Table) */}
             <div className="hidden md:block bg-white rounded-sm border border-slate-200 overflow-hidden shadow-sm">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-slate-50 border-b border-slate-200">
@@ -194,7 +190,6 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                 </table>
             </div>
 
-            {/* Empty State */}
             {filteredMembers.length === 0 && !loading && (
                 <div className="py-20 text-center bg-white border border-slate-200 rounded-sm border-dashed">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-slate-50 rounded-sm mb-4">

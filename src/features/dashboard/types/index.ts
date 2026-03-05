@@ -1,6 +1,3 @@
-// ==============================
-// Leave Record
-// ==============================
 
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
@@ -13,7 +10,7 @@ export interface LeaveRecord {
   id: number;
   employeeId: number;
   leaveType: LeaveType;
-  halfDayType: string | null; // e.g., "FIRST_HALF" or "SECOND_HALF"
+  halfDayType: string | null; 
   year: number;
   startDate: string;
   endDate: string;   
@@ -32,7 +29,7 @@ export interface LeaveRecord {
   escalatedAt: string | null;
   managerId: number;
   version: number;
-  attachments: string[]; // Adjust type if attachments have a specific object structure
+  attachments: string[];
 }
 
 
@@ -248,7 +245,6 @@ export interface TeamMemberBalance {
   totalWorkingDays: number | null;
 }
 
-// The API returns Map<String, List<TeamMemberBalance>>
 export type TeamCalendarResponse = Record<string, TeamMemberBalance[]>;
 
 

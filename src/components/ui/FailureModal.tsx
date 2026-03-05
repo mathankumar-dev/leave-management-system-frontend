@@ -38,14 +38,11 @@ const FailureModal: React.FC<FailureModalProps> = ({
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
         transition={{ type: "spring", damping: 25, stiffness: 400 }}
-        // CHANGED: rounded-xl (matches Success Modal and Popup)
         className="relative bg-white w-full max-w-sm rounded-xl p-8 shadow-2xl text-center border border-slate-100"
       >
         <motion.div
-          // Subtler shake animation for a pro feel
           animate={{ x: [0, -5, 5, -5, 5, 0] }}
           transition={{ duration: 0.4, delay: 0.2 }}
-          // CHANGED: rounded-lg (~8px) for icon container
           className="w-16 h-16 bg-rose-50 text-rose-500 rounded-lg flex items-center justify-center text-3xl mx-auto mb-6 shadow-sm"
         >
           <FaTimesCircle />
@@ -60,7 +57,6 @@ const FailureModal: React.FC<FailureModalProps> = ({
 
         <button
           onClick={onClose}
-          // CHANGED: rounded-lg and standard font-bold for consistency
           className="w-full bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-lg text-sm font-bold transition-all shadow-md shadow-rose-100 active:scale-[0.98]"
         >
           {buttonText}

@@ -19,36 +19,31 @@ const NotificationsView: React.FC = () => {
   const [selectedNotification, setSelectedNotification] = useState<NotificationResponse | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const { 
-    notifications, 
-    isLoading, 
-    error, 
-    pageInfo, 
-    refetch, 
-    unreadCount, 
-    markAllAsRead, 
-    markAsRead 
+  const {
+    notifications,
+    isLoading,
+    error,
+    pageInfo,
+    refetch,
+    unreadCount,
+    markAllAsRead,
+    markAsRead
   } = useNotifications(user?.id || 0);
 
-  // --- SORTING LOGIC ---
-  // This sorts the current page: Unread items at top, then Newest to Oldest
   const sortedNotifications = useMemo(() => {
     return [...notifications].sort((a, b) => {
       const aUnread = a.notificationStatus !== 'READ';
       const bUnread = b.notificationStatus !== 'READ';
 
-      // 1. Sort by Unread status
       if (aUnread && !bUnread) return -1;
       if (!aUnread && bUnread) return 1;
 
-      // 2. If both have same status, sort by Date (Newest first)
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }, [notifications]);
 
-  // Optional: Filter the sorted list based on search query
   const displayNotifications = useMemo(() => {
-    return sortedNotifications.filter(n => 
+    return sortedNotifications.filter(n =>
       n.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
       n.eventType.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -71,7 +66,6 @@ const NotificationsView: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header / Metric Section */}
       <div className='min-h-24 py-6 w-full flex flex-col md:flex-row justify-between items-center bg-[#F1F5F9] px-6 rounded-sm border border-slate-200 gap-6 md:gap-0'>
         <div className="flex flex-col items-center md:items-start text-center md:text-left">
           <h2 className="text-lg md:text-xl font-black text-slate-800 leading-tight">
@@ -91,7 +85,6 @@ const NotificationsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Search and Action Bar */}
       <div className="flex flex-col md:flex-row gap-3 items-center">
         <div className="relative flex-1 w-full">
           <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
@@ -104,9 +97,8 @@ const NotificationsView: React.FC = () => {
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-          {/* FIXED: Added parentheses to call the function */}
-          <button 
-            onClick={() => markAllAsRead()} 
+          <button
+            onClick={() => markAllAsRead()}
             className="p-2.5 bg-white border border-slate-200 text-slate-600 rounded-sm hover:bg-slate-50 transition-all flex-1 md:flex-none flex justify-center"
             title="Mark all as read"
           >
@@ -127,10 +119,9 @@ const NotificationsView: React.FC = () => {
         ) : displayNotifications.length > 0 ? (
           <>
             <div className="flex-1">
-              {/* Changed notifications.map to displayNotifications.map */}
               {displayNotifications.map((n) => (
-                <div 
-                  key={n.id} 
+                <div
+                  key={n.id}
                   onClick={() => handleNotificationClick(n)}
                   className="cursor-pointer active:bg-slate-100 transition-colors"
                 >
@@ -144,7 +135,6 @@ const NotificationsView: React.FC = () => {
               ))}
             </div>
 
-            {/* Pagination Controls */}
             <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-100">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 Page {currentPage + 1} of {pageInfo.totalPages} ({pageInfo.totalElements} Total)
@@ -174,7 +164,6 @@ const NotificationsView: React.FC = () => {
         )}
       </div>
 
-      {/* Detail Drawer */}
       <NotificationDetailDrawer
         notification={selectedNotification}
         isOpen={isDrawerOpen}

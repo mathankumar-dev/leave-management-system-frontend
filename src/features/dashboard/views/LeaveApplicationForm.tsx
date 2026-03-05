@@ -5,7 +5,6 @@ import { useDashboard } from "../hooks/useDashboard";
 import type { LeaveApplication, LeaveType } from "../types";
 import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
 
-// --- React Icons Imports ---
 import { 
   HiOutlineClock, 
   HiOutlineChatBubbleLeftRight, 
@@ -167,7 +166,6 @@ const LeaveApplicationForm = () => {
             )}
           </div>
 
-          {/* 03. Partial Day */}
           <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <label className="flex items-center gap-3 cursor-pointer group">
               <input
@@ -200,7 +198,6 @@ const LeaveApplicationForm = () => {
             )}
           </div>
 
-          {/* 04. Reason - Hidden for COMP_OFF */}
           {formData.category !== "COMP_OFF" && (
             <div className="space-y-3">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">

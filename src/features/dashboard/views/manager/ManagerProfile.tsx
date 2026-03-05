@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-// Components & Types
 import BaseProfile from "../../layout/BaseProfile";
 import type { ProfileData } from "../../types";
 import { useAuth } from "../../../auth/hooks/useAuth";
@@ -33,7 +32,6 @@ const ManagerProfile: React.FC = () => {
 
   const [originalProfile, setOriginalProfile] = useState<ProfileData>(profile);
 
-  // SINGLE Sync Effect: Runs once when user data arrives or changes
   useEffect(() => {
     if (user) {
       setProfile({
@@ -59,7 +57,6 @@ const ManagerProfile: React.FC = () => {
     }
   }, [user]);
 
-  // Loading Guard: Very important to prevent 'null' errors in the UI
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -68,7 +65,6 @@ const ManagerProfile: React.FC = () => {
     );
   }
 
-  // Handle changes...
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setProfile(prev => ({ ...prev, [name]: value }));
@@ -87,7 +83,6 @@ const ManagerProfile: React.FC = () => {
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        {/* Left Side: Leadership Summary */}
         <div className="lg:col-span-4 space-y-6">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -96,11 +91,7 @@ const ManagerProfile: React.FC = () => {
           >
             <div className="text-center">
               <div className="relative inline-block mb-4">
-                {/* <img
-                  src={profile.photo || "https://i.pravatar.cc/150?u=jane"}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-slate-50 mx-auto shadow-md"
-                  alt="Manager Profile"
-                /> */}
+             
                 <div className="w-10 h-10 rounded-lg bg-primary-500
             flex items-center justify-center text-white font-bold text-sm
             shadow-lg shadow-primary-500/20">
@@ -116,7 +107,6 @@ const ManagerProfile: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Right Side: Profile Form */}
         <div className="lg:col-span-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

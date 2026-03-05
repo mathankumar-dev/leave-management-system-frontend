@@ -92,19 +92,13 @@ const PendingApprovalsView: React.FC = () => {
 
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
         let result;
-
-
         if (req.isCompOff) {
             if (status === 'APPROVED') {
-                console.log("inga danda");
-
-                console.log(req.id);
                 result = await handleCompOffApprove(req.id);
             } else if (status === 'REJECTED') {
                 result = await handleCompOffReject(req.id, commentText || "");
             }
         } else {
-            // Standard Leave Request logic
             const decisionPayload: LeaveDecisionRequest = {
                 leaveId: req.id,
                 managerId: Number(user?.id),
@@ -115,7 +109,6 @@ const PendingApprovalsView: React.FC = () => {
         }
 
         if (result?.success) {
-            // Pass req.isCompOff as the third argument here
             notify.leaveAction(status, req.employeeName, !!req.isCompOff);
 
             setDialogConfig({ isOpen: false, req: null, status: null });
@@ -145,7 +138,6 @@ const PendingApprovalsView: React.FC = () => {
                 onSubmit={(comment) => handleConfirmDecision(dialogConfig.req, dialogConfig.status!, comment)}
             />
 
-            {/* Metric Tiles Section */}
             <div className='py-6 w-full bg-[#F1F5F9] px-4 md:px-8 rounded-sm border border-slate-200 shadow-sm'>
                 <div className='grid grid-cols-2 md:flex md:flex-row md:justify-between items-center gap-y-8 gap-x-4'>
                     <MetricTile
@@ -168,7 +160,6 @@ const PendingApprovalsView: React.FC = () => {
                 </div>
             </div>
 
-            {/* Filters */}
             <div className="flex flex-col md:flex-row gap-3 items-center w-full">
                 <div className="relative flex-1 w-full">
                     <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
@@ -197,7 +188,6 @@ const PendingApprovalsView: React.FC = () => {
                 </div>
             </div>
 
-            {/* Request List */}
             <div className='flex flex-col gap-3 bg-[#F1F5F9] py-4 px-2 md:px-4 rounded-sm border border-slate-200'>
                 {filteredRequests.length > 0 ? (
                     filteredRequests.map((req) => (
