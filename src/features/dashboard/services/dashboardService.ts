@@ -314,6 +314,13 @@ return response.data;
 
   },
 
+  // admin
+
+  getDashboard: async (adminId: number, signal?: AbortSignal) => {
+    const res = await api.get(`/dashboard/admin/${adminId}`, { signal });
+    return res.data;
+  },
+
  
 };
  

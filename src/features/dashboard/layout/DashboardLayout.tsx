@@ -45,13 +45,12 @@ const DashboardLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [adminData, setAdminData] = useState<any>(null);
+const [adminLoading, setAdminLoading] = useState(false);
+const [adminError, setAdminError] = useState<string | null>(null);
 
   /* ---------------- ADMIN DEFAULT REDIRECT ---------------- */
-  useEffect(() => {
-    if (userRole === ROLES.ADMIN && activeTab === "Dashboard") {
-      setActiveTab("Employees");
-    }
-  }, [userRole, activeTab]);
+  
 
   /* Scroll reset on tab change */
   useEffect(() => {
@@ -60,6 +59,29 @@ const DashboardLayout: React.FC = () => {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+  if (userRole !== ROLES.ADMIN || !user?.id) return;
+
+  const controller = new AbortController();
+  setAdminLoading(true);
+
+  fetch(`/dashboard/admin/${user.id}`, {
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      setAdminData(data);
+      setAdminLoading(false);
+    })
+    .catch((err) => {
+      if (err.name === "AbortError") return;
+      setAdminError("Failed to load admin dashboard");
+      setAdminLoading(false);
+    });
+
+  return () => controller.abort();
+}, [userRole, user?.id]);
+
   /* ---------------- VIEW RENDERER ---------------- */
   const renderView = () => {
     switch (activeTab) {
@@ -67,7 +89,54 @@ const DashboardLayout: React.FC = () => {
       case "Dashboard":
         if (userRole === ROLES.MANAGER) return <ManagerDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
-        if (userRole === ROLES.ADMIN) return <EmployeesView />;
+        case "Dashboard":
+  if (userRole === ROLES.ADMIN) {
+    if (adminLoading) return <div>Loading admin dashboard...</div>;
+    if (adminError) return <div>{adminError}</div>;
+
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard title="Total Employees" value={adminData?.totalEmployees} />
+          <StatCard title="Total Managers" value={adminData?.totalManagers} />
+          <StatCard title="Pending Leaves" value={adminData?.totalPendingLeaves} />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard title="Rejected Leaves" value={adminData?.totalRejectedLeaves} />
+          <StatCard title="Carry Forward Balance" value={adminData?.totalCarryForwardBalance} />
+          <StatCard title="Comp Off Balance" value={adminData?.totalCompOffBalance} />
+        </div>
+
+        {/* Leave Type Table */}
+        <div>
+          <h2 className="text-xl font-semibold mt-6">Leave Type Breakdown</h2>
+          <table className="w-full mt-3 border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th>Type</th>
+                <th>Allocated</th>
+                <th>Used</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {adminData?.leaveTypeUsage?.map((leave: any, index: number) => (
+                <tr key={index}>
+                  <td>{leave.leaveType}</td>
+                  <td>{leave.totalAllocated}</td>
+                  <td>{leave.totalUsed}</td>
+                  <td>{leave.totalBalance}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
@@ -166,6 +235,7 @@ export default DashboardLayout;
 import { useEffect as useEff, useState as useSt } from "react";
 import { hrDashboardService } from "../views/hr/service/hrDashboardService";
 import type { LowBalanceEmployee } from "../views/hr/types";
+import StatCard from "../components/StatCard";
 
 function LowBalancePageWrapper() {
   const [data, setData] = useSt<LowBalanceEmployee[]>([]);
