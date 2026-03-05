@@ -12,6 +12,23 @@ import type { Employee } from "../../types";
 import AddEmployeeForm from "../../components/AddEmployeeForm";
 
 import { useAuth } from "../../../auth/hooks/useAuth";
+=======
+// import React, { useEffect, useState, useMemo } from "react";
+// import { motion, AnimatePresence } from "framer-motion";
+// import {
+//   FaSearch,
+//   FaUserPlus,
+//   FaEllipsisV,
+//   FaEnvelope,
+
+//   FaFilter,
+// } from "react-icons/fa";
+// import { useDashboard } from "../../hooks/useDashboard";
+// import type { Employee } from "../../types";
+// import AddEmployeeForm from "../../components/AddEmployeeForm";
+// import { useAuth } from "../../../auth/hooks/useAuth";
+// import type { User } from "../../../auth/types";
+>>>>>>> ac2bda54e998f288b4a2205f9df1fed29979bba3
 
 // const EmployeesView = () => {
 //   const { fetchEmployees, loading } = useDashboard();
