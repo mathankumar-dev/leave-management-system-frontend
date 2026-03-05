@@ -13,14 +13,15 @@ import { useDashboard } from '../../hooks/useDashboard';
 
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
-    const { requests, loading, handleDecision } = useManagerApprovals(user?.id || 0);
+    const isManager = user?.role?.toUpperCase() === 'MANAGER';
+    const { requests, loading, handleDecision } = useManagerApprovals (user?.id || 0);
     const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useDashboard();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
 
-    // HR-ku manager API calls போகக்கூடாது
-    const isManager = user?.role?.toUpperCase() === 'MANAGER';
+    // HR API call
+    // const isManager = user?.role?.toUpperCase() === 'MANAGER';
 
     useEffect(() => {
         if (user?.id && isManager) {

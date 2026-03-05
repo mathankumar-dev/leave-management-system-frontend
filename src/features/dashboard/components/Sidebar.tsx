@@ -47,7 +47,7 @@ function Sidebar({
     { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER"] },
     { name: "All Employees", icon: <FaUsers />, roles: ["HR"] },
     { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
-    { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
+    // { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
     { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER" , "HR"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] }
     

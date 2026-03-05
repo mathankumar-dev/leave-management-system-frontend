@@ -1,6 +1,6 @@
 import api from "../../../../api/axiosInstance";
 import type { LoginCredentials, AuthResponse } from "../../types";
-import Cookies from "js-cookie";
+// import Cookies from "js-cookie";
 
 // ✅ Login function
 export const loginUser = async (credentials: LoginCredentials) => {

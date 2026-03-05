@@ -3,6 +3,12 @@ import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axio
 import { ENV } from '../config/environment';
 import { toast } from "sonner"; // Import the toast function
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    silent?: boolean;
+  }
+}
+
 const api: AxiosInstance = axios.create({
   baseURL: ENV.API_BASE_URL,
   headers: {
@@ -38,9 +44,11 @@ api.interceptors.response.use(
     // Global Error Handling Logic
     if (!error.response) {
       // Network Error (No Internet / Server Down)
-      toast.error("Network Error", {
-        description: "Please check your internet connection or try again later.",
-      });
+      if (!error.config?.silent) {
+        toast.error("Network Error", {
+          description: "Please check your internet connection or try again later.",
+        });
+      }
     } else {
       switch (status) {
         case 400:
