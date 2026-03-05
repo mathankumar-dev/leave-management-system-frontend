@@ -152,11 +152,11 @@ const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> =
               approvals.slice(0, 3).map((req) => (
                 <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={req.leaveId} className="bg-white border border-slate-200 rounded-sm p-4 flex flex-col md:flex-row md:items-center gap-4 hover:border-slate-900 transition-all">
                   <div className="flex items-center gap-3 min-w-[200px]">
-                    <div className="w-10 h-10 bg-slate-900 text-white rounded-sm flex items-center justify-center font-black text-xs italic">
+                    <div className="w-10 h-10 bg-slate-900 text-white rounded-sm flex items-center justify-center font-black text-xs ">
                       {(req.employeeName || "E").charAt(0)}
                     </div>
                     <div>
-                      <p className="font-black text-xs text-slate-900 uppercase tracking-tighter">{req.employeeName}</p>
+                      <p className="font-black text-xs text-slate-900 uppercase ">{req.employeeName}</p>
                       <p className="text-[9px] text-slate-400 font-bold uppercase italic">{req.leaveType}</p>
                     </div>
                   </div>
@@ -164,6 +164,7 @@ const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> =
                     <FaCommentDots className="text-slate-300" /> "{req.reason || "No reason provided."}"
                   </div>
                   <div className="flex gap-2">
+                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'MEETING_REQUIRED' })} className="px-4 py-2 border border-slate-200 rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-orange-100 hover:text-rose-600 transition-all">Discuss</button>
                     <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'REJECTED' })} className="px-4 py-2 border border-slate-200 rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 transition-all">Deny</button>
                     <button onClick={() => executeDecision(req, 'APPROVED')} className="px-4 py-2 bg-slate-900 text-white rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-[2px_2px_0px_0px_rgba(79,70,229,0.3)]">Approve</button>
                   </div>

@@ -262,3 +262,15 @@ export type CompOffRequest = {
   employeeId: number;
   entries: CompOffEntry[];
 };
+
+
+
+export type CompOffResponse = {
+    compoffId :number;
+    employeeId : number;
+    employeeName : string;
+    workedDate : string;
+    status : 'PENDING' | 'REJECTED' | 'USED';
+    days : number;
+    createdAt : number;
+}

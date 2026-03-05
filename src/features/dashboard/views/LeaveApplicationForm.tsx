@@ -3,8 +3,17 @@ import Cookies from "js-cookie";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
 import type { LeaveApplication, LeaveType } from "../types";
-import { Clock, MessageSquare, Send, CheckCircle2, ShieldCheck, AlertCircle } from "lucide-react";
 import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
+
+// --- React Icons Imports ---
+import { 
+  HiOutlineClock, 
+  HiOutlineChatBubbleLeftRight, 
+  HiOutlinePaperAirplane, 
+  HiOutlineCheckCircle, 
+  HiOutlineShieldCheck, 
+  HiOutlineExclamationTriangle 
+} from "react-icons/hi2";
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
@@ -78,11 +87,11 @@ const LeaveApplicationForm = () => {
   if (submitted) {
     return (
       <div className="max-w-2xl mx-auto my-10 p-10 text-center bg-white border border-slate-200 rounded-lg shadow-sm">
-        <CheckCircle2 size={48} className="text-emerald-500 mx-auto mb-4" />
+        <HiOutlineCheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
         <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Request Submitted</h2>
         <p className="text-slate-500 mt-2">Your application has been logged and is awaiting approval.</p>
-        <button 
-          onClick={() => setSubmitted(false)} 
+        <button
+          onClick={() => setSubmitted(false)}
           className="mt-8 text-sm font-medium text-indigo-600 hover:text-indigo-500"
         >
           Apply for another leave →
@@ -95,7 +104,7 @@ const LeaveApplicationForm = () => {
     <div className="max-w-4xl mx-auto py-6 px-4">
       {error && (
         <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-md flex items-start gap-3">
-          <AlertCircle size={20} className="text-rose-500 shrink-0 mt-0.5" />
+          <HiOutlineExclamationTriangle size={20} className="text-rose-500 shrink-0 mt-0.5" />
           <p className="text-sm text-rose-700">{error}</p>
         </div>
       )}
@@ -107,7 +116,7 @@ const LeaveApplicationForm = () => {
             {formData.category === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
           </h1>
           <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full">
-            <ShieldCheck size={14} className="text-indigo-500" />
+            <HiOutlineShieldCheck size={16} className="text-indigo-500" />
             <span className="text-xs font-medium text-slate-600">Reviewer: {user?.managerName || "Manager"}</span>
           </div>
         </div>
@@ -116,7 +125,7 @@ const LeaveApplicationForm = () => {
           {/* 01. Category */}
           <div className="space-y-3">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <Clock size={14} /> 01. Leave Category
+              <HiOutlineClock size={16} /> 01. Leave Category
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {(["SICK", "CASUAL", "EARNED_LEAVES", "COMP_OFF"] as const).map((type) => (
@@ -124,11 +133,10 @@ const LeaveApplicationForm = () => {
                   key={type}
                   type="button"
                   onClick={() => { setError(null); setFormData({ ...formData, category: type }); }}
-                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${
-                    formData.category === type
+                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${formData.category === type
                       ? "bg-slate-900 border-slate-900 text-white shadow-md"
                       : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-                  }`}
+                    }`}
                 >
                   {leaveLabels[type]}
                 </button>
@@ -180,11 +188,10 @@ const LeaveApplicationForm = () => {
                     key={h}
                     type="button"
                     onClick={() => setFormData({ ...formData, halfDayType: h as any })}
-                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                      formData.halfDayType === h 
-                        ? "bg-white text-indigo-600 shadow-sm" 
+                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${formData.halfDayType === h
+                        ? "bg-white text-indigo-600 shadow-sm"
                         : "text-slate-500 hover:text-slate-700"
-                    }`}
+                      }`}
                   >
                     {h === "FIRST_HALF" ? "First Half" : "Second Half"}
                   </button>
@@ -193,20 +200,22 @@ const LeaveApplicationForm = () => {
             )}
           </div>
 
-          {/* 04. Reason */}
-          <div className="space-y-3">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <MessageSquare size={14} /> 04. Justification / Reason
-            </label>
-            <textarea
-              rows={3}
-              placeholder={formData.category === "COMP_OFF" ? "Briefly explain the work performed..." : "Provide a reason for your leave..."}
-              className="w-full bg-white border border-slate-200 p-4 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              value={formData.reason}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-              required
-            />
-          </div>
+          {/* 04. Reason - Hidden for COMP_OFF */}
+          {formData.category !== "COMP_OFF" && (
+            <div className="space-y-3">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <HiOutlineChatBubbleLeftRight size={16} /> 04. Justification / Reason
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Provide a reason for your leave..."
+                className="w-full bg-white border border-slate-200 p-4 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                value={formData.reason}
+                onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                required 
+              />
+            </div>
+          )}
 
           <button
             type="submit"
@@ -218,7 +227,7 @@ const LeaveApplicationForm = () => {
             ) : (
               <>
                 {formData.category === "COMP_OFF" ? "Request Comp-Off Credit" : "Submit Leave Application"}
-                <Send size={16} />
+                <HiOutlinePaperAirplane size={18} className="rotate-45" />
               </>
             )}
           </button>

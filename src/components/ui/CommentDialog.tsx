@@ -45,12 +45,12 @@ const CommentDialog: React.FC<CommentDialogProps> = ({
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
+            className="relative w-full max-w-md bg-white rounded-sm shadow-2xl border border-slate-200 overflow-hidden"
           >
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#0061ff]">
+                  <div className="w-10 h-10 rounded-sm bg-blue-50 flex items-center justify-center text-[#0061ff]">
                     <FaCommentDots />
                   </div>
                   <h3 className="font-bold text-slate-900 tracking-tight">{title}</h3>
@@ -78,7 +78,7 @@ const CommentDialog: React.FC<CommentDialogProps> = ({
                 <button
                   disabled={!comment.trim()}
                   onClick={handleConfirm}
-                  className="flex-1 px-4 py-3 rounded-xl bg-[#0061ff] text-white font-bold text-xs uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 disabled:grayscale transition-all shadow-lg shadow-blue-200"
+                  className="flex-1 px-4 py-3 rounded-sm bg-[#0061ff] text-white font-bold text-xs uppercase tracking-widest hover:bg-blue-700 disabled:opacity-50 disabled:grayscale transition-all shadow-lg shadow-blue-200"
                 >
                   {confirmLabel}
                 </button>
