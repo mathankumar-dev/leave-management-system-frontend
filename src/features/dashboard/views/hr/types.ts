@@ -36,13 +36,14 @@ export interface EmployeeOnLeave {
 }
 
 export interface ManagerApprovalStat {
-  managerId:       number;
-  managerName:     string;
-  department?:     string;
-  approvedCount?:  number;
-  pendingCount?:   number;
-  rejectedCount?:  number;
-  avgApprovalHrs?: number;
+  rejectedCount: number;
+  managerId: number;
+  managerName: string;
+  teamSize: number;
+  approvalsThisYear: number;
+  pendingRequests: number;
+  approvalRate: number;
+  lastApprovalData: number;
 }
 
 // ─── Low Balance ─────────────────────────────────────────────────

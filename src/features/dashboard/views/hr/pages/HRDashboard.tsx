@@ -14,7 +14,7 @@ interface HRDashboardProps {
   userName?: string;
 }
 
-export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
+export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
   const {
     data,
     departmentStats,
@@ -23,9 +23,10 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
     lowBalanceLoading,
     loading,
     error,
-    reload,
+    // reload,
   } = useHRDashboard();
   
+console.log(data);
 
   const [filters, setFilters] = useState({
     month:      '',
@@ -104,6 +105,7 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
             newEmployeesCount={data.newEmployeesCount}
             pendingBiometricCount={data.pendingBiometricCount}
             pendingVPNCount={data.pendingVPNCount}
+            onboardingList={data.onboardingPendingList}
           />
         </div>
       </div>

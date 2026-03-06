@@ -2,13 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui
 import { Badge } from '../ui/badge';
 
 interface ManagerApprovalStat {
+  rejectedCount: number;
   managerId: number;
   managerName: string;
-  department?: string;
-  approvedCount?: number;
-  pendingCount?: number;
-  rejectedCount?: number;
-  avgApprovalHrs?: number;
+  teamSize: number;
+  approvalsThisYear: number;
+  pendingRequests: number;
+  approvalRate: number;
+  lastApprovalData: number;
 }
 
 interface Props {
@@ -21,24 +22,28 @@ export function ManagerTrackingTable({
   managerStats,
 }: Props) {
 
+
+
   // 🔥 Compute Top Approver
   const topApprover =
     managerStats.length > 0
       ? managerStats.reduce((prev, current) =>
-          (current.approvedCount ?? 0) > (prev.approvedCount ?? 0)
-            ? current
-            : prev
-        )
+        (current.approvalsThisYear
+          ?? 0) > (prev.approvalsThisYear ?? 0)
+          ? current
+          : prev
+      )
       : null;
 
+  console.log(managerStats);
   // 🔥 Compute Most Pending
   const topPending =
     managerStats.length > 0
       ? managerStats.reduce((prev, current) =>
-          (current.pendingCount ?? 0) > (prev.pendingCount ?? 0)
-            ? current
-            : prev
-        )
+        (current.pendingRequests ?? 0) > (prev.pendingRequests ?? 0)
+          ? current
+          : prev
+      )
       : null;
 
   return (
@@ -74,7 +79,7 @@ export function ManagerTrackingTable({
                 <th className="text-left py-3 px-2">Manager</th>
                 <th className="text-center py-3 px-2">Approved</th>
                 <th className="text-center py-3 px-2">Pending</th>
-                <th className="text-center py-3 px-2">Rejected</th>
+                <th className="text-center py-3 px-2">ApprovalRate</th>
               </tr>
             </thead>
 
@@ -100,28 +105,32 @@ export function ManagerTrackingTable({
 
                     <td className="py-4 px-2 text-center">
                       <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-bold px-3">
-                        {m.approvedCount ?? 0}
+                        {m.approvalsThisYear ?? 0}
                       </Badge>
                     </td>
 
                     <td className="py-4 px-2 text-center">
                       <Badge
                         className={
-                          (m.pendingCount ?? 0) > 3
+                          (m.pendingRequests ?? 0) > 3
                             ? "bg-rose-50 text-rose-600 border-rose-100 font-bold px-3"
                             : "bg-slate-100 text-slate-600 border-slate-200 font-bold px-3"
                         }
                       >
-                        {m.pendingCount ?? 0}
+                        {m.pendingRequests ?? 0}
                       </Badge>
                     </td>
 
                     <td className="py-4 px-2 text-center">
                       <Badge
-                        variant="outline"
-                        className="text-slate-400 border-slate-200 font-medium px-3"
+                        className={`font-bold px-3 border-none ${(m.approvalRate ?? 0) >= 80
+                            ? 'bg-emerald-50 text-emerald-600'
+                            : (m.approvalRate ?? 0) >= 50
+                              ? 'bg-amber-50 text-amber-600'
+                              : 'bg-rose-50 text-rose-600'
+                          }`}
                       >
-                        {m.rejectedCount ?? 0}
+                        {Math.min(m.approvalRate ?? 0, 100)}%
                       </Badge>
                     </td>
                   </tr>

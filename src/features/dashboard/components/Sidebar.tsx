@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import {
   FaChevronLeft,
   FaSignOutAlt,
@@ -9,7 +9,6 @@ import {
   FaBell,
   FaUsers,
   FaCog,
-  FaChartBar,
   FaExclamationTriangle,
 } from "react-icons/fa";
 import { useAuth } from "../../auth/hooks/useAuth";
@@ -44,13 +43,13 @@ function Sidebar({
     { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE"] },
     { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER"] },
-    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER"] },
+    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER" ,"HR"] },
     { name: "All Employees", icon: <FaUsers />, roles: ["HR"] },
     { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
     // { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
-    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER" , "HR"] },
+    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER", "HR"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] }
-    
+
   ];
 
   const visibleTabs = tabs.filter((tab) =>
@@ -106,7 +105,7 @@ function Sidebar({
 
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">
-              {userName|| "User"}
+              {userName || "User"}
             </p>
             <p className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest">
               {userRole}

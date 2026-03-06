@@ -33,7 +33,7 @@ export function MonitoringSection({
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-3 px-5 pb-5">
+        <CardContent className="space-y-3 px-5 pb-5 max-h-75 overflow-y-auto">
           {onboardingList.length === 0 ? (
             <p className="text-sm text-slate-400">
               No onboarding pending employees

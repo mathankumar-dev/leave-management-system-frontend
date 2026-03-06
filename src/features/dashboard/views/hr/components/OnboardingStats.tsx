@@ -4,12 +4,14 @@ interface OnboardingStatsProps {
   newEmployeesCount: number;
   pendingBiometricCount: number;
   pendingVPNCount: number;
+  onboardingList? : {employeeId: number ; employeeName:String ; daysInOnboarding : number}[];
 }
 
 const OnboardingStats: React.FC<OnboardingStatsProps> = ({
   newEmployeesCount,
   pendingBiometricCount,
   pendingVPNCount,
+  onboardingList =[],
 }) => {
 
   const allcomplete = pendingBiometricCount === 0 && pendingVPNCount === 0 && newEmployeesCount === 0;
@@ -76,7 +78,11 @@ const OnboardingStats: React.FC<OnboardingStatsProps> = ({
         </div>
 
       </div>
+
+      
     </div>
+
+    
   );
 };
 

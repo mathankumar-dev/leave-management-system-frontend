@@ -24,7 +24,7 @@ interface DashboardFiltersProps {
 
 }
 
-export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProps) {
+export function DashboardFilters({  }: DashboardFiltersProps) {
   return (
     <Card className="border border-slate-200 shadow-sm bg-white">
       <CardContent className="py-3">
@@ -57,7 +57,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
           </Select> */}
 
           {/* Year Filter */}
-          <Select 
+          {/* <Select 
             value={filters.year} 
             onValueChange={(v) => updateFilter('year', v)}
           >
@@ -68,7 +68,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
               <SelectItem value="2026">2026</SelectItem>
               <SelectItem value="2025">2025</SelectItem>
             </SelectContent>
-          </Select>
+          </Select> */}
 
           {/* Department Filter */}
           {/* <Select 
@@ -89,7 +89,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
           </Select> */}
 
           {/* Leave Type Filter */}
-          <Select 
+          {/* <Select 
             value={filters.leaveType} 
             onValueChange={(v) => updateFilter('leaveType', v)}
           >
@@ -104,16 +104,16 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
               <SelectItem value="comp_off">Comp Off</SelectItem>
               <SelectItem value="loss_of_pay">Loss of Pay</SelectItem>
             </SelectContent>
-          </Select>
+          </Select> */}
 
           {/* Manager Filter */}
-          <Select 
+          {/* <Select 
             value={filters.manager} 
             onValueChange={(v) => updateFilter('manager', v)}
           >
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue placeholder="Manager" />
-            </SelectTrigger>
+            </SelectTrigger> */}
             {/* <SelectContent>
               <SelectItem value="all">All Managers</SelectItem>
               {managerTrackingData.map((m) => (
@@ -122,7 +122,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
                 </SelectItem>
               ))}
             </SelectContent> */}
-          </Select>
+          {/* </Select> */}
         </div>
       </CardContent>
     </Card>
