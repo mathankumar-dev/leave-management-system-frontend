@@ -45,6 +45,7 @@ export interface LeaveDecisionRequest{
 // ==============================
 
 export interface Employee {
+  department: string;
   id: number | null | undefined;
   color: string;
   initial?: string | null;
@@ -61,6 +62,7 @@ export interface Employee {
   compOffBalance: number;
   lopPercentage: number;
   totalWorkingDays: number | null; 
+  
 }
 
 

@@ -26,7 +26,7 @@ const MyFloatingActionButton: React.FC<MyFABProps> = ({
         onClick={onClick}
         className={`
           /* Positioning & Z-Index */
-          fixed bottom-8 right-8 z-[1000]
+          fixed bottom-8 right-8 z-[998]
           
           /* Flexbox & Alignment */
           flex items-center justify-center gap-2

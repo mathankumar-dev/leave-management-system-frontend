@@ -92,14 +92,15 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
 
         <div className="text-right pb-1">
-          <div className="flex flex-col items-end">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Usage Log</span>
-            <div className="flex items-center gap-1.5">
-              <span className={`text-sm font-black ${theme.text}`}>{used}</span>
-              <span className="text-xs text-slate-300">/</span>
-              <span className="text-sm font-black text-slate-900">{total}</span>
-            </div>
-          </div>
+                <div className="flex flex-col items-center">
+        <span className="text-xl font-bold">{total}</span>
+        <span className="text-gray-400 text-xs">remaining</span>
+
+        <span className="text-lg font-bold">÷</span>
+
+        <span className="text-xl font-bold">{used}</span>
+        <span className="text-gray-400 text-xs">used</span>
+      </div>
         </div>
       </div>
 
