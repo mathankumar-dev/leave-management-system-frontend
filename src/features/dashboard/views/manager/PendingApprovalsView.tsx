@@ -25,19 +25,21 @@ interface PendingRequest {
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
+    const isManager = user?.role?.toUpperCase() === 'MANAGER';
     const {
         requests,
         loading,
         handleDecision,
         handleCompOffApprove,
         handleCompOffReject
-    } = useManagerApprovals(user?.id || 0);
+    } = useManagerApprovals (user?.id || 0);
 
     const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useDashboard();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
 
+    // HR-ku manager API calls போகக்கூடாது
     const isManager = user?.role?.toUpperCase() === 'MANAGER';
 
     useEffect(() => {

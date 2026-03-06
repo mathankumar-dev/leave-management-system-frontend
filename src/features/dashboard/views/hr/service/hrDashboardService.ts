@@ -26,7 +26,7 @@ export const hrDashboardService = {
   // GET /dashboard/hr/low-balance — employee leave balance
   getLowBalanceEmployees: async (signal?: AbortSignal): Promise<LowBalanceEmployee[]> => {
     try {
-      const response = await api.get<LowBalanceEmployee[]>('/dashboard/hr/low-balance?year=2026', { signal });
+      const response = await api.get<LowBalanceEmployee[]>('/dashboard/hr/low-balance?year=2026', { signal,  silent: true });
       return response.data;
     } catch (err) {
       throw handleError(err, 'getLowBalanceEmployees');

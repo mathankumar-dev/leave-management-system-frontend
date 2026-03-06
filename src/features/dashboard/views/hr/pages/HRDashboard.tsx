@@ -25,8 +25,6 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
     error,
     reload,
   } = useHRDashboard();
-
-  console.log(lowBalanceData);
   
 
   const [filters, setFilters] = useState({
@@ -95,7 +93,7 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
 
       {/* Team Chart + Onboarding */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 min-w-0">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 min-w-0 w-full">
           <DepartmentChart
             data={departmentStats}
             topDepartment={departmentStats[0]?.department}
