@@ -1,4 +1,4 @@
-/* 1. Portal Layering */
+
 #datepicker-portal {
   position: relative;
   z-index: 9999;
@@ -6,10 +6,9 @@
 
 .react-datepicker-popper {
   z-index: 9999 !important;
-  padding-top: 8px !important; /* Spacing between input and calendar */
+  padding-top: 8px !important; 
 }
 
-/* 2. Main Calendar Card */
 .react-datepicker {
   background-color: white !important;
   border: 1px solid var(--color-neutral-200) !important;
@@ -19,7 +18,6 @@
   padding: 0.5rem;
 }
 
-/* 3. Header & Dropdowns */
 .react-datepicker__header {
   background-color: white !important;
   border-bottom: 1px solid var(--color-neutral-100) !important;
@@ -27,7 +25,6 @@
   padding-top: 1rem !important;
 }
 
-/* Style Month/Year Selectors */
 .react-datepicker__header__dropdown select {
   cursor: pointer;
   padding: 4px 10px;
@@ -44,7 +41,6 @@
   border-color: var(--color-primary-500);
 }
 
-/* 4. Days & Months */
 .react-datepicker__day-name {
   color: var(--color-neutral-500) !important;
   font-weight: 700 !important;
@@ -56,7 +52,7 @@
   line-height: 2.2rem !important;
   margin: 0.1rem !important;
   color: var(--color-neutral-900);
-  border-radius: 50% !important; /* Circle style */
+  border-radius: 50% !important; 
 }
 
 .react-datepicker__day--selected, 
@@ -71,12 +67,10 @@
   color: var(--color-primary-700) !important;
 }
 
-/* 5. Cleanup */
 .react-datepicker__triangle {
   display: none !important;
 }
 
-/* Grey out days from other months */
 .react-datepicker__day--outside-month {
   color: var(--color-neutral-200) !important;
 }
@@ -94,7 +88,6 @@
 .react-datepicker {
   background-color: white !important;
   border: 1px solid var(--color-neutral-200) !important;
-  /* REDUCED CORNERS */
   border-radius: 0.5rem !important; 
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
   font-family: var(--font-internal) !important;
@@ -104,7 +97,6 @@
 .react-datepicker__header {
   background-color: white !important;
   border-bottom: 1px solid var(--color-neutral-100) !important;
-  /* REDUCED CORNERS */
   border-radius: 0.5rem 0.5rem 0 0 !important;
   padding-top: 1rem !important;
 }
@@ -112,7 +104,7 @@
 .react-datepicker__header__dropdown select {
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 4px; /* Matches 4-5px range */
+  border-radius: 4px; 
   border: 1px solid var(--color-neutral-200);
   background-color: var(--color-neutral-50);
   color: var(--color-neutral-900);
@@ -125,7 +117,6 @@
   width: 2.2rem !important;
   line-height: 2.2rem !important;
   margin: 0.1rem !important;
-  /* REDUCED CORNERS */
   border-radius: 4px !important; 
 }
 
@@ -133,5 +124,3 @@
   background-color: var(--color-primary-500) !important;
   border-radius: 4px !important;
 }
-
-/* ... keep other cleanup styles ... */

@@ -10,12 +10,23 @@ export const notify = {
   info: (title: string, description?: string) => 
     toast.info(title, { description }),
 
-  // Custom Leave logic
-  leaveAction: (status: string, name: string) => {
+  // Updated Leave & Comp-Off logic
+  leaveAction: (status: string, name: string, isCompOff: boolean = false) => {
+    const typeLabel = isCompOff ? "Comp-Off" : "leave";
+
     const messages: Record<string, any> = {
-      APPROVED: { type: toast.success, text: `Approved leave for ${name}` },
-      REJECTED: { type: toast.error, text: `Rejected leave for ${name}` },
-      MEETING_REQUIRED: { type: toast.info, text: `Discussion requested with ${name}` },
+      APPROVED: { 
+        type: toast.success, 
+        text: `Approved ${typeLabel} for ${name}` 
+      },
+      REJECTED: { 
+        type: toast.error, 
+        text: `Rejected ${typeLabel} for ${name}` 
+      },
+      MEETING_REQUIRED: { 
+        type: toast.info, 
+        text: `Discussion requested with ${name}` 
+      },
     };
     
     const action = messages[status];

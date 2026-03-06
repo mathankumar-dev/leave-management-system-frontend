@@ -1,23 +1,14 @@
-import { useCallback } from 'react';
 import api from '../../../api/axiosInstance';
 import Cookies from "js-cookie";
 
 import type {
-
   LeaveRecord,
-
   Employee,
-
-  ApprovalRequest,
-
-  Notification,
-
-  AuditLog,
   LeaveApplication,
-  LeaveDecision,
   LeaveDecisionRequest,
   TeamCalendarResponse,
-  TeamMemberBalance
+  TeamMemberBalance,
+  CompOffRequest
 
 } from '../types';
 
@@ -25,7 +16,7 @@ import type {
 
 export const dashboardService = {
 
-getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
+  getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
     const response = await api.get<TeamCalendarResponse>(
       `/dashboard/manager/team-calendar/${managerId}`
     );
@@ -33,67 +24,74 @@ getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
   },
 
 
- 
+
   getEmpDashboard: async (employeeId: number) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
-    // console.log(response.data);
+
     return response.data;
 
   },
   getManagerDashboard: async (managerId: number) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
-    // console.log(response.data);
+
     return response.data;
 
   },
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
-    const response = await api.get(`/dashboard/manager/team-balances/${managerId}?year=2026`);
+    const currentYear = new Date().getFullYear();
+
+    const response = await api.get(`/dashboard/manager/team-balances/${managerId}`, {
+      params: {
+        year: currentYear
+      }
+    });
 
     return response.data;
   },
 
-  // =============================
-  // Apply Leave
-  // =============================
 
-
-
-  // dashboardService.ts
   submitLeaveRequest: async (leaveData: LeaveApplication) => {
     const response = await api.post('/leaves/apply', leaveData);
     return response.data;
   },
 
-updateLeave: async (id: number, data: any) => {
-  const res = await api.put(
-    `/leaves/${id}`,
-    null,   
-    {
-      params: {
-        employeeId: data.employeeId,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        reason: data.reason,
-        halfDayType: data.halfDayType
+  updateLeave: async (id: number, data: any) => {
+    const res = await api.put(
+      `/leaves/${id}`,
+      null,
+      {
+        params: {
+          employeeId: data.employeeId,
+          startDate: data.startDate,
+          endDate: data.endDate,
+          reason: data.reason,
+          halfDayType: data.halfDayType
+        }
       }
+    );
+
+    return res.data;
+  },
+
+  cancelLeave: async (id: number, employeeId: number): Promise<any> => {
+    try {
+      const res = await api.patch(
+        `/leaves/${id}/cancel`,
+        null,
+        {
+          params: { employeeId }
+        }
+      );
+
+      return res.data;
+    } catch (error) {
+      console.error(`Error cancelling leave ${id}:`, error);
+      throw error;
     }
-  );  
-
-  return res.data;
-},
-
-cancelLeave: async (id: number,employeeId : number) => {
-  const res = await api.patch(
-    `/leaves/${id}/cancel?employeeId=${employeeId}` 
-    
-  );
-
-  console.log(res.data);
-  return res.data;
-},
+  },
 
 
   // =============================
@@ -101,9 +99,16 @@ cancelLeave: async (id: number,employeeId : number) => {
   // =============================
 
   getPendingApprovals: async (managerId: number) => {
-    const response = await api.get(`/leave-approvals/pending/${managerId}`);   
+    const response = await api.get(`/leave-approvals/pending/${managerId}`);
     return response.data.content;
   },
+
+
+  getPendingCompOffs: async (managerId: number) => {
+    const response = await api.get(`/compoff/pending/${managerId}/approvals`);
+    return response.data.content;
+  },
+
 
 
   // =============================
@@ -112,10 +117,8 @@ cancelLeave: async (id: number,employeeId : number) => {
 
   updateDecision: async (
     decisionRequest: LeaveDecisionRequest
-  ) : Promise<void> => {
-    console.log("came here");
-    
-    const response = await api.patch(
+  ): Promise<void> => {
+    await api.patch(
       "/leave-approvals/decision",
       decisionRequest
     );
@@ -123,6 +126,24 @@ cancelLeave: async (id: number,employeeId : number) => {
 
 
 
+  approveCompOff: async (
+    compOffId: number
+  ): Promise<void> => {
+
+    await api.patch(
+      `/compoff/approve/${compOffId}`,
+
+    );
+  },
+  rejectCompOff: async (compOffId: number, reason: string): Promise<void> => {
+    await api.patch(
+      `/compoff/reject/${compOffId}`,
+      null,
+      {
+        params: { reason }
+      }
+    );
+  },
 
   // =============================
   // Leave History
@@ -134,168 +155,37 @@ cancelLeave: async (id: number,employeeId : number) => {
   },
 
 
-  getWeeklyLeaveSummary : async (managerId : number) : Promise<LeaveRecord[]> => {
+  getWeeklyLeaveSummary: async (managerId: number): Promise<LeaveRecord[]> => {
     const response = await api.get(`/manager/${managerId}/team-leaves/week`);
     return response.data;
   },
-    getTeamOnLeave : async (managerId : number) : Promise<TeamMemberBalance[]> => {
+  getTeamOnLeave: async (managerId: number): Promise<TeamMemberBalance[]> => {
     const response = await api.get(`/dashboard/manager/team-on-leave/${managerId}`);
-    console.log(response.data);
     return response.data;
   },
 
 
-  // =============================
-  // Employees
-  // =============================
-
-  // getAllEmployees: async (): Promise<Employee[]> => {
-
-  //   const response = await api.get('/admin/employees');
 
 
-  //   return response.data.map((emp: any): Employee => ({
+  getEmployeeDashboard: async (employeeId?: number): Promise<Employee[]> => {
+    const id = employeeId;
+    if (!id) {
+      console.error("Employee ID is missing! Cannot fetch dashboard.");
+      return [];
+    }
 
-  //     id: emp.id,
-
-  //     name: emp.name,
-
-  //     email: emp.email,
-
-  //     dept: emp.department ?? emp.dept,
-
-  //     role: emp.role,
-
-  //     status: emp.status,
-
-  //     designation: emp.designation ?? "",
-
-
-  //     initial: emp.name
-
-  //       .split(" ")
-
-  //       .map((n: string) => n[0])
-
-  //       .join(""),
-
-
-  //     color:
-
-  //       emp.role === "MANAGER"
-
-  //         ? "bg-indigo-600"
-
-  //         : emp.role === "HR"
-
-  //         ? "bg-rose-600"
-
-  //         : "bg-slate-500",
-
-  //   }));
-
-  // },
-
-
-
-
-
-  // =============================
-  // Notifications
-  // =============================
-
-  getNotifications: async (): Promise<Notification[]> => {
-    const response = await api.get('/notifications');
-    return response.data;
+    try {
+      const response = await api.get(`/dashboard/employee/${id}`);
+      return [response.data];
+    } catch (error: any) {
+      console.error("Failed to fetch dashboard:", error.message || error);
+      return [];
+    }
   },
-
-
-  // =============================
-  // Audit Logs
-  // =============================
-
-  getAuditLogs: async (): Promise<AuditLog[]> => {
-
-    const response = await api.get('/admin/audit-logs');
-
-    return response.data;
-
-  },
-
-
-  // =============================
-  // Calendar
-  // =============================
-
-  getCalendarLeaves: async (year: any, month: any, scope: any) => {
-
-const response = await api.get(
-`/leaves/calendar?year=${year}&month=${month}&scope=${scope}`
-);
-
-return response.data;
-
-},
-
-
-  // =============================
-  // Leave Types
-  // =============================
-
-  getLeaveTypes: async () => {
-
-    const response = await api.get('/settings/leave-types');
-
-    return response.data;
-
-  },
-
-
-  createLeaveType: async (data: any) => {
-
-    const response = await api.post('/settings/leave-types', data);
-
-    return response.data;
-
-  },
-
-
-  updateLeaveType: async (id: number, data: any) => {
-
-    const response = await api.put(
-
-      `/settings/leave-types/${id}`,
-
-      data
-
-    );
-
-    
-
-    return response.data;
-
-  },
-  
-
- getEmployeeDashboard: async (employeeId?: number): Promise<Employee[]> => {
-  const id = employeeId ;
-  if (!id) {
-    console.error("Employee ID is missing! Cannot fetch dashboard.");
-    return [];
-  }
-
-  try {
-    const response = await api.get(`/dashboard/employee/${id}`);
-    return [response.data];
-  } catch (error: any) {
-    console.error("Failed to fetch dashboard:", error.message || error);
-    return [];
-  }
-},
 
   getLeaveSummary: async () => {
     const id = Cookies.get("employee_id");
-    
+
     if (!id) {
       console.error("Employee ID is missing! Cannot fetch leave summary.");
       return null;
@@ -314,6 +204,9 @@ return response.data;
 
   },
 
- 
+  submitCompOffRequest: async (payload: CompOffRequest) => {
+    const response = await api.post('/compoff/request', payload);
+    return response.data;
+  },
 };
- 
+

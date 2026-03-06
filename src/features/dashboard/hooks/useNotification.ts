@@ -9,7 +9,6 @@ export const useNotifications = (employeeId: number) => {
   const [error, setError] = useState<string | null>(null);
   const [pageInfo, setPageInfo] = useState({ totalElements: 0, totalPages: 0 });
 
-  // 1. Core fetch logic
   const fetchNotifications = useCallback(async (page = 0) => {
     if (!employeeId) return;
     try {
@@ -34,18 +33,16 @@ export const useNotifications = (employeeId: number) => {
     }
   }, [employeeId]);
 
-  // 2. Mark a single notification as read
   const markAsRead = async (notificationId: number) => {
     try {
       await notificationService.markAsRead(notificationId);
       // Re-fetch to sync all counts and lists
-      await fetchNotifications(); 
+      await fetchNotifications();
     } catch (err) {
       console.error("Error marking notification as read:", err);
     }
   };
 
-  // 3. Mark all as read
   const markAllAsRead = async () => {
     if (!employeeId) return;
     try {
@@ -61,14 +58,14 @@ export const useNotifications = (employeeId: number) => {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  return { 
-    notifications, 
-    unreadCount, 
-    isLoading, 
-    error, 
-    pageInfo, 
+  return {
+    notifications,
+    unreadCount,
+    isLoading,
+    error,
+    pageInfo,
     refetch: fetchNotifications,
-    markAsRead,   
-    markAllAsRead  
+    markAsRead,
+    markAllAsRead
   };
 };

@@ -6,7 +6,6 @@ import Topbar from "../components/Topbar";
 /* ---------------- ADMIN VIEWS ---------------- */
 import EmployeesView from "../views/admin/EmployeesView";
 import LeaveTypesView from "../views/admin/LeaveTypesView";
-// import LeaveReportDashboard from "../views/admin/LeaveReportDashboard";
 
 /* ---------------- HR VIEWS ---------------- */
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
@@ -71,17 +70,14 @@ const DashboardLayout: React.FC = () => {
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
-        // if (userRole === ROLES.ADMIN) return <LeaveReportDashboard />;
         if (userRole === ROLES.MANAGER) return <ManagerDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
         return null;
 
-      // HR sees HREmployeesPage, Admin sees EmployeesView
       case "All Employees":
         if (userRole === ROLES.HR) return <HREmployeesPage />;
         return <EmployeesView />;
 
-      // HR Low Balance — real API via useHRDashboard
       case "LowBalance Employee":
         return <LowBalancePage />;
 
@@ -108,7 +104,7 @@ const DashboardLayout: React.FC = () => {
 
 
       case "Team Members":
-        return <TeamMembersView />;
+        return <TeamMembersView onNavigate={setActiveTab} />;
 
       case "Profile":
         if (userRole === ROLES.MANAGER) return <ManagerProfile />;
@@ -119,12 +115,10 @@ const DashboardLayout: React.FC = () => {
     }
   };
 
-  /* ---------------- STRICT PASSWORD LOCK ---------------- */
   if (mustChangePassword) {
     return <ChangePasswordDialog />;
   }
 
-  /* ---------------- STRICT PASSWORD LOCK ---------------- */
   if (mustChangePassword) {
     return <ChangePasswordDialog />;
   }
@@ -161,5 +155,3 @@ const DashboardLayout: React.FC = () => {
 };
 
 export default DashboardLayout;
-// ─── LowBalance Wrapper — fetches real API ────────────────────────
-// Separate component so it has its own loading state

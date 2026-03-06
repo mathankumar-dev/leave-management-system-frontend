@@ -70,7 +70,6 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    // <div className="bg-white p-10  rounded-xl border-2 border-white shadow-sm">  
     <div className=' flex flex-col items-center justify-center  bg-white rounded-lg filter drop-shadow-lg  w-full max-w-140 min-h-154.25 h-auto p-6  '>
       {showError && (
         <FailureModal
@@ -96,10 +95,7 @@ const LoginForm: React.FC = () => {
             Password to Proceed.</p>
         </div>
 
-
-        {/* Email Field */}
         <div className="space-y-2">
-          {/* LABELS: Shifted to neutral-700 (Darker) for high legibility */}
           <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700 ml-1">
             Company Email
           </label>
@@ -116,13 +112,9 @@ const LoginForm: React.FC = () => {
           </div>
         </div>
 
-        {/* Password Field */}
         <div className="space-y-2">
           <div className="flex justify-between items-center ml-1">
             <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700" >Password</label>
-            {/* <button type="button" className="text-[11px] font-bold text-primary-600 hover:text-primary-700 hover:underline">
-              Forgot?
-            </button> */}
           </div>
           <div className="relative group">
             <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-primary-500 transition-colors" />
@@ -168,7 +160,6 @@ const LoginForm: React.FC = () => {
         </button>
 
         <footer className="mt-8 text-center border-t border-neutral-100 pt-6">
-          {/* FOOTER: Darkened text to neutral-500 to pass contrast accessibility tests */}
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500">
             Authorized Access Only
           </p>

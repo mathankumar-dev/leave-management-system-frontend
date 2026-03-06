@@ -1,7 +1,6 @@
   import type { LucideIcon } from 'lucide-react';
   import {
     Users,
-    FileText,
     CheckCircle2,
     CalendarClock,
     Clock,

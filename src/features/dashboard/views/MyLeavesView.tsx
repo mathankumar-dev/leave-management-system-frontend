@@ -94,7 +94,6 @@ const MyLeavesView: React.FC = () => {
         </div>
       </header>
 
-      {/* MOBILE LIST VIEW */}
       <div className="md:hidden space-y-3">
         <AnimatePresence mode="popLayout">
           {filteredHistory.map((item) => (
@@ -129,7 +128,6 @@ const MyLeavesView: React.FC = () => {
         </AnimatePresence>
       </div>
 
-      {/* DESKTOP TABLE VIEW */}
       <div className="hidden md:block bg-white rounded-sm border border-slate-200  overflow-visible">
         <table className="w-full text-left">
           <thead className="bg-slate-50 border-b border-slate-200">

@@ -1,7 +1,7 @@
 import Cookies from "js-cookie";
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { ENV } from '../config/environment';
-import { toast } from "sonner"; // Import the toast function
+import { toast } from "sonner"; 
 
 declare module 'axios' {
   interface AxiosRequestConfig {
@@ -16,7 +16,6 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-// Helper for cleaning up auth state
 const handleLogout = () => {
   Cookies.remove("lms_token");
   if (window.location.pathname !== "/login") {

@@ -1,241 +1,322 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FaCheck, FaClock, FaCalendarAlt,
-  FaUsers, FaCheckDouble,
-  FaCommentDots, FaArrowRight
+  FaCalendarAlt, FaCommentDots, FaArrowRight,
+  FaPlus, FaUserShield, FaChartPie, FaCheckDouble
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../../auth/hooks/useAuth";
 import CustomLoader from "../../../../components/ui/CustomLoader";
-import type { LeaveDecision, LeaveDecisionRequest } from "../../types";
-import { notify } from "../../../../utils/notifications"; 
+import type { LeaveDecision } from "../../types";
+import { notify } from "../../../../utils/notifications";
 import CommentDialog from "../../../../components/ui/CommentDialog";
+import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
+import ManagerStatCard from "../../components/ManagerStatCard";
+import DashboardDrawer from "../../components/DashBoardDrawer";
 
-interface ManagerDashboardViewProps {
-  onNavigate?: (tab: string) => void;
-}
-
-const ManagerDashboardView: React.FC<ManagerDashboardViewProps> = ({ onNavigate }) => {
-  const { user, isLoading } = useAuth();
-  const { fetchManagerDashboard, processApproval, loading } = useDashboard();
+const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
+  const { user, isLoading: authLoading } = useAuth();
+  const { fetchManagerDashboard, processApproval, loading: dashboardLoading } = useDashboard();
 
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [approvals, setApprovals] = useState<any[]>([]);
+  const attendanceRef = useRef<HTMLDivElement>(null);
+  const requestsRef = useRef<HTMLDivElement>(null);
 
-  // Dialog State
+  const [drawerConfig, setDrawerConfig] = useState<{
+    isOpen: boolean;
+    type: 'PERSONAL' | 'TEAM' | null;
+  }>({ isOpen: false, type: null });
+
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean;
     req: any;
-    status: LeaveDecision | null;
+    status: LeaveDecision | null
   }>({ isOpen: false, req: null, status: null });
 
-  useEffect(() => {
-    if (isLoading) return;
+
+
+  const loadAllData = useCallback(async () => {
     if (!user?.id) return;
 
-    fetchManagerDashboard(user.id).then((data) => {
-      if (data) {
-        setDashboardData(data);
-        setApprovals(data.pendingTeamRequests || []);
-      }
-    });
-  }, [user, isLoading, fetchManagerDashboard]);
+    const data = await fetchManagerDashboard(user.id);
 
-  // Step 1: Logic to decide if we need a dialog
-  const handleAction = (req: any, status: LeaveDecision) => {
-    if (!user?.id) {
-      notify.error("Auth Error", "Manager ID not found.");
-      return;
+    if (data) {
+      setDashboardData(data); // One state for everything
+      setApprovals(data.pendingTeamRequests || []);
     }
+  }, [user?.id, fetchManagerDashboard]);
 
-    if (status === 'REJECTED' || status === 'MEETING_REQUIRED') {
-      setDialogConfig({ isOpen: true, req, status });
-      return;
-    }
-
-    executeDecision(req, status);
-  };
+  useEffect(() => {
+    if (!authLoading) loadAllData();
+  }, [authLoading, loadAllData]);
 
   const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-    const decisionPayload: LeaveDecisionRequest = {
+    const success = await processApproval({
       leaveId: req.leaveId,
       managerId: Number(user?.id),
       decision: status,
       comments: commentText
-    };
-
-    const success = await processApproval(decisionPayload);
+    });
 
     if (success) {
       notify.leaveAction(status, req.employeeName || req.employee);
-
       setApprovals((prev) => prev.filter((item) => item.leaveId !== req.leaveId));
+
+      // FIXED: Updated state name to dashboardData
       setDashboardData((prev: any) => ({
         ...prev,
-        teamPendingRequestCount: Math.max(0, prev.teamPendingRequestCount - 1),
-        approvedCount: status === 'APPROVED' ? prev.approvedCount + 1 : prev.approvedCount,
-        rejectedCount: status === 'REJECTED' ? prev.rejectedCount + 1 : prev.rejectedCount,
+        approvedCount: status === 'APPROVED' ? (prev.approvedCount || 0) + 1 : (prev.approvedCount || 0),
       }));
-
       setDialogConfig({ isOpen: false, req: null, status: null });
-    } else {
-      notify.error("Update Failed", "Please try again later.");
     }
   };
 
-  if (loading) return (
+  if (dashboardLoading || authLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
-      <CustomLoader label="Loading Dashboard" />
+      <CustomLoader label="Syncing Manager Portal" />
     </div>
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6 max-w-7xl mx-auto text-slate-900"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 max-w-7xl mx-auto pb-20">
       <CommentDialog
         isOpen={dialogConfig.isOpen}
         onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
         title={dialogConfig.status === 'REJECTED' ? 'Reject Leave Request' : 'Discussion Required'}
-        placeholder={`Provide context for ${dialogConfig.req?.employeeName || 'this employee'}...`}
-        confirmLabel={dialogConfig.status === 'REJECTED' ? 'Confirm Rejection' : 'Confirm Discussion'}
         onSubmit={(comment: string) => executeDecision(dialogConfig.req, dialogConfig.status!, comment)}
       />
 
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-6 gap-4">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-slate-900">Manager Dashboard</h2>
-            <p className="text-sm text-slate-500">Welcome back, {user?.name || "Manager"}</p>
-          </div>
 
-          {/* NEW BUTTON ADDED HERE */}
-          {onNavigate && (
-            <button
-              onClick={() => onNavigate("Team Calendar")}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded text-xs font-bold text-slate-700 hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm"
-            >
-              <FaCalendarAlt className="text-indigo-600" />
-              View Team Calendar
-            </button>
-          )}
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: "Team Size", value: dashboardData?.teamSize || 0, icon: <FaUsers />, color: "text-blue-600" },
-            { label: "Pending Requests", value: dashboardData?.teamPendingRequestCount || 0, icon: <FaClock />, color: "text-amber-600" },
-            { label: "On Leave Today", value: dashboardData?.teamOnLeaveCount || 0, icon: <FaCalendarAlt />, color: "text-indigo-600" },
-            { label: "Approved", value: dashboardData?.approvedCount || 0, icon: <FaCheck />, color: "text-emerald-600" },
-          ].map((stat, i) => (
-            <div key={i} className="bg-white p-4 rounded-sm border border-slate-200 shadow-sm flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
-              </div>
-              <div className={`p-3 rounded-lg bg-slate-50 ${stat.color} opacity-80`}>{stat.icon}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Main Content Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-12 space-y-4">
-            
-            {/* Action Required Header with View All Button */}
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Action Required ({approvals.length})
-                </h3>
-              </div>
-              
-              {onNavigate && (
-                <button 
-                  onClick={() => onNavigate("Pending Approvals")}
-                  className="flex items-center gap-1.5 text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-widest transition-all group"
-                >
-                  View All Requests 
-                  <FaArrowRight className="text-[8px] group-hover:translate-x-1 transition-transform" />
-                </button>
-              )}
+      <DashboardDrawer
+        isOpen={drawerConfig.isOpen}
+        onClose={() => setDrawerConfig({ isOpen: false, type: null })}
+        title={drawerConfig.type === 'PERSONAL' ? 'My Leave Ledger' : 'Team Governance Details'}
+        subtitle={drawerConfig.type === 'PERSONAL' ? user?.name || '' : 'Direct Reports Overview'}
+      >
+        {drawerConfig.type === 'PERSONAL' ? (
+          <div className="space-y-6">
+            <div className="p-4 bg-slate-900 text-white rounded-sm italic ">
+              <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Status: Active</p>
+              <p className="text-xs font-bold">You have {dashboardData?.yearlyBalance} days remaining in your annual quota.</p>
             </div>
 
             <div className="space-y-3">
-              <AnimatePresence mode="popLayout">
-                {approvals.length > 0 ? (
-                  approvals.map((req) => (
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      key={req.leaveId}
-                      className="group bg-white border border-slate-200 rounded-md p-4 hover:border-indigo-400 transition-all shadow-sm"
-                    >
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
-                          <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded flex items-center justify-center text-indigo-700 font-bold text-sm shrink-0">
-                            {(req.employeeName || req.employee || "E").charAt(0)}
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-bold text-sm">{req.employeeName || req.employee}</p>
-                            <p className="text-[10px] text-slate-500 font-medium">ID: {req.employeeId}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex-1 min-w-0 w-full">
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
-                            <span className="font-bold text-indigo-600">{req.leaveType || req.type}</span>
-                            <span>•</span>
-                            <span>{req.numberOfDays || req.days} days requested</span>
-                          </div>
-                          {req.reason && (
-                            <div className="mt-2 flex items-start gap-2 bg-slate-50 p-2 rounded border border-slate-100">
-                              <FaCommentDots className="text-slate-400 mt-0.5 shrink-0" />
-                              <p className="text-[11px] italic text-slate-600">"{req.reason}"</p>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
-                          <button
-                            onClick={() => handleAction(req, 'REJECTED')}
-                            className="flex-1 sm:flex-none px-4 py-2 border border-slate-200 rounded text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all text-xs font-bold"
-                          >
-                            Deny
-                          </button>
-                          <button
-                            onClick={() => handleAction(req, 'MEETING_REQUIRED')}
-                            className="flex-1 sm:flex-none px-4 py-2 bg-slate-100 text-slate-700 border border-slate-200 rounded hover:bg-indigo-50 hover:text-indigo-700 transition-all text-xs font-bold"
-                          >
-                            Discuss
-                          </button>
-                          <button
-                            onClick={() => handleAction(req, 'APPROVED')}
-                            className="flex-1 sm:flex-none px-4 py-2 bg-slate-900 text-white rounded hover:bg-indigo-600 transition-all text-xs font-bold shadow-sm"
-                          >
-                            Approve
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="py-12 border-2 border-dashed border-slate-200 rounded-md flex flex-col items-center justify-center text-slate-400">
-                    <FaCheckDouble className="mb-2 opacity-20" size={24} />
-                    <p className="text-xs font-bold uppercase tracking-widest">Everything Caught Up</p>
+              <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Balance Breakdown</h4>
+              <div className="grid grid-cols-1 gap-3">
+                {/* Reusing StatCard visual logic manually for drawer consistency */}
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Comp-Off Bank</span>
+                  <span className="text-lg font-black italic">{dashboardData?.compOffBalance || 0}d</span>
+                </div>
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Carry Forward</span>
+                  <span className="text-lg font-black italic">{dashboardData?.carryForwardBalance || 0}d</span>
+                </div>
+                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Monthly Stats</span>
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
+                      <span className="text-lg font-black italic text-slate-900">
+                        {dashboardData?.monthlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.monthlyAllocated}d
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
+                      <span className="text-lg font-black italic text-indigo-600">
+                        {dashboardData?.monthlyBalance || 0}d
+                      </span>
+                    </div>
                   </div>
-                )}
-              </AnimatePresence>
+                </div>
+
+                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Yearly Stats</span>
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
+                      <span className="text-lg font-black italic text-slate-900">
+                        {dashboardData?.yearlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.yearlyAllocated}d
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
+                      <span className="text-lg font-black italic text-indigo-600">
+                        {dashboardData?.yearlyBalance || 0}d
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50 border-rose-100">
+                  <span className="text-[10px] font-black uppercase text-rose-400">Loss of Pay (%)</span>
+                  <span className="text-lg font-black italic text-rose-600">{dashboardData?.lossOfPayPercentage || 0}%</span>
+                </div>
+              </div>
             </div>
           </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="p-4 border-2 border-slate-900  bg-white">
+              <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Managed Reports</p>
+              <p className="text-3xl font-black italic tracking-tighter">{dashboardData?.teamSize} Members</p>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Team Performance</h4>
+              <div className="flex justify-between p-4 border border-slate-200">
+                <span className="text-[10px] font-black uppercase">Approved this year</span>
+                <span className="text-sm font-black italic text-emerald-600">{dashboardData?.approvedCount}</span>
+              </div>
+              <div className="flex justify-between p-4 border border-slate-200">
+                <span className="text-[10px] font-black uppercase">Rejected this year</span>
+                <span className="text-sm font-black italic text-rose-600">{dashboardData?.rejectedCount}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </DashboardDrawer>
+      {/* HEADER */}
+      <div className="flex justify-between items-center border-b border-slate-200 pb-1 gap-4">
+        <div>
+          <h2 className="text-2xl font-black  text-slate-900 uppercase italic">WELCOME BACK</h2>
+          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Manager: {user?.name}</p>
         </div>
+        <button
+          onClick={() => onNavigate?.("Team Calendar")}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest text-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none"
+        >
+          <FaCalendarAlt /> Team Calendar
+        </button>
       </div>
+
+      {/* MY LEAVE CREDITS */}
+      <section className="space-y-4 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FaChartPie className="text-indigo-600" size={14} />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">My Leave Credits</h3>
+          </div>
+          <button
+            onClick={() => setDrawerConfig({ isOpen: true, type: 'PERSONAL' })}
+            className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
+          >
+            View Details
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <ManagerStatCard label="Yearly Balance" value={(dashboardData?.yearlyAllocated - dashboardData?.yearlyUsed) || 0} iconType="leave" />
+          <ManagerStatCard label="Monthly Balance" value={(dashboardData?.monthlyAllocated - dashboardData?.monthlyUsed) || 0} iconType="calendar" />
+          <ManagerStatCard label="My Pending" value={dashboardData?.pendingCount || 0} iconType="pending" colorClass="text-amber-600" onClick={() => onNavigate?.("My Leaves")} />
+        </div>
+      </section>
+
+      {/* TEAM GOVERNANCE */}
+      <section className="space-y-4 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FaUserShield className="text-indigo-600" size={14} />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Team Governance</h3>
+          </div>
+          <button
+            onClick={() => setDrawerConfig({ isOpen: true, type: 'TEAM' })}
+            className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
+          >
+            View Details
+          </button>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <ManagerStatCard label="Direct Reports" value={dashboardData?.teamSize || 0} iconType="team" onClick={() => onNavigate?.("Team Members")} />
+          <ManagerStatCard label="Pending Approval Req." value={approvals.length} iconType="pending" colorClass="text-amber-600" onClick={() => requestsRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCard label="Away Today" value={dashboardData?.teamOnLeaveCount || 0} iconType="calendar" colorClass="text-indigo-600" onClick={() => attendanceRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCard label="Approved Today" value={dashboardData?.approvedCount || 0} iconType="processed" colorClass="text-emerald-600" />
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Action Required</h3>
+          </div>
+          <button onClick={() => onNavigate?.("Pending Approvals")} className="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">
+            Manage All <FaArrowRight className="inline ml-1" />
+          </button>
+        </div>
+
+        <div ref={requestsRef} className="space-y-3">
+          <AnimatePresence mode="popLayout">
+            {approvals.length > 0 ? (
+              approvals.slice(0, 3).map((req) => (
+                <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={req.leaveId} className="bg-white border border-slate-200 rounded-sm p-4 flex flex-col md:flex-row md:items-center gap-4 hover:border-slate-900 transition-all">
+                  <div className="flex items-center gap-3 min-w-50">
+                    <div className="w-10 h-10 bg-slate-900 text-white rounded-sm flex items-center justify-center font-black text-xs ">
+                      {(req.employeeName || "E").charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-black text-xs text-slate-900 uppercase ">{req.employeeName}</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase italic">{req.leaveType}</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 bg-slate-50 p-2 border border-slate-100 rounded-sm italic text-[10px] text-slate-600 flex items-center gap-2">
+                    <FaCommentDots className="text-slate-300" /> "{req.reason || "No reason provided."}"
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'MEETING_REQUIRED' })} className="px-4 py-2 border border-slate-200 rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-orange-100 hover:text-rose-600 transition-all">Discuss</button>
+                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'REJECTED' })} className="px-4 py-2 border border-slate-200 rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 transition-all">Deny</button>
+                    <button onClick={() => executeDecision(req, 'APPROVED')} className="px-4 py-2 bg-slate-900 text-white rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-[2px_2px_0px_0px_rgba(79,70,229,0.3)]">Approve</button>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="py-12 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-300">
+                <FaCheckDouble size={24} className="mb-2 opacity-20" />
+                <p className="text-[9px] font-black uppercase tracking-[0.4em]">All caught up</p>
+              </div>
+            )}
+          </AnimatePresence>
+
+          <section ref={attendanceRef} className="space-y-4 pt-4">
+            <div className="flex items-center gap-2">
+              <FaCalendarAlt className="text-indigo-600" size={14} />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                Attendance Overview
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {dashboardData?.teamOnLeaveToday?.length > 0 ? (
+                dashboardData.teamOnLeaveToday.map((emp: any, idx: number) => (
+                  <div key={idx} className="bg-white p-5 rounded-sm border border-slate-200 shadow-sm flex items-center justify-between group relative overflow-hidden transition-all hover:border-slate-900">
+                    <div className="relative z-10">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-slate-500">
+                        {emp.leaveType}
+                      </p>
+                      <p className="text-xl font-black text-slate-900 tracking-tight italic transition-transform group-hover:-translate-y-0.5 uppercase">
+                        {emp.employeeName}
+                      </p>
+                      <p className="text-[9px] font-bold text-emerald-600 uppercase mt-1 italic">
+                        Currently Away
+                      </p>
+                    </div>
+                    {/* Replicating the background icon from StatCard */}
+                    <div className="text-slate-100 group-hover:text-slate-200 transition-all duration-300 text-3xl absolute right-4 opacity-40">
+                      <FaCalendarAlt />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-10 border border-dashed border-slate-200 flex flex-col items-center">
+                  <p className="text-[9px] font-black uppercase text-slate-300 tracking-[0.3em]">No one is on leave today</p>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Apply Leave")} title="Apply Leave" />
     </motion.div>
   );
 };
