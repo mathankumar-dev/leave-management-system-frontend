@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { notificationService } from '../services/notification/notificationService';
 import type { NotificationResponse } from '../services/notification/types';
 
@@ -9,10 +9,12 @@ export const useNotifications = (employeeId: number) => {
   const [error, setError] = useState<string | null>(null);
   const [pageInfo, setPageInfo] = useState({ totalElements: 0, totalPages: 0 });
 
-  const fetchNotifications = useCallback(async (page = 0) => {
+  const fetchNotifications = useCallback(async (page = 0, isPolling = false) => {
     if (!employeeId) return;
+    
     try {
-      setIsLoading(true);
+      if (!isPolling) setIsLoading(true);
+
       const [pageData, count] = await Promise.all([
         notificationService.getNotifications(employeeId, page),
         notificationService.getUnreadNotificationsCount(employeeId)
@@ -33,11 +35,11 @@ export const useNotifications = (employeeId: number) => {
     }
   }, [employeeId]);
 
+  // --- Utility actions ---
   const markAsRead = async (notificationId: number) => {
     try {
       await notificationService.markAsRead(notificationId);
-      // Re-fetch to sync all counts and lists
-      await fetchNotifications();
+      await fetchNotifications(0, true); 
     } catch (err) {
       console.error("Error marking notification as read:", err);
     }
@@ -47,8 +49,7 @@ export const useNotifications = (employeeId: number) => {
     if (!employeeId) return;
     try {
       await notificationService.markAllAsRead(employeeId);
-      // Re-fetch everything
-      await fetchNotifications();
+      await fetchNotifications(0, true);
     } catch (err) {
       console.error("Error marking all as read:", err);
     }
@@ -56,6 +57,12 @@ export const useNotifications = (employeeId: number) => {
 
   useEffect(() => {
     fetchNotifications();
+
+    const intervalId = setInterval(() => {
+      fetchNotifications(0, true);
+    }, 5000);
+
+    return () => clearInterval(intervalId);
   }, [fetchNotifications]);
 
   return {
