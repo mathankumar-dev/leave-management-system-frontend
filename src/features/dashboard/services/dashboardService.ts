@@ -204,6 +204,13 @@ export const dashboardService = {
 
   },
 
+  // admin
+
+  getDashboard: async (adminId: number, signal?: AbortSignal) => {
+    const res = await api.get(`/dashboard/admin/${adminId}`, { signal });
+    return res.data;
+  },
+
   submitCompOffRequest: async (payload: CompOffRequest) => {
     const response = await api.post('/compoff/request', payload);
     return response.data;

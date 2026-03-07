@@ -132,50 +132,13 @@ export const useDashboard = () => {
 
   /* ================= NOTIFICATIONS ================= */
 
-  const fetchNotifications = useCallback(async (): Promise<Notification[]> => {
-    setLoading(true);
-    try {
-      return await service.getNotifications();
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch notifications");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  
 
-  const fetchAuditLogs = useCallback(async (): Promise<AuditLog[]> => {
-    setLoading(true);
-    try {
-      return await service.getAuditLogs();
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch audit logs");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  
 
   /* ================= CALENDAR (FIXED) ================= */
 
-  const fetchCalendar = useCallback(
-    async (
-      year: number,
-      month: number,
-      scope: CalendarScope = "SELF"
-    ) => {
-      setLoading(true);
-      try {
-        return await service.getCalendarLeaves(year, month, scope);
-      } catch (err: any) {
-        setError(err.message || "Failed to load calendar data");
-        return {};
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+  
 
   /* ================= LEAVE ACTIONS ================= */
 
@@ -194,29 +157,29 @@ export const useDashboard = () => {
     }
   }, []);
 
-  const fetchLeaveTypes = useCallback(async () => {
-    setLoading(true);
-    try {
-      return await service.getLeaveTypes();
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch leave types");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // const fetchLeaveTypes = useCallback(async () => {
+  //   setLoading(true);
+  //   try {
+  //     return await service.getLeaveTypes();
+  //   } catch (err: any) {
+  //     setError(err.message || "Failed to fetch leave types");
+  //     return [];
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
-  const addLeaveType = async (data: any) => {
-    setLoading(true);
-    try {
-      return await service.createLeaveType(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to create leave type");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const addLeaveType = async (data: any) => {
+  //   setLoading(true);
+  //   try {
+  //     return await service.createLeaveType(data);
+  //   } catch (err: any) {
+  //     setError(err.message || "Failed to create leave type");
+  //     return null;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const removeLeaveType = async (id: number) => {
     setLoading(true);
@@ -355,13 +318,10 @@ export const useDashboard = () => {
     fetchEmployees,
     fetchMyLeaves,
     bankCompOff,
-    fetchNotifications,
-    fetchAuditLogs,
-    fetchCalendar,
+
     applyLeave,
     getTeamMembers,
-    fetchLeaveTypes,
-    addLeaveType,
+   
     removeLeaveType,
     cancelLeave,
     editLeave,
