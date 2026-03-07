@@ -13,10 +13,10 @@ interface LeaveDetailsDrawerProps {
   open: boolean;
   stat: StatItem | null;
   onClose: () => void;
-  onClick :()=> void;
+  onClick: () => void;
 }
 
-const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, stat, onClose , onClick }) => {
+const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, stat, onClose, onClick }) => {
   return (
     <AnimatePresence>
       {open && (
@@ -26,7 +26,7 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, stat, onC
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999]"
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-999"
           />
 
           <motion.div
@@ -34,14 +34,14 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, stat, onC
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-[1000] overflow-y-auto"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-1000 overflow-y-auto"
           >
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div>
                 <h2 className="text-lg font-bold text-slate-800">{stat?.title} Details</h2>
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Balance Breakdown</p>
               </div>
-              <button 
+              <button
                 onClick={onClose}
                 className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
               >
@@ -51,7 +51,7 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, stat, onC
 
             {/* Content */}
             <div className="p-6 space-y-8">
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
                   <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Total Allocated</p>
@@ -68,7 +68,7 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, stat, onC
                   <FaHistory className="text-slate-400" />
                   <h3 className="font-bold text-sm uppercase tracking-tight">Recent {stat?.title} History</h3>
                 </div>
-                
+
                 {/* <div className="space-y-3">
                   {[1, 2].map((item) => (
                     <div key={item} className="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors">
@@ -97,11 +97,12 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, stat, onC
             </div>
 
             {/* Footer Action */}
-            <div className="absolute bottom-0 left-0 w-full p-6 border-t border-slate-100 bg-white">
-              <button onClick={onClick} className="w-full py-3 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 transition-all shadow-lg">
-                Request {stat?.title}
-              </button>
-            </div>
+            {stat?.title.toLowerCase() === "comp off balance" &&
+              (<div className="absolute bottom-0 left-0 w-full p-6 border-t border-slate-100 bg-white">
+                <button onClick={onClick} className="w-full py-3 bg-slate-900 text-white rounded-lg font-bold text-sm hover:bg-slate-800 transition-all shadow-lg">
+                  Request {stat?.title}
+                </button>
+              </div>)}
           </motion.div>
         </>
       )}
