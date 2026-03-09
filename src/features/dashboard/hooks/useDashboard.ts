@@ -11,6 +11,7 @@ import type {
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
+  ManagerDashBoardResponse,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
 
@@ -132,13 +133,13 @@ export const useDashboard = () => {
 
   /* ================= NOTIFICATIONS ================= */
 
-  
 
-  
+
+
 
   /* ================= CALENDAR (FIXED) ================= */
 
-  
+
 
   /* ================= LEAVE ACTIONS ================= */
 
@@ -210,18 +211,21 @@ export const useDashboard = () => {
     }
   }, []);
 
-  const fetchManagerDashboard = useCallback(async (id: number) => {
-    setLoading(true);
-    try {
-      const response = await service.getManagerDashboard(id);
-      return response;
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch manager data");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchManagerDashboard = useCallback(
+    async (id: number): Promise<ManagerDashBoardResponse | null> => {
+      setLoading(true);
+      try {
+        const response = await service.getManagerDashboard(id);
+        return response;
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch manager data");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
 
   const [filters, setFilters] = useState({
@@ -321,7 +325,7 @@ export const useDashboard = () => {
 
     applyLeave,
     getTeamMembers,
-   
+
     removeLeaveType,
     cancelLeave,
     editLeave,
