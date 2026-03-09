@@ -10,7 +10,6 @@ const AdminDashboardView = () => {
       animate={{ opacity: 1 }}
       className="space-y-12 p-4 max-w-7xl mx-auto"
     >
-      {/* EMPLOYEE OVERVIEW */}
       <section>
         <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4">
           Employee Dashboard (All Employees)
@@ -18,7 +17,6 @@ const AdminDashboardView = () => {
         <DashboardView scope="ALL" />
       </section>
 
-      {/* MANAGER OVERVIEW */}
       <section>
         <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4">
           Manager Dashboard (All Teams)
@@ -26,7 +24,6 @@ const AdminDashboardView = () => {
         <ManagerDashboardView scope="ALL" />
       </section>
 
-      {/* ORGANIZATION CALENDAR */}
       <section>
         <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4">
           Organization Calendar

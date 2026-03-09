@@ -1,38 +1,14 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  LabelList,
-} from "recharts";
-import {
-  FaChartLine,
-  FaCheckCircle,
-  FaClock,
-  FaPlus,
-  FaTimesCircle,
-} from "react-icons/fa";
+
+import { FaChartLine, FaPlus } from "react-icons/fa";
 
 import StatCard from "../../components/StatCard";
-import RecentLeavePopup from "../../components/popup";
 import LeaveDetailsDrawer from "../../components/LeaveDetailsDrawer";
-
 import { useDashboard } from "../../hooks/useDashboard";
-
-
-// ✅ MOCK DATA IMPORT
-import {
-  MOCK_CHART_DATA,
-  MOCK_DASHBOARD_STATS,
-  MOCK_LEAVE_HISTORY,
-} from "../../../../mockData";
-
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
-import ActivityCard from "../../../../components/ui/ActivityCard";
-
+import { useAuth } from "../../../auth/hooks/useAuth";
+import CustomLoader from "../../../../components/ui/CustomLoader";
 
 export type DashboardScope = "SELF" | "TEAM" | "ALL";
 
@@ -41,198 +17,160 @@ interface DashboardViewProps {
   onNavigate?: (tab: string) => void;
 }
 
+interface StatItem {
+  title: string;
+  used: number;
+  total: number;
+  color: string;
+}
 
+interface ChartItem {
+  month: string;
+  Casual: number;
+  Sick: number;
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
+    transition: { staggerChildren: 0.08 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 18 },
   visible: { opacity: 1, y: 0 },
 };
 
+const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
+  const { fetchDashboard, setError } = useDashboard();
+  const { user } = useAuth();
+  const employeeId = user?.id;
 
-const statusConfig: Record<
-  string,
-  { type: "success" | "warning" | "danger"; icon: React.ReactNode }
-> = {
-  Approved: { type: "success", icon: <FaCheckCircle /> },
-  Pending: { type: "warning", icon: <FaClock /> },
-  Rejected: { type: "danger", icon: <FaTimesCircle /> },
-};
-
-
-
-const DashboardView: React.FC<DashboardViewProps> = ({
-  scope = "SELF",
-  onNavigate,
-}) => {
-
-  const { fetchStats, fetchDashboard, setError } = useDashboard();
-
-
-  // ✅ USE MOCK DATA AS DEFAULT
-  const [stats, setStats] = useState<any[]>(MOCK_DASHBOARD_STATS);
-
-  const [chartData, setChartData] = useState<any[]>(MOCK_CHART_DATA);
-
-  const [recentLeaves, setRecentLeaves] = useState<any[]>(MOCK_LEAVE_HISTORY);
-
-
-
+  const [stats, setStats] = useState<StatItem[]>([]);
+ 
   const [fetching, setFetching] = useState(true);
-
-  const [selectedCard, setSelectedCard] = useState<string | null>(null);
-
-
-
+   const [selectedCard, setSelectedCard] = useState<StatItem | null>(null);
+ 
 
   const loadDashboardData = useCallback(async () => {
+    if (!employeeId) return;
 
     try {
-
       setFetching(true);
 
-      // const data = await fetchStats(scope);
-      const data = await fetchDashboard();
+      const data = await fetchDashboard(employeeId);
 
-      console.log(data);
+      const monthlyBalance = data.monthlyUsed > 0 ? data.monthlyUsed : 0;
 
+      if (data) {
+        const newStats: StatItem[] = [
+          {
+            title: "Yearly Balance",
+            used: data.yearlyUsed || 0,
+            total: data.yearlyAllocated || 0,
+            color: "indigo",
+          },
+          {
+            title: "Monthly Balance",
+            used: data.monthlyUsed || 0,
+            total: data.monthlyAllocated || 0,
+            color: "emerald",
+          },
+          {
+            title: "Carry Forward",
+            used:
+              (data.carryForwardTotal || 0) -
+              (data.carryForwardRemaining || 0),
+            total: data.carryForwardTotal || 0,
+            color: "amber",
+          },
+          {
+            title: "Comp Off Balance",
+            used: data.compoffBalance || 0,
+            total: data.compoffBalance || 0,
+            color: "slate",
+          },
+          {
+            title: "Approved Leaves",
+            used: data.approvedCount || 0,
+            total: data.approvedCount || 0,
+            color: "emerald",
+          },
+          {
+            title: "Pending Leaves",
+            used: data.pendingCount || 0,
+            total: data.pendingCount || 0,
+            color: "amber",
+          },
+          {
+            title: "Rejected Leaves",
+            used: data.rejectedCount || 0,
+            total: data.rejectedCount || 0,
+            color: "rose",
+          },
+          // {
+          //   title: "Loss Of Pay %",
+          //   used: data.lossOfPayPercentage || 0,
+          //   total: 100,
+          //   color: "rose",
+          // },
+        ];
 
-      // ✅ ONLY REPLACE IF API RETURNS DATA
+        setStats(newStats);
 
-      if (data?.summaryStats)
-        setStats(data.summaryStats);
-
-      if (data?.chartData)
-        setChartData(data.chartData);
-
-      if (data?.recentLeaves)
-        setRecentLeaves(data.recentLeaves);
-
-
+      }
     } catch (err: any) {
-
-      console.log("API Failed → Using MOCK DATA");
-
-      setError(err?.message || "Mock Data Used");
-
+      console.error("Dashboard API Error:", err);
+      setError(err?.message || "Failed to load dashboard data");
     } finally {
-
       setFetching(false);
-
     }
-
-    // }, [fetchStats, scope, setError]);
-  }, [fetchDashboard, setError]);
-
-
+  }, [employeeId, fetchDashboard, setError]);
 
   useEffect(() => {
-
     loadDashboardData();
-
   }, [loadDashboardData]);
 
-
-
+  const handleAdd = () => {
+    onNavigate?.("Apply Leave");
+  };
 
   if (fetching) {
-
     return (
-
-      <div className="flex flex-col items-center justify-center h-screen space-y-4">
-
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1 }}
-          className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-600 rounded-full"
-        />
-
-        <p className="text-slate-400 font-bold animate-pulse text-xs">
-
-          Loading Dashboard...
-
-        </p>
-
-      </div>
-
+        <CustomLoader label="Loading dashboard ..." />
     );
-
   }
 
-
-
-  const handleAdd = () => {
-
-    onNavigate?.("Apply Leave");
-
-  };
-
-
-  const handleSelectLeave = (id: number) => {
-
-    console.log("Selected Leave:", id);
-
-  };
-
-
-
   return (
-
     <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-6 max-w-7xl mx-auto"
+      className="max-w-7xl mx-auto px-4 py-6 space-y-10"
     >
+      {/* HEADER */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-700">
+            Leave Dashboard
+          </h2>
+          
+        </div>
 
+        <FaChartLine className="text-slate-300 text-lg" />
+      </div>
 
-
-      {/* RECENT LEAVES */}
-
-      {recentLeaves.map((req) => {
-
-        const config = statusConfig[req.status];
-
-        return (
-
-          <ActivityCard
-            key={req.id}
-            title={req.type}
-            subtitle={req.range}
-            label={`${req.days} Days`}
-            statusText={req.status}
-            statusType={config?.type}
-            icon={config?.icon}
-            description={req.comment}
-            onClick={() => handleSelectLeave(req.id)}
-          />
-
-        );
-
-      })}
-
-
-
-
-      {/* STATS */}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
+      {/* STATS GRID */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (
-
           <motion.div
-            key={i}
+            key={stat.title}
             variants={itemVariants}
-            onClick={() => setSelectedCard(stat.title)}
+            onClick={() => setSelectedCard(stat)}
+            className="cursor-pointer"
           >
-
             <StatCard
               title={stat.title}
               used={stat.used}
@@ -240,103 +178,62 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               color={stat.color}
               period="ANNUAL CYCLE 2026"
             />
-
           </motion.div>
-
         ))}
-
       </div>
 
-
-
-
-      {/* CHART */}
-
-      <div className="bg-white border rounded-md p-5 shadow-sm">
-
-        <div className="flex justify-between mb-4">
-
-          <h4 className="text-xs font-bold text-slate-400">
-
-            Monthly Utilization
-
+{/*       
+      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <h4 className="text-sm font-semibold text-slate-600">
+            Monthly Leave Utilization
           </h4>
-
           <FaChartLine className="text-slate-300" />
-
         </div>
 
+        <div className="w-full h-[280px] min-w-0">
+          {chartReady && chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
 
-        <div className="h-48">
+                <XAxis dataKey="month" />
 
-          <ResponsiveContainer>
+                <Tooltip />
 
-            <BarChart data={chartData}>
+                <Bar dataKey="Casual" radius={[4, 4, 0, 0]}>
+                  <LabelList dataKey="Casual" position="top" />
+                </Bar>
 
-              <CartesianGrid strokeDasharray="3 3" />
-
-              <XAxis dataKey="month" />
-
-
-              <Bar dataKey="Casual">
-
-                <LabelList dataKey="Casual" position="top" />
-
-              </Bar>
-
-
-              <Bar dataKey="Sick">
-
-                <LabelList dataKey="Sick" position="top" />
-
-              </Bar>
-
-
-            </BarChart>
-
-          </ResponsiveContainer>
-
+                <Bar dataKey="Sick" radius={[4, 4, 0, 0]}>
+                  <LabelList dataKey="Sick" position="top" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-sm text-slate-400">
+              No utilization data available
+            </div>
+          )}
         </div>
+      </div> */}
 
-      </div>
-
-
-
-
-      {/* POPUP */}
-
-      <RecentLeavePopup latestLeave={recentLeaves[0]} />
-
-
-
-
-      {/* DRAWER */}
-
-      <LeaveDetailsDrawer
-        open={!!selectedCard}
-        title={selectedCard}
-        onClose={() => setSelectedCard(null)}
-      />
-
-
-
-
+      {/* DETAILS DRAWER */}
+          <LeaveDetailsDrawer
+      open={!!selectedCard}
+      stat={selectedCard}
+      onClose={() => setSelectedCard(null)}
+      onClick={handleAdd}
+    />
       {/* FLOAT BUTTON */}
-
       <MyFloatingActionButton
         icon={<FaPlus />}
         onClick={handleAdd}
         title="New Leave Request"
         tooltipLabel="Apply Leave"
       />
-
-
-
     </motion.div>
-
   );
-
 };
-
 
 export default DashboardView;
