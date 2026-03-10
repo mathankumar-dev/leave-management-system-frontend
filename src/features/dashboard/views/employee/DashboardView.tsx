@@ -19,14 +19,17 @@ interface DashboardViewProps {
 interface StatItem {
   title: string;
   used: number;
-  total: number;
+  total?: number ;
   color: string;
+  breakdown?: LeaveTypeBreakdown[]; // <-- ADD HERE
 }
 
-interface ChartItem {
-  month: string;
-  Casual: number;
-  Sick: number;
+interface LeaveTypeBreakdown {
+  leaveType: string;
+  allocatedDays: number;
+  usedDays: number;
+  remainingDays: number;
+  halfDayCount: number;
 }
 
 const containerVariants = {
@@ -47,6 +50,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   const { user } = useAuth();
   const employeeId = user?.id;
 
+
   const [stats, setStats] = useState<StatItem[]>([]);
  
   const [fetching, setFetching] = useState(true);
@@ -62,58 +66,67 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       const data = await fetchDashboard(employeeId);
 
       if (data) {
-        const newStats: StatItem[] = [
-          {
-            title: "Yearly Balance",
-            used: data.yearlyUsed || 0,
-            total: data.yearlyAllocated || 0,
-            color: "indigo",
-          },
-          {
-            title: "Monthly Balance",
-            used: data.monthlyUsed || 0,
-            total: data.monthlyAllocated || 0,
-            color: "emerald",
-          },
-          {
-            title: "Carry Forward",
-            used:
-              (data.carryForwardTotal || 0) -
-              (data.carryForwardRemaining || 0),
-            total: data.carryForwardTotal || 0,
-            color: "amber",
-          },
-          {
-            title: "Comp Off Balance",
-            used: data.compoffBalance || 0,
-            total: data.compoffBalance || 0,
-            color: "slate",
-          },
-          {
-            title: "Approved Leaves",
-            used: data.approvedCount || 0,
-            total: data.approvedCount || 0,
-            color: "emerald",
-          },
-          {
-            title: "Pending Leaves",
-            used: data.pendingCount || 0,
-            total: data.pendingCount || 0,
-            color: "amber",
-          },
-          {
-            title: "Rejected Leaves",
-            used: data.rejectedCount || 0,
-            total: data.rejectedCount || 0,
-            color: "rose",
-          },
-          {
-            title: "Loss Of Pay %",
-            used: data.lossOfPayPercentage || 0,
-            total: 100,
-            color: "rose",
-          },
-        ];
+       const newStats: StatItem[] = [
+  {
+    title: "Yearly Balance",
+    used: data.yearlyUsed || 0,
+    total: data.yearlyAllocated || 0,
+    color: "indigo",
+     breakdown: data.leaveTypeBreakdown || [],
+  },
+  {
+    title: "Monthly Balance",
+    used: data.monthlyUsed || 0,
+    total: data.monthlyAllocated || 0,
+    color: "emerald",
+  },
+  {
+    title: "Carry Forward",
+    used:
+      (data.carryForwardTotal || 0) -
+      (data.carryForwardRemaining || 0),
+    total: data.carryForwardTotal || 0,
+    color: "amber",
+  },
+
+  // NEW STAT
+  // {
+  //   title: "Carry Forward Remaining",
+  //   used: data.carryForwardRemaining || 0,
+  //   total: data.carryForwardTotal || 0,
+  //   color: "cyan",
+  // },
+
+  {
+    title: "Comp Off Balance",
+    used: data.compoffBalance || 0,
+    total: data.compoffBalance || 0,
+    color: "slate",
+  },
+  {
+    title: "Approved Leaves",
+    used: data.approvedCount || 0,
+    total: data.approvedCount || 0,
+    color: "emerald",
+  },
+  {
+    title: "Pending Leaves",
+    used: data.pendingCount || 0,
+    total: data.pendingCount || 0,
+    color: "amber",
+  },
+  {
+    title: "Rejected Leaves",
+    used: data.rejectedCount || 0,
+    total: data.rejectedCount || 0,
+    color: "rose",
+  },
+  {
+    title: "Loss Of Pay %",
+    used: data.lossOfPayPercentage || 0,
+    color: "rose",
+  },
+];
 
         setStats(newStats);
 
@@ -130,9 +143,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  const handleAdd = () => {
-    onNavigate?.("Apply Leave");
-  };
+  const handleAdd = (stat: StatItem) => {
+  console.log("Request leave for:", stat.title);
+  onNavigate?.("Apply Leave");
+};
+
+const handleFABClick = () => {
+  onNavigate?.("Apply Leave");
+};
 
   if (fetching) {
     return (
@@ -148,6 +166,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       </div>
     );
   }
+  
 
   return (
     <motion.div
@@ -177,67 +196,31 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             onClick={() => setSelectedCard(stat)}
             className="cursor-pointer"
           >
-            <StatCard
-              title={stat.title}
-              used={stat.used}
-              total={stat.total}
-              color={stat.color}
-              period="ANNUAL CYCLE 2026"
-            />
+                <StatCard
+      title={stat.title}
+      used={stat.used}
+      total={stat.total ?? 0}
+      color={stat.color}
+      period="ANNUAL CYCLE 2026"
+    />
           </motion.div>
         ))}
       </div>
 
-{/*       
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
-          <h4 className="text-sm font-semibold text-slate-600">
-            Monthly Leave Utilization
-          </h4>
-          <FaChartLine className="text-slate-300" />
-        </div>
 
-        <div className="w-full h-[280px] min-w-0">
-          {chartReady && chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-
-                <XAxis dataKey="month" />
-
-                <Tooltip />
-
-                <Bar dataKey="Casual" radius={[4, 4, 0, 0]}>
-                  <LabelList dataKey="Casual" position="top" />
-                </Bar>
-
-                <Bar dataKey="Sick" radius={[4, 4, 0, 0]}>
-                  <LabelList dataKey="Sick" position="top" />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-full text-sm text-slate-400">
-              No utilization data available
-            </div>
-          )}
-        </div>
-      </div> */}
-
-      {/* DETAILS DRAWER */}
-          <LeaveDetailsDrawer
-      open={!!selectedCard}
-      stat={selectedCard}
-      onClose={() => setSelectedCard(null)}
-      onClick={handleAdd}
-    />
+     <LeaveDetailsDrawer
+        open={!!selectedCard}
+        stat={selectedCard}
+        onClose={() => setSelectedCard(null)}
+        onClick={handleAdd} />
+    
       {/* FLOAT BUTTON */}
       <MyFloatingActionButton
-        icon={<FaPlus />}
-        onClick={handleAdd}
-        title="New Leave Request"
-        tooltipLabel="Apply Leave"
-      />
+  icon={<FaPlus />}
+  onClick={handleFABClick}
+  title="New Leave Request"
+  tooltipLabel="Apply Leave"
+/>
     </motion.div>
   );
 };

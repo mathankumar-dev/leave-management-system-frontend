@@ -264,6 +264,8 @@ export type CompOffEntry = {
   days: number;            
 };
 
+
+
 export type CompOffRequest = {
   employeeId: number;
   entries: CompOffEntry[];

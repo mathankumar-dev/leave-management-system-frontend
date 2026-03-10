@@ -12,7 +12,7 @@ import type {
   TeamCalendarResponse,
   TeamMemberBalance,
 } from "../types";
-import type { CalendarScope } from "../views/employee/CalendarView";
+
 
 
 const service = dashboardService;
@@ -23,6 +23,12 @@ export const useDashboard = () => {
   const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
   const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
   const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
+
+  const [leaveBalance, setLeaveBalance] = useState({
+  CASUAL: 0,
+  SICK: 0,
+  EARNED_LEAVES: 0
+});
 
   /* ================= APPROVALS ================= */
 
@@ -70,23 +76,20 @@ export const useDashboard = () => {
   };
 
 
-
-  const fetchDashboard = useCallback(async (employeeId: number) => {
-    setLoading(true);
-    try {
-      const response = await service.getEmpDashboard(employeeId);
-      return response;
-    } catch (err: any) {
-      console.error("API ERROR DETAILS:", err.response?.data || err.message);
-      setError(err.message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-
-
+const fetchDashboard = useCallback(async (employeeId: number) => {
+  setLoading(true);
+  try {
+    const response = await service.getEmpDashboard(employeeId);
+    console.log("FULL RESPONSE", response); // Use this directly
+    return response; // Not response.data
+  } catch (err: any) {
+    console.error("API ERROR DETAILS:", err.response?.data || err.message);
+    setError(err.message);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
   /* ================= LEAVES ================= */
 
   const fetchMyLeaves = useCallback(async (employeeId: number): Promise<LeaveRecord[]> => {
@@ -328,6 +331,7 @@ export const useDashboard = () => {
     cancelLeave,
     editLeave,
     fetchTeamSchedule,
+     leaveBalance,
     teamCalendar,
     fetchWeeklyLeaveSummary,
     weeklyLeaveSummary,

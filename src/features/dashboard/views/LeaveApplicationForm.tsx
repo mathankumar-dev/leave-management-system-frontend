@@ -16,7 +16,7 @@ import {
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
-  const { applyLeave, bankCompOff, loading, error, setError } = useDashboard();
+  const { applyLeave, bankCompOff, loading, error, setError, leaveBalance } = useDashboard();
   const [submitted, setSubmitted] = useState(false);
 
   const today = new Date();
