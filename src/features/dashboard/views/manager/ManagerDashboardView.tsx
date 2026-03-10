@@ -252,7 +252,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           {/* CASUAL LEAVE CARD */}
           <ManagerStatCard
             label="Casual Leave"
-            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'CASUAL')?.remainingDays || 0}
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'CASUAL')?.usedDays || 0}
             total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'CASUAL')?.allocatedDays || 1}
             iconType="calendar"
             strokeColor="#f97316"
@@ -261,7 +261,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           {/* SICK LEAVE CARD */}
           <ManagerStatCard
             label="Sick Leave"
-            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'SICK')?.remainingDays || 0}
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'SICK')?.usedDays || 0}
             total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'SICK')?.allocatedDays || 1}
             iconType="pending"
             strokeColor="#3b82f6"
@@ -270,7 +270,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           {/* EARNED LEAVE CARD */}
           <ManagerStatCard
             label="Earned Leave"
-            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.remainingDays || 0}
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.usedDays || 0}
             total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.allocatedDays || 1}
             iconType="leave"
             strokeColor="#6366f1"

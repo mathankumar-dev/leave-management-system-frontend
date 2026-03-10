@@ -77,6 +77,7 @@ const LeaveApplicationForm = () => {
     };
 
     const result = await applyLeave(leavePayload);
+    
     if (result) {
       setSubmitted(true);
       setTimeout(() => setSubmitted(false), 5000);
