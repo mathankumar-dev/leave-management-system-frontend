@@ -13,6 +13,8 @@ import CommentDialog from "../../../../components/ui/CommentDialog";
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
 import ManagerStatCard from "../../components/ManagerStatCard";
 import DashboardDrawer from "../../components/DashBoardDrawer";
+import EmptyStateSVG from "../../../../components/ui/EmpthyStateSVG";
+import ManagerStatCardTeam from "../../components/ManagerStatCardTeam";
 
 const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
@@ -247,9 +249,32 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <ManagerStatCard label="Yearly Balance" value={(dashboardData?.personalStats.yearlyAllocated! - dashboardData?.personalStats.yearlyUsed!) || 0} iconType="leave" />
-          <ManagerStatCard label="Monthly Balance" value={(dashboardData?.personalStats.monthlyAllocated! - dashboardData?.personalStats.monthlyUsed!) || 0} iconType="calendar" />
-          <ManagerStatCard label="My Pending" value={dashboardData?.personalStats.pendingCount || 0} iconType="pending" colorClass="text-amber-600" onClick={() => onNavigate?.("My Leaves")} />
+          {/* CASUAL LEAVE CARD */}
+          <ManagerStatCard
+            label="Casual Leave"
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'CASUAL')?.remainingDays || 0}
+            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'CASUAL')?.allocatedDays || 1}
+            iconType="calendar"
+            strokeColor="#f97316"
+          />
+
+          {/* SICK LEAVE CARD */}
+          <ManagerStatCard
+            label="Sick Leave"
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'SICK')?.remainingDays || 0}
+            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'SICK')?.allocatedDays || 1}
+            iconType="pending"
+            strokeColor="#3b82f6"
+          />
+
+          {/* EARNED LEAVE CARD */}
+          <ManagerStatCard
+            label="Earned Leave"
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.remainingDays || 0}
+            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.allocatedDays || 1}
+            iconType="leave"
+            strokeColor="#6366f1"
+          />
         </div>
       </section>
 
@@ -268,10 +293,10 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           </button>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <ManagerStatCard label="Direct Reports" value={dashboardData?.teamSize || 0} iconType="team" onClick={() => onNavigate?.("Team Members")} />
-          <ManagerStatCard label="Pending Approval Req." value={approvals.length} iconType="pending" colorClass="text-amber-600" onClick={() => requestsRef.current?.scrollIntoView({ behavior: 'smooth' })} />
-          <ManagerStatCard label="Away Today" value={dashboardData?.teamOnLeaveCount || 0} iconType="calendar" colorClass="text-indigo-600" onClick={() => attendanceRef.current?.scrollIntoView({ behavior: 'smooth' })} />
-          <ManagerStatCard label="Approved Today" value={dashboardData?.personalStats.approvedCount || 0} iconType="processed" colorClass="text-emerald-600" />
+          <ManagerStatCardTeam label="Direct Reports" value={dashboardData?.teamSize || 0} iconType="team" onClick={() => onNavigate?.("Team Members")} />
+          <ManagerStatCardTeam label="Pending Approval Req." value={approvals.length} iconType="pending" colorClass="text-amber-600" onClick={() => requestsRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCardTeam label="Away Today" value={dashboardData?.teamOnLeaveCount || 0} iconType="calendar" colorClass="text-indigo-600" onClick={() => attendanceRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCardTeam label="Approved YTD" value={dashboardData?.personalStats.approvedCount || 0} iconType="processed" colorClass="text-emerald-600" />
         </div>
       </section>
 
@@ -311,9 +336,10 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                 </motion.div>
               ))
             ) : (
-              <div className="py-12 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-300">
-                <FaCheckDouble size={24} className="mb-2 opacity-20" />
-                <p className="text-[9px] font-black uppercase tracking-[0.4em]">All caught up</p>
+              <div className="py-16 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-400 bg-slate-50/30">
+                <EmptyStateSVG />
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">All caught up</p>
+                <p className="text-[9px] font-bold uppercase text-slate-300 mt-1">No pending requests to process</p>
               </div>
             )}
           </AnimatePresence>
@@ -341,15 +367,19 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                         Currently Away
                       </p>
                     </div>
-                    {/* Replicating the background icon from StatCard */}
                     <div className="text-slate-100 group-hover:text-slate-200 transition-all duration-300 text-3xl absolute right-4 opacity-40">
                       <FaCalendarAlt />
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="col-span-full py-10 border border-dashed border-slate-200 flex flex-col items-center">
-                  <p className="text-[9px] font-black uppercase text-slate-300 tracking-[0.3em]">No one is on leave today</p>
+                <div className="col-span-full py-16 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-400 bg-slate-50/30">
+                  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-20 mb-4">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Full Attendance Today</p>
+                  <p className="text-[9px] font-bold uppercase text-slate-300 mt-1">No one is on leave today</p>
                 </div>
               )}
             </div>
@@ -357,7 +387,9 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
         </div>
       </section>
 
-      <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Apply Leave")} title="Apply Leave" />
+      {
+        !drawerConfig.isOpen &&
+        <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Apply Leave")} title="Apply Leave" />}
     </motion.div>
   );
 };
