@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 const modules = [
     { name: "LMS", color: "bg-teal-500", x: -120, y: -80, delay: 0 },
     { name: "HR", color: "bg-slate-800", x: 120, y: -80, delay: 0.5 },
-    { name: "Payroll", color: "bg-emerald-600", x: -100, y: 80, delay: 0.2 },
-    { name: "Employee", color: "bg-slate-600", x: 100, y: 80, delay: 0.7 },
+    { name: "Payroll", color: "bg-primary-500", x: -100, y: 80, delay: 0.2 },
+    { name: "Employee", color: "bg-yellow-600", x: 100, y: 80, delay: 0.7 },
 ];
 
 const WorkSphere2D = () => {
@@ -62,7 +62,7 @@ const WorkSphere2D = () => {
                 <div className="absolute inset-0 rounded-full shadow-[inset_0_0_20px_rgba(13,148,136,0.4)] pointer-events-none" />
 
                 <h1 className="z-20 text-2xl font-black text-black pointer-events-none">
-                    Work<span className="text-teal-400">Sphere</span>
+                    Work<span className="text-primary-500">Sphere</span>
                 </h1>
             </motion.div>
 
