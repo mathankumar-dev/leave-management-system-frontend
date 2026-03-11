@@ -45,7 +45,7 @@ export const useNotifications = (employeeId: number) => {
     }
   };
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = async (employeeId : number) => {
     if (!employeeId) return;
     try {
       await notificationService.markAllAsRead(employeeId);

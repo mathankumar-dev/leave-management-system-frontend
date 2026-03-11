@@ -26,6 +26,7 @@ const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
     const isManager = user?.role?.toUpperCase() === 'MANAGER';
+
     const {
         requests,
         loading,
@@ -40,7 +41,7 @@ const PendingApprovalsView: React.FC = () => {
     const [timeFilter, setTimeFilter] = useState("all");
 
     useEffect(() => {
-        if (user?.id && isManager ) {
+        if (user?.id && isManager) {
             fetchWeeklyLeaveSummary(user.id);
             fetchTeamOnLeave(user.id);
         }

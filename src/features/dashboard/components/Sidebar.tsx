@@ -78,7 +78,6 @@ function Sidebar({
             <NameSVG color="#ffffff" isDotNeeded = {true}/>
           </div>
         
-
           <button
             onClick={() => setIsOpen(false)}
             className="md:hidden text-neutral-500 hover:text-white"

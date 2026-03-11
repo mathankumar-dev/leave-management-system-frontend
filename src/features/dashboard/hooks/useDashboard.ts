@@ -266,7 +266,6 @@ export const useDashboard = () => {
   const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
     setLoading(true);
     try {
-      // Replace 'service' with your actual API service name
       const response = await service.getTeamLeaveStats(managerId);
       return response;
     } catch (err: any) {
