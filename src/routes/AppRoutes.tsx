@@ -8,6 +8,8 @@ import ProtectedRoute from "./ProtectedRoute";
 import ForgotPassword from "../features/auth/pages/ForgotPassword";
 import NotFoundPage from "../components/pages/NotFoundPage";
 import HeroPage from "../features/hero/HeroPage";
+import PrivacyPolicy from "../components/pages/PrivacyPolicy";
+import TermsOfService from "../components/pages/TermsOfService";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -47,6 +49,8 @@ const AppRoutes: React.FC = () => {
       </Route>
 
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

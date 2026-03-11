@@ -13,7 +13,7 @@ import CommentDialog from "../../../../components/ui/CommentDialog";
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
 import ManagerStatCard from "../../components/ManagerStatCard";
 import DashboardDrawer from "../../components/DashBoardDrawer";
-import EmptyStateSVG from "../../../../components/ui/EmpthyStateSVG";
+import EmptyStateSVG from "../../../../assets/svg/EmpthyStateSVG";
 import ManagerStatCardTeam from "../../components/ManagerStatCardTeam";
 
 const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
