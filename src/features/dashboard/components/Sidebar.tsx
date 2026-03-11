@@ -1,4 +1,4 @@
-import React from "react";
+
 import {
   FaChevronLeft,
   FaSignOutAlt,
@@ -43,7 +43,7 @@ function Sidebar({
     { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER"] },
     { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","ADMIN"] },
     { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER","ADMIN"] },
-    { name: "Calendar", icon: <FaCalendarAlt />, roles: [ "ADMIN"] },
+    { name: "Calendar", icon: <FaCalendarAlt />, roles: [ "ADMIN","MANAGER","EMPLOYEE","HR"] },
     { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "HR"] },
     { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER" , "ADMIN"] },
     { name: "All Employees", icon: <FaUsers />, roles: ["HR"] },
