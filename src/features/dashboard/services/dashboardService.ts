@@ -99,7 +99,7 @@ export const dashboardService = {
   // =============================
 
   getPendingApprovals: async (managerId: number) => {
-    const response = await api.get(`/leave-approvals/pending/${managerId}`);
+    const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
     return response.data.content;
   },
 

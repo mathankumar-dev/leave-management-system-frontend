@@ -222,7 +222,7 @@ const TeamCalendarView: React.FC = () => {
                   <p className="text-xs font-black text-slate-900 uppercase tracking-tight truncate">
                     {name}
                   </p>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase">
+                  <p className="text-[9px] font-bold text-gray-500 uppercase">
                     {new Date(date).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",

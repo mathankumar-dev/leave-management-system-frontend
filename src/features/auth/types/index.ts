@@ -1,5 +1,5 @@
 
-export type UserRole = "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN";
+export type UserRole = "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN" | "TEAM_LEADER";
 
 export interface LoginCredentials {
   email: string;
@@ -14,7 +14,6 @@ export interface AuthResponse {
 }
 
 export interface User {
-  managerName: string;
   id: number;
   name: string;
   email: string;
