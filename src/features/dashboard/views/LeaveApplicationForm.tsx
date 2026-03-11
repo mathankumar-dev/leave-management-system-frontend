@@ -109,13 +109,13 @@ if (formData.category !== "COMP_OFF") {
     ...(formData.isHalfDay && { halfDayType: formData.halfDayType })
   };
 
-  const result = await applyLeave(leavePayload);
-  if (result) {
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000);
-  }
-};
-
+    const result = await applyLeave(leavePayload);
+    
+    if (result) {
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 5000);
+    }
+  };
 
   if (submitted) {
     return (

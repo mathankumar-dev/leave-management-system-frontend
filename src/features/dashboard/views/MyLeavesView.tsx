@@ -6,6 +6,7 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import type { LeaveRecord } from "../types";
 import CustomLoader from "../../../components/ui/CustomLoader";
 import EditLeaveModal from "../components/EditLeaveModal";
+import { formatTimeAgo } from "../../../utils/formatTimeAgo";
 
 const MyLeavesView: React.FC = () => {
   const { fetchMyLeaves, cancelLeave, editLeave, loading } = useDashboard();
@@ -55,8 +56,7 @@ const MyLeavesView: React.FC = () => {
     if (statusFilter !== "ALL") {
       list = list.filter((item) => item.status === statusFilter);
     }
-    list.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-
+    list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     return list.map((item) => ({
       ...item,
       displayType: item.leaveType.replace(/_/g, " "),
@@ -83,9 +83,8 @@ const MyLeavesView: React.FC = () => {
               <button
                 key={tab}
                 onClick={() => setStatusFilter(tab)}
-                className={`px-6 py-2 rounded-sm text-xs font-black transition-all snap-start ${
-                  statusFilter === tab ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
-                }`}
+                className={`px-6 py-2 rounded-sm text-xs font-black transition-all snap-start ${statusFilter === tab ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500"
+                  }`}
               >
                 {tab}
               </button>
@@ -106,13 +105,13 @@ const MyLeavesView: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <StatusBadge status={item.status} />
                   {item.status === "PENDING" && (
-                     <ActionMenu 
-                        item={item} 
-                        activeMenu={activeMenu} 
-                        setActiveMenu={setActiveMenu} 
-                        onEdit={() => setEditingLeave(item)} 
-                        onCancel={() => handleCancel(item.id)}
-                     />
+                    <ActionMenu
+                      item={item}
+                      activeMenu={activeMenu}
+                      setActiveMenu={setActiveMenu}
+                      onEdit={() => setEditingLeave(item)}
+                      onCancel={() => handleCancel(item.id)}
+                    />
                   )}
                 </div>
               </div>
@@ -137,6 +136,7 @@ const MyLeavesView: React.FC = () => {
               <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase">Date Range</th>
               <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase">Status</th>
               <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase text-right">Actions</th>
+              <th className="px-6 py-4 text-[11px] font-black text-slate-500 uppercase"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -148,24 +148,27 @@ const MyLeavesView: React.FC = () => {
                 <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
                 <td className="px-6 py-4 text-right">
                   {item.status === "PENDING" ? (
-                    <ActionMenu 
-                      item={item} 
-                      activeMenu={activeMenu} 
-                      setActiveMenu={setActiveMenu} 
-                      onEdit={() => setEditingLeave(item)} 
+                    <ActionMenu
+                      item={item}
+                      activeMenu={activeMenu}
+                      setActiveMenu={setActiveMenu}
+                      onEdit={() => setEditingLeave(item)}
                       onCancel={() => handleCancel(item.id)}
                     />
+                    
                   ) : (
                     <span className="text-slate-300 text-[10px] font-bold uppercase italic">Finalized</span>
                   )}
                 </td>
+                <td className="px-6 py-4 text-sm text-gray-500">{formatTimeAgo(item.createdAt)}</td>
+
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <EditLeaveModal 
+      <EditLeaveModal
         isOpen={!!editingLeave}
         leave={editingLeave}
         onClose={() => setEditingLeave(null)}
@@ -190,8 +193,8 @@ const ActionMenu = ({ item, activeMenu, setActiveMenu, onEdit, onCancel }: any) 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -5 }} 
-            animate={{ opacity: 1, scale: 1, y: 0 }} 
+            initial={{ opacity: 0, scale: 0.95, y: -5 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -5 }}
             className="absolute right-0 mt-1 w-44 bg-white border border-slate-200 rounded-sm  z-[60] overflow-hidden"
           >

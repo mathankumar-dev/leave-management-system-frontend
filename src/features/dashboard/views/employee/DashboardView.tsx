@@ -8,6 +8,7 @@ import LeaveDetailsDrawer from "../../components/LeaveDetailsDrawer";
 import { useDashboard } from "../../hooks/useDashboard";
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
 import { useAuth } from "../../../auth/hooks/useAuth";
+import CustomLoader from "../../../../components/ui/CustomLoader";
 
 export type DashboardScope = "SELF" | "TEAM" | "ALL";
 
@@ -64,6 +65,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       setFetching(true);
 
       const data = await fetchDashboard(employeeId);
+
+      const monthlyBalance = data.monthlyUsed > 0 ? data.monthlyUsed : 0;
 
       if (data) {
        const newStats: StatItem[] = [
@@ -154,16 +157,7 @@ const handleFABClick = () => {
 
   if (fetching) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1 }}
-          className="w-10 h-10 border-4 border-indigo-400/30 border-t-indigo-600 rounded-full"
-        />
-        <p className="text-slate-500 text-sm font-medium animate-pulse">
-          Loading dashboard data...
-        </p>
-      </div>
+        <CustomLoader label="Loading dashboard ..." />
     );
   }
   

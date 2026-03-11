@@ -11,6 +11,7 @@ import type {
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
+  ManagerDashBoardResponse,
 } from "../types";
 
 
@@ -135,13 +136,13 @@ const fetchDashboard = useCallback(async (employeeId: number) => {
 
   /* ================= NOTIFICATIONS ================= */
 
-  
 
-  
+
+
 
   /* ================= CALENDAR (FIXED) ================= */
 
-  
+
 
   /* ================= LEAVE ACTIONS ================= */
 
@@ -213,20 +214,21 @@ const fetchDashboard = useCallback(async (employeeId: number) => {
     }
   }, []);
 
-  // Add this to your useDashboard.ts
-  const fetchManagerDashboard = useCallback(async (id: number) => {
-    setLoading(true);
-    try {
-      // Calling the service with the dynamic ID
-      const response = await service.getManagerDashboard(id);
-      return response;
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch manager data");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchManagerDashboard = useCallback(
+    async (id: number): Promise<ManagerDashBoardResponse | null> => {
+      setLoading(true);
+      try {
+        const response = await service.getManagerDashboard(id);
+        return response;
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch manager data");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
 
   const [filters, setFilters] = useState({
@@ -326,7 +328,7 @@ const fetchDashboard = useCallback(async (employeeId: number) => {
 
     applyLeave,
     getTeamMembers,
-   
+
     removeLeaveType,
     cancelLeave,
     editLeave,

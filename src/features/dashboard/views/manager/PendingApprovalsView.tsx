@@ -25,6 +25,7 @@ interface PendingRequest {
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
+    const isManager = user?.role?.toUpperCase() === 'MANAGER';
     const {
         requests,
         loading,
@@ -37,8 +38,6 @@ const PendingApprovalsView: React.FC = () => {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
-
-    const isManager = user?.role?.toUpperCase() === 'MANAGER';
 
     useEffect(() => {
         if (user?.id && isManager) {

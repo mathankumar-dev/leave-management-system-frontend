@@ -18,8 +18,15 @@ const StatCard: React.FC<StatCardProps> = ({
   period = "Cycle 2026", 
   onClick 
 }) => {
-  const percent = total > 0 ? Math.round((used / total) * 100) : 0;
-  const daysLeft = total - used;
+  let percent = total > 0 ? Math.round((used / total) * 100) : 0;
+  if(percent > 100){
+    percent = 100;
+  }
+  let daysLeft = total - used;
+
+  if(daysLeft < 0) {
+    daysLeft = 0;
+  }
   
   const theme = {
     indigo: { text: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100", ring: "#4f46e5" },

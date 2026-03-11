@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaCalendarAlt, FaCommentDots, FaArrowRight,
@@ -7,19 +7,28 @@ import {
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../../auth/hooks/useAuth";
 import CustomLoader from "../../../../components/ui/CustomLoader";
-import type { LeaveDecision } from "../../types";
+import type { LeaveDecision, ManagerDashBoardResponse } from "../../types";
 import { notify } from "../../../../utils/notifications";
 import CommentDialog from "../../../../components/ui/CommentDialog";
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
 import ManagerStatCard from "../../components/ManagerStatCard";
+import DashboardDrawer from "../../components/DashBoardDrawer";
+import EmptyStateSVG from "../../../../assets/svg/EmpthyStateSVG";
+import ManagerStatCardTeam from "../../components/ManagerStatCardTeam";
 
-const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
+const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
-  const { fetchManagerDashboard, fetchDashboard, processApproval, loading: dashboardLoading } = useDashboard();
+  const { fetchManagerDashboard, processApproval, loading: dashboardLoading } = useDashboard();
 
-  const [managerData, setManagerData] = useState<any>(null);
-  const [personalData, setPersonalData] = useState<any>(null);
+  const [dashboardData, setDashboardData] = useState<ManagerDashBoardResponse>();
   const [approvals, setApprovals] = useState<any[]>([]);
+  const attendanceRef = useRef<HTMLDivElement>(null);
+  const requestsRef = useRef<HTMLDivElement>(null);
+
+  const [drawerConfig, setDrawerConfig] = useState<{
+    isOpen: boolean;
+    type: 'PERSONAL' | 'TEAM' | null;
+  }>({ isOpen: false, type: null });
 
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean;
@@ -27,18 +36,18 @@ const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> =
     status: LeaveDecision | null
   }>({ isOpen: false, req: null, status: null });
 
+
+
   const loadAllData = useCallback(async () => {
     if (!user?.id) return;
-    const [mngData, persData] = await Promise.all([
-      fetchManagerDashboard(user.id),
-      fetchDashboard(user.id)
-    ]);
-    if (mngData) {
-      setManagerData(mngData);
-      setApprovals(mngData.pendingTeamRequests || []);
+
+    const data = await fetchManagerDashboard(user.id);
+
+    if (data) {
+      setDashboardData(data);
+      setApprovals(data.pendingTeamRequests || []);
     }
-    if (persData) setPersonalData(persData);
-  }, [user?.id, fetchManagerDashboard, fetchDashboard]);
+  }, [user?.id, fetchManagerDashboard]);
 
   useEffect(() => {
     if (!authLoading) loadAllData();
@@ -55,9 +64,10 @@ const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> =
     if (success) {
       notify.leaveAction(status, req.employeeName || req.employee);
       setApprovals((prev) => prev.filter((item) => item.leaveId !== req.leaveId));
-      setManagerData((prev: any) => ({
+
+      setDashboardData((prev: any) => ({
         ...prev,
-        approvedCount: status === 'APPROVED' ? prev.approvedCount + 1 : prev.approvedCount,
+        approvedCount: status === 'APPROVED' ? (prev.approvedCount || 0) + 1 : (prev.approvedCount || 0),
       }));
       setDialogConfig({ isOpen: false, req: null, status: null });
     }
@@ -78,6 +88,138 @@ const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> =
         onSubmit={(comment: string) => executeDecision(dialogConfig.req, dialogConfig.status!, comment)}
       />
 
+
+      <DashboardDrawer
+        isOpen={drawerConfig.isOpen}
+        onClose={() => setDrawerConfig({ isOpen: false, type: null })}
+        title={drawerConfig.type === 'PERSONAL' ? 'My Leave Ledger' : 'Team Governance Details'}
+        subtitle={drawerConfig.type === 'PERSONAL' ? user?.name || '' : 'Direct Reports Overview'}
+      >
+        {drawerConfig.type === 'PERSONAL' ? (
+          <div className="space-y-6">
+            <div className="p-4 bg-slate-900 text-white rounded-sm italic ">
+              <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Status: Active</p>
+              <p className="text-xs font-bold">You have {dashboardData?.personalStats.yearlyBalance} days remaining in your annual quota.</p>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Balance Breakdown</h4>
+              <div className="grid grid-cols-1 gap-3">
+                {/* Reusing StatCard visual logic manually for drawer consistency */}
+                {dashboardData?.personalStats.breakdown.map((item) => (
+                  <div
+                    key={item.leaveType}
+                    className="flex flex-col gap-2 p-4 border-2 border-slate-100 hover:border-slate-200 transition-all bg-white"
+                  >
+                    {/* Leave Type Title */}
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                      {item.leaveType.replace('_', ' ')}
+                    </span>
+
+                    <div className="flex justify-between items-end">
+                      {/* Left Side: Used / Total */}
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          Used / Total
+                        </span>
+                        <span className="text-lg font-black italic text-slate-900">
+                          {item.usedDays}d
+                          <span className="text-slate-300 font-medium mx-1">/</span>
+                          {item.allocatedDays}d
+                        </span>
+                      </div>
+
+                      {/* Right Side: Remaining */}
+                      <div className="text-right flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          Remaining
+                        </span>
+                        <span className={`text-lg font-black italic ${item.remainingDays <= 1 ? 'text-red-500' : 'text-indigo-600'}`}>
+                          {item.remainingDays}d
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Optional: Add a small indicator for half-days if they exist */}
+                    {item.halfDayCount > 0 && (
+                      <span className="text-[9px] font-bold text-slate-400">
+                        Includes {item.halfDayCount} half-day{item.halfDayCount > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                ))}
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Comp-Off Bank</span>
+                  <span className="text-lg font-black italic">{dashboardData?.personalStats.compoffBalance || 0}d</span>
+                </div>
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Carry Forward</span>
+                  <span className="text-lg font-black italic">{dashboardData?.personalStats.carryForwardRemaining || 0}d</span>
+                </div>
+                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Monthly Stats</span>
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
+                      <span className="text-lg font-black italic text-slate-900">
+                        {dashboardData?.personalStats.monthlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.monthlyAllocated}d
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
+                      <span className="text-lg font-black italic text-indigo-600">
+                        {dashboardData?.personalStats.monthlyBalance || 0}d
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Yearly Stats</span>
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
+                      <span className="text-lg font-black italic text-slate-900">
+                        {dashboardData?.personalStats.yearlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.yearlyAllocated}d
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
+                      <span className="text-lg font-black italic text-indigo-600">
+                        {dashboardData?.personalStats.yearlyBalance || 0}d
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50 border-rose-100">
+                  <span className="text-[10px] font-black uppercase text-rose-400">Loss of Pay (%)</span>
+                  <span className="text-lg font-black italic text-rose-600">{dashboardData?.personalStats.lossOfPayPercentage || 0}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="p-4 border-2 border-slate-900  bg-white">
+              <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Managed Reports</p>
+              <p className="text-3xl font-black italic tracking-tighter">{dashboardData?.teamSize} Members</p>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Team Performance</h4>
+              <div className="flex justify-between p-4 border border-slate-200">
+                <span className="text-[10px] font-black uppercase">Approved this year</span>
+                <span className="text-sm font-black italic text-emerald-600">{dashboardData?.personalStats.approvedCount}</span>
+              </div>
+              <div className="flex justify-between p-4 border border-slate-200">
+                <span className="text-[10px] font-black uppercase">Rejected this year</span>
+                <span className="text-sm font-black italic text-rose-600">{dashboardData?.personalStats.rejectedCount}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </DashboardDrawer >
       {/* HEADER */}
       <div className="flex justify-between items-center border-b border-slate-200 pb-1 gap-4">
         <div>
@@ -93,42 +235,68 @@ const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> =
       </div>
 
       {/* MY LEAVE CREDITS */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <FaChartPie className="text-indigo-600" size={14} />
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">My Leave Credits</h3>
+      <section className="space-y-4 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FaChartPie className="text-indigo-600" size={14} />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">My Leave Credits</h3>
+          </div>
+          <button
+            onClick={() => setDrawerConfig({ isOpen: true, type: 'PERSONAL' })}
+            className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
+          >
+            View Details
+          </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* CASUAL LEAVE CARD */}
           <ManagerStatCard
-            label="Yearly Balance"
-            value={(personalData?.yearlyAllocated - personalData?.yearlyUsed) || 0}
-            iconType="leave"
-          />
-          <ManagerStatCard
-            label="Monthly Balance"
-            value={(personalData?.monthlyAllocated - personalData?.monthlyUsed) || 0}
+            label="Casual Leave"
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'CASUAL')?.usedDays || 0}
+            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'CASUAL')?.allocatedDays || 1}
             iconType="calendar"
+            strokeColor="#f97316"
           />
+
+          {/* SICK LEAVE CARD */}
           <ManagerStatCard
-            label="My Pending"
-            value={personalData?.pendingCount || 0}
+            label="Sick Leave"
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'SICK')?.usedDays || 0}
+            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'SICK')?.allocatedDays || 1}
             iconType="pending"
-            colorClass="text-amber-600"
+            strokeColor="#3b82f6"
+          />
+
+          {/* EARNED LEAVE CARD */}
+          <ManagerStatCard
+            label="Earned Leave"
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.usedDays || 0}
+            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.allocatedDays || 1}
+            iconType="leave"
+            strokeColor="#6366f1"
           />
         </div>
       </section>
 
       {/* TEAM GOVERNANCE */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <FaUserShield className="text-indigo-600" size={14} />
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Team Governance</h3>
+      <section className="space-y-4 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FaUserShield className="text-indigo-600" size={14} />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Team Governance</h3>
+          </div>
+          <button
+            onClick={() => setDrawerConfig({ isOpen: true, type: 'TEAM' })}
+            className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
+          >
+            View Details
+          </button>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <ManagerStatCard label="Direct Reports" value={managerData?.teamSize || 0} iconType="team" />
-          <ManagerStatCard label="Approval Req." value={approvals.length} iconType="pending" colorClass="text-amber-600" />
-          <ManagerStatCard label="Away Today" value={managerData?.teamOnLeaveCount || 0} iconType="calendar" colorClass="text-indigo-600" />
-          <ManagerStatCard label="Processed" value={managerData?.approvedCount || 0} iconType="processed" colorClass="text-emerald-600" />
+          <ManagerStatCardTeam label="Direct Reports" value={dashboardData?.teamSize || 0} iconType="team" onClick={() => onNavigate?.("Team Members")} />
+          <ManagerStatCardTeam label="Pending Approval Req." value={approvals.length} iconType="pending" colorClass="text-amber-600" onClick={() => requestsRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCardTeam label="Away Today" value={dashboardData?.teamOnLeaveCount || 0} iconType="calendar" colorClass="text-indigo-600" onClick={() => attendanceRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCardTeam label="Approved YTD" value={dashboardData?.personalStats.approvedCount || 0} iconType="processed" colorClass="text-emerald-600" />
         </div>
       </section>
 
@@ -143,12 +311,12 @@ const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> =
           </button>
         </div>
 
-        <div className="space-y-3">
+        <div ref={requestsRef} className="space-y-3">
           <AnimatePresence mode="popLayout">
             {approvals.length > 0 ? (
               approvals.slice(0, 3).map((req) => (
                 <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={req.leaveId} className="bg-white border border-slate-200 rounded-sm p-4 flex flex-col md:flex-row md:items-center gap-4 hover:border-slate-900 transition-all">
-                  <div className="flex items-center gap-3 min-w-[200px]">
+                  <div className="flex items-center gap-3 min-w-50">
                     <div className="w-10 h-10 bg-slate-900 text-white rounded-sm flex items-center justify-center font-black text-xs ">
                       {(req.employeeName || "E").charAt(0)}
                     </div>
@@ -168,18 +336,62 @@ const MergedManagerDashboard: React.FC<{ onNavigate?: (tab: string) => void }> =
                 </motion.div>
               ))
             ) : (
-              <div className="py-12 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-300">
-                <FaCheckDouble size={24} className="mb-2 opacity-20" />
-                <p className="text-[9px] font-black uppercase tracking-[0.4em]">All caught up</p>
+              <div className="py-16 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-400 bg-slate-50/30">
+                <EmptyStateSVG />
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">All caught up</p>
+                <p className="text-[9px] font-bold uppercase text-slate-300 mt-1">No pending requests to process</p>
               </div>
             )}
           </AnimatePresence>
+
+          <section ref={attendanceRef} className="space-y-4 pt-4">
+            <div className="flex items-center gap-2">
+              <FaCalendarAlt className="text-indigo-600" size={14} />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                Attendance Overview
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {dashboardData?.teamOnLeaveToday?.length! > 0 ? (
+                dashboardData?.teamOnLeaveToday.map((emp: any, idx: number) => (
+                  <div key={idx} className="bg-white p-5 rounded-sm border border-slate-200 shadow-sm flex items-center justify-between group relative overflow-hidden transition-all hover:border-slate-900">
+                    <div className="relative z-10">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-slate-500">
+                        {emp.leaveType}
+                      </p>
+                      <p className="text-xl font-black text-slate-900 tracking-tight italic transition-transform group-hover:-translate-y-0.5 uppercase">
+                        {emp.employeeName}
+                      </p>
+                      <p className="text-[9px] font-bold text-emerald-600 uppercase mt-1 italic">
+                        Currently Away
+                      </p>
+                    </div>
+                    <div className="text-slate-100 group-hover:text-slate-200 transition-all duration-300 text-3xl absolute right-4 opacity-40">
+                      <FaCalendarAlt />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-16 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-400 bg-slate-50/30">
+                  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-20 mb-4">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Full Attendance Today</p>
+                  <p className="text-[9px] font-bold uppercase text-slate-300 mt-1">No one is on leave today</p>
+                </div>
+              )}
+            </div>
+          </section>
         </div>
       </section>
 
-      <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Apply Leave")} title="Apply Leave" />
+      {
+        !drawerConfig.isOpen &&
+        <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Apply Leave")} title="Apply Leave" />}
     </motion.div>
   );
 };
 
-export default MergedManagerDashboard;
+export default ManagerDashboardView;
