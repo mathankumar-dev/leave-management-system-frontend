@@ -23,6 +23,8 @@ const LeaveApplicationForm = () => {
   const oneMonthFromNow = new Date();
   oneMonthFromNow.setMonth(today.getMonth() + 1);
 
+  console.log("Leave Balance from API:", leaveBalance);
+
   const [formData, setFormData] = useState({
     category: "CASUAL" as LeaveType | "COMP_OFF",
     startDate: null as Date | null,
@@ -39,49 +41,81 @@ const LeaveApplicationForm = () => {
     COMP_OFF: "Bank Comp-Off",
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!formData.startDate) return;
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError(null);
 
-    const rawBackupId = Cookies.get("lms_user_id");
-    const employeeId = user?.id || (rawBackupId ? parseInt(rawBackupId) : 4);
+  
+  if (!formData.startDate) {
+    setError("Please select a start date.");
+    return;
+  }
 
-    if (formData.category === "COMP_OFF") {
-      const compOffPayload = {
-        employeeId,
-        entries: [{
-          workedDate: formData.startDate.toISOString().split("T")[0],
-          days: formData.isHalfDay ? 0.5 : 1.0,
-          plannedLeaveDate: null,
-        }],
-      };
-      const result = await bankCompOff(compOffPayload);
-      if (result) {
-        setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 5000);
-      }
-      return;
-    }
+  // 2. Calculate requested days
+  let requestedDays = 1;
+  if (formData.isHalfDay) {
+    requestedDays = 0.5;
+  } else if (formData.endDate && formData.startDate) {
+    const start = new Date(formData.startDate).getTime();
+    const end = new Date(formData.endDate).getTime();
+    const diffTime = Math.abs(end - start);
+    requestedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  }
 
-    const leavePayload: LeaveApplication = {
+ 
+if (formData.category !== "COMP_OFF") {
+  // Narrow the type to exclude COMP_OFF
+  const categoryKey = formData.category as Exclude<LeaveType, "COMP_OFF">;
+  const availableBalance = leaveBalance?.[categoryKey] || 0;
+
+  if (requestedDays > availableBalance) {
+    setError(
+      `Insufficient balance. You requested ${requestedDays} day(s), but only have ${availableBalance} ${leaveLabels[formData.category]} left.`
+    );
+    return;
+  }
+}
+
+  // 4. Existing Logic for API calls
+  const rawBackupId = Cookies.get("lms_user_id");
+  const employeeId = user?.id || (rawBackupId ? parseInt(rawBackupId) : 4);
+
+  if (formData.category === "COMP_OFF") {
+    const compOffPayload = {
       employeeId,
-      leaveType: formData.category as LeaveType,
-      startDate: formData.startDate.toISOString().split("T")[0],
-      endDate: formData.isHalfDay
-        ? formData.startDate.toISOString().split("T")[0]
-        : formData.endDate!.toISOString().split("T")[0],
-      reason: formData.reason,
-      confirmLossOfPay: false,
-      ...(formData.isHalfDay && { halfDayType: formData.halfDayType })
+      entries: [{
+        workedDate: formData.startDate.toISOString().split("T")[0],
+        days: formData.isHalfDay ? 0.5 : 1.0,
+        plannedLeaveDate: null,
+      }],
     };
-
-    const result = await applyLeave(leavePayload);
+    const result = await bankCompOff(compOffPayload);
     if (result) {
       setSubmitted(true);
       setTimeout(() => setSubmitted(false), 5000);
     }
+    return;
+  }
+
+  const leavePayload: LeaveApplication = {
+    employeeId,
+    leaveType: formData.category as LeaveType,
+    startDate: formData.startDate.toISOString().split("T")[0],
+    endDate: formData.isHalfDay
+      ? formData.startDate.toISOString().split("T")[0]
+      : formData.endDate!.toISOString().split("T")[0],
+    reason: formData.reason,
+    confirmLossOfPay: false,
+    ...(formData.isHalfDay && { halfDayType: formData.halfDayType })
   };
+
+  const result = await applyLeave(leavePayload);
+  if (result) {
+    setSubmitted(true);
+    setTimeout(() => setSubmitted(false), 5000);
+  }
+};
+
 
   if (submitted) {
     return (
@@ -127,20 +161,35 @@ const LeaveApplicationForm = () => {
               <HiOutlineClock size={16} /> 01. Leave Category
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {(["SICK", "CASUAL", "EARNED_LEAVES", "COMP_OFF"] as const).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => { setError(null); setFormData({ ...formData, category: type }); }}
-                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${formData.category === type
-                      ? "bg-slate-900 border-slate-900 text-white shadow-md"
-                      : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-                    }`}
-                >
-                  {leaveLabels[type]}
-                </button>
-              ))}
-            </div>
+  {(["SICK", "CASUAL", "EARNED_LEAVES", "COMP_OFF"] as const).map((type) => (
+    <button
+      key={type}
+      type="button"
+      onClick={() => { 
+        setError(null); 
+        setFormData({ ...formData, category: type }); 
+      }}
+      className={`py-2 px-4 text-sm font-medium rounded-md border transition-all flex flex-col items-center justify-center min-h-[64px] ${
+        formData.category === type
+          ? "bg-slate-900 border-slate-900 text-white shadow-md"
+          : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+      }`}
+    >
+      <span>{leaveLabels[type]}</span>
+
+      {/* --- Safe Balance Display --- */}
+      {type !== "COMP_OFF" && leaveBalance && (
+        <span className={`text-[10px] mt-1 font-bold ${
+          formData.category === type ? "text-slate-300" : "text-indigo-500"
+        }`}>
+          Available: {leaveBalance[type as Exclude<LeaveType, "COMP_OFF">] || 0}
+        </span>
+      )}
+      {/* ------------------------ */}
+
+    </button>
+  ))}
+</div>
           </div>
 
           {/* 02. Dates */}
