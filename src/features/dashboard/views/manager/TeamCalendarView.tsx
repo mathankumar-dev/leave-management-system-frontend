@@ -37,7 +37,7 @@ const TeamCalendarView: React.FC = () => {
   const daysInMonthCount = new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const monthName = currentDate.toLocaleString("default", { month: "long" });
-  
+
   const daysArray = useMemo(
     () => Array.from({ length: daysInMonthCount }, (_, i) => i + 1),
     [daysInMonthCount]
@@ -52,17 +52,17 @@ const TeamCalendarView: React.FC = () => {
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20">
-      
+
       <div className="flex-1 bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
-        
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 gap-4 bg-slate-50/30">
           <div>
             <h2 className="text-xl font-black text-slate-900 uppercase italic tracking-tighter">
               {monthName} {year}
             </h2>
             <div className="flex items-center gap-2 mt-1">
-               <span className="inline-block w-2 h-2 rounded-full bg-indigo-500"></span>
-               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Attendance Overview</p>
+              <span className="inline-block w-2 h-2 rounded-full bg-indigo-500"></span>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Attendance Overview</p>
             </div>
           </div>
 
@@ -104,9 +104,9 @@ const TeamCalendarView: React.FC = () => {
               const holiday = PUBLIC_HOLIDAYS_2026[dateKey];
               const isSelected = selectedDay === day;
               const dailyLeaves = teamCalendar[dateKey] || [];
-              const isToday = 
-                new Date().getDate() === day && 
-                new Date().getMonth() === month && 
+              const isToday =
+                new Date().getDate() === day &&
+                new Date().getMonth() === month &&
                 new Date().getFullYear() === year;
 
               return (
@@ -127,13 +127,13 @@ const TeamCalendarView: React.FC = () => {
 
                   <div className="mt-1 hidden sm:block space-y-1 overflow-hidden">
                     {holiday && (
-                       <div className="px-1.5 py-0.5 bg-rose-50 text-rose-600 text-[8px] font-black uppercase rounded-sm truncate border border-rose-100">
+                      <div className="px-1.5 py-0.5 bg-rose-50 text-rose-600 text-[8px] font-black uppercase rounded-sm truncate border border-rose-100">
                         {holiday}
-                       </div>
+                      </div>
                     )}
                     {dailyLeaves.slice(0, 2).map((emp, i) => (
-                      <div key={i} className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[8px] font-black uppercase rounded-sm truncate">
-                        {emp.employeeName.split(" ")[0]}
+                      <div key={i} className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-100 text-red-500 text-[8px] font-black uppercase rounded-sm truncate">
+                        {emp.employeeName}
                       </div>
                     ))}
                   </div>
@@ -150,7 +150,7 @@ const TeamCalendarView: React.FC = () => {
       </div>
 
       <div className="w-full lg:w-80 space-y-3">
-        
+
         <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Daily Activity</p>
@@ -159,7 +159,7 @@ const TeamCalendarView: React.FC = () => {
 
           <div className="p-4 min-h-[300px]">
             <AnimatePresence mode="wait">
-              <motion.div 
+              <motion.div
                 key={selectedDateKey}
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -177,14 +177,14 @@ const TeamCalendarView: React.FC = () => {
                     <div key={emp.employeeId} className="border border-slate-100 p-3 rounded-sm hover:border-indigo-200 transition-all">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-slate-100 rounded-sm flex items-center justify-center text-[10px] font-black text-slate-600 border border-slate-200">
-                           {emp.employeeName.split(" ").map(n => n[0]).join("")}
+                          {emp.employeeName.split(" ").map(n => n[0]).join("")}
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-black text-slate-900 uppercase tracking-tight truncate">{emp.employeeName}</p>
                           <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Out of Office</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex gap-2 mt-3">
                         <div className="flex-1 p-2 bg-slate-50 border border-slate-100 rounded-sm">
                           <p className="text-[8px] font-black text-slate-400 uppercase">Balance</p>
@@ -209,15 +209,33 @@ const TeamCalendarView: React.FC = () => {
             </AnimatePresence>
           </div>
         </div>
-
-        <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-sm">
-           <div className="flex items-center gap-2 mb-2 text-indigo-600">
-              <FaInfoCircle size={12} />
-              <p className="text-[9px] font-black uppercase tracking-widest">Help Center</p>
-           </div>
-           <p className="text-[10px] font-bold text-indigo-900/60 leading-relaxed uppercase tracking-tight italic">
-             Data is updated every 24 hours from the central payroll registry.
-           </p>
+        <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden mt-3">
+          <div className="p-4 border-b border-slate-100 bg-slate-50">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Upcoming Holidays 2026
+            </p>
+          </div>
+          <div className="p-4 max-h-75 overflow-y-auto space-y-2">
+            {Object.entries(PUBLIC_HOLIDAYS_2026).map(([date, name]) => (
+              <div key={date} className="flex items-center justify-between p-2 border-b border-slate-50 last:border-0">
+                <div className="min-w-0">
+                  <p className="text-xs font-black text-slate-900 uppercase tracking-tight truncate">
+                    {name}
+                  </p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase">
+                    {new Date(date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      weekday: "short"
+                    })}
+                  </p>
+                </div>
+                <div className="px-2 py-1 bg-rose-50 text-rose-600 text-[8px] font-black uppercase rounded-sm border border-rose-100">
+                  Holiday
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
