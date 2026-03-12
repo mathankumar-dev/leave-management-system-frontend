@@ -11,6 +11,7 @@ import type {
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
+  ManagerDashBoardResponse,
 } from "../types";
 import type { CalendarScope } from "../views/employee/CalendarView";
 
@@ -132,30 +133,29 @@ export const useDashboard = () => {
 
   /* ================= NOTIFICATIONS ================= */
 
-  
 
-  
+
+
 
   /* ================= CALENDAR (FIXED) ================= */
 
-  
+
 
   /* ================= LEAVE ACTIONS ================= */
-
-  const applyLeave = useCallback(async (formData: LeaveApplication) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await service.submitLeaveRequest(formData);
-      return result;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || "Submission failed";
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+const applyLeave = useCallback(async (data: FormData ) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const result = await service.submitLeaveRequest(data);
+    return result;
+  } catch (err: any) {
+    const errorMessage = err.response?.data?.message || err.message || "Submission failed";
+    setError(errorMessage);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   // const fetchLeaveTypes = useCallback(async () => {
   //   setLoading(true);
@@ -210,18 +210,21 @@ export const useDashboard = () => {
     }
   }, []);
 
-  const fetchManagerDashboard = useCallback(async (id: number) => {
-    setLoading(true);
-    try {
-      const response = await service.getManagerDashboard(id);
-      return response;
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch manager data");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchManagerDashboard = useCallback(
+    async (id: number): Promise<ManagerDashBoardResponse | null> => {
+      setLoading(true);
+      try {
+        const response = await service.getManagerDashboard(id);
+        return response;
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch manager data");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
 
   const [filters, setFilters] = useState({
@@ -262,7 +265,6 @@ export const useDashboard = () => {
   const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
     setLoading(true);
     try {
-      // Replace 'service' with your actual API service name
       const response = await service.getTeamLeaveStats(managerId);
       return response;
     } catch (err: any) {
@@ -321,7 +323,7 @@ export const useDashboard = () => {
 
     applyLeave,
     getTeamMembers,
-   
+
     removeLeaveType,
     cancelLeave,
     editLeave,

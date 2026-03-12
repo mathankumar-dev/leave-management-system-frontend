@@ -2,7 +2,7 @@ export type EventType = 'LEAVE_APPLIED' | 'LEAVE_APPROVED' | 'LEAVE_REJECTED' | 
 
 export type Channel = 'EMAIL' | 'SMS' | 'IN_APP';
 
-export type NotificationStatus = 'READ' | 'SENT'; 
+export type NotificationStatus = 'READ' | 'UNREAD'; 
 
 export interface NotificationResponse {
     id: number;

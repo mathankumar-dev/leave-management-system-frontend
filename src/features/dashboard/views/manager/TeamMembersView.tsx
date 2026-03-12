@@ -120,9 +120,9 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                     <thead className="bg-slate-50 border-b border-slate-200">
                         <tr>
                             <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider">Member</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Remaining Leave</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Comp-Off</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Loss of Pay</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Designation</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Skills</th>
+                            <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Salary Status</th>
                             <th className="px-6 py-4 w-20"></th>
                         </tr>
                     </thead>
@@ -163,7 +163,7 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                                     </td>
 
                                     <td className="px-6 py-4">
-                                        <div className="flex flex-col items-center max-w-[100px] mx-auto">
+                                        <div className="flex flex-col items-center max-w-25 mx-auto">
                                             <span className={`text-[10px] font-black mb-1 ${emp.lopPercentage! > 0 ? "text-rose-500" : "text-emerald-500"}`}>
                                                 {emp.lopPercentage}%
                                             </span>

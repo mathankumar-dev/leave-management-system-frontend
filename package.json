@@ -18,6 +18,8 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/vite": "^4.1.18",
     "@types/react-datepicker": "^6.2.0",
+    "@unovis/react": "^1.6.4",
+    "@unovis/ts": "^1.6.4",
     "axios": "^1.13.5",
     "class-variance-authority": "^0.7.1",
     "framer-motion": "^12.34.1",

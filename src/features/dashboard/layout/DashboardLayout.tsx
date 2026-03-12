@@ -29,6 +29,8 @@ import TeamMembersView from "../views/manager/TeamMembersView";
 
 /* ---------------- MODALS ---------------- */
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
+import ODRequestForm from "../../../common/OtherRequestForm";
+import OtherRequestForm from "../../../common/OtherRequestForm";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -36,6 +38,7 @@ const ROLES = {
   HR: "HR",
   MANAGER: "MANAGER",
   EMPLOYEE: "EMPLOYEE",
+  TEAMLEADER : "TEAM_LEADER"
 };
 
 /* ---------------- SIMPLE STAT CARD ---------------- */
@@ -143,7 +146,7 @@ const DashboardLayout: React.FC = () => {
           );
         }
 
-        if (userRole === ROLES.MANAGER)
+        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
 
         if (userRole === ROLES.HR) return <HRDashboard />;
@@ -151,7 +154,7 @@ const DashboardLayout: React.FC = () => {
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
-        if (userRole === ROLES.MANAGER)
+         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
         return null;
@@ -188,8 +191,10 @@ const DashboardLayout: React.FC = () => {
         return <TeamMembersView />;
 
       case "Profile":
-        if (userRole === ROLES.MANAGER) return <ManagerProfile />;
+         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
+      case "Other Applications":
+        return <OtherRequestForm />;
 
       default:
         return <DashboardView onNavigate={setActiveTab} />;

@@ -4,7 +4,7 @@ import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
 import { useAuth } from "../hooks/useAuth";
 import type { LoginCredentials } from "../types";
 
-import textSVG from '../../../assets/text.svg';
+import logoSVG from '../../../assets/logo.svg';
 import FailureModal from "../../../components/ui/FailureModal";
 import SuccessModal from "../../../components/ui/SuccessModal";
 import { authService } from "../services/AuthService";
@@ -86,12 +86,12 @@ const LoginForm: React.FC = () => {
         />
       )}
 
-      <img src={textSVG} alt="logo image" className="w-20 h-20" />
+      <img src={logoSVG} alt="logo image" className="w-20 h-20" />
       <form onSubmit={handleLogin} className="space-y-6 w-full">
         <div className="flex flex-col gap-2.5 items-center">
 
           <h1 className="text-3xl font-bold">Account Login</h1>
-          <p className="text-center">Enter your Registered Email and <br />
+          <p className="text-center text-sm">Enter your Registered Email and <br />
             Password to Proceed.</p>
         </div>
 
