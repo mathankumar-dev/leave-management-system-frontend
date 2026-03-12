@@ -31,9 +31,9 @@ import TeamMembersView from "../views/manager/TeamMembersView";
 
 /* ---------------- MODALS ---------------- */
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
-import ODRequestForm from "../../../common/OtherRequestForm";
 import OtherRequestForm from "../../../common/OtherRequestForm";
 import PayrollView from "../views/Payroll";
+import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -53,7 +53,7 @@ const StatCard = ({ title, value }: { title: string; value: number }) => (
 );
 
 const DashboardLayout: React.FC = () => {
-  const { user, logout, mustChangePassword } = useAuth();
+  const { user, logout, mustChangePassword , personalDetailsComplete } = useAuth();
   const userRole = user?.role;
 
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -213,6 +213,10 @@ const DashboardLayout: React.FC = () => {
   if (mustChangePassword) {
     return <ChangePasswordDialog />;
   }
+  if(!personalDetailsComplete){
+    return <PersonalDetailsModal /> ;
+  }
+
 
   return (
     <div className="flex h-screen bg-neutral-25 overflow-hidden">
