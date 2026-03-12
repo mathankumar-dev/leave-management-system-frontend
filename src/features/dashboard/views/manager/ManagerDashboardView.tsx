@@ -215,7 +215,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
               <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Team Performance</h4>
               <div className="flex justify-between p-4 border border-slate-200">
                 <span className="text-[10px] font-black uppercase">Approved this year</span>
-                <span className="text-sm font-black italic text-emerald-600">{dashboardData?.personalStats.approvedCount}</span>
+                <span className="text-sm font-black italic text-emerald-600">{dashboardData?.personalStats.approvedCount!}</span>
               </div>
               <div className="flex justify-between p-4 border border-slate-200">
                 <span className="text-[10px] font-black uppercase">Rejected this year</span>

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+// import PayrollView from "../views/PayrollView";
 
 /* ---------------- ADMIN VIEWS ---------------- */
 import EmployeesView from "../views/admin/EmployeesView";
@@ -31,6 +32,7 @@ import TeamMembersView from "../views/manager/TeamMembersView";
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import ODRequestForm from "../../../common/OtherRequestForm";
 import OtherRequestForm from "../../../common/OtherRequestForm";
+import PayrollView from "../views/Payroll";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -180,6 +182,9 @@ const DashboardLayout: React.FC = () => {
 
       case "My Leaves":
         return <MyLeavesView />;
+
+        case "Payroll":
+  return <PayrollView />;
 
       case "Pending Approvals":
         return <PendingApprovalsView />;

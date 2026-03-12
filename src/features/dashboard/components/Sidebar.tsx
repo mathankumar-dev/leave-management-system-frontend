@@ -1,4 +1,4 @@
-import React from "react";
+
 import {
   FaChevronLeft,
   FaSignOutAlt,
@@ -52,8 +52,10 @@ function Sidebar({
     // { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR","ADMIN"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
-    { name: "Other Applications", icon: <FaFileSignature />, roles: ["MANAGER"] }
-    
+    { name: "Other Applications", icon: <FaFileSignature />, roles: ["MANAGER"] },
+    { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER","ADMIN","HR"] }
+
+
   ];
 
   const visibleTabs = tabs.filter((tab) =>
