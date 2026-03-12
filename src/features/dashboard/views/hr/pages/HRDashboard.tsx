@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useHRDashboard } from '../hooks/useHRDashboard';
 import { DashboardSkeleton } from '../components/Dashboardskeleton';
 import { DashboardFilters } from '../components/DashboardFilters';
@@ -8,13 +8,13 @@ import { ManagerTrackingTable } from '../components/ManagerTrackingTable';
 import { MonitoringSection } from '../components/MonitoringSection';
 import { ExportActions } from '../components/ExportActions';
 import OnboardingStats from '../components/OnboardingStats';
-import { LowBalanceTable } from '../components/LowBalanceTable';
+import { LowBalanceTable } from '../components/Lowbalancetable';
 
 interface HRDashboardProps {
   userName?: string;
 }
 
-export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
+export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
   const {
     data,
     departmentStats,
@@ -23,9 +23,12 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
     lowBalanceLoading,
     loading,
     error,
-    reload,
+    // reload,
   } = useHRDashboard();
+
+  const testRef = useRef<HTMLDivElement>(null);
   
+console.log(data);
 
   const [filters, setFilters] = useState({
     month:      '',
@@ -100,10 +103,12 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
           />
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <OnboardingStats
+          <OnboardingStats /// <reference path="" />
+          
             newEmployeesCount={data.newEmployeesCount}
             pendingBiometricCount={data.pendingBiometricCount}
             pendingVPNCount={data.pendingVPNCount}
+            onboardingList={data.onboardingPendingList}
           />
         </div>
       </div>
@@ -116,7 +121,7 @@ export function HRDashboard({ userName = 'there' }: HRDashboardProps) {
       />
 
       {/* Manager Tracking */}
-      <ManagerTrackingTable
+      <ManagerTrackingTable 
         totalManagers={data.totalManagersWithApprovals}
         managerStats={data.managerApprovalStats}
       />

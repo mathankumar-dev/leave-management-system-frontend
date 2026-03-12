@@ -7,6 +7,8 @@ export type LeaveType = "SICK" | "CASUAL" | "EARNED_LEAVES" | "COMP_OFF";
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
 export interface LeaveRecord {
+  range: ReactNode;
+  type: ReactNode;
   id: number;
   employeeId: number;
   leaveType: LeaveType;
@@ -370,4 +372,24 @@ export interface ManagerDashBoardResponse  {
   teamOnLeaveCount : number;
   pendingTeamRequests : TeamPendingLeave[];
   teamOnLeaveToday : TeamMemberOnLeave[];
+}
+
+
+export interface ODRequest{
+  employeeId : number;
+  reason : string;
+  fromDate : string;
+  toDate : string;
+
+}
+
+
+export interface MeetingRequest{
+  title : string;
+  startTime : string;
+  endTime : string;
+  type? : string;
+  locationOrLink? : string;
+  agenda? : string;
+  priority? : string;
 }

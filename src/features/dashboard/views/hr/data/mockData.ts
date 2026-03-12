@@ -1,14 +1,14 @@
 // ─── Filter Constants (UI only) ──────────────────────────────────
 // These are used for filter dropdowns only — not for chart data
 
-// export const MONTHS = [
-//   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-//   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-// ];
+export const MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
 
-// export const DEPARTMENTS = [
-//   'Engineering', 'Product', 'Design', 'Marketing', 'Sales', 'HR',
-// ];
+export const DEPARTMENTS = [
+  'Engineering', 'Product', 'Design', 'Marketing', 'Sales', 'HR',
+];
 
 
 

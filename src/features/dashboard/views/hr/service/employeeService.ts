@@ -2,6 +2,8 @@ import { AxiosError } from 'axios';
 import api from '../../../../../api/axiosInstance';
 
 export interface Employee {
+  employeeId(employeeId: any, year: number, month: number): unknown;
+  employeeName: any;
   id:                    number;
   name:                  string;
   email:                 string;

@@ -30,6 +30,11 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
     type: 'PERSONAL' | 'TEAM' | null;
   }>({ isOpen: false, type: null });
 
+  let UserRole = user?.role.toString();
+  if(user?.role === "TEAM_LEADER"){
+    UserRole = "TEAM LEADER";
+  }
+
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean;
     req: any;
@@ -224,7 +229,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       <div className="flex justify-between items-center border-b border-slate-200 pb-1 gap-4">
         <div>
           <h2 className="text-2xl font-black  text-slate-900 uppercase italic">WELCOME BACK</h2>
-          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Manager: {user?.name}</p>
+          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">{UserRole}: {user?.name}</p>
         </div>
         <button
           onClick={() => onNavigate?.("Team Calendar")}

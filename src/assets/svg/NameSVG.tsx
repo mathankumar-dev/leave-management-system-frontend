@@ -1,11 +1,12 @@
 interface NameSVGProps {
   className?: string;
   color?: string;
+  isDotNeeded? : boolean;
 }
 
-const NameSVG = ({ className, color = "#000000" }: NameSVGProps) => (
+const NameSVG = ({ className, color = "#000000",isDotNeeded = true }: NameSVGProps) => (
   <svg 
-    viewBox="0 0 460 112" 
+    viewBox="0 0 480 112" 
     xmlns="http://www.w3.org/2000/svg" 
     className={className}
     style={{ height: 'auto', width: '100%', maxWidth: '460px' }} 
@@ -21,7 +22,7 @@ const NameSVG = ({ className, color = "#000000" }: NameSVGProps) => (
       textAnchor="middle"
       style={{ letterSpacing: '-1px' }}
     >
-      WorkSphere .
+      WorkSphere {isDotNeeded && <tspan>.</tspan>}
     </text>
     
   </svg>

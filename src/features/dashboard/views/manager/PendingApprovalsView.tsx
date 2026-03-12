@@ -26,6 +26,7 @@ const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
     const isManager = user?.role?.toUpperCase() === 'MANAGER';
+
     const {
         requests,
         loading,
