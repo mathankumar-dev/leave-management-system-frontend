@@ -10,6 +10,8 @@ import {
   FaUsers,
   FaCog,
   FaExclamationTriangle,
+  FaFileInvoiceDollar,
+  FaChartBar,
 } from "react-icons/fa";
 import { useAuth } from "../../auth/hooks/useAuth";
 
@@ -46,8 +48,9 @@ function Sidebar({
     { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER" ,"HR"] },
     { name: "All Employees", icon: <FaUsers />, roles: ["HR"] },
     { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
-    { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
-    { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] }
+    // { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
+    { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
+    { name: "Payslip", icon: <FaFileInvoiceDollar />, roles: ["HR"] },
 
   ];
 

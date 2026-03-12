@@ -1,3 +1,5 @@
+import { number } from "framer-motion";
+
 // ─── Unions ──────────────────────────────────────────────────────
 export type OnboardingStatus = 'PENDING' | 'COMPLETED' | 'IN_PROGRESS';
 
@@ -10,6 +12,7 @@ export interface TeamMember {
   carryForwardBalance: number;
   compOffBalance:      number;
 }
+
 
 export interface TeamStructure {
   managerId:       number;
@@ -76,6 +79,60 @@ export interface DashboardResponse {
   employeesOnLeave:           EmployeeOnLeave[];
   managerApprovalStats:       ManagerApprovalStat[];
 }
+
+// ------------- payslip salary --------------//
+
+  export interface Payslip {
+    id : number;
+    employeeId : number;
+    month : number;
+    year : number;
+    basicSalary : number;
+    hra : number ;
+    transportAllowance :number;
+    pfDeduction : number;
+    taxDeduction : number;
+    lopDeduction : number;
+    netSalary : number;
+    generatedDate : string;
+
+  }
+
+  export interface PayslipRequest {
+    employeeId : number;
+    month : number;
+    year : number;
+    basicSalary :number;
+    hra : number;
+    transportAllowance : number;
+    pfDeduction :number;
+    lopDeduction :number;
+    taxDeduction : number;
+
+  }
+
+  export interface SalaryStructure {
+    id : number;
+    role : string ;
+    hraAmount :number;
+    transportAllowance :number;
+    pfpercent : number;
+    taxpercent  : number;
+
+  }
+
+  export interface EmployeeSalary {
+    id : number;
+    employeeId : number;
+    basicSalary : number;
+    effectiveFrom : string;
+  }
+
+  export interface EmployeeSalaryRequest {
+     employeeId : number
+     basicSalary : number;
+     effectiveFrom :string;
+  }
 
 
 

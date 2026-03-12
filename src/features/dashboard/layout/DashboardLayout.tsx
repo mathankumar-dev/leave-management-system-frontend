@@ -10,6 +10,8 @@ import LeaveTypesView from "../views/admin/LeaveTypesView";
 /* ---------------- HR VIEWS ---------------- */
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
+import LowBalancePage from "../views/hr/pages/LowBalancePage";
+import { PayslipPage } from "../views/hr/pages/PayslipPage";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -26,7 +28,6 @@ import ManagerProfile from "../views/manager/ManagerProfile";
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 import TeamMembersView from "../views/manager/TeamMembersView";
-import LowBalancePage from "../views/hr/pages/LowBalancePage";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -77,6 +78,9 @@ const DashboardLayout: React.FC = () => {
       case "All Employees":
         if (userRole === ROLES.HR) return <HREmployeesPage />;
         return <EmployeesView />;
+
+      case "Payslip":
+        if (userRole === ROLES.HR) return <PayslipPage />;
 
       case "LowBalance Employee":
         return <LowBalancePage />;

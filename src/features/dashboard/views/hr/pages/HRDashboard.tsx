@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useHRDashboard } from '../hooks/useHRDashboard';
 import { DashboardSkeleton } from '../components/Dashboardskeleton';
 import { DashboardFilters } from '../components/DashboardFilters';
@@ -8,7 +8,7 @@ import { ManagerTrackingTable } from '../components/ManagerTrackingTable';
 import { MonitoringSection } from '../components/MonitoringSection';
 import { ExportActions } from '../components/ExportActions';
 import OnboardingStats from '../components/OnboardingStats';
-import { LowBalanceTable } from '../components/LowBalanceTable';
+import { LowBalanceTable } from '../components/Lowbalancetable';
 
 interface HRDashboardProps {
   userName?: string;
@@ -25,6 +25,8 @@ export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
     error,
     // reload,
   } = useHRDashboard();
+
+  const testRef = useRef<HTMLDivElement>(null);
   
 console.log(data);
 
@@ -101,7 +103,8 @@ console.log(data);
           />
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <OnboardingStats
+          <OnboardingStats /// <reference path="" />
+          
             newEmployeesCount={data.newEmployeesCount}
             pendingBiometricCount={data.pendingBiometricCount}
             pendingVPNCount={data.pendingVPNCount}
@@ -118,7 +121,7 @@ console.log(data);
       />
 
       {/* Manager Tracking */}
-      <ManagerTrackingTable
+      <ManagerTrackingTable 
         totalManagers={data.totalManagersWithApprovals}
         managerStats={data.managerApprovalStats}
       />

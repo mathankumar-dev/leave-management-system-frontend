@@ -128,6 +128,8 @@ export function LowBalanceTable({ data, loading, error }: LowBalanceTableProps) 
       </tr>
     ));
   };
+  // console.log(data);
+  
 
   return (
     <Card className="border border-slate-200 shadow-sm bg-white">
@@ -159,6 +161,7 @@ export function LowBalanceTable({ data, loading, error }: LowBalanceTableProps) 
                 <th className="text-center py-3 px-2">Remaining</th>
                 <th className="text-center py-3 px-2">Comp Off</th>
                 <th className="text-center py-3 px-2">LOP %</th>
+                {/* <th className="text-center py-3 px-2">totalWorkingDays</th> */}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
