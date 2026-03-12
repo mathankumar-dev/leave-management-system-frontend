@@ -12,6 +12,7 @@ import LeaveTypesView from "../views/admin/LeaveTypesView";
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
 import LowBalancePage from "../views/hr/pages/LowBalancePage";
+import { PayslipPage } from "../views/hr/pages/PayslipPage";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -164,6 +165,9 @@ const DashboardLayout: React.FC = () => {
       case "All Employees":
         if (userRole === ROLES.HR) return <HREmployeesPage />;
         return <EmployeesView />;
+
+      case "Payslip":
+        if (userRole === ROLES.HR) return <PayslipPage />;
 
       case "LowBalance Employee":
         return <LowBalancePage />;

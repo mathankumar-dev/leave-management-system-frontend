@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-// import { MONTHS, DEPARTMENTS } from '../data/mockData';
+import { MONTHS, DEPARTMENTS } from '../data/mockData';
 
 interface DashboardFiltersProps {
   filters: {
@@ -24,7 +24,8 @@ interface DashboardFiltersProps {
 
 }
 
-export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProps) {
+export function DashboardFilters({ filters, updateFilter  }: DashboardFiltersProps) { 
+
   return (
     <Card className="border border-slate-200 shadow-sm bg-white">
       <CardContent className="py-3">
@@ -39,7 +40,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
           </div>
 
           {/* Month Filter */}
-          {/* <Select 
+          <Select 
             value={filters.month} 
             onValueChange={(v) => updateFilter('month', v)}
           >
@@ -54,7 +55,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select> */}
+          </Select> 
 
           {/* Year Filter */}
           <Select 
@@ -71,7 +72,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
           </Select>
 
           {/* Department Filter */}
-          {/* <Select 
+          <Select 
             value={filters.department} 
             onValueChange={(v) => updateFilter('department', v)}
           >
@@ -86,7 +87,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select> */}
+          </Select>
 
           {/* Leave Type Filter */}
           <Select 
@@ -107,22 +108,22 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
           </Select>
 
           {/* Manager Filter */}
-          <Select 
+          {/* <Select 
             value={filters.manager} 
             onValueChange={(v) => updateFilter('manager', v)}
           >
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue placeholder="Manager" />
-            </SelectTrigger>
-            {/* <SelectContent>
+            </SelectTrigger> 
+            <SelectContent>
               <SelectItem value="all">All Managers</SelectItem>
               {managerTrackingData.map((m) => (
                 <SelectItem key={m.name} value={m.name}>
                   {m.name}
                 </SelectItem>
               ))}
-            </SelectContent> */}
-          </Select>
+            </SelectContent>
+          </Select> */}
         </div>
       </CardContent>
     </Card>

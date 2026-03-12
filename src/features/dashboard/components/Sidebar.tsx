@@ -9,7 +9,6 @@ import {
   FaBell,
   FaUsers,
   FaCog,
-  FaChartBar,
   FaExclamationTriangle,
   FaFileSignature,
   FaDollarSign,
@@ -108,7 +107,7 @@ function Sidebar({
 
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">
-              {userName|| "User"}
+              {userName || "User"}
             </p>
             <p className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest">
               {userRole}
