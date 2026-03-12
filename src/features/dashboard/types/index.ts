@@ -340,3 +340,23 @@ export interface ManagerDashBoardResponse  {
   pendingTeamRequests : TeamPendingLeave[];
   teamOnLeaveToday : TeamMemberOnLeave[];
 }
+
+
+export interface ODRequest{
+  employeeId : number;
+  reason : string;
+  fromDate : string;
+  toDate : string;
+
+}
+
+
+export interface MeetingRequest{
+  title : string;
+  startTime : string;
+  endTime : string;
+  type? : string;
+  locationOrLink? : string;
+  agenda? : string;
+  priority? : string;
+}

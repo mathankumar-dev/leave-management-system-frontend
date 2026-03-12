@@ -11,6 +11,7 @@ import {
   FaCog,
   FaChartBar,
   FaExclamationTriangle,
+  FaFileSignature,
 } from "react-icons/fa";
 import { useAuth } from "../../auth/hooks/useAuth";
 import NameSVG from "../../../assets/svg/NameSVG";
@@ -50,7 +51,8 @@ function Sidebar({
     { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER","TEAM_LEADER"] },
     // { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR","ADMIN"] },
-    { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] }
+    { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
+    { name: "Other Applications", icon: <FaFileSignature />, roles: ["MANAGER"] }
     
   ];
 

@@ -29,6 +29,8 @@ import TeamMembersView from "../views/manager/TeamMembersView";
 
 /* ---------------- MODALS ---------------- */
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
+import ODRequestForm from "../../../common/OtherRequestForm";
+import OtherRequestForm from "../../../common/OtherRequestForm";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -191,6 +193,8 @@ const DashboardLayout: React.FC = () => {
       case "Profile":
          if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
+      case "Other Applications":
+        return <OtherRequestForm />;
 
       default:
         return <DashboardView onNavigate={setActiveTab} />;
