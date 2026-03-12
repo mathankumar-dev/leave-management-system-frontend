@@ -14,7 +14,6 @@ export interface AuthResponse {
 }
 
 export interface User {
-  managerName: string;
   id: number;
   name: string;
   email: string;

@@ -8,7 +8,8 @@ import type {
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
-  CompOffRequest
+  CompOffRequest,
+  ProfileResponse
 
 } from '../types';
 
@@ -39,6 +40,11 @@ export const dashboardService = {
     return response.data;
 
   },
+
+//  fetchProfile: async () => {
+//   const response = await api.get("/employees/profile");
+//   return response.data;
+// },
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
     const currentYear = new Date().getFullYear();
@@ -215,5 +221,15 @@ export const dashboardService = {
     const response = await api.post('/compoff/request', payload);
     return response.data;
   },
+
+  getProfile: async (employeeId: number): Promise<ProfileResponse> => {
+  const response = await api.get(`/employees/${employeeId}/profile`);
+  return response.data;
+},
+
+completeProfile: async (data: any) => {
+  const response = await api.post("/employees/profile/complete", data);
+  return response.data;
+},
 };
 

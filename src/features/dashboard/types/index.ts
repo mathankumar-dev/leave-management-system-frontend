@@ -33,6 +33,35 @@ export interface LeaveRecord {
 }
 
 
+export interface ProfileResponse {
+  personalDetailsComplete: any;
+
+  contactNumber: string
+  gender: string
+  aadharNumber: string
+  personalEmail: string
+  dateOfBirth: string
+  presentAddress: string
+  permanentAddress: string
+  bloodGroup: string
+  maritalStatus: string
+  emergencyContactNumber: string
+  designation: string
+  skillSet: string
+
+  fatherName: string
+  fatherDateOfBirth: string
+  fatherOccupation: string
+  fatherAlive: boolean
+
+  motherName: string
+  motherDateOfBirth: string
+  motherOccupation: string
+  motherAlive: boolean
+
+}
+
+
 export interface LeaveDecisionRequest {
   leaveId: number;
   managerId: number;
