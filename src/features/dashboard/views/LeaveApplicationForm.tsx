@@ -5,12 +5,12 @@ import { useDashboard } from "../hooks/useDashboard";
 import type { LeaveApplication, LeaveType } from "../types";
 import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
 
-import { 
-  HiOutlineClock, 
-  HiOutlineChatBubbleLeftRight, 
-  HiOutlinePaperAirplane, 
-  HiOutlineCheckCircle, 
-  HiOutlineShieldCheck, 
+import {
+  HiOutlineClock,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlinePaperAirplane,
+  HiOutlineCheckCircle,
+  HiOutlineShieldCheck,
   HiOutlineExclamationTriangle,
   HiOutlinePaperClip,
   HiOutlineXMark,
@@ -25,9 +25,9 @@ const LeaveApplicationForm = () => {
 
   const [formData, setFormData] = useState({
     category: "CASUAL" as LeaveType | "COMP_OFF",
-    startDate: null as Date | null, 
-    endDate: null as Date | null,  
-    compOffPlannedDate: null as Date | null, 
+    startDate: null as Date | null,
+    endDate: null as Date | null,
+    compOffPlannedDate: null as Date | null,
     isHalfDay: false,
     halfDayType: "FIRST_HALF" as "FIRST_HALF" | "SECOND_HALF",
     reason: "",
@@ -49,13 +49,19 @@ const LeaveApplicationForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!formData.startDate) return;
 
-    const employeeId = user?.id ;
-    if(!employeeId){
+    if (!formData.startDate) {
+      setError("Please select a start date.");
       return;
     }
 
+    const employeeId = user?.id;
+    if (!employeeId) {
+      setError("User session not found. Please log in again.");
+      return;
+    }
+
+    // --- CASE A: Bank Comp-Off Logic (JSON) ---
     if (formData.category === "COMP_OFF") {
       if (!formData.compOffPlannedDate) {
         setError("Please select the date you plan to take your leave.");
@@ -75,20 +81,40 @@ const LeaveApplicationForm = () => {
       return;
     }
 
-    // Standard Leave Logic
-    const leavePayload: LeaveApplication = {
-      employeeId,
-      leaveType: formData.category as LeaveType,
-      startDate: formData.startDate.toISOString().split("T")[0],
-      endDate: formData.isHalfDay
-        ? formData.startDate.toISOString().split("T")[0]
-        : formData.endDate!.toISOString().split("T")[0],
-      reason: formData.reason,
-      confirmLossOfPay: false,
-      ...(formData.isHalfDay && { halfDayType: formData.halfDayType })
-    };
+    // --- CASE B: Standard Leave Logic (Multipart/Form-Data) ---
+    const fd = new FormData();
 
-    const result = await applyLeave(leavePayload);
+    // Append standard parameters
+    fd.append("employeeId", employeeId.toString());
+    fd.append("leaveType", formData.category);
+    fd.append("startDate", formData.startDate.toISOString().split("T")[0]);
+
+    // Determine End Date
+    const endDateStr = formData.isHalfDay
+      ? formData.startDate.toISOString().split("T")[0]
+      : formData.endDate?.toISOString().split("T")[0];
+
+    if (!endDateStr) {
+      setError("Please select an end date.");
+      return;
+    }
+    fd.append("endDate", endDateStr);
+    fd.append("reason", formData.reason);
+    fd.append("confirmLossOfPay", "false"); // Defaulting to false as per your original logic
+
+    // Append Half Day Type if applicable
+    if (formData.isHalfDay && formData.halfDayType) {
+      fd.append("halfDayType", formData.halfDayType);
+    }
+
+    // Append the file(s) - Key must match 'value = "files"' in Java @RequestParam
+    if (selectedFile) {
+      fd.append("files", selectedFile);
+    }
+
+    // Call the applyLeave from useDashboard
+    // Note: You must ensure your applyLeave hook is updated to accept FormData
+    const result = await applyLeave(fd);
     if (result) setSubmitted(true);
   };
 
@@ -102,7 +128,7 @@ const LeaveApplicationForm = () => {
           Apply for another leave →
         </button>
       </div>
-    );
+    );``
   }
 
   return (
@@ -137,9 +163,8 @@ const LeaveApplicationForm = () => {
                   key={type}
                   type="button"
                   onClick={() => { setError(null); setFormData({ ...formData, category: type }); }}
-                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${
-                    formData.category === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                  }`}
+                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${formData.category === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
                 >
                   {leaveLabels[type]}
                 </button>
@@ -197,9 +222,8 @@ const LeaveApplicationForm = () => {
                     key={h}
                     type="button"
                     onClick={() => setFormData({ ...formData, halfDayType: h as any })}
-                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                      formData.halfDayType === h ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
-                    }`}
+                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${formData.halfDayType === h ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                      }`}
                   >
                     {h === "FIRST_HALF" ? "First Half" : "Second Half"}
                   </button>
@@ -213,11 +237,10 @@ const LeaveApplicationForm = () => {
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <HiOutlinePaperClip size={16} /> 04. Attachments (Optional)
             </label>
-            <div 
+            <div
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all ${
-                selectedFile ? 'border-indigo-400 bg-indigo-50/30' : 'border-slate-200 hover:bg-slate-50'
-              }`}
+              className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all ${selectedFile ? 'border-indigo-400 bg-indigo-50/30' : 'border-slate-200 hover:bg-slate-50'
+                }`}
             >
               <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" />
               {selectedFile ? (

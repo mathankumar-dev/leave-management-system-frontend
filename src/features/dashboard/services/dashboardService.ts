@@ -53,8 +53,22 @@ export const dashboardService = {
   },
 
 
-  submitLeaveRequest: async (leaveData: LeaveApplication) => {
-    const response = await api.post('/leaves/apply', leaveData);
+  // submitLeaveRequest: async (leaveData: LeaveApplication) => {
+  //   const response = await api.post('/leaves/apply', leaveData);
+  //   return response.data;
+  // },
+
+  submitLeaveRequest: async (data: FormData ) => {
+    const isMultipart = data instanceof FormData;
+   for (const [key, value] of data.entries()) {
+        console.log(key, value);
+    }   
+
+    const response = await api.post('/leaves/apply', data, {
+      headers: {
+        'Content-Type': isMultipart ? 'multipart/form-data' : 'application/json',
+      },
+    });
     return response.data;
   },
 

@@ -142,21 +142,20 @@ export const useDashboard = () => {
 
 
   /* ================= LEAVE ACTIONS ================= */
-
-  const applyLeave = useCallback(async (formData: LeaveApplication) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await service.submitLeaveRequest(formData);
-      return result;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || "Submission failed";
-      setError(errorMessage);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+const applyLeave = useCallback(async (data: FormData ) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const result = await service.submitLeaveRequest(data);
+    return result;
+  } catch (err: any) {
+    const errorMessage = err.response?.data?.message || err.message || "Submission failed";
+    setError(errorMessage);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   // const fetchLeaveTypes = useCallback(async () => {
   //   setLoading(true);
