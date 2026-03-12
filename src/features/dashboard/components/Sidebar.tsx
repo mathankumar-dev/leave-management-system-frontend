@@ -12,6 +12,7 @@ import {
   FaChartBar,
   FaExclamationTriangle,
   FaFileSignature,
+  FaDollarSign,
 } from "react-icons/fa";
 import { useAuth } from "../../auth/hooks/useAuth";
 import NameSVG from "../../../assets/svg/NameSVG";
