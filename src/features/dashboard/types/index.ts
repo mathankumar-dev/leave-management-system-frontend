@@ -7,8 +7,7 @@ export type LeaveType = "SICK" | "CASUAL" | "EARNED_LEAVES" | "COMP_OFF";
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
 export interface LeaveRecord {
-  range: ReactNode;
-  type: ReactNode;
+
   id: number;
   employeeId: number;
   leaveType: LeaveType;

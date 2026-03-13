@@ -15,7 +15,6 @@ import LeaveTypesView from "../views/admin/LeaveTypesView";
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
 import LowBalancePage from "../views/hr/pages/LowBalancePage";
-import { PayslipPage } from "../views/hr/pages/PayslipPage";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -34,8 +33,6 @@ import TeamMembersView from "../views/manager/TeamMembersView";
 
 /* ---------------- MODALS ---------------- */
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
-import ODRequestForm from "../../../common/OtherRequestForm";
-import OtherRequestForm from "../../../common/OtherRequestForm";
 import PayrollView from "../views/Payroll";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
@@ -44,7 +41,6 @@ const ROLES = {
   HR: "HR",
   MANAGER: "MANAGER",
   EMPLOYEE: "EMPLOYEE",
-  TEAMLEADER : "TEAM_LEADER"
 };
 
 /* ---------------- SIMPLE STAT CARD ---------------- */
@@ -78,33 +74,27 @@ const navigate = useNavigate();
   }, [activeTab]);
 
 
-//   useEffect(() => {
+  useEffect(() => {
+  const checkProfile = async () => {
+    try {
+      if (!user?.id) return;
 
-//   const checkProfile = async () => {
+      const profile = await dashboardService.getProfile(user.id);
 
-//     try {
+      if (!profile.personalDetailsComplete) {
+        navigate("/complete-profile");
+        return;
+      }
 
-//       const profile = await dashboardService.getProfile(user.id);
+      setCheckingProfile(false);
+    } catch (error) {
+      console.error("Profile verification failed", error);
+      setCheckingProfile(false);
+    }
+  };
 
-//       if (!profile.personalDetailsComplete) {
-//         navigate("/complete-profile");
-//         return;
-//       }
-
-//       setCheckingProfile(false);
-
-//     } catch (error) {
-
-//       console.error("Profile verification failed", error);
-//       setCheckingProfile(false);
-
-//     }
-
-//   };
-
-//   checkProfile();
-
-// }, []);
+  checkProfile();
+}, [user?.id, navigate]);
 
   /* ---------------- ADMIN DASHBOARD FETCH ---------------- */
   useEffect(() => {
@@ -183,7 +173,7 @@ const navigate = useNavigate();
           );
         }
 
-        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
+        if (userRole === ROLES.MANAGER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
 
         if (userRole === ROLES.HR) return <HRDashboard />;
@@ -191,7 +181,7 @@ const navigate = useNavigate();
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
-         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
+        if (userRole === ROLES.MANAGER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
         return null;
@@ -199,9 +189,6 @@ const navigate = useNavigate();
       case "All Employees":
         if (userRole === ROLES.HR) return <HREmployeesPage />;
         return <EmployeesView />;
-
-      case "Payslip":
-        if (userRole === ROLES.HR) return <PayslipPage />;
 
       case "LowBalance Employee":
         return <LowBalancePage />;
@@ -234,10 +221,8 @@ const navigate = useNavigate();
         return <TeamMembersView />;
 
       case "Profile":
-         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
+        if (userRole === ROLES.MANAGER) return <ManagerProfile />;
         return <EmployeeProfile />;
-      case "Other Applications":
-        return <OtherRequestForm />;
 
       default:
         return <DashboardView onNavigate={setActiveTab} />;

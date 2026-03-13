@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../features/auth/hooks/useAuth"; 
@@ -10,8 +9,6 @@ import NotFoundPage from "../components/pages/NotFoundPage";
 import HeroPage from "../features/hero/HeroPage";
 import PrivacyPolicy from "../components/pages/PrivacyPolicy";
 import TermsOfService from "../components/pages/TermsOfService";
-import EmployeeDetailsForm from "../features/dashboard/views/EmployeeDetailsForm";
-
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -47,9 +44,8 @@ const AppRoutes: React.FC = () => {
 
       {/* 3. Protected Dashboard Routes */}
       <Route element={<ProtectedRoute />}>
-  <Route path="/dashboard/*" element={<DashboardLayout />} />
-  {/* <Route path="/complete-profile" element={<EmployeeDetailsForm />} /> */}
-</Route>
+        <Route path="/dashboard/*" element={<DashboardLayout />} />
+      </Route>
 
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
