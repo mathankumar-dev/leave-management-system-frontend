@@ -10,6 +10,7 @@ import {
   FaUsers,
   FaCog,
   FaChartBar,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import { useAuth } from "../../auth/hooks/useAuth";
 
@@ -21,42 +22,45 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({
+
+function Sidebar({
   activeTab,
   setActiveTab,
   isOpen,
   setIsOpen,
   onLogout,
-}) => {
+}: SidebarProps) {
+
+
   const { user } = useAuth();
 
   const userRole = user?.role;
   const userName = user?.name;
 
   const tabs = [
-    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "HR", "ADMIN"] },
-    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
-    { name: "Requests", icon: <FaListUl />, roles: ["ADMIN"] },  
-    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
-    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "MANAGER"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "HR", "ADMIN"] },
-    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER"] },
-    { name: "Employees", icon: <FaUsers />, roles: ["MANAGER", "HR", "ADMIN"] },
-    { name: "Leave Config", icon: <FaCog />, roles: ["HR"] },
-    { name: "Reports", icon: <FaChartBar />, roles: ["HR", "ADMIN"] },
+    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "HR","ADMIN"] },
     { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER"] },
-    { name: "AuditLog", icon: <FaCog />, roles: ["ADMIN"] },
+    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","ADMIN"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "HR","ADMIN"] },
+    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE" , "ADMIN"] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "HR"] },
+    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER" , "ADMIN"] },
+    { name: "All Employees", icon: <FaUsers />, roles: ["HR"] },
+    { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
+    { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
+    { name: "Reports", icon: <FaChartBar />, roles: ["HR","ADMIN"] },
+    { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] }
+    
   ];
 
   const visibleTabs = tabs.filter((tab) =>
     userRole ? tab.roles.includes(userRole.toUpperCase()) : false
   );
-
   return (
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-neutral-950/40 backdrop-blur-sm z-35 md:hidden"
+          className="fixed inset-0 bg-neutral-950/40 backdrop-blur-sm z-35 md:hidden no-scrollbar"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -64,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <aside
         className={`fixed top-0 left-0 z-40 h-screen w-80 bg-neutral-800
         p-6 border-r border-neutral-800 flex flex-col
-        transition-transform duration-300 ease-in-out
+        transition-transform duration-300 ease-in-out no-scrollbar
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         {/* Logo */}
@@ -82,7 +86,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* Profile */}
         <div
           onClick={() => {
             setActiveTab("Profile");
@@ -100,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">
-              {userName || "User"}
+              {userName|| "User"}
             </p>
             <p className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest">
               {userRole}
@@ -108,37 +111,35 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Menu */}
-        <div className="flex-1 overflow-y-auto pr-1">
+        {/* Menu Section */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar no-scrollbar pr-1">
           <p className="px-4 text-[10px] font-black text-neutral-600 uppercase tracking-widest mb-4">
-            Main Menu
+            Menu
           </p>
 
           <ul className="space-y-1.5">
-            {visibleTabs.map((tab) => (
-              <li
-                key={tab.name}
-                onClick={() => setActiveTab(tab.name)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all ${
-                  activeTab === tab.name
+            {visibleTabs.map((tab) => {
+              return (
+                
+                <li
+                  key={tab.name}
+                  onClick={() => setActiveTab(tab.name)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all  ${activeTab === tab.name
                     ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25"
+                    // CHANGED: text-neutral-300 provides much better contrast than 400/500
                     : "text-neutral-300 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
-                }`}
-              >
-                <span
-                  className={`text-lg ${
-                    activeTab === tab.name ? "text-white" : "text-neutral-400"
-                  }`}
+                    }`}
                 >
-                  {tab.icon}
-                </span>
-                <span className="text-sm font-bold">{tab.name}</span>
-              </li>
-            ))}
+                  <span className={`text-lg ${activeTab === tab.name ? "text-white" : "text-neutral-400"}`}>
+                    {tab.icon}
+                  </span>
+                  <span className="text-sm font-bold">{tab.name}</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
 
-        {/* Logout */}
         <div className="pt-4 mt-4 border-t border-neutral-800 shrink-0">
           <button
             onClick={onLogout}
@@ -153,6 +154,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       </aside>
     </>
   );
-};
+}
 
 export default Sidebar;

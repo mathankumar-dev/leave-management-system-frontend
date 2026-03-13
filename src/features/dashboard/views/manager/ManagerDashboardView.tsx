@@ -1,200 +1,323 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  FaCheck, FaTimes, FaClock, FaCalendarAlt, 
-  FaUsers, FaExclamationTriangle, FaCheckDouble,
-  FaArrowRight, FaCommentDots, FaLayerGroup, FaBolt
+import {
+  FaCalendarAlt, FaCommentDots, FaArrowRight,
+  FaPlus, FaUserShield, FaChartPie, FaCheckDouble
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
-import type { ApprovalRequest } from "../../types";
+import { useAuth } from "../../../auth/hooks/useAuth";
+import CustomLoader from "../../../../components/ui/CustomLoader";
+import type { LeaveDecision } from "../../types";
+import { notify } from "../../../../utils/notifications";
+import CommentDialog from "../../../../components/ui/CommentDialog";
+import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
+import ManagerStatCard from "../../components/ManagerStatCard";
+import DashboardDrawer from "../../components/DashBoardDrawer";
 
-const ManagerDashboardView: React.FC = () => {
-  
-  
-  const { fetchApprovals, processApproval } = useDashboard();
-  const [approvals, setApprovals] = useState<ApprovalRequest[]>([]);
+const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
+  const { user, isLoading: authLoading } = useAuth();
+  const { fetchManagerDashboard, processApproval, loading: dashboardLoading } = useDashboard();
+
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [approvals, setApprovals] = useState<any[]>([]);
+  const attendanceRef = useRef<HTMLDivElement>(null);
+  const requestsRef = useRef<HTMLDivElement>(null);
+
+  const [drawerConfig, setDrawerConfig] = useState<{
+    isOpen: boolean;
+    type: 'PERSONAL' | 'TEAM' | null;
+  }>({ isOpen: false, type: null });
+
+  const [dialogConfig, setDialogConfig] = useState<{
+    isOpen: boolean;
+    req: any;
+    status: LeaveDecision | null
+  }>({ isOpen: false, req: null, status: null });
+
+
+
+  const loadAllData = useCallback(async () => {
+    if (!user?.id) return;
+
+    const data = await fetchManagerDashboard(user.id);
+
+    if (data) {
+      setDashboardData(data); // One state for everything
+      setApprovals(data.pendingTeamRequests || []);
+    }
+  }, [user?.id, fetchManagerDashboard]);
 
   useEffect(() => {
-    fetchApprovals().then(setApprovals);
-  }, [fetchApprovals]);
+    if (!authLoading) loadAllData();
+  }, [authLoading, loadAllData]);
 
-  const handleAction = async (id: number, status: "Approved" | "Rejected") => {
-    if (status === "Rejected") {
-      const comment = prompt("Mandatory: Please provide a reason for rejection:");
-      if (!comment) return;
-      await processApproval(id, status, comment);
-    } else {
-      await processApproval(id, status);
+  const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
+    const success = await processApproval({
+      leaveId: req.leaveId,
+      managerId: Number(user?.id),
+      decision: status,
+      comments: commentText
+    });
+
+    if (success) {
+      notify.leaveAction(status, req.employeeName || req.employee);
+      setApprovals((prev) => prev.filter((item) => item.leaveId !== req.leaveId));
+
+      // FIXED: Updated state name to dashboardData
+      setDashboardData((prev: any) => ({
+        ...prev,
+        approvedCount: status === 'APPROVED' ? (prev.approvedCount || 0) + 1 : (prev.approvedCount || 0),
+      }));
+      setDialogConfig({ isOpen: false, req: null, status: null });
     }
-    setApprovals(prev => prev.filter(req => req.id !== id));
   };
 
+  if (dashboardLoading || authLoading) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
+      <CustomLoader label="Syncing Manager Portal" />
+    </div>
+  );
+
   return (
-    <div className="space-y-6 p-4 max-w-7xl mx-auto text-slate-900">
-      
-      {/* 1. CLEAN HEADER - Stacked on mobile, row on desktop */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-slate-200 pb-6 gap-4">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 max-w-7xl mx-auto pb-20">
+      <CommentDialog
+        isOpen={dialogConfig.isOpen}
+        onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
+        title={dialogConfig.status === 'REJECTED' ? 'Reject Leave Request' : 'Discussion Required'}
+        onSubmit={(comment: string) => executeDecision(dialogConfig.req, dialogConfig.status!, comment)}
+      />
+
+
+      <DashboardDrawer
+        isOpen={drawerConfig.isOpen}
+        onClose={() => setDrawerConfig({ isOpen: false, type: null })}
+        title={drawerConfig.type === 'PERSONAL' ? 'My Leave Ledger' : 'Team Governance Details'}
+        subtitle={drawerConfig.type === 'PERSONAL' ? user?.name || '' : 'Direct Reports Overview'}
+      >
+        {drawerConfig.type === 'PERSONAL' ? (
+          <div className="space-y-6">
+            <div className="p-4 bg-slate-900 text-white rounded-sm italic ">
+              <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Status: Active</p>
+              <p className="text-xs font-bold">You have {dashboardData?.yearlyBalance} days remaining in your annual quota.</p>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Balance Breakdown</h4>
+              <div className="grid grid-cols-1 gap-3">
+                {/* Reusing StatCard visual logic manually for drawer consistency */}
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Comp-Off Bank</span>
+                  <span className="text-lg font-black italic">{dashboardData?.compOffBalance || 0}d</span>
+                </div>
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Carry Forward</span>
+                  <span className="text-lg font-black italic">{dashboardData?.carryForwardBalance || 0}d</span>
+                </div>
+                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Monthly Stats</span>
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
+                      <span className="text-lg font-black italic text-slate-900">
+                        {dashboardData?.monthlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.monthlyAllocated}d
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
+                      <span className="text-lg font-black italic text-indigo-600">
+                        {dashboardData?.monthlyBalance || 0}d
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Yearly Stats</span>
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
+                      <span className="text-lg font-black italic text-slate-900">
+                        {dashboardData?.yearlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.yearlyAllocated}d
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
+                      <span className="text-lg font-black italic text-indigo-600">
+                        {dashboardData?.yearlyBalance || 0}d
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50 border-rose-100">
+                  <span className="text-[10px] font-black uppercase text-rose-400">Loss of Pay (%)</span>
+                  <span className="text-lg font-black italic text-rose-600">{dashboardData?.lossOfPayPercentage || 0}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="p-4 border-2 border-slate-900  bg-white">
+              <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Managed Reports</p>
+              <p className="text-3xl font-black italic tracking-tighter">{dashboardData?.teamSize} Members</p>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Team Performance</h4>
+              <div className="flex justify-between p-4 border border-slate-200">
+                <span className="text-[10px] font-black uppercase">Approved this year</span>
+                <span className="text-sm font-black italic text-emerald-600">{dashboardData?.approvedCount}</span>
+              </div>
+              <div className="flex justify-between p-4 border border-slate-200">
+                <span className="text-[10px] font-black uppercase">Rejected this year</span>
+                <span className="text-sm font-black italic text-rose-600">{dashboardData?.rejectedCount}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </DashboardDrawer>
+      {/* HEADER */}
+      <div className="flex justify-between items-center border-b border-slate-200 pb-1 gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Manager Dashboard</h2>
-          <p className="text-sm text-slate-500">Review leave applications and monitor team capacity.</p>
+          <h2 className="text-2xl font-black  text-slate-900 uppercase italic">WELCOME BACK</h2>
+          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Manager: {user?.name}</p>
         </div>
-        <div className="flex w-full md:w-auto gap-2">
-           <button className="flex-1 md:flex-none px-4 py-2 bg-white border border-slate-300 rounded text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">View Schedule</button>
-           <button className="flex-1 md:flex-none px-4 py-2 bg-indigo-600 text-white rounded text-xs font-bold hover:bg-indigo-700 transition-all shadow-sm">Export Data</button>
-        </div>
+        <button
+          onClick={() => onNavigate?.("Team Calendar")}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest text-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none"
+        >
+          <FaCalendarAlt /> Team Calendar
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* 2. PENDING REQUESTS (PRIORITY) */}
-        <div className="lg:col-span-8 space-y-4 order-2 lg:order-1">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Pending Approvals ({approvals.length})</h3>
+      {/* MY LEAVE CREDITS */}
+      <section className="space-y-4 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FaChartPie className="text-indigo-600" size={14} />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">My Leave Credits</h3>
           </div>
+          <button
+            onClick={() => setDrawerConfig({ isOpen: true, type: 'PERSONAL' })}
+            className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
+          >
+            View Details
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <ManagerStatCard label="Yearly Balance" value={(dashboardData?.yearlyAllocated - dashboardData?.yearlyUsed) || 0} iconType="leave" />
+          <ManagerStatCard label="Monthly Balance" value={(dashboardData?.monthlyAllocated - dashboardData?.monthlyUsed) || 0} iconType="calendar" />
+          <ManagerStatCard label="My Pending" value={dashboardData?.pendingCount || 0} iconType="pending" colorClass="text-amber-600" onClick={() => onNavigate?.("My Leaves")} />
+        </div>
+      </section>
 
-          <div className="space-y-3">
-            <AnimatePresence mode="popLayout">
-              {approvals.length > 0 ? (
-                approvals.map((req) => (
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    key={req.id}
-                    className="group bg-white border border-slate-200 rounded-md p-4 hover:border-indigo-400 transition-all shadow-sm"
-                  >
-                    {/* Mobile: Vertical Stack | Desktop: Horizontal Row */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-                      
-                      {/* Top Row: Avatar + Name + ID */}
-                      <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <div className="w-10 h-10 bg-slate-100 border border-slate-200 rounded flex items-center justify-center text-slate-700 font-bold text-sm shrink-0">
-                          {req.employee.charAt(0)}
-                        </div>
-                        <div className="flex-1 sm:hidden">
-                          <p className="font-bold text-sm">{req.employee}</p>
-                          <p className="text-[10px] text-slate-500 font-medium">#{req.id}</p>
-                        </div>
-                      </div>
+      {/* TEAM GOVERNANCE */}
+      <section className="space-y-4 pt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FaUserShield className="text-indigo-600" size={14} />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Team Governance</h3>
+          </div>
+          <button
+            onClick={() => setDrawerConfig({ isOpen: true, type: 'TEAM' })}
+            className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
+          >
+            View Details
+          </button>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <ManagerStatCard label="Direct Reports" value={dashboardData?.teamSize || 0} iconType="team" onClick={() => onNavigate?.("Team Members")} />
+          <ManagerStatCard label="Pending Approval Req." value={approvals.length} iconType="pending" colorClass="text-amber-600" onClick={() => requestsRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCard label="Away Today" value={dashboardData?.teamOnLeaveCount || 0} iconType="calendar" colorClass="text-indigo-600" onClick={() => attendanceRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCard label="Approved Today" value={dashboardData?.approvedCount || 0} iconType="processed" colorClass="text-emerald-600" />
+        </div>
+      </section>
 
-                      {/* Info Block */}
-                      <div className="flex-1 min-w-0 w-full">
-                        <div className="hidden sm:flex items-center gap-2">
-                          <span className="font-bold text-sm">{req.employee}</span>
-                          <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 border border-slate-200 font-medium">#{req.id}</span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0 sm:mt-1 text-xs text-slate-500">
-                          <span className="font-bold text-indigo-600">{req.type}</span>
-                          <span className="hidden sm:inline">•</span>
-                          <span>{req.days} days requested</span>
-                        </div>
-                        
-                        {req.reason && (
-                          <div className="mt-3 flex items-start gap-2 bg-slate-50 p-2 rounded border border-slate-100">
-                            <FaCommentDots className="text-slate-400 mt-0.5 shrink-0" />
-                            <p className="text-[11px] italic text-slate-600 leading-relaxed">
-                              "{req.reason}"
-                            </p>
-                          </div>
-                        )}
-                      </div>
+      <section className="space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Action Required</h3>
+          </div>
+          <button onClick={() => onNavigate?.("Pending Approvals")} className="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">
+            Manage All <FaArrowRight className="inline ml-1" />
+          </button>
+        </div>
 
-                      {/* Balance - Visible on Mobile now but styled better */}
-                      <div className="flex justify-between items-center w-full sm:w-40 sm:text-right border-t sm:border-0 pt-3 sm:pt-0">
-                        <p className="sm:hidden text-[10px] font-bold text-slate-400 uppercase tracking-widest">Balance</p>
-                        <div>
-                          <p className="hidden sm:block text-[10px] font-bold text-slate-400 uppercase">Current Balance</p>
-                          <p className={`text-xs font-bold ${req.balance < 5 ? 'text-rose-600' : 'text-slate-700'}`}>
-                            {req.balance} Days Left
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Actions - Full width on mobile */}
-                      <div className="flex gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
-                        <button 
-                          onClick={() => handleAction(req.id, "Rejected")}
-                          className="flex-1 sm:flex-none px-4 py-2 sm:px-3 sm:py-1.5 border border-slate-200 rounded text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all text-xs font-bold"
-                        >
-                          Deny
-                        </button>
-                        <button 
-                          onClick={() => handleAction(req.id, "Approved")}
-                          className="flex-1 sm:flex-none px-4 py-2 sm:px-3 sm:py-1.5 bg-slate-900 text-white rounded hover:bg-indigo-600 transition-all text-xs font-bold shadow-sm"
-                        >
-                          Approve
-                        </button>
-                      </div>
+        <div ref={requestsRef} className="space-y-3">
+          <AnimatePresence mode="popLayout">
+            {approvals.length > 0 ? (
+              approvals.slice(0, 3).map((req) => (
+                <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={req.leaveId} className="bg-white border border-slate-200 rounded-sm p-4 flex flex-col md:flex-row md:items-center gap-4 hover:border-slate-900 transition-all">
+                  <div className="flex items-center gap-3 min-w-50">
+                    <div className="w-10 h-10 bg-slate-900 text-white rounded-sm flex items-center justify-center font-black text-xs ">
+                      {(req.employeeName || "E").charAt(0)}
                     </div>
-                  </motion.div>
+                    <div>
+                      <p className="font-black text-xs text-slate-900 uppercase ">{req.employeeName}</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase italic">{req.leaveType}</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 bg-slate-50 p-2 border border-slate-100 rounded-sm italic text-[10px] text-slate-600 flex items-center gap-2">
+                    <FaCommentDots className="text-slate-300" /> "{req.reason || "No reason provided."}"
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'MEETING_REQUIRED' })} className="px-4 py-2 border border-slate-200 rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-orange-100 hover:text-rose-600 transition-all">Discuss</button>
+                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'REJECTED' })} className="px-4 py-2 border border-slate-200 rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 transition-all">Deny</button>
+                    <button onClick={() => executeDecision(req, 'APPROVED')} className="px-4 py-2 bg-slate-900 text-white rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-[2px_2px_0px_0px_rgba(79,70,229,0.3)]">Approve</button>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="py-12 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-300">
+                <FaCheckDouble size={24} className="mb-2 opacity-20" />
+                <p className="text-[9px] font-black uppercase tracking-[0.4em]">All caught up</p>
+              </div>
+            )}
+          </AnimatePresence>
+
+          <section ref={attendanceRef} className="space-y-4 pt-4">
+            <div className="flex items-center gap-2">
+              <FaCalendarAlt className="text-indigo-600" size={14} />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                Attendance Overview
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {dashboardData?.teamOnLeaveToday?.length > 0 ? (
+                dashboardData.teamOnLeaveToday.map((emp: any, idx: number) => (
+                  <div key={idx} className="bg-white p-5 rounded-sm border border-slate-200 shadow-sm flex items-center justify-between group relative overflow-hidden transition-all hover:border-slate-900">
+                    <div className="relative z-10">
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-slate-500">
+                        {emp.leaveType}
+                      </p>
+                      <p className="text-xl font-black text-slate-900 tracking-tight italic transition-transform group-hover:-translate-y-0.5 uppercase">
+                        {emp.employeeName}
+                      </p>
+                      <p className="text-[9px] font-bold text-emerald-600 uppercase mt-1 italic">
+                        Currently Away
+                      </p>
+                    </div>
+                    {/* Replicating the background icon from StatCard */}
+                    <div className="text-slate-100 group-hover:text-slate-200 transition-all duration-300 text-3xl absolute right-4 opacity-40">
+                      <FaCalendarAlt />
+                    </div>
+                  </div>
                 ))
               ) : (
-                <div className="py-12 border-2 border-dashed border-slate-200 rounded-md flex flex-col items-center justify-center text-slate-400">
-                   <FaCheckDouble className="mb-2 opacity-20" size={24} />
-                   <p className="text-xs font-bold uppercase tracking-widest">No actions pending</p>
+                <div className="col-span-full py-10 border border-dashed border-slate-200 flex flex-col items-center">
+                  <p className="text-[9px] font-black uppercase text-slate-300 tracking-[0.3em]">No one is on leave today</p>
                 </div>
               )}
-            </AnimatePresence>
-          </div>
+            </div>
+          </section>
         </div>
+      </section>
 
-        {/* 3. SIDEBAR STATS - Now appears first on mobile for quick overview */}
-        <div className="lg:col-span-4 space-y-6 order-1 lg:order-2">
-          
-          {/* Capacity Card */}
-          <div className="bg-white border border-slate-200 rounded-md p-5 shadow-sm">
-            <div className="flex justify-between items-start mb-4">
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Team Capacity</h4>
-              <FaUsers className="text-slate-300" />
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold tracking-tighter">84%</span>
-              <span className="text-xs text-emerald-600 font-bold">+2% from last week</span>
-            </div>
-            <div className="mt-4 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-slate-900 w-[84%]" />
-            </div>
-          </div>
-
-          {/* Quick Metrics - Grid on mobile to save vertical space */}
-          <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
-             <div className="bg-slate-50 border border-slate-200 p-4 rounded-md flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Out Today</p>
-                  <p className="text-sm sm:text-lg font-bold">04 Members</p>
-                </div>
-                <FaClock className="text-slate-300 hidden sm:block" />
-             </div>
-             
-             <div className="bg-rose-50 border border-rose-100 p-4 rounded-md flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                <div>
-                  <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Conflicts</p>
-                  <p className="text-sm sm:text-lg font-bold text-rose-700">03 Alerts</p>
-                </div>
-                <FaExclamationTriangle className="text-rose-300 hidden sm:block" />
-             </div>
-          </div>
-
-          {/* Activity Feed */}
-          <div className="bg-white border border-slate-200 rounded-md p-5">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Upcoming Schedule</h4>
-            <div className="space-y-4">
-               {[1, 2, 3].map((_, i) => (
-                 <div key={i} className="flex items-start gap-3 border-l-2 border-indigo-500 pl-3">
-                    <div className="flex-1">
-                      <p className="text-xs font-bold">System Maintenance</p>
-                      <p className="text-[10px] text-slate-500">Starts Feb 05 • 3 Members Away</p>
-                    </div>
-                 </div>
-               ))}
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
+      <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Apply Leave")} title="Apply Leave" />
+    </motion.div>
   );
 };
 

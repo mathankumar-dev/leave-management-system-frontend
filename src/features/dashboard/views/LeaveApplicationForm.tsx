@@ -1,190 +1,237 @@
 import React, { useState } from "react";
-import { FaSpinner, FaPaperclip, FaChevronDown } from "react-icons/fa";
-import { motion } from "framer-motion";
-import SuccessModal from "../../../components/ui/SuccessModal";
+import Cookies from "js-cookie";
+import { useAuth } from "../../auth/hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
+import type { LeaveApplication, LeaveType } from "../types";
+import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
 
-const LeaveApplicationForm: React.FC = () => {
-  const { applyLeave, loading, error } = useDashboard();
+import { 
+  HiOutlineClock, 
+  HiOutlineChatBubbleLeftRight, 
+  HiOutlinePaperAirplane, 
+  HiOutlineCheckCircle, 
+  HiOutlineShieldCheck, 
+  HiOutlineExclamationTriangle 
+} from "react-icons/hi2";
+
+const LeaveApplicationForm = () => {
+  const { user } = useAuth();
+  const { applyLeave, bankCompOff, loading, error, setError } = useDashboard();
   const [submitted, setSubmitted] = useState(false);
 
+  const today = new Date();
+  const oneMonthFromNow = new Date();
+  oneMonthFromNow.setMonth(today.getMonth() + 1);
+
   const [formData, setFormData] = useState({
-    type: "",
-    startHalfDay: false,
-    endHalfDay: false,
-    startDate: "",
-    endDate: "",
+    category: "CASUAL" as LeaveType | "COMP_OFF",
+    startDate: null as Date | null,
+    endDate: null as Date | null,
+    isHalfDay: false,
+    halfDayType: "FIRST_HALF" as "FIRST_HALF" | "SECOND_HALF",
     reason: "",
-    attachment: null as File | null
   });
 
-  /* ---------------- LOGIC ---------------- */
-  const calculateTotalDays = () => {
-    if (!formData.startDate || !formData.endDate) return "--";
-    const start = new Date(formData.startDate);
-    const end = new Date(formData.endDate);
-    let diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    if (diff <= 0) return "--";
-    if (formData.startHalfDay) diff -= 0.5;
-    if (formData.endHalfDay && diff > 0.5) diff -= 0.5;
-    return diff;
+  const leaveLabels: Record<string, string> = {
+    SICK: "Sick Leave",
+    CASUAL: "Casual Leave",
+    EARNED_LEAVES: "Earned Leave",
+    COMP_OFF: "Bank Comp-Off",
   };
-
-  const totalDays = calculateTotalDays();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) payload.append(key, value as string | Blob);
-    });
-    payload.append("totalDays", String(totalDays));
-    const result = await applyLeave(payload);
-    if (result) setSubmitted(true);
+    setError(null);
+    if (!formData.startDate) return;
+
+    const rawBackupId = Cookies.get("lms_user_id");
+    const employeeId = user?.id || (rawBackupId ? parseInt(rawBackupId) : 4);
+
+    if (formData.category === "COMP_OFF") {
+      const compOffPayload = {
+        employeeId,
+        entries: [{
+          workedDate: formData.startDate.toISOString().split("T")[0],
+          days: formData.isHalfDay ? 0.5 : 1.0,
+          plannedLeaveDate: null,
+        }],
+      };
+      const result = await bankCompOff(compOffPayload);
+      if (result) {
+        setSubmitted(true);
+        setTimeout(() => setSubmitted(false), 5000);
+      }
+      return;
+    }
+
+    const leavePayload: LeaveApplication = {
+      employeeId,
+      leaveType: formData.category as LeaveType,
+      startDate: formData.startDate.toISOString().split("T")[0],
+      endDate: formData.isHalfDay
+        ? formData.startDate.toISOString().split("T")[0]
+        : formData.endDate!.toISOString().split("T")[0],
+      reason: formData.reason,
+      confirmLossOfPay: false,
+      ...(formData.isHalfDay && { halfDayType: formData.halfDayType })
+    };
+
+    const result = await applyLeave(leavePayload);
+    if (result) {
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 5000);
+    }
   };
 
   if (submitted) {
-    return <SuccessModal title="Request Sent!" onClose={() => setSubmitted(false)} message="Your leave has been submitted." />;
+    return (
+      <div className="max-w-2xl mx-auto my-10 p-10 text-center bg-white border border-slate-200 rounded-lg shadow-sm">
+        <HiOutlineCheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
+        <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Request Submitted</h2>
+        <p className="text-slate-500 mt-2">Your application has been logged and is awaiting approval.</p>
+        <button
+          onClick={() => setSubmitted(false)}
+          className="mt-8 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+        >
+          Apply for another leave →
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full max-w-xl mx-auto p-4 md:p-6">
-      {/* Responsive Container: Less padding and smaller radius on mobile */}
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 md:p-10"
-      >
-        <header className="mb-6 md:mb-8">
-          <h2 className="text-xl md:text-2xl font-bold text-[#1e266d]">Apply for Leave</h2>
-          <p className="text-slate-400 text-xs md:text-sm mt-1">Fill in the details to request time off.</p>
-        </header>
+    <div className="max-w-4xl mx-auto py-6 px-4">
+      {error && (
+        <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-md flex items-start gap-3">
+          <HiOutlineExclamationTriangle size={20} className="text-rose-500 shrink-0 mt-0.5" />
+          <p className="text-sm text-rose-700">{error}</p>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
-          
-          {/* 1. LEAVE TYPE DROPDOWN */}
-          <div className="space-y-2">
-            <label className="text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 ml-1">Leave Category</label>
-            <div className="relative group">
-              <select
-                required
-                value={formData.type}
-                className="w-full bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 appearance-none font-semibold text-[#1e266d] outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all cursor-pointer text-sm md:text-base"
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              >
-                <option value="">Select Category</option>
-                <option>Annual Leave</option>
-                <option>Sick Leave</option>
-                <option>Casual Leave</option>
-                <option>Comp Off</option>
-              </select>
-              <FaChevronDown className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-500 pointer-events-none text-[10px]" />
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-200 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-slate-800">
+            {formData.category === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
+          </h1>
+          <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full">
+            <HiOutlineShieldCheck size={16} className="text-indigo-500" />
+            <span className="text-xs font-medium text-slate-600">Reviewer: {user?.managerName || "Manager"}</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          {/* 01. Category */}
+          <div className="space-y-3">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <HiOutlineClock size={16} /> 01. Leave Category
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {(["SICK", "CASUAL", "EARNED_LEAVES", "COMP_OFF"] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => { setError(null); setFormData({ ...formData, category: type }); }}
+                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${formData.category === type
+                      ? "bg-slate-900 border-slate-900 text-white shadow-md"
+                      : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                >
+                  {leaveLabels[type]}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* 2. DATE GRID: Stacked on mobile, 2-column on desktop */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <label className="text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 ml-1">Start Date</label>
-                <input
-                  type="date"
-                  required
-                  className="w-full bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl px-4 py-3 font-semibold text-[#1e266d] outline-none text-sm md:text-base"
-                  value={formData.startDate}
-                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                />
-              </div>
-              <HalfDayToggle 
-                label="Half Day" 
-                active={formData.startHalfDay} 
-                onClick={() => setFormData({...formData, startHalfDay: !formData.startHalfDay})} 
-              />
-            </div>
-
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <label className="text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 ml-1">End Date</label>
-                <input
-                  type="date"
-                  required
-                  min={formData.startDate}
-                  className="w-full bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl px-4 py-3 font-semibold text-[#1e266d] outline-none text-sm md:text-base"
-                  value={formData.endDate}
-                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                />
-              </div>
-              <HalfDayToggle 
-                label="Ending Half Day" 
-                active={formData.endHalfDay} 
-                onClick={() => setFormData({...formData, endHalfDay: !formData.endHalfDay})} 
-              />
-            </div>
-          </div>
-
-          {/* 3. TOTAL DAYS PREVIEW */}
-          <div className="bg-[#f8faff] rounded-xl md:rounded-2xl p-4 md:p-5 border border-indigo-50 flex items-center justify-between">
-            <div className="flex-1">
-              <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Calculated Duration</span>
-              <p className="text-xs font-medium text-slate-500 mt-0.5">Automated Calculation</p>
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-black text-[#1e266d]">{totalDays}</span>
-              <span className="text-[10px] md:text-xs font-bold text-slate-400 uppercase">Days</span>
-            </div>
-          </div>
-
-          {/* 4. REASON */}
-          <div className="space-y-2">
-            <label className="text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 ml-1">Reason for absence</label>
-            <textarea
-              rows={3}
+          {/* 02. Dates */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <MyDatePicker
+              label={formData.category === "COMP_OFF" ? "02. Date Worked" : "02. Start Date"}
+              selected={formData.startDate}
+              onChange={(date) => setFormData({ ...formData, startDate: date })}
+              maxDate={formData.category === "COMP_OFF" ? today : oneMonthFromNow}
+              minDate={formData.category === "COMP_OFF" ? undefined : today}
               required
-              placeholder="Briefly explain your leave..."
-              className="w-full bg-slate-50 border border-slate-100 rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 font-medium text-[#1e266d] outline-none text-sm md:text-base"
-              value={formData.reason}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
             />
+
+            {formData.category !== "COMP_OFF" && !formData.isHalfDay && (
+              <MyDatePicker
+                label="03. End Date"
+                selected={formData.endDate}
+                onChange={(date) => setFormData({ ...formData, endDate: date })}
+                minDate={formData.startDate || today}
+                maxDate={oneMonthFromNow}
+                required
+              />
+            )}
           </div>
 
-          {/* 5. FOOTER ACTIONS */}
-          <div className="pt-2 space-y-3">
-            <label className="flex items-center justify-center gap-2 w-full py-3 rounded-xl md:rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 hover:text-indigo-500 transition-all cursor-pointer group">
-              <FaPaperclip className="text-xs md:text-sm" />
-              <span className="text-xs md:text-sm font-bold truncate max-w-[80%]">
-                {formData.attachment ? formData.attachment.name : "Attach Documents"}
+          <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                checked={formData.isHalfDay}
+                onChange={(e) => setFormData({ ...formData, isHalfDay: e.target.checked })}
+              />
+              <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
+                Register as a half-day request
               </span>
-              <input type="file" className="hidden" onChange={(e) => setFormData({...formData, attachment: e.target.files?.[0] || null})} />
             </label>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#1e266d] text-white py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold text-sm md:text-base shadow-lg shadow-indigo-900/10 active:scale-[0.98] transition-all flex justify-center items-center gap-3"
-            >
-              {loading ? <FaSpinner className="animate-spin" /> : "Submit Application"}
-            </button>
+            {formData.isHalfDay && (
+              <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200">
+                {["FIRST_HALF", "SECOND_HALF"].map((h) => (
+                  <button
+                    key={h}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, halfDayType: h as any })}
+                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${formData.halfDayType === h
+                        ? "bg-white text-indigo-600 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                      }`}
+                  >
+                    {h === "FIRST_HALF" ? "First Half" : "Second Half"}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+
+          {formData.category !== "COMP_OFF" && (
+            <div className="space-y-3">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                <HiOutlineChatBubbleLeftRight size={16} /> 04. Justification / Reason
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Provide a reason for your leave..."
+                className="w-full bg-white border border-slate-200 p-4 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                value={formData.reason}
+                onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                required 
+              />
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50 shadow-lg shadow-indigo-200"
+          >
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                {formData.category === "COMP_OFF" ? "Request Comp-Off Credit" : "Submit Leave Application"}
+                <HiOutlinePaperAirplane size={18} className="rotate-45" />
+              </>
+            )}
+          </button>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 };
-
-const HalfDayToggle = ({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) => (
-  <div className="flex items-center justify-between bg-slate-50/50 px-3 py-2 rounded-lg md:rounded-xl border border-slate-100">
-    <span className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase">{label}</span>
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-9 h-4.5 md:w-10 md:h-5 rounded-full relative transition-colors duration-300 ${active ? "bg-indigo-500" : "bg-slate-200"}`}
-    >
-      <motion.div 
-        animate={{ x: active ? 18 : 2 }}
-        className="absolute top-1 w-2.5 h-2.5 md:w-3 md:h-3 bg-white rounded-full shadow-sm"
-      />
-    </button>
-  </div>
-);
 
 export default LeaveApplicationForm;
