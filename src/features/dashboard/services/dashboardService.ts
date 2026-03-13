@@ -29,6 +29,7 @@ export const dashboardService = {
   getEmpDashboard: async (employeeId: number) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
+    console.log("Dashboard API:", response.data);
 
     return response.data;
 
@@ -41,10 +42,10 @@ export const dashboardService = {
 
   },
 
-//  fetchProfile: async () => {
-//   const response = await api.get("/employees/profile");
-//   return response.data;
-// },
+fetchProfile: async (employeeId: number) => {
+  const response = await api.get(`/employees/profile/${employeeId}`);
+  return response.data;
+},
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
     const currentYear = new Date().getFullYear();
