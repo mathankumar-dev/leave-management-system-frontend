@@ -10,13 +10,9 @@ interface DatePickerProps {
   placeholder?: string;
   label?: string;
   required?: boolean;
+  minDate?: Date; 
+  maxDate?: Date; 
 }
-
-/**
- * Custom Input Component
- * Uses forwardRef to allow the DatePicker to control the button's focus/click
- */
-/* ... imports ... */
 
 const CustomInput = forwardRef<HTMLButtonElement, { value?: string; onClick?: () => void; placeholder?: string }>(
   ({ value, onClick, placeholder }, ref) => (
@@ -24,47 +20,46 @@ const CustomInput = forwardRef<HTMLButtonElement, { value?: string; onClick?: ()
       type="button"
       onClick={onClick}
       ref={ref}
-      className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-neutral-200 bg-white text-left outline-none focus:ring-2 focus:ring-primary-500 transition-all group"
+      className="w-full flex items-center justify-between px-3 py-2 border border-slate-200 bg-slate-50 text-left outline-none focus:border-indigo-600 transition-all group rounded-sm"
     >
-      <span className={`${value ? "text-neutral-900" : "text-neutral-500"} font-medium`}>
+      <span className={`${value ? "text-slate-900" : "text-slate-400"} text-xs font-black uppercase tracking-tight`}>
         {value || placeholder}
       </span>
-      <FaCalendarAlt className="text-neutral-300 group-hover:text-primary-500 transition-colors" />
+      <FaCalendarAlt className="text-slate-300 group-hover:text-indigo-600 transition-colors" size={14} />
     </button>
   )
 );
 
-
 const MyDatePicker: React.FC<DatePickerProps> = ({
   selected,
   onChange,
-  placeholder = "Select Date",
+  placeholder = "SELECT DATE",
   label,
   required,
+  minDate,
+  maxDate,
 }) => {
   return (
-    <div className="flex flex-col gap-1.5 w-full">
+    <div className="flex flex-col gap-1 w-full">
       {label && (
-        <label className="text-xs font-bold text-neutral-500 uppercase ml-1 tracking-wider">
-          {label} {required && <span className="text-danger">*</span>}
+        <label className="text-[9px] font-black text-slate-400 uppercase ml-1 tracking-[0.15em]">
+          {label} {required && <span className="text-rose-500">*</span>}
         </label>
       )}
       <DatePicker
         selected={selected}
         onChange={onChange}
-        // Custom button trigger
+        minDate={minDate}
+        maxDate={maxDate}
         customInput={<CustomInput placeholder={placeholder} />}
-        dateFormat="MMMM d, yyyy"
-        // Portal ensures it floats over the modal
+        dateFormat="dd / MM / yyyy"
         portalId="datepicker-portal"
         showPopperArrow={false}
         popperPlacement="bottom-start"
-        // Pro features
         fixedHeight
         showMonthDropdown
         showYearDropdown
         dropdownMode="select"
-        // Accessibility
         autoComplete="off"
       />
     </div>
