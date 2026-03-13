@@ -1,5 +1,4 @@
 import api from '../../../api/axiosInstance';
-import type { TeamCalendarResponse } from '../types';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -142,10 +141,6 @@ export const adminService = {
     await api.patch(`/employees/${id}/deactivate`);
   },
 
-  activateEmployee: async (id: number): Promise<void> => {
-    await api.patch(`/employees/${id}/activate`);
-  },
-
   resetPassword: async (id: number): Promise<void> => {
     await api.post(`/employees/${id}/reset-password`);
   },
@@ -282,11 +277,5 @@ export const adminService = {
   getDepartmentReport: async () => {
     const res = await api.get('/reports/departments');
     return res.data;
-  },
-   getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
-    const response = await api.get<TeamCalendarResponse>(
-      `/dashboard/manager/team-calendar/${managerId}`
-    );
-    return response.data;
   },
 };

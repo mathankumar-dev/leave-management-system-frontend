@@ -1,28 +1,40 @@
 import { useState, useCallback, useMemo } from "react";
 import { dashboardService } from "../services/dashboardService";
+import type { UpdateLeavePayload } from "../services/dashboardService";
 import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
 
 import type {
   LeaveRecord,
   Employee,
-  Notification,
-  AuditLog,
   LeaveApplication,
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
+  CompOffRequest,
 } from "../types";
-import type { CalendarScope } from "../views/employee/CalendarView";
 
+// ─── Helper: safely extract an error message from an unknown catch value ─────
+// This replaces every `catch (err: any) { err.message }` pattern.
+const errMsg = (err: unknown, fallback: string): string => {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object" && err !== null) {
+    const cast = err as Record<string, unknown>;
+    if (typeof cast["message"] === "string") return cast["message"];
+    // Handle Axios-style { response: { data: { message } } }
+    const data = (cast["response"] as Record<string, unknown> | undefined)?.["data"] as Record<string, unknown> | undefined;
+    if (typeof data?.["message"] === "string") return data["message"];
+  }
+  return fallback;
+};
 
 const service = dashboardService;
 
 export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
+  const [error, setError]     = useState<string | null>(null);
+  const [teamCalendar, setTeamCalendar]             = useState<TeamCalendarResponse>({});
   const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
-  const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
+  const [teamOnLeave, setTeamOnLeave]               = useState<TeamMemberBalance[]>([]);
 
   /* ================= APPROVALS ================= */
 
@@ -30,8 +42,8 @@ export const useDashboard = () => {
   //   setLoading(true);
   //   try {
   //     return await service.getPendingApprovals();
-  //   } catch (err: any) {
-  //     setError(err.message || "Failed to fetch approvals");
+  //   } catch (err) {
+  //     setError(errMsg(err, "Failed to fetch approvals"));
   //     return [];
   //   } finally {
   //     setLoading(false);
@@ -46,9 +58,9 @@ export const useDashboard = () => {
     try {
       await service.updateDecision(decisionRequest);
       return true;
-    } catch (err: any) {
+    } catch (err) {
       console.error("Full Error Object:", err);
-      setError(err.message || "Action failed");
+      setError(errMsg(err, "Action failed"));
       return false;
     } finally {
       setLoading(false);
@@ -61,31 +73,30 @@ export const useDashboard = () => {
     setLoading(true);
     try {
       return await dashboardService.getEmployeeDashboard();
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch employees");
+    } catch (err) {
+      setError(errMsg(err, "Failed to fetch employees"));
       return [];
     } finally {
       setLoading(false);
     }
   };
 
-
-
   const fetchDashboard = useCallback(async (employeeId: number) => {
     setLoading(true);
     try {
-      const response = await service.getEmpDashboard(employeeId);
-      return response;
-    } catch (err: any) {
-      console.error("API ERROR DETAILS:", err.response?.data || err.message);
-      setError(err.message);
+      return await service.getEmpDashboard(employeeId);
+    } catch (err) {
+      const axiosErr = err as Record<string, unknown>;
+      console.error(
+        "API ERROR DETAILS:",
+        (axiosErr?.["response"] as Record<string, unknown> | undefined)?.["data"] ?? errMsg(err, "")
+      );
+      setError(errMsg(err, "Failed to fetch dashboard"));
       return null;
     } finally {
       setLoading(false);
     }
   }, []);
-
-
 
   /* ================= LEAVES ================= */
 
@@ -93,14 +104,13 @@ export const useDashboard = () => {
     setLoading(true);
     try {
       return await service.getMyLeaveHistory(employeeId);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch leave history");
+    } catch (err) {
+      setError(errMsg(err, "Failed to fetch leave history"));
       return [];
     } finally {
       setLoading(false);
     }
   }, []);
-
 
   const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<LeaveRecord[]> => {
     setLoading(true);
@@ -108,37 +118,31 @@ export const useDashboard = () => {
       const data = await service.getWeeklyLeaveSummary(managerId);
       setWeeklyLeaveSummary(data);
       return data;
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch leave history");
+    } catch (err) {
+      setError(errMsg(err, "Failed to fetch weekly summary"));
       return [];
     } finally {
       setLoading(false);
     }
   }, []);
+
   const fetchTeamOnLeave = useCallback(async (managerId: number): Promise<TeamMemberBalance[]> => {
     setLoading(true);
     try {
       const data = await service.getTeamOnLeave(managerId);
       setTeamOnLeave(data);
       return data;
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch leave history");
+    } catch (err) {
+      setError(errMsg(err, "Failed to fetch team on leave"));
       return [];
     } finally {
       setLoading(false);
     }
   }, []);
 
-
   /* ================= NOTIFICATIONS ================= */
 
-  
-
-  
-
   /* ================= CALENDAR (FIXED) ================= */
-
-  
 
   /* ================= LEAVE ACTIONS ================= */
 
@@ -146,11 +150,9 @@ export const useDashboard = () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await service.submitLeaveRequest(formData);
-      return result;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || "Submission failed";
-      setError(errorMessage);
+      return await service.submitLeaveRequest(formData);
+    } catch (err) {
+      setError(errMsg(err, "Submission failed"));
       return null;
     } finally {
       setLoading(false);
@@ -161,33 +163,33 @@ export const useDashboard = () => {
   //   setLoading(true);
   //   try {
   //     return await service.getLeaveTypes();
-  //   } catch (err: any) {
-  //     setError(err.message || "Failed to fetch leave types");
+  //   } catch (err) {
+  //     setError(errMsg(err, "Failed to fetch leave types"));
   //     return [];
   //   } finally {
   //     setLoading(false);
   //   }
   // }, []);
 
-  // const addLeaveType = async (data: any) => {
+  // const addLeaveType = async (data: LeaveConfig) => {
   //   setLoading(true);
   //   try {
   //     return await service.createLeaveType(data);
-  //   } catch (err: any) {
-  //     setError(err.message || "Failed to create leave type");
+  //   } catch (err) {
+  //     setError(errMsg(err, "Failed to create leave type"));
   //     return null;
   //   } finally {
   //     setLoading(false);
   //   }
   // };
 
-  const removeLeaveType = async (id: number) => {
+  const removeLeaveType = async (id: number): Promise<boolean> => {
     setLoading(true);
     try {
       await service.deleteLeaveType(id);
       return true;
-    } catch (err: any) {
-      setError(err.message || "Failed to delete");
+    } catch (err) {
+      setError(errMsg(err, "Failed to delete"));
       return false;
     } finally {
       setLoading(false);
@@ -213,16 +215,14 @@ export const useDashboard = () => {
   const fetchManagerDashboard = useCallback(async (id: number) => {
     setLoading(true);
     try {
-      const response = await service.getManagerDashboard(id);
-      return response;
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch manager data");
+      return await service.getManagerDashboard(id);
+    } catch (err) {
+      setError(errMsg(err, "Failed to fetch manager data"));
       return null;
     } finally {
       setLoading(false);
     }
   }, []);
-
 
   const [filters, setFilters] = useState({
     month: 'all',
@@ -232,41 +232,39 @@ export const useDashboard = () => {
     manager: 'all',
   });
 
-  const cancelLeave = useCallback(async (id: number, employeeId: number) => {
+  const cancelLeave = useCallback(async (id: number, employeeId: number): Promise<boolean> => {
     setLoading(true);
     try {
       await service.cancelLeave(id, employeeId);
       return true;
-    } catch (err: any) {
-      setError(err.message || "Cancel failed");
+    } catch (err) {
+      setError(errMsg(err, "Cancel failed"));
       return false;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const editLeave = useCallback(async (id: number, data: any) => {
+  // Strongly typed — data shape matches UpdateLeavePayload (employeeId, startDate, endDate, reason, halfDayType?)
+  const editLeave = useCallback(async (id: number, data: UpdateLeavePayload): Promise<boolean> => {
     setLoading(true);
     try {
       await service.updateLeave(id, data);
       return true;
-    } catch (err: any) {
-      setError(err.message || "Update failed");
+    } catch (err) {
+      setError(errMsg(err, "Update failed"));
       return false;
     } finally {
       setLoading(false);
     }
   }, []);
 
-
   const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
     setLoading(true);
     try {
-      // Replace 'service' with your actual API service name
-      const response = await service.getTeamLeaveStats(managerId);
-      return response;
-    } catch (err: any) {
-      const message = err.message || "Failed to fetch team members";
+      return await service.getTeamLeaveStats(managerId);
+    } catch (err) {
+      const message = errMsg(err, "Failed to fetch team members");
       setError(message);
       console.error(message);
       return [];
@@ -281,21 +279,18 @@ export const useDashboard = () => {
 
   const stats = useMemo(() => ({
     topDepartment: departmentLeaveData.reduce((max, d) => (d.leaves > max.leaves ? d : max), departmentLeaveData[0]),
-    topApprover: managerTrackingData.reduce((max, m) => (m.approved > max.approved ? m : max), managerTrackingData[0]),
-    topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
+    topApprover:   managerTrackingData.reduce((max, m) => (m.approved > max.approved ? m : max), managerTrackingData[0]),
+    topPending:    managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
   }), []);
 
-
-
-  const bankCompOff = useCallback(async (payload: any) => {
+  // Strongly typed — payload must match CompOffRequest { employeeId, entries }
+  const bankCompOff = useCallback(async (payload: CompOffRequest) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await service.submitCompOffRequest(payload);
-      return result;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || "Comp-Off banking failed";
-      setError(errorMessage);
+      return await service.submitCompOffRequest(payload);
+    } catch (err) {
+      setError(errMsg(err, "Comp-Off banking failed"));
       return null;
     } finally {
       setLoading(false);
@@ -303,9 +298,6 @@ export const useDashboard = () => {
   }, []);
 
   /* ================= EXPORT ================= */
-
-
-
 
   return {
     loading,
@@ -318,10 +310,8 @@ export const useDashboard = () => {
     fetchEmployees,
     fetchMyLeaves,
     bankCompOff,
-
     applyLeave,
     getTeamMembers,
-   
     removeLeaveType,
     cancelLeave,
     editLeave,
@@ -331,6 +321,6 @@ export const useDashboard = () => {
     weeklyLeaveSummary,
     fetchTeamOnLeave,
     teamOnLeave,
-    filters, updateFilter, stats
+    filters, updateFilter, stats,
   };
 };

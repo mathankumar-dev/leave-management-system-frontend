@@ -236,4 +236,5 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   );
 };
 
+
 export default DashboardView;

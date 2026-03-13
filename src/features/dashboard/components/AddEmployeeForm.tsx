@@ -7,6 +7,7 @@ import {
 import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
 import FailureModal from "../../../components/ui/FailureModal";
 import SuccessModal from "../../../components/ui/SuccessModal";
+import { adminService } from "../services/adminService";
 
 interface Props {
   open: boolean;
@@ -26,8 +27,19 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose }) => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Simulate API Call
-      // await api.addEmployee(formData); 
+      // Real API call
+      await adminService.createEmployee({
+        name: formData.fullName,
+        email: formData.email,
+        department: formData.department,
+        designation: formData.designation,
+        employeeId: formData.empId,
+        phone: formData.contact,
+        joiningDate: formData.joiningDate,
+        status: 'ACTIVE',
+        role: 'EMPLOYEE',
+        managerName: formData.manager,
+      });
 
       // On Success:
       setShowSuccess(true);
