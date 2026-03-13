@@ -18,11 +18,7 @@ import ManagerStatCardTeam from "../../components/ManagerStatCardTeam";
 
 const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
-  const { fetchManagerDashboard, processApproval, loading: dashboardLoading } = useDashboard();
-
-  // console.log(user);
-
-
+  const { fetchManagerDashboard, fetchTeamLeaderDashboard, processApproval, loading: dashboardLoading } = useDashboard();
 
   const [dashboardData, setDashboardData] = useState<ManagerDashBoardResponse>();
   const [approvals, setApprovals] = useState<any[]>([]);
@@ -46,17 +42,25 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
   }>({ isOpen: false, req: null, status: null });
 
 
-
+  let data;
   const loadAllData = useCallback(async () => {
     if (!user?.id) return;
 
-    const data = await fetchManagerDashboard(user.id);
+    try {
+      // Fixed the 'data' scoping issue
+      const response = user.role === "TEAM_LEADER"
+        ? await fetchTeamLeaderDashboard(user.id)
+        : await fetchManagerDashboard(user.id);
 
-    if (data) {
-      setDashboardData(data);
-      setApprovals(data.pendingTeamRequests || []);
+      if (response) {
+        setDashboardData(response);
+        setApprovals(response.pendingTeamRequests || []);
+      }
+    } catch (error) {
+      console.error("Failed to sync dashboard:", error);
+      notify.error("Failed to fetch dashboard data");
     }
-  }, [user?.id, fetchManagerDashboard]);
+  }, [user?.id, user?.role, fetchManagerDashboard, fetchTeamLeaderDashboard]);
 
   useEffect(() => {
     if (!authLoading) loadAllData();
@@ -65,7 +69,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
   const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
     const success = await processApproval({
       leaveId: req.leaveId,
-      managerId: Number(user?.id),
+      approverId: Number(user?.id),
       decision: status,
       comments: commentText
     });

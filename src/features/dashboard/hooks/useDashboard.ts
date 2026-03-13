@@ -249,6 +249,21 @@ const applyLeave = useCallback(async (data: FormData ) => {
     },
     []
   );
+  const fetchTeamLeaderDashboard = useCallback(
+    async (id: number): Promise<ManagerDashBoardResponse | null> => {
+      setLoading(true);
+      try {
+        const response = await service.getTeamLeaderDashboard(id);
+        return response;
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch team leader data");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
 
   const [filters, setFilters] = useState({
@@ -339,6 +354,7 @@ const applyLeave = useCallback(async (data: FormData ) => {
     setError,
     fetchDashboard,
     fetchManagerDashboard,
+    fetchTeamLeaderDashboard,
     // fetchApprovals,
     processApproval,
     fetchEmployees,

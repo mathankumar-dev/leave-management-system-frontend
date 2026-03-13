@@ -35,7 +35,7 @@ export interface LeaveRecord {
 
 export interface LeaveDecisionRequest {
   leaveId: number;
-  managerId: number;
+  approverId: number;
   decision: LeaveDecision;
   comments?: string;
 }

@@ -40,6 +40,13 @@ export const dashboardService = {
     return response.data;
 
   },
+  getTeamLeaderDashboard: async (teamLeaderId: number) => {
+
+    const response = await api.get(`/dashboard/teamleader/${teamLeaderId}`);
+
+    return response.data;
+
+  },
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
     const currentYear = new Date().getFullYear();
@@ -137,6 +144,7 @@ export const dashboardService = {
   updateDecision: async (
     decisionRequest: LeaveDecisionRequest
   ): Promise<void> => {
+    console.log(decisionRequest);
     await api.patch(
       "/leave-approvals/decision",
       decisionRequest
