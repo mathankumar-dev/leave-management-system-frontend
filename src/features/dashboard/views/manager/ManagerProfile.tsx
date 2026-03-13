@@ -94,9 +94,9 @@ const ManagerProfile: React.FC = () => {
               </div>
             </div>
           </div>
-          <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-slate-800 transition-all">
+          {/* <button className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-slate-800 transition-all">
             <HiOutlinePencilSquare className="w-4 h-4" /> Edit Profile
-          </button>
+          </button> */}
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
