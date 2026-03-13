@@ -33,6 +33,54 @@ export interface LeaveRecord {
 }
 
 
+export interface ProfileData {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+
+  managerId: number;
+  managerName: string;
+  teamLeaderId: number;
+  teamLeaderName: string;
+
+  joiningDate: string;
+
+  contactNumber: string;
+  gender: string;
+  dateOfBirth: string;
+  bloodGroup: string;
+
+  personalEmail: string;
+  aadharNumber: string;
+
+  presentAddress: string;
+  permanentAddress: string;
+
+  emergencyContactNumber: string;
+
+  fatherName: string;
+  motherName: string;
+
+  designation: string;
+
+  skillSet: string[];
+
+  biometricStatus: string;
+  vpnStatus: string;
+
+  active: boolean;
+
+  createdAt?: string;
+  updatedAt?: string;
+
+  personalDetailsComplete: boolean;
+  personalDetailsLocked: boolean;
+
+  photo?: string;
+}
+
+
 export interface LeaveDecisionRequest {
   leaveId: number;
   approverId: number;
@@ -130,6 +178,7 @@ export interface ChartData {
   Earned: number;
 
 }
+
 
 
 // ==============================
@@ -362,45 +411,42 @@ export interface MeetingRequest{
 
 
 export interface ProfileData {
-  // --- Auth & Core Identity ---
   id: number;
   name: string;
-  email: string; // Work Email
+  email: string;
   role: string;
-  active: boolean;
-  personalDetailsComplete: boolean;
-  personalDetailsLocked: boolean;
 
-  // --- Employment Details ---
+  managerId: number;
+  managerName: string;
+
   designation: string;
   joiningDate: string;
-  managerId: number | null;
-  managerName: string | null;
-  teamLeaderId: number | null;
-  teamLeaderName: string | null;
-  biometricStatus: string;
-  vpnStatus: string;
 
-  // --- Contact & Personal ---
-  contactNumber: string;
-  personalEmail: string;
+  phone?: string;
+  dob?: string;
   gender: string;
-  bloodGroup: string;
-  dateOfBirth: string;
-  aadharNumber: string; // Will be masked in UI
-  emergencyContactNumber: string;
 
-  // --- Addresses ---
+  address?: string;
+
   presentAddress: string;
   permanentAddress: string;
 
-  // --- Family ---
+  bloodGroup: string;
+
   fatherName: string;
   motherName: string;
 
-  // --- Skills & Socials ---
-  skillSet: string[]; // Backend returns array of strings
-  linkedin?: string;
-  github?: string;
+  emergencyContactNumber: string;
+
+  personalEmail: string;
+  aadharNumber: string;
+
+  skills?: string[];
+
+  biometricStatus: string ;
+  vpnStatus: string;
+
+  personalDetailsLocked: boolean;
+
   photo?: string;
 }

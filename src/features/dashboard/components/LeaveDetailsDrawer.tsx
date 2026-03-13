@@ -7,6 +7,23 @@ interface StatItem {
   used: number;
   total?: number;
   color: string;
+   breakdown?: LeaveTypeBreakdown[];
+}
+
+interface LeaveTypeBreakdown {
+  leaveType: string;
+  allocatedDays: number;
+  usedDays: number;
+  remainingDays: number;
+  halfDayCount: number;
+}
+
+interface StatItem {
+  title: string;
+  used: number;
+  total?: number;
+  color: string;
+  breakdown?: LeaveTypeBreakdown[];
 }
 
 interface LeaveDetailsDrawerProps {
@@ -65,6 +82,22 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({
 
           {/* Content */}
           <div className="p-6 space-y-8">
+            {/* Breakdown */}
+{stat.breakdown && stat.breakdown.length > 0 && (
+  <div className="space-y-4">
+    <h3 className="font-bold text-sm uppercase tracking-tight text-slate-800">
+      Leave Breakdown
+    </h3>
+    {stat.breakdown.map((b) => (
+      <div key={b.leaveType} className="flex justify-between text-sm text-slate-700 p-2 bg-slate-50 rounded-md border border-slate-100">
+        <span className="font-medium">{b.leaveType}</span>
+        <span>
+          Used: {b.usedDays} / {b.allocatedDays} | Remaining: {b.remainingDays}
+        </span>
+      </div>
+    ))}
+  </div>
+)}
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
                 <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">

@@ -1,180 +1,208 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { FaShieldAlt, FaMapMarkerAlt } from "react-icons/fa";
+import React, { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { FaShieldAlt, FaMapMarkerAlt } from "react-icons/fa"
 
-// Components & Types
-import BaseProfile from "../../layout/BaseProfile";
-import type { ProfileData } from "../../types";
-import { useAuth } from "../../../auth/hooks/useAuth";
-import CustomLoader from "../../../../components/ui/CustomLoader";
+import { useAuth } from "../../../auth/hooks/useAuth"
+// import { useEmployeeProfile } from "../../hooks/useEmployeeProfile"
+import CustomLoader from "../../../../components/ui/CustomLoader"
+
+import type { ProfileData } from "../../types"
+import { useEmployeeProfile } from "./UseEmployeeProfile"
 
 const EmployeeProfile: React.FC = () => {
-  const { user, isLoading } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
 
-  const [profile, setProfile] = useState<ProfileData>(() => ({
-    ...user,
-    phone: null,
-    employeeId: null,
-    photo: null,
-    department: user?.department || null,
-    designation: null,
-    joiningDate: user?.joiningDate || null,
-    workLocation: null,
-    managerName: null,
-    employmentType: 'Full-time',
-    dob: null,
-    gender: null,
-    nationality: null,
-    address: null,
-    skills: [],
-  } as unknown as ProfileData));
+  const { user } = useAuth()
 
-  const [originalProfile, setOriginalProfile] = useState<ProfileData>(profile);
+  const { profile: backendProfile, loading } = useEmployeeProfile(user?.id)
+
+  const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [originalProfile, setOriginalProfile] = useState<ProfileData | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
-    if (user) {
-      setProfile({
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        email: user.email,
-        phone: "",
-        photo: "",
-        department: user.department ?? "",
-        designation: "",
-        joiningDate: user.joiningDate,
-        workLocation: "",
-        managerName: user.managerName ,
-        managerId: user.managerId ?? undefined,
-        employmentType: "Full-time",
-        dob: "",
-        gender: "",
-        nationality: "",
-        address: "",
-        skills: [],
-      });
+    if (backendProfile) {
+      setProfile(backendProfile)
+      setOriginalProfile(backendProfile)
     }
-  }, [user]);
+  }, [backendProfile])
 
-  // Loading Guard
-  if (isLoading) {
+  if (loading || !profile) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <CustomLoader label="Loading Profile" />
+        <CustomLoader label="Loading Profile..." />
       </div>
-    );
+    )
   }
 
-  // ================================
-  // Handlers
-  // ================================
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setProfile((prev) => ({ ...prev, [name]: value }));
-  };
+    setProfile(prev => ({
+      ...prev!,
+      [name]: value
+    }))
+  }
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const Field = ({ label, name, value }: any) => (
+    <div className="flex flex-col gap-1">
+      <label className="text-xs text-gray-500">{label}</label>
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setProfile((prev) => ({ ...prev, photo: reader.result as string }));
-    };
-    reader.readAsDataURL(file);
-  };
-
-  console.log(profile);
-  
+      {isEditing ? (
+        <input
+          name={name}
+          value={value || ""}
+          onChange={handleChange}
+          className="border rounded-lg px-3 py-2 text-sm"
+        />
+      ) : (
+        <span className="text-sm text-gray-700">{value || "-"}</span>
+      )}
+    </div>
+  )
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div className="min-h-screen bg-[#F8FAFC] p-6">
 
-        {/* LEFT SIDE: Identity Card */}
-        <div className="lg:col-span-4 space-y-6">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-8">
+
+        {/* PROFILE CARD */}
+
+        <div className="lg:col-span-4">
+
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center"
+            className="bg-white rounded-2xl shadow border p-6 text-center"
           >
-            <div className="relative inline-block mb-4">
-              {profile.photo ? (
-                <img
-                  src={profile.photo}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-indigo-50 mx-auto shadow-md"
-                  alt="User"
-                />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-indigo-600 flex items-center justify-center text-white text-4xl font-bold mx-auto shadow-md border-4 border-indigo-50">
-                  {profile.name?.charAt(0) || "U"}
-                </div>
-              )}
-              <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 border-4 border-white rounded-full" />
+
+            <div className="w-32 h-32 rounded-full bg-indigo-600 flex items-center justify-center text-white text-3xl mx-auto">
+              {profile.name?.charAt(0)}
             </div>
 
-            <h2 className="text-xl font-bold text-slate-900">{profile.name}</h2>
-            <p className="text-sm font-semibold text-indigo-600 mb-1">{profile.designation || 'Employee'}</p>
-            <p className="text-xs text-slate-400 mb-4">{profile.department}</p>
+            <h2 className="text-xl font-bold mt-4">{profile.name}</h2>
 
-            <div className="flex flex-wrap justify-center gap-2 mb-6">
-              <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-bold uppercase">
-                {profile.employmentType}
-              </span>
-              <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded font-bold uppercase">
-                ID: {profile.id || 'N/A'}
-              </span>
-            </div>
+            <p className="text-indigo-600 text-sm">
+              {profile.designation || "Employee"}
+            </p>
 
-            <div className="border-t border-slate-50 pt-6 text-left space-y-3">
-              <div className="flex items-center gap-3 text-slate-600">
-                <FaMapMarkerAlt className="text-slate-400 text-xs shrink-0" />
-                <span className="text-xs">{profile.workLocation || 'Remote'}</span>
+            <p className="text-xs text-gray-400">{profile.role}</p>
+
+            <div className="mt-4 text-xs text-gray-500 space-y-2">
+
+              <div className="flex gap-2 items-center">
+                <FaMapMarkerAlt />
+                {profile.presentAddress || "No address"}
               </div>
 
-              <div className="flex items-center gap-3 text-slate-600">
-                <FaShieldAlt className="text-slate-400 text-xs shrink-0" />
-                <span className="text-xs">Reports to: {profile.managerName }</span>
+              <div className="flex gap-2 items-center">
+                <FaShieldAlt />
+                Manager: {profile.managerName || "Not Assigned"}
               </div>
+
             </div>
+
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="mt-6 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm"
+            >
+              {isEditing ? "Cancel Edit" : "Edit Profile"}
+            </button>
+
           </motion.div>
+
         </div>
 
-        {/* RIGHT SIDE: Form Content */}
-        <div className="lg:col-span-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
-          >
-            <div className="p-8">
-              <BaseProfile
-                profile={profile}
-                isEditing={isEditing}
-                canEdit={true}
-                canEditDepartment={false}
-                canEditEmployeeId={false}
-                onChange={handleChange}
-                onPhotoChange={handlePhotoChange}
-                onStartEdit={() => {
-                  setOriginalProfile(profile);
-                  setIsEditing(true);
-                }}
-                onSave={() => setIsEditing(false)}
-                onCancel={() => {
-                  setProfile(originalProfile);
-                  setIsEditing(false);
-                }}
-              />
+
+        {/* DETAILS SECTION */}
+
+        <div className="lg:col-span-8 space-y-6">
+
+          {/* PERSONAL */}
+
+          <Section title="Personal Information">
+
+            <Field label="Full Name" name="name" value={profile.name} />
+            <Field label="Email" name="email" value={profile.email} />
+            <Field label="Personal Email" name="personalEmail" value={profile.personalEmail} />
+            <Field label="Phone" name="contactNumber" value={profile.contactNumber} />
+            <Field label="Gender" name="gender" value={profile.gender} />
+            <Field label="Date Of Birth" name="dateOfBirth" value={profile.dateOfBirth} />
+            <Field label="Blood Group" name="bloodGroup" value={profile.bloodGroup} />
+
+          </Section>
+
+          {/* ADDRESS */}
+
+          <Section title="Address">
+
+            <Field label="Present Address" name="presentAddress" value={profile.presentAddress} />
+            <Field label="Permanent Address" name="permanentAddress" value={profile.permanentAddress} />
+
+          </Section>
+
+          {/* FAMILY */}
+
+          <Section title="Family">
+
+            <Field label="Father Name" name="fatherName" value={profile.fatherName} />
+            <Field label="Mother Name" name="motherName" value={profile.motherName} />
+            <Field label="Emergency Contact" name="emergencyContactNumber" value={profile.emergencyContactNumber} />
+
+          </Section>
+
+          {/* WORK */}
+
+          <Section title="Work Details">
+
+            <Field label="Employee ID" name="id" value={profile.id} />
+            <Field label="Designation" name="designation" value={profile.designation} />
+            <Field label="Manager" name="managerName" value={profile.managerName} />
+            <Field label="Team Leader" name="teamLeaderName" value={profile.teamLeaderName} />
+            <Field label="Joining Date" name="joiningDate" value={profile.joiningDate} />
+
+          </Section>
+
+          {/* SKILLS */}
+
+          <Section title="Skills">
+
+            <div className="flex flex-wrap gap-2">
+
+              {profile.skillSet?.length
+                ? profile.skillSet.map((s, i) => (
+                    <span
+                      key={i}
+                      className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded"
+                    >
+                      {s}
+                    </span>
+                  ))
+                : "No skills added"}
+
             </div>
-          </motion.div>
+
+          </Section>
+
         </div>
 
       </div>
-    </div>
-  );
-};
 
-export default EmployeeProfile;
+    </div>
+  )
+}
+
+export default EmployeeProfile
+
+
+const Section = ({ title, children }: any) => (
+
+  <div className="bg-white border rounded-xl p-6">
+
+    <h3 className="text-sm font-semibold text-gray-700 mb-4">{title}</h3>
+
+    <div className="grid grid-cols-2 gap-4">
+      {children}
+    </div>
+
+  </div>
+)

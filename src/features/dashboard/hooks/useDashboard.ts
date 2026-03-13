@@ -89,6 +89,7 @@ const hasExceededLimits = useMemo(() => {
     setLoading(true);
     try {
       return await dashboardService.getEmployeeDashboard();
+      
     } catch (err: any) {
       setError(err.message || "Failed to fetch employees");
       return [];

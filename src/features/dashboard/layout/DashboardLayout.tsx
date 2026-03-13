@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { dashboardService } from "../services/dashboardService";
 // import PayrollView from "../views/PayrollView";
 
 /* ---------------- ADMIN VIEWS ---------------- */
@@ -12,7 +15,6 @@ import LeaveTypesView from "../views/admin/LeaveTypesView";
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
 import LowBalancePage from "../views/hr/pages/LowBalancePage";
-import { PayslipPage } from "../views/hr/pages/PayslipPage";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -58,6 +60,8 @@ const DashboardLayout: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+const navigate = useNavigate();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +75,29 @@ const DashboardLayout: React.FC = () => {
       scrollContainerRef.current.scrollTo({ top: 0 });
     }
   }, [activeTab]);
+
+
+  useEffect(() => {
+  const checkProfile = async () => {
+    try {
+      if (!user?.id) return;
+
+      const profile = await dashboardService.getProfile(user.id);
+
+      if (!profile.personalDetailsComplete) {
+        navigate("/complete-profile");
+        return;
+      }
+
+      setCheckingProfile(false);
+    } catch (error) {
+      console.error("Profile verification failed", error);
+      setCheckingProfile(false);
+    }
+  };
+
+  checkProfile();
+}, [user?.id, navigate]);
 
   /* ---------------- ADMIN DASHBOARD FETCH ---------------- */
   useEffect(() => {
@@ -149,7 +176,7 @@ const DashboardLayout: React.FC = () => {
           );
         }
 
-        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
+        if (userRole === ROLES.MANAGER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
 
         if (userRole === ROLES.HR) return <HRDashboard />;
@@ -165,9 +192,6 @@ const DashboardLayout: React.FC = () => {
       case "All Employees":
         if (userRole === ROLES.HR) return <HREmployeesPage />;
         return <EmployeesView />;
-
-      case "Payslip":
-        if (userRole === ROLES.HR) return <PayslipPage />;
 
       case "LowBalance Employee":
         return <LowBalancePage />;
@@ -209,6 +233,14 @@ const DashboardLayout: React.FC = () => {
         return <DashboardView onNavigate={setActiveTab} />;
     }
   };
+
+  if (checkingProfile) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
   if (mustChangePassword) {
     return <ChangePasswordDialog />;
