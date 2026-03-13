@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 declare module 'axios' {
   interface AxiosRequestConfig {
-    silent?: boolean;
+    silent?: number[];
   }
 }
 
@@ -51,23 +51,27 @@ api.interceptors.response.use(
     } else {
       switch (status) {
         case 400:
-          toast.warning("Invalid Request", { description: message });
+          if (!error.config?.silent?.includes(400)) toast.warning("Invalid Request", { description: message });
+          // toast.warning("Invalid Request", { description: message });
           break;
         case 401:
           toast.error("Session Expired", { description: "Please log in again." });
           handleLogout();
           break;
         case 403:
-          toast.error("Access Denied", { description: "You don't have permission for this." });
+          if (!error.config?.silent?.includes(403)) toast.error("Access Denied", { description: "You don't have permission for this." });
+          // toast.error("Access Denied", { description: "You don't have permission for this." });
           break;
         case 404:
-          toast.info("Not Found", { description: "The resource you're looking for doesn't exist." });
+          if (!error.config?.silent?.includes(404)) toast.info("Not Found", { description: "The resource you're looking for doesn't exist." });
+          // toast.info("Not Found", { description: "The resource you're looking for doesn't exist." });
           break;
         case 500:
-          toast.error("Server Error", { description: "Our team has been notified. Please try later." });
+          if (!error.config?.silent?.includes(500)) toast.error("Server Error", { description: "Our team has been notified. Please try later." });
+          // toast.error("Server Error", { description: "Our team has been notified. Please try later." });
           break;
         default:
-          toast.error("Error", { description: message });
+          if (!error.config?.silent?.includes(status)) toast.error("Error", { description: message });
       }
     }
 

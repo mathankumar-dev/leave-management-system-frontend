@@ -1,23 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaSearch, FaFileInvoiceDollar, FaCog, FaTimes, FaChevronRight, FaRupeeSign } from 'react-icons/fa';
+import { FaSearch, FaFileInvoiceDollar, FaCog, FaTimes, FaChevronRight, FaRupeeSign, FaDownload } from 'react-icons/fa';
 import { employeeService, type Employee } from '../service/employeeService';
 import { usePayslip } from '../hooks/usePayslip';
 import { notify } from '../../../../../utils/notifications';
 import CustomLoader from '../../../../../components/ui/CustomLoader';
 
+// ─── Updated to match backend response ───────────────────────────
 interface SalaryStructureConfig {
   role: 'EMPLOYEE' | 'MANAGER' | 'ADMIN';
   hra: number;
-  transport: number;
+  conveyance: number;
+  medical: number;
+  otherAllowance: number;
   pfPercent: number;
-  taxPercent: number;
+  professionalTax: number;
+  esiPercent: number;
 }
-
-const defaultStructures: SalaryStructureConfig[] = [
-  { role: 'EMPLOYEE', hra: 8000,  transport: 2000, pfPercent: 12, taxPercent: 5  },
-  { role: 'MANAGER',  hra: 15000, transport: 3000, pfPercent: 12, taxPercent: 8  },
-  { role: 'ADMIN',    hra: 20000, transport: 4000, pfPercent: 12, taxPercent: 10 },
-];
 
 // ─── Salary Structure Modal ───────────────────────────────────────
 const SalaryStructureModal: React.FC<{
@@ -76,76 +74,55 @@ const SalaryStructureModal: React.FC<{
         {/* Fields */}
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">HRA (₹)</label>
-              <input
-                type="number"
-                value={current.hra}
-                onChange={e => updateField('hra', parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Transport (₹)</label>
-              <input
-                type="number"
-                value={current.transport}
-                onChange={e => updateField('transport', parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PF %</label>
-              <input
-                type="number"
-                value={current.pfPercent}
-                onChange={e => updateField('pfPercent', parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tax %</label>
-              <input
-                type="number"
-                value={current.taxPercent}
-                onChange={e => updateField('taxPercent', parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
-              />
-            </div>
+            {[
+              { label: 'HRA (₹)', field: 'hra' },
+              { label: 'Conveyance (₹)', field: 'conveyance' },
+              { label: 'Medical (₹)', field: 'medical' },
+              { label: 'Other Allowance (₹)', field: 'otherAllowance' },
+              { label: 'PF %', field: 'pfPercent' },
+              { label: 'Professional Tax (₹)', field: 'professionalTax' },
+              { label: 'ESI %', field: 'esiPercent' },
+            ].map(({ label, field }) => (
+              <div key={field} className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
+                <input
+                  type="number"
+                  value={current[field as keyof Omit<SalaryStructureConfig, 'role'>]}
+                  onChange={e => updateField(field as keyof Omit<SalaryStructureConfig, 'role'>, parseFloat(e.target.value) || 0)}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+                />
+              </div>
+            ))}
           </div>
 
           {/* Preview */}
           <div className="bg-indigo-50 rounded-xl p-4 space-y-1">
             <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2">Preview</p>
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-500">HRA</span>
-              <span className="font-bold text-slate-700">₹{current.hra.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-500">Transport</span>
-              <span className="font-bold text-slate-700">₹{current.transport.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-500">PF Deduction</span>
-              <span className="font-bold text-rose-500">{current.pfPercent}% of Basic</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-slate-500">Tax Deduction</span>
-              <span className="font-bold text-rose-500">{current.taxPercent}% of Basic</span>
-            </div>
+            {[
+              { label: 'HRA', value: `₹${current.hra.toLocaleString('en-IN')}`, red: false },
+              { label: 'Conveyance', value: `₹${current.conveyance.toLocaleString('en-IN')}`, red: false },
+              { label: 'Medical', value: `₹${current.medical.toLocaleString('en-IN')}`, red: false },
+              { label: 'Other Allowance', value: `₹${current.otherAllowance.toLocaleString('en-IN')}`, red: false },
+              { label: 'PF Deduction', value: `${current.pfPercent}% of Basic`, red: true },
+              { label: 'Professional Tax', value: `₹${current.professionalTax}`, red: true },
+              { label: 'ESI', value: `${current.esiPercent}% of Basic`, red: true },
+            ].map(({ label, value, red }) => (
+              <div key={label} className="flex justify-between text-xs">
+                <span className="text-slate-500">{label}</span>
+                <span className={`font-bold ${red ? 'text-rose-500' : 'text-slate-700'}`}>{value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Footer */}
         <div className="flex gap-3 p-6 pt-0">
-          <button
-            onClick={onClose}
+          <button onClick={onClose}
             className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
           >
             Cancel
           </button>
-          <button
-            onClick={() => { onSave(localStructures); onClose(); }}
+          <button onClick={() => { onSave(localStructures); onClose(); }}
             className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors"
           >
             Save Changes
@@ -160,9 +137,10 @@ const SalaryStructureModal: React.FC<{
 // ─── Main PayslipPage ─────────────────────────────────────────────
 export const PayslipPage: React.FC = () => {
   const {
-    history, loading,
+    history, payrollData, loading,
     setEmployeeSalary, generatePayslip,
     fetchPayslip, fetchHistory, generatePayroll,
+    fetchEmployeeSalary, fetchSalaryStructure,
   } = usePayslip();
 
   // Employee list
@@ -172,14 +150,41 @@ export const PayslipPage: React.FC = () => {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   // Salary structure
-  const [structures, setStructures] = useState<SalaryStructureConfig[]>(defaultStructures);
+  const [structures, setStructures] = useState<SalaryStructureConfig[]>([]);
   const [showStructureModal, setShowStructureModal] = useState(false);
 
-  // Form
-  const [basicSalary, setBasicSalary] = useState('');
+  // basicSalary — per employee map la store (switch pannalum delete aagathu)
+  const [basicSalaryMap, setBasicSalaryMap] = useState<Record<number, string>>({});
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [lopDeduction, setLopDeduction] = useState('0');
+
+  // Current employee basic salary
+  const basicSalary = selectedEmployee ? (basicSalaryMap[selectedEmployee.id] ?? '') : '';
+  const setBasicSalary = (val: string) => {
+    if (!selectedEmployee) return;
+    setBasicSalaryMap(prev => ({ ...prev, [selectedEmployee.id]: val }));
+  };
+
+  // Fetch salary structures — page load
+  useEffect(() => {
+    const load = async () => {
+      const data = await fetchSalaryStructure();
+      if (data.length > 0) {
+        setStructures(data.map(s => ({
+          role: s.role as 'EMPLOYEE' | 'MANAGER' | 'ADMIN',
+          hra: s.hra,
+          conveyance: s.conveyance,
+          medical: s.medical,
+          otherAllowance: s.otherAllowance,
+          pfPercent: s.pfPercent,
+          professionalTax: s.professionalTax,
+          esiPercent: s.esiPercent,
+        })));
+      }
+    };
+    load();
+  }, []);
 
   // Fetch employees
   useEffect(() => {
@@ -216,11 +221,16 @@ export const PayslipPage: React.FC = () => {
   const structure = getStructure();
   const basic = parseFloat(basicSalary) || 0;
   const hra = structure?.hra || 0;
-  const transport = structure?.transport || 0;
+  const conveyance = structure?.conveyance || 0;
+  const medical = structure?.medical || 0;
+  const otherAllowance = structure?.otherAllowance || 0;
   const pfDeduction = basic * ((structure?.pfPercent || 0) / 100);
-  const taxDeduction = basic * ((structure?.taxPercent || 0) / 100);
+  const professionalTax = structure?.professionalTax || 0;
+  const esiDeduction = basic * ((structure?.esiPercent || 0) / 100);
   const lop = parseFloat(lopDeduction) || 0;
-  const netSalary = basic + hra + transport - pfDeduction - taxDeduction - lop;
+  const grossEarnings = basic + hra + conveyance + medical + otherAllowance;
+  const totalDeductions = pfDeduction + professionalTax + esiDeduction + lop;
+  const netSalary = grossEarnings - totalDeductions;
 
   // Filtered employees
   const filteredEmployees = employees.filter(e =>
@@ -252,9 +262,9 @@ export const PayslipPage: React.FC = () => {
       year,
       basicSalary: basic,
       hra,
-      transportAllowance: transport,
+      transportAllowance: conveyance,
       pfDeduction,
-      taxDeduction,
+      taxDeduction: professionalTax + esiDeduction,
       lopDeduction: lop,
     });
     if (result?.success) {
@@ -268,7 +278,36 @@ export const PayslipPage: React.FC = () => {
     if (result?.success) notify.success('Payroll generated for all employees');
   };
 
+  // ─── CSV Download ─────────────────────────────────────────────
+  const handleDownloadCSV = () => {
+    if (!payrollData.length) return;
+    const header = 'EmployeeId,Year,Month,Basic,HRA,Transport,PF,Tax,LOP,NetSalary';
+    const rows = payrollData.map(r =>
+      `${r.employeeId},${r.year},${r.month},${r.basic},${r.hra},${r.transport},${r.pf},${r.tax},${r.lop},${r.netSalary}`
+    );
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `payroll_${year}_${month}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  // ─── CSV Download Button (reusable) ──────────────────────────
+  const CSVDownloadButton = () => (
+    <button
+      onClick={handleDownloadCSV}
+      disabled={!payrollData.length}
+      className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      <FaDownload className="text-xs" />
+      Download CSV
+    </button>
+  );
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -327,7 +366,18 @@ export const PayslipPage: React.FC = () => {
               filteredEmployees.map(emp => (
                 <button
                   key={emp.id}
-                  onClick={() => setSelectedEmployee(emp)}
+                  onClick={async () => {
+                    setSelectedEmployee(emp);
+                    setLopDeduction('0');
+                    // Only fetch if not already in map — switch pannalum delete aagathu
+                    if (basicSalaryMap[emp.id] === undefined) {
+                      const saved = await fetchEmployeeSalary(emp.id);
+                      setBasicSalaryMap(prev => ({
+                        ...prev,
+                        [emp.id]: saved ? String(saved) : '',
+                      }));
+                    }
+                  }}
                   className={`w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors text-left ${
                     selectedEmployee?.id === emp.id ? 'bg-indigo-50' : ''
                   }`}
@@ -352,30 +402,80 @@ export const PayslipPage: React.FC = () => {
           </div>
         </div>
 
-        {/* ─── Right — Payslip Form ─────────────────────── */}
+        {/* ─── Right ───────────────────────────────────── */}
         {!selectedEmployee ? (
-          <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center">
-            <div className="text-center">
-              <div className="h-16 w-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FaFileInvoiceDollar className="text-slate-300 text-2xl" />
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[300px]">
+              <div className="text-center">
+                <div className="h-16 w-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <FaFileInvoiceDollar className="text-slate-300 text-2xl" />
+                </div>
+                <p className="text-sm font-semibold text-slate-400">Select an employee</p>
+                <p className="text-xs text-slate-300 mt-1">to manage their payslip</p>
               </div>
-              <p className="text-sm font-semibold text-slate-400">Select an employee</p>
-              <p className="text-xs text-slate-300 mt-1">to manage their payslip</p>
+            </div>
+
+            {/* Payroll Data Table — always show */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  Payroll — {MONTHS[month - 1]} {year}
+                </p>
+                <CSVDownloadButton />
+              </div>
+              {payrollData.length === 0 ? (
+                <p className="text-xs text-slate-400 text-center py-6">
+                  Generate payroll to see data here
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-100">
+                        <th className="text-left py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Emp ID</th>
+                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Basic</th>
+                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">HRA</th>
+                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Transport</th>
+                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">PF</th>
+                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tax</th>
+                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Net Salary</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {payrollData.map(row => (
+                        <tr key={row.employeeId} className="hover:bg-slate-50 transition-colors">
+                          <td className="py-2.5 px-3 font-semibold text-slate-700">#{row.employeeId}</td>
+                          <td className="py-2.5 px-3 text-right text-slate-600">₹{row.basic.toLocaleString('en-IN')}</td>
+                          <td className="py-2.5 px-3 text-right text-slate-600">₹{row.hra.toLocaleString('en-IN')}</td>
+                          <td className="py-2.5 px-3 text-right text-slate-600">₹{row.transport.toLocaleString('en-IN')}</td>
+                          <td className="py-2.5 px-3 text-right text-rose-500">₹{row.pf.toLocaleString('en-IN')}</td>
+                          <td className="py-2.5 px-3 text-right text-rose-500">₹{row.tax.toLocaleString('en-IN')}</td>
+                          <td className="py-2.5 px-3 text-right font-black text-slate-800">₹{row.netSalary.toLocaleString('en-IN')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col gap-4">
 
-            {/* Employee Info */}
+            {/* Employee Info + CSV button */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
-                  {selectedEmployee.name?.charAt(0)}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
+                    {selectedEmployee.name?.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-800">{selectedEmployee.name}</p>
+                    <p className="text-xs text-slate-400">#{selectedEmployee.id} · {selectedEmployee.role}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-bold text-slate-800">{selectedEmployee.name}</p>
-                  <p className="text-xs text-slate-400">#{selectedEmployee.id} · {selectedEmployee.role}</p>
-                </div>
+                {/* CSV button — employee selected view-layum */}
+                <CSVDownloadButton />
               </div>
             </div>
 
@@ -386,21 +486,15 @@ export const PayslipPage: React.FC = () => {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Month</label>
-                  <select
-                    value={month}
-                    onChange={e => setMonth(parseInt(e.target.value))}
+                  <select value={month} onChange={e => setMonth(parseInt(e.target.value))}
                     className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none"
                   >
-                    {MONTHS.map((m, i) => (
-                      <option key={m} value={i + 1}>{m}</option>
-                    ))}
+                    {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Year</label>
-                  <select
-                    value={year}
-                    onChange={e => setYear(parseInt(e.target.value))}
+                  <select value={year} onChange={e => setYear(parseInt(e.target.value))}
                     className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none"
                   >
                     <option value={2026}>2026</option>
@@ -410,7 +504,7 @@ export const PayslipPage: React.FC = () => {
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Basic Salary (₹)</label>
                   <input
-                    type="number"
+                    type="text"
                     value={basicSalary}
                     onChange={e => setBasicSalary(e.target.value)}
                     placeholder="40000"
@@ -420,18 +514,15 @@ export const PayslipPage: React.FC = () => {
               </div>
 
               {/* Set Salary Button */}
-              <button
-                onClick={handleSetSalary}
-                disabled={loading || !basicSalary}
+              <button onClick={handleSetSalary} disabled={loading || !basicSalary}
                 className="w-full py-2.5 border border-indigo-200 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors disabled:opacity-50"
               >
                 Set Employee Salary
               </button>
 
-              {/* Divider */}
               <div className="border-t border-slate-100" />
 
-              {/* Auto-filled components */}
+              {/* Salary Components */}
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
                   Salary Components ({selectedEmployee.role})
@@ -441,18 +532,18 @@ export const PayslipPage: React.FC = () => {
                   {/* Earnings */}
                   <div className="bg-emerald-50 rounded-xl p-3 space-y-2">
                     <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Earnings</p>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">Basic</span>
-                      <span className="font-bold text-slate-700">₹{basic.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">HRA</span>
-                      <span className="font-bold text-slate-700">₹{hra.toLocaleString('en-IN')}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">Transport</span>
-                      <span className="font-bold text-slate-700">₹{transport.toLocaleString('en-IN')}</span>
-                    </div>
+                    {[
+                      { label: 'Basic', value: basic },
+                      { label: 'HRA', value: hra },
+                      { label: 'Conveyance', value: conveyance },
+                      { label: 'Medical', value: medical },
+                      { label: 'Other', value: otherAllowance },
+                    ].map(({ label, value }) => (
+                      <div key={label} className="flex justify-between text-xs">
+                        <span className="text-slate-500">{label}</span>
+                        <span className="font-bold text-slate-700">₹{value.toLocaleString('en-IN')}</span>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Deductions */}
@@ -463,14 +554,16 @@ export const PayslipPage: React.FC = () => {
                       <span className="font-bold text-slate-700">₹{pfDeduction.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-slate-500">Tax ({structure?.taxPercent}%)</span>
-                      <span className="font-bold text-slate-700">₹{taxDeduction.toLocaleString('en-IN')}</span>
+                      <span className="text-slate-500">Prof. Tax</span>
+                      <span className="font-bold text-slate-700">₹{professionalTax.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-500">ESI ({structure?.esiPercent}%)</span>
+                      <span className="font-bold text-slate-700">₹{esiDeduction.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between text-xs items-center">
                       <span className="text-slate-500">LOP</span>
-                      <input
-                        type="number"
-                        value={lopDeduction}
+                      <input type="number" value={lopDeduction}
                         onChange={e => setLopDeduction(e.target.value)}
                         className="w-20 px-2 py-1 bg-white border border-rose-200 rounded-lg text-xs font-bold text-right focus:outline-none"
                       />
@@ -491,10 +584,8 @@ export const PayslipPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Generate Button */}
-              <button
-                onClick={handleGenerate}
-                disabled={loading || !basicSalary}
+              {/* Generate Payslip Button */}
+              <button onClick={handleGenerate} disabled={loading || !basicSalary}
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
@@ -515,22 +606,17 @@ export const PayslipPage: React.FC = () => {
                 </p>
                 <div className="max-h-[250px] overflow-y-auto space-y-2 pr-1">
                   {history.map(h => (
-                    <div
-                      key={h.id}
+                    <div key={h.id}
                       className="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
                     >
                       <div>
-                        <p className="text-xs font-bold text-slate-700">
-                          {MONTHS[h.month - 1]} {h.year}
-                        </p>
+                        <p className="text-xs font-bold text-slate-700">{MONTHS[h.month - 1]} {h.year}</p>
                         <p className="text-[10px] text-slate-400">
                           Generated: {new Date(h.generatedDate).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-black text-slate-800">
-                          ₹{h.netSalary.toLocaleString('en-IN')}
-                        </p>
+                        <p className="text-sm font-black text-slate-800">₹{h.netSalary.toLocaleString('en-IN')}</p>
                         <p className="text-[10px] text-slate-400">Net Salary</p>
                       </div>
                     </div>

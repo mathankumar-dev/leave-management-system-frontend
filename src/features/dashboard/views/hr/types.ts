@@ -1,4 +1,4 @@
-import { number } from "framer-motion";
+
 
 // ─── Unions ──────────────────────────────────────────────────────
 export type OnboardingStatus = 'PENDING' | 'COMPLETED' | 'IN_PROGRESS';
@@ -112,12 +112,14 @@ export interface DashboardResponse {
   }
 
   export interface SalaryStructure {
-    id : number;
     role : string ;
-    hraAmount :number;
-    transportAllowance :number;
-    pfpercent : number;
-    taxpercent  : number;
+    hra :number;
+    conveyance :number;
+    medical : number;
+    otherAllowance : number;
+    pfPercent : number;
+    professionalTax  : number;
+    esiPercent : number ;
 
   }
 

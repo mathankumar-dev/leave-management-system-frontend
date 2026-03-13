@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { payslipService } from '../service/payslipService';
+import { payslipService, type PayslipExportRow } from '../service/payslipService';
 import type { Payslip, PayslipRequest, SalaryStructure, EmployeeSalaryRequest } from '../types';
 
 export function usePayslip() {
@@ -8,16 +8,33 @@ export function usePayslip() {
   const [salaryStructure, setSalaryStructure] = useState<SalaryStructure | null>(null);
   const [payslip, setPayslip] = useState<Payslip | null>(null);
   const [history, setHistory] = useState<Payslip[]>([]);
+  const [payrollData, setPayrollData] = useState<PayslipExportRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // ─── Salary Structure fetch ────────────────────────
-  const fetchSalaryStructure = useCallback(async () => {
+  const fetchSalaryStructure = useCallback(async () : Promise<SalaryStructure[]> => {
     try {
-      const data = await payslipService.getSalaryStructure();
-      setSalaryStructure(data);
-    } catch (err) {
+      const [employee , manager , admin ] = await Promise.all([
+        payslipService.getSalaryStructure('EMPLOYEE'),
+        payslipService.getSalaryStructure('MANAGER'),
+        payslipService.getSalaryStructure('ADMIN')
+      ]);
+      return [employee , manager , admin];
+    } catch {
       setError('Failed to fetch salary structure');
+      return [];
+    }
+  }, []);
+
+  // ─── Get Employee Saved Salary ─────────────────────
+  // Employee click panna → previous saved basicSalary fetch
+  const fetchEmployeeSalary = useCallback(async (employeeId: number): Promise<number | null> => {
+    try {
+      const data = await payslipService.getEmployeeSalary(employeeId);
+      return data.basicSalary;
+    } catch {
+      return null; // First time — salary illaye, null return
     }
   }, []);
 
@@ -26,7 +43,7 @@ export function usePayslip() {
     try {
       setLoading(true);
       await payslipService.setEmployeeSalary(data);
-    } catch (err) {
+    } catch {
       setError('Failed to set salary');
     } finally {
       setLoading(false);
@@ -40,8 +57,7 @@ export function usePayslip() {
       const result = await payslipService.generatePayslip(data);
       setPayslip(result);
       return { success: true };
-    } catch (err) {
-      await new Promise(resolve => setTimeout(resolve, 400));
+    } catch {
       setError('Failed to generate payslip');
       return { success: false };
     } finally {
@@ -57,8 +73,7 @@ export function usePayslip() {
       setLoading(true);
       const data = await payslipService.getPayslip(employeeId, year, month);
       setPayslip(data);
-    } catch (err) {
-      await new Promise(resolve => setTimeout(resolve, 400));
+    } catch {
       setPayslip(null);
     } finally {
       setLoading(false);
@@ -77,7 +92,7 @@ export function usePayslip() {
         employeeId, startYear, startMonth, endYear, endMonth
       );
       setHistory(data);
-    } catch (err) {
+    } catch {
       setHistory([]);
     } finally {
       setLoading(false);
@@ -89,8 +104,11 @@ export function usePayslip() {
     try {
       setLoading(true);
       await payslipService.generatePayroll(year, month);
+      // Payroll generate success → export data fetch
+      const exportData = await payslipService.exportPayslip(year, month);
+      setPayrollData(exportData);
       return { success: true };
-    } catch (err) {
+    } catch {
       return { success: false };
     } finally {
       setLoading(false);
@@ -101,9 +119,11 @@ export function usePayslip() {
     salaryStructure,
     payslip,
     history,
+    payrollData, 
     loading,
     error,
     fetchSalaryStructure,
+    fetchEmployeeSalary, 
     setEmployeeSalary,
     generatePayslip,
     fetchPayslip,
