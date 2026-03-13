@@ -9,7 +9,7 @@ import type {
   TeamCalendarResponse,
   TeamMemberBalance,
   CompOffRequest,
-  ProfileResponse
+  ProfileData
 
 } from '../types';
 
@@ -241,7 +241,7 @@ fetchProfile: async (employeeId: number) => {
     return response.data;
   },
 
-  getProfile: async (employeeId: number): Promise<ProfileResponse> => {
+  getProfile: async (employeeId: number): Promise<ProfileData> => {
   const response = await api.get(`/employees/${employeeId}/profile`);
   return response.data;
 },

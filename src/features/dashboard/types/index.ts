@@ -384,11 +384,9 @@ export interface ProfileData {
   designation: string;
   joiningDate: string;
 
-  phone?: string;
-  dob?: string;
+  contactNumber: string;
+  dateOfBirth: string;
   gender: string;
-
-  address?: string;
 
   presentAddress: string;
   permanentAddress: string;
@@ -403,9 +401,9 @@ export interface ProfileData {
   personalEmail: string;
   aadharNumber: string;
 
-  skills?: string[];
+  skillSet: string[];
 
-  biometricStatus: string ;
+  biometricStatus: string;
   vpnStatus: string;
 
   personalDetailsLocked: boolean;
