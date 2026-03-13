@@ -22,10 +22,15 @@ interface PendingRequest {
     isCompOff?: boolean;
     halfDayType?: string;
 }
+
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
-    const isManager = user?.role?.toUpperCase() === 'MANAGER';
+    // Role Definitions
+    const userRole = user?.role?.toUpperCase();
+    const isManager = userRole === 'MANAGER';
+    const isTeamLeader = userRole === 'TEAM_LEADER';
+    const canSeeDashboardMetrics = isManager || isTeamLeader;
 
     const {
         requests,
@@ -33,7 +38,7 @@ const PendingApprovalsView: React.FC = () => {
         handleDecision,
         handleCompOffApprove,
         handleCompOffReject
-    } = useManagerApprovals(user?.id || 0);
+    } = useManagerApprovals(user?.id || 0, user?.role);
 
     const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useDashboard();
 
@@ -41,11 +46,11 @@ const PendingApprovalsView: React.FC = () => {
     const [timeFilter, setTimeFilter] = useState("all");
 
     useEffect(() => {
-        if (user?.id && isManager) {
+        if (user?.id && canSeeDashboardMetrics) {
             fetchWeeklyLeaveSummary(user.id);
             fetchTeamOnLeave(user.id);
         }
-    }, [fetchWeeklyLeaveSummary, fetchTeamOnLeave, user?.id, isManager]);
+    }, [fetchWeeklyLeaveSummary, fetchTeamOnLeave, user?.id, canSeeDashboardMetrics]);
 
     const [dialogConfig, setDialogConfig] = useState<{
         isOpen: boolean;
@@ -112,7 +117,6 @@ const PendingApprovalsView: React.FC = () => {
 
         if (result?.success) {
             notify.leaveAction(status, req.employeeName, !!req.isCompOff);
-
             setDialogConfig({ isOpen: false, req: null, status: null });
         } else {
             notify.error("Update Failed", "Please check your connection and try again.");
@@ -151,7 +155,7 @@ const PendingApprovalsView: React.FC = () => {
                         />
                     </div>
 
-                    {isManager && (
+                    {canSeeDashboardMetrics && (
                         <>
                             <div className="hidden md:block h-12 w-px bg-slate-300" />
                             <div className='flex justify-start md:justify-center'>
@@ -219,7 +223,7 @@ const PendingApprovalsView: React.FC = () => {
                             createdAt={formatTimeAgo(req.createdAt)}
                             onAccept={() => onActionTriggered(req, 'APPROVED')}
                             onReject={() => onActionTriggered(req, 'REJECTED')}
-                            onDiscuss={!req.isCompOff ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
+                            onDiscuss={(!req.isCompOff && isManager) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
                         />
                     ))
                 ) : (
