@@ -1,8 +1,7 @@
-import React, { useState, useRef } from "react";
-import Cookies from "js-cookie";
+import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useDashboard } from "../hooks/useDashboard";
-import type { LeaveApplication, LeaveType } from "../types";
+import type { LeaveType } from "../types";
 import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
 
 import {
@@ -14,12 +13,20 @@ import {
   HiOutlineExclamationTriangle,
   HiOutlinePaperClip,
   HiOutlineXMark,
-  HiOutlineCalendarDays
 } from "react-icons/hi2";
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
-  const { applyLeave, bankCompOff, loading, error, setError, leaveBalance } = useDashboard();
+  const {
+    applyLeave,
+    bankCompOff,
+    loading,
+    error,
+    setError,
+    leaveBalance,
+    fetchLeaveBalance
+  } = useDashboard();
+
   const [submitted, setSubmitted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,6 +49,13 @@ const LeaveApplicationForm = () => {
     COMP_OFF: "Bank Comp-Off",
   };
 
+  // Fetch balance on mount
+  useEffect(() => {
+    if (user?.id) {
+      fetchLeaveBalance(user.id, 2026);
+    }
+  }, [user?.id, fetchLeaveBalance]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) setSelectedFile(e.target.files[0]);
   };
@@ -61,7 +75,7 @@ const LeaveApplicationForm = () => {
       return;
     }
 
-    // --- CASE A: Bank Comp-Off Logic (JSON) ---
+    // --- CASE A: Bank Comp-Off Logic ---
     if (formData.category === "COMP_OFF") {
       if (!formData.compOffPlannedDate) {
         setError("Please select the date you plan to take your leave.");
@@ -81,15 +95,12 @@ const LeaveApplicationForm = () => {
       return;
     }
 
-    // --- CASE B: Standard Leave Logic (Multipart/Form-Data) ---
+    // --- CASE B: Standard Leave Logic ---
     const fd = new FormData();
-
-    // Append standard parameters
     fd.append("employeeId", employeeId.toString());
     fd.append("leaveType", formData.category);
     fd.append("startDate", formData.startDate.toISOString().split("T")[0]);
 
-    // Determine End Date
     const endDateStr = formData.isHalfDay
       ? formData.startDate.toISOString().split("T")[0]
       : formData.endDate?.toISOString().split("T")[0];
@@ -98,25 +109,25 @@ const LeaveApplicationForm = () => {
       setError("Please select an end date.");
       return;
     }
+
     fd.append("endDate", endDateStr);
     fd.append("reason", formData.reason);
-    fd.append("confirmLossOfPay", "false"); // Defaulting to false as per your original logic
+    fd.append("confirmLossOfPay", "false");
 
-    // Append Half Day Type if applicable
     if (formData.isHalfDay && formData.halfDayType) {
       fd.append("halfDayType", formData.halfDayType);
     }
 
-    // Append the file(s) - Key must match 'value = "files"' in Java @RequestParam
     if (selectedFile) {
       fd.append("files", selectedFile);
     }
 
-    // Call the applyLeave from useDashboard
-    // Note: You must ensure your applyLeave hook is updated to accept FormData
     const result = await applyLeave(fd);
     if (result) setSubmitted(true);
   };
+
+  console.log(leaveBalance);
+
 
   if (submitted) {
     return (
@@ -124,11 +135,14 @@ const LeaveApplicationForm = () => {
         <HiOutlineCheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
         <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Request Submitted</h2>
         <p className="text-slate-500 mt-2">Your application is awaiting approval.</p>
-        <button onClick={() => setSubmitted(false)} className="mt-8 text-sm font-medium text-indigo-600 hover:text-indigo-500">
+        <button
+          onClick={() => setSubmitted(false)}
+          className="mt-8 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+        >
           Apply for another leave →
         </button>
       </div>
-    );``
+    );
   }
 
   return (
@@ -140,6 +154,51 @@ const LeaveApplicationForm = () => {
         </div>
       )}
 
+      {/* 00. Ultra-Compact Leave Balance Bar */}
+      {leaveBalance && (
+        <div className="mb-6 bg-white border border-slate-200 rounded shadow-sm">
+          <div className="flex flex-wrap md:flex-row items-center divide-x divide-slate-100">
+            {[...leaveBalance.breakdown].map((item) => {
+              const isActive = formData.category === item.leaveType;
+              const isCompOff = item.leaveType === "COMP_OFF";
+
+              return (
+                <div
+                  key={item.leaveType}
+                  onClick={() => {
+                    setError(null);
+                    setFormData({ ...formData, category: item.leaveType as any });
+                  }}
+                  className={`flex-1 min-w-[120px] px-4 py-2 cursor-pointer transition-all relative ${isActive ? 'bg-indigo-50/50' : 'hover:bg-slate-50'
+                    }`}
+                >
+                  {/* Active Indicator (Bottom Line) */}
+                  {isActive && (
+                    <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${isCompOff ? 'bg-amber-500' : 'bg-indigo-600'}`} />
+                  )}
+
+                  <div className="flex flex-col">
+                    <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? 'text-indigo-600' : 'text-slate-400'
+                      }`}>
+                      {item.leaveType.replace('_', ' ')}
+                    </span>
+
+                    <div className="flex items-baseline gap-1">
+                      <span className={`text-base font-bold ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
+                        {item.remainingDays}
+                      </span>
+                      <span className="text-[10px] font-medium text-slate-400">
+                        / {isCompOff ? '∞' : item.allocatedDays}
+                      </span>
+                      <span className="text-[9px] text-slate-400 font-medium ml-0.5">left</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-200 flex justify-between items-center">
           <h1 className="text-xl font-bold text-slate-800">
@@ -147,12 +206,14 @@ const LeaveApplicationForm = () => {
           </h1>
           <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-600">
             <HiOutlineShieldCheck size={16} className="text-indigo-500" />
-            Reviewer: {user?.managerName || "Manager"}
+            Reviewer: {user?.teamLeaderName
+              ? `${user.teamLeaderName} → ${user.managerName || "Manager"}`
+              : (user?.managerName || "Manager")}
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
-          {/* 01. Category */}
+          {/* 01. Category Selection */}
           <div className="space-y-3">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <HiOutlineClock size={16} /> 01. Leave Category
@@ -163,7 +224,9 @@ const LeaveApplicationForm = () => {
                   key={type}
                   type="button"
                   onClick={() => { setError(null); setFormData({ ...formData, category: type }); }}
-                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${formData.category === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${formData.category === type
+                    ? "bg-slate-900 border-slate-900 text-white shadow-md"
+                    : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                     }`}
                 >
                   {leaveLabels[type]}
@@ -172,7 +235,7 @@ const LeaveApplicationForm = () => {
             </div>
           </div>
 
-          {/* 02. Dates */}
+          {/* 02. Date Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <MyDatePicker
               label={formData.category === "COMP_OFF" ? "02. Date Worked (Holiday)" : "02. Start Date"}
@@ -201,7 +264,7 @@ const LeaveApplicationForm = () => {
             )}
           </div>
 
-          {/* Half Day Toggle */}
+          {/* 03. Options (Half Day) */}
           <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <label className="flex items-center gap-3 cursor-pointer group">
               <input
@@ -222,7 +285,9 @@ const LeaveApplicationForm = () => {
                     key={h}
                     type="button"
                     onClick={() => setFormData({ ...formData, halfDayType: h as any })}
-                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${formData.halfDayType === h ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${formData.halfDayType === h
+                      ? "bg-white text-indigo-600 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
                       }`}
                   >
                     {h === "FIRST_HALF" ? "First Half" : "Second Half"}
@@ -246,7 +311,10 @@ const LeaveApplicationForm = () => {
               {selectedFile ? (
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-slate-700">{selectedFile.name}</span>
-                  <HiOutlineXMark onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }} className="text-rose-500 w-5 h-5" />
+                  <HiOutlineXMark
+                    onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
+                    className="text-rose-500 w-5 h-5"
+                  />
                 </div>
               ) : (
                 <span className="text-sm text-slate-500">Click to upload medical certificate or proof</span>
@@ -269,6 +337,7 @@ const LeaveApplicationForm = () => {
             />
           </div>
 
+          {/* Submit Action */}
           <button
             type="submit"
             disabled={loading}

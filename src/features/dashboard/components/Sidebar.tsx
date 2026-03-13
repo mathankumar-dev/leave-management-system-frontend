@@ -41,20 +41,20 @@ function Sidebar({
   const userName = user?.name;
 
   const tabs = [
-    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER", "HR","ADMIN"] },
-    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER","HR","TEAM_LEADER"] },
-    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
-    { name: "Calendar", icon: <FaCalendarAlt />, roles: [ "ADMIN"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER","TEAM_LEADER", "HR"] },
-    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER" ,"TEAM_LEADER", "ADMIN"] },
+    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
+    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "TEAM_LEADER"] },
+    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
+    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["ADMIN"] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "HR"] },
+    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
     { name: "All Employees", icon: <FaUsers />, roles: ["HR"] },
-    { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER","TEAM_LEADER"] },
+    { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
     // { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
-    { name: "Reports", icon: <FaChartBar />, roles: ["HR","ADMIN"] },
+    { name: "Reports", icon: <FaChartBar />, roles: ["HR", "ADMIN"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
-    { name: "Other Applications", icon: <FaFileSignature />, roles: ["MANAGER"] },
-    { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER","ADMIN","HR"] }
+    { name: "Other Approvals", icon: <FaFileSignature />, roles: ["MANAGER"] },
+    { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "HR"] }
 
 
   ];
@@ -80,9 +80,9 @@ function Sidebar({
         {/* Logo */}
         <div className="flex items-center justify-between mb-8 px-2 shrink-0">
           <div className="h-auto w-42">
-            <NameSVG color="#ffffff" isDotNeeded = {true}/>
+            <NameSVG color="#ffffff" isDotNeeded={false} />
           </div>
-        
+
           <button
             onClick={() => setIsOpen(false)}
             className="md:hidden text-neutral-500 hover:text-white"
@@ -125,7 +125,7 @@ function Sidebar({
           <ul className="space-y-1.5">
             {visibleTabs.map((tab) => {
               return (
-                
+
                 <li
                   key={tab.name}
                   onClick={() => setActiveTab(tab.name)}

@@ -41,7 +41,7 @@ const ROLES = {
   HR: "HR",
   MANAGER: "MANAGER",
   EMPLOYEE: "EMPLOYEE",
-  TEAMLEADER : "TEAM_LEADER"
+  TEAMLEADER: "TEAM_LEADER"
 };
 
 /* ---------------- SIMPLE STAT CARD ---------------- */
@@ -53,7 +53,7 @@ const StatCard = ({ title, value }: { title: string; value: number }) => (
 );
 
 const DashboardLayout: React.FC = () => {
-  const { user, logout, mustChangePassword , personalDetailsComplete } = useAuth();
+  const { user, logout, mustChangePassword, personalDetailsComplete } = useAuth();
   const userRole = user?.role;
 
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -157,7 +157,7 @@ const DashboardLayout: React.FC = () => {
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
-         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
+        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
         return null;
@@ -187,8 +187,8 @@ const DashboardLayout: React.FC = () => {
       case "My Leaves":
         return <MyLeavesView />;
 
-        case "Payroll":
-  return <PayrollView />;
+      case "Payroll":
+        return <PayrollView />;
 
       case "Pending Approvals":
         return <PendingApprovalsView />;
@@ -200,9 +200,9 @@ const DashboardLayout: React.FC = () => {
         return <TeamMembersView />;
 
       case "Profile":
-         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
+        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
-      case "Other Applications":
+      case "Other Approvals":
         return <OtherRequestForm />;
 
       default:
@@ -213,8 +213,8 @@ const DashboardLayout: React.FC = () => {
   if (mustChangePassword) {
     return <ChangePasswordDialog />;
   }
-  if(!personalDetailsComplete){
-    return <PersonalDetailsModal /> ;
+  if (!personalDetailsComplete) {
+    return <PersonalDetailsModal />;
   }
 
 

@@ -8,7 +8,8 @@ import type {
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
-  CompOffRequest
+  CompOffRequest,
+  LeaveBalanceResponse
 
 } from '../types';
 
@@ -233,5 +234,12 @@ export const dashboardService = {
     const response = await api.post('/compoff/request', payload);
     return response.data;
   },
+
+getLeaveBalances: async (employeeId: number, year: number = 2026): Promise<LeaveBalanceResponse> => {
+  const res = await api.get(`leaves-balance/${employeeId}`, {
+    params: { year } 
+  });
+  return res.data;
+},
 };
 

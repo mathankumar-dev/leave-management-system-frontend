@@ -2,13 +2,11 @@
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF";
-export type LeaveType = "SICK" | "CASUAL" | "EARNED_LEAVES" | "COMP_OFF";
+export type LeaveType = "SICK" | "CASUAL" | "EARNED_LEAVES" | "COMP_OFF" | "PERSONAL";
 
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
 export interface LeaveRecord {
-  range: ReactNode;
-  type: ReactNode;
   id: number;
   employeeId: number;
   leaveType: LeaveType;
@@ -270,6 +268,45 @@ export interface EmployeeData  {
   pendingCount: number;
   breakdown: LeaveBreakDown[];
 
+}
+
+export interface LeaveTypeBreakdown {
+  leaveType: LeaveType;
+  allocatedDays: number;
+  usedDays: number;
+  remainingDays: number;
+}
+
+export interface LeaveBalanceResponse {
+  employeeId: number;
+  employeeName: string;
+  year: number;
+
+  // Total leave statistics
+  totalAllocated: number;
+  totalUsed: number;
+  totalRemaining: number;
+
+  // Comp-Off stats
+  compOffBalance: number;
+  compOffEarned: number;
+  compOffUsed: number;
+
+  lopPercentage: number;
+
+  // Carry Forward
+  carriedFromLastYear: number;
+  eligibleToCarry: number;
+
+  // Monthly Stats
+  currentMonthApproved: number;
+  exceededMonthlyLimit: boolean;
+
+  // Working Days
+  totalWorkingDays: number;
+
+  // Breakdown per leave type
+  breakdown: LeaveTypeBreakdown[];
 }
 
 export type TeamPendingLeave = {
