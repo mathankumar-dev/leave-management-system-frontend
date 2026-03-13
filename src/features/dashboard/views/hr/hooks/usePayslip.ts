@@ -1,26 +1,21 @@
 import { useState, useCallback } from 'react';
-import { payslipService, type PayslipExportRow } from '../service/payslipService';
-import type { Payslip, PayslipRequest, SalaryStructure, EmployeeSalaryRequest } from '../types';
+import { payslipService } from '../service/payslipService';
+import type { Payslip, SalaryStructure, EmployeeSalaryRequest } from '../types';
 
 export function usePayslip() {
 
   // ─── States ───────────────────────────────────────
-  const [salaryStructure, setSalaryStructure] = useState<SalaryStructure | null>(null);
   const [payslip, setPayslip] = useState<Payslip | null>(null);
   const [history, setHistory] = useState<Payslip[]>([]);
-  const [payrollData, setPayrollData] = useState<PayslipExportRow[]>([]);
+  const [payrollData, setPayrollData] = useState<Payslip[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ─── Salary Structure fetch ────────────────────────
-  const fetchSalaryStructure = useCallback(async () : Promise<SalaryStructure[]> => {
+  // ─── Salary Structure fetch (all roles) ───────────
+  const fetchSalaryStructure = useCallback(async (): Promise<SalaryStructure[]> => {
     try {
-      const [employee , manager , admin ] = await Promise.all([
-        payslipService.getSalaryStructure('EMPLOYEE'),
-        payslipService.getSalaryStructure('MANAGER'),
-        payslipService.getSalaryStructure('ADMIN')
-      ]);
-      return [employee , manager , admin];
+      const data = await payslipService.getAllSalaryStructures();
+      return data;
     } catch {
       setError('Failed to fetch salary structure');
       return [];
@@ -28,13 +23,12 @@ export function usePayslip() {
   }, []);
 
   // ─── Get Employee Saved Salary ─────────────────────
-  // Employee click panna → previous saved basicSalary fetch
   const fetchEmployeeSalary = useCallback(async (employeeId: number): Promise<number | null> => {
     try {
       const data = await payslipService.getEmployeeSalary(employeeId);
-      return data.basicSalary;
+      return data?.basicSalary ?? null;
     } catch {
-      return null; // First time — salary illaye, null return
+      return null;
     }
   }, []);
 
@@ -42,24 +36,9 @@ export function usePayslip() {
   const setEmployeeSalary = useCallback(async (data: EmployeeSalaryRequest) => {
     try {
       setLoading(true);
-      await payslipService.setEmployeeSalary(data);
+      await payslipService.postEmployeeSalary(data);
     } catch {
       setError('Failed to set salary');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // ─── Generate Payslip ──────────────────────────────
-  const generatePayslip = useCallback(async (data: PayslipRequest) => {
-    try {
-      setLoading(true);
-      const result = await payslipService.generatePayslip(data);
-      setPayslip(result);
-      return { success: true };
-    } catch {
-      setError('Failed to generate payslip');
-      return { success: false };
     } finally {
       setLoading(false);
     }
@@ -80,18 +59,22 @@ export function usePayslip() {
     }
   }, []);
 
-  // ─── Fetch History ─────────────────────────────────
+  // ─── Fetch History — all employees, Jan to current month ─
   const fetchHistory = useCallback(async (
-    employeeId: number,
-    startYear: number, startMonth: number,
-    endYear: number, endMonth: number
+    _employeeId: number, year: number, month: number
   ) => {
     try {
       setLoading(true);
-      const data = await payslipService.exportPayslipRange(
-        employeeId, startYear, startMonth, endYear, endMonth
+      // Jan → current month — all months fetch pannuvom
+      const promises = Array.from({ length: month }, (_, i) =>
+        payslipService.exportPayslip(year, i + 1).catch(() => [] as Payslip[])
       );
-      setHistory(data);
+      const results = await Promise.all(promises);
+      // All employees — filter illaye!
+      const all = results.flat();
+      // Sort by month desc — latest first
+      all.sort((a, b) => b.month - a.month);
+      setHistory(all);
     } catch {
       setHistory([]);
     } finally {
@@ -104,7 +87,6 @@ export function usePayslip() {
     try {
       setLoading(true);
       await payslipService.generatePayroll(year, month);
-      // Payroll generate success → export data fetch
       const exportData = await payslipService.exportPayslip(year, month);
       setPayrollData(exportData);
       return { success: true };
@@ -116,16 +98,14 @@ export function usePayslip() {
   }, []);
 
   return {
-    salaryStructure,
     payslip,
     history,
-    payrollData, 
+    payrollData,
     loading,
     error,
     fetchSalaryStructure,
-    fetchEmployeeSalary, 
+    fetchEmployeeSalary,
     setEmployeeSalary,
-    generatePayslip,
     fetchPayslip,
     fetchHistory,
     generatePayroll,

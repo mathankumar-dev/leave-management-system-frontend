@@ -1,44 +1,37 @@
 import api from '../../../../../api/axiosInstance';
-import { type SalaryStructure, type Payslip, type PayslipRequest, type EmployeeSalaryRequest, type EmployeeSalary } from '../types';
+import { type SalaryStructure, type Payslip, type EmployeeSalaryRequest, type EmployeeSalary } from '../types';
 
-// ─── CSV row type for export ──────────────────────────────────────
-export interface PayslipExportRow {
-  employeeId: number;
-  year: number;
-  month: number;
-  basic: number;
-  hra: number;
-  transport: number;
-  pf: number;
-  tax: number;
-  lop: number;
-  netSalary: number;
-}
 
 export const payslipService = {
 
-  // POST /api/payslip/generate → new payslip create
-  generatePayslip: async (data: PayslipRequest): Promise<Payslip> => {
-    const response = await api.post<Payslip>('/payslip/generate', data);
+  // POST /api/salary-structure
+  getSalaryStructure: async (role: string): Promise<SalaryStructure> => {
+    const response = await api.post<SalaryStructure>(`/salary-structure/`, { role });
     return response.data;
   },
 
-  // GET /api/salary-structure
-  getSalaryStructure: async (role : string ): Promise<SalaryStructure> => {
-    const response = await api.get<SalaryStructure>(`/salary-structure/${role}`);
+  //PUT api/salary-structure => update
+  updateSalaryStructure: async (role: string, data: Omit<SalaryStructure, 'role'>): Promise<SalaryStructure> => {
+    const response = await api.put<SalaryStructure>(`/salary-structure/${role}`, data);
+    return response.data;
+  },
+
+  // GET /api/salary-structure/all → all roles fetch
+  getAllSalaryStructures: async (): Promise<SalaryStructure[]> => {
+    const response = await api.get<SalaryStructure[]>('/salary-structure/all');
     return response.data;
   },
 
   // POST /api/employee-salary → set basic salary
-  setEmployeeSalary: async (data: EmployeeSalaryRequest): Promise<EmployeeSalary> => {
+  postEmployeeSalary: async (data: EmployeeSalaryRequest): Promise<EmployeeSalary> => {
     const response = await api.post<EmployeeSalary>('/employee-salary/assign', data);
     return response.data;
   },
 
   // GET /api/employee-salary/{employeeId} → fetch saved basic salary
   getEmployeeSalary: async (employeeId: number): Promise<EmployeeSalary> => {
-    const response = await api.get<EmployeeSalary>(`/employee-salary/${employeeId}`, { silent: [404,500] });
-    return response.data;
+    const response = await api.get<EmployeeSalary[]>(`/employee-salary/history/${employeeId}`, { silent: [404, 500] });
+    return response.data[0];
   },
 
   // POST /api/payroll/generate → generate all employees payroll
@@ -48,42 +41,17 @@ export const payslipService = {
 
   // GET /api/payslip/{employeeId}/{year}/{month} → specific payslip
   getPayslip: async (employeeId: number, year: number, month: number): Promise<Payslip> => {
-    const response = await api.get<Payslip>(`/payslip/${employeeId}/${year}/${month}`, { silent: [404,500] });
+    const response = await api.get<Payslip>(`/payslip/employee/${employeeId}/${year}/${month}`, { silent: [404, 500] });
     return response.data;
   },
 
-  // GET /api/payslip/export/{year}/{month} → all employees CSV
-  exportPayslip: async (year: number, month: number): Promise<PayslipExportRow[]> => {
-    const response = await api.get<string>(`/payslip/export/${year}/${month}`);
-    // CSV parse pannuvom
-    const lines = (response.data as unknown as string).trim().split('\n');
-    const rows = lines.slice(1); // header skip
-    return rows.map(line => {
-      const [employeeId, year, month, basic, hra, transport, pf, tax, lop, netSalary] = line.split(',');
-      return {
-        employeeId: parseInt(employeeId),
-        year: parseInt(year),
-        month: parseInt(month),
-        basic: parseFloat(basic),
-        hra: parseFloat(hra),
-        transport: parseFloat(transport),
-        pf: parseFloat(pf),
-        tax: parseFloat(tax),
-        lop: parseFloat(lop),
-        netSalary: parseFloat(netSalary),
-      };
-    });
-  },
+  //DELETE /api/payslip/payroll/{year}/{month} => delete payroll
+  deletePayroll: async (year: number, month: number): Promise<void> =>
+  void (await api.delete(`/payslip/payroll/${year}/${month}`)),
 
-  // GET /api/payslip/export/range → history (keep for backward compat)
-  exportPayslipRange: async (
-    _employeeId: number,
-    startYear: number, startMonth: number,
-    endYear: number, endMonth: number
-  ): Promise<Payslip[]> => {
-    const response = await api.get<Payslip[]>(
-      `/payslip/export/range?startYear=${startYear}&startMonth=${startMonth}&endYear=${endYear}&endMonth=${endMonth}`
-    );
+  // GET /api/payslip/export/{year}/{month} → all employees CSV
+  exportPayslip: async (year: number, month: number): Promise<Payslip[]> => {
+    const response = await api.get<Payslip[]>(`/payslip/payroll/${year}/${month}`);
     return response.data;
   },
 

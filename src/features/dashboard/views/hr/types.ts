@@ -83,33 +83,23 @@ export interface DashboardResponse {
 // ------------- payslip salary --------------//
 
   export interface Payslip {
-    id : number;
-    employeeId : number;
-    month : number;
-    year : number;
-    basicSalary : number;
-    hra : number ;
-    transportAllowance :number;
-    pfDeduction : number;
-    taxDeduction : number;
-    lopDeduction : number;
-    netSalary : number;
-    generatedDate : string;
-
-  }
-
-  export interface PayslipRequest {
-    employeeId : number;
-    month : number;
-    year : number;
-    basicSalary :number;
-    hra : number;
-    transportAllowance : number;
-    pfDeduction :number;
-    lopDeduction :number;
-    taxDeduction : number;
-
-  }
+  id: number;
+  employeeId: number;
+  month: number;
+  year: number;
+  basicSalary: number;
+  hra: number;
+  conveyance: number;
+  medical: number | null;
+  otherAllowance: number | null;
+  pf: number;
+  esi: number | null;
+  professionalTax: number;
+  lop: number;
+  netSalary: number;
+  generatedDate: string;
+  status: string;
+}
 
   export interface SalaryStructure {
     role : string ;

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaSearch, FaFileInvoiceDollar, FaCog, FaTimes, FaChevronRight, FaRupeeSign, FaDownload } from 'react-icons/fa';
+import { FaSearch, FaFileInvoiceDollar, FaCog, FaTimes, FaChevronRight, FaRupeeSign, FaDownload, FaTrash } from 'react-icons/fa';
 import { employeeService, type Employee } from '../service/employeeService';
+import { payslipService } from '../service/payslipService';
 import { usePayslip } from '../hooks/usePayslip';
 import { notify } from '../../../../../utils/notifications';
 import CustomLoader from '../../../../../components/ui/CustomLoader';
+import type { Payslip } from '../types';
 
-// ─── Updated to match backend response ───────────────────────────
+// ─── Salary Structure Config ──────────────────────────────────────
 interface SalaryStructureConfig {
   role: 'EMPLOYEE' | 'MANAGER' | 'ADMIN';
   hra: number;
@@ -26,7 +28,8 @@ const SalaryStructureModal: React.FC<{
   const [selectedRole, setSelectedRole] = useState<'EMPLOYEE' | 'MANAGER' | 'ADMIN'>('EMPLOYEE');
   const [localStructures, setLocalStructures] = useState<SalaryStructureConfig[]>(structures);
 
-  const current = localStructures.find(s => s.role === selectedRole)!;
+  const current = localStructures.find(s => s.role === selectedRole);
+  if (!current) return null;
 
   const updateField = (field: keyof Omit<SalaryStructureConfig, 'role'>, value: number) => {
     setLocalStructures(prev => prev.map(s =>
@@ -138,35 +141,32 @@ const SalaryStructureModal: React.FC<{
 export const PayslipPage: React.FC = () => {
   const {
     history, payrollData, loading,
-    setEmployeeSalary, generatePayslip,
+    setEmployeeSalary,
     fetchPayslip, fetchHistory, generatePayroll,
     fetchEmployeeSalary, fetchSalaryStructure,
   } = usePayslip();
 
-  // Employee list
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [empLoading, setEmpLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
-  // Salary structure
   const [structures, setStructures] = useState<SalaryStructureConfig[]>([]);
   const [showStructureModal, setShowStructureModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // basicSalary — per employee map la store (switch pannalum delete aagathu)
   const [basicSalaryMap, setBasicSalaryMap] = useState<Record<number, string>>({});
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [lopDeduction, setLopDeduction] = useState('0');
 
-  // Current employee basic salary
   const basicSalary = selectedEmployee ? (basicSalaryMap[selectedEmployee.id] ?? '') : '';
   const setBasicSalary = (val: string) => {
     if (!selectedEmployee) return;
     setBasicSalaryMap(prev => ({ ...prev, [selectedEmployee.id]: val }));
   };
 
-  // Fetch salary structures — page load
+  // Fetch salary structures
   useEffect(() => {
     const load = async () => {
       const data = await fetchSalaryStructure();
@@ -203,21 +203,19 @@ export const PayslipPage: React.FC = () => {
     return () => { isMounted.current = false; clearTimeout(timer); };
   }, []);
 
-  // When employee selected → fetch history + existing payslip
+  // When employee selected
   useEffect(() => {
     if (!selectedEmployee) return;
     fetchPayslip(selectedEmployee.id, year, month);
-    fetchHistory(selectedEmployee.id, year, 1, year, 12);
+    fetchHistory(selectedEmployee.id, year, month);
   }, [selectedEmployee, year, month]);
 
-  // Get salary structure for selected employee role
   const getStructure = useCallback(() => {
     if (!selectedEmployee) return null;
     const role = selectedEmployee.role?.toUpperCase() as 'EMPLOYEE' | 'MANAGER' | 'ADMIN';
     return structures.find(s => s.role === role) || structures[0];
   }, [selectedEmployee, structures]);
 
-  // Auto calculate
   const structure = getStructure();
   const basic = parseFloat(basicSalary) || 0;
   const hra = structure?.hra || 0;
@@ -232,12 +230,12 @@ export const PayslipPage: React.FC = () => {
   const totalDeductions = pfDeduction + professionalTax + esiDeduction + lop;
   const netSalary = grossEarnings - totalDeductions;
 
-  // Filtered employees
   const filteredEmployees = employees.filter(e =>
     e.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     e.id?.toString().includes(searchQuery)
   );
 
+  // ✅ FIX 1: effectiveFrom → selected month first date
   const handleSetSalary = async () => {
     if (!selectedEmployee || !basicSalary) {
       notify.error('Missing', 'Select employee and enter basic salary');
@@ -246,44 +244,49 @@ export const PayslipPage: React.FC = () => {
     await setEmployeeSalary({
       employeeId: selectedEmployee.id,
       basicSalary: basic,
-      effectiveFrom: new Date().toISOString().split('T')[0],
+      effectiveFrom: `${year}-${String(month).padStart(2, '0')}-01`,
     });
     notify.success('Salary set successfully');
   };
 
-  const handleGenerate = async () => {
-    if (!selectedEmployee || !basicSalary) {
-      notify.error('Missing', 'Select employee and enter basic salary');
-      return;
-    }
-    const result = await generatePayslip({
-      employeeId: selectedEmployee.id,
-      month,
-      year,
-      basicSalary: basic,
-      hra,
-      transportAllowance: conveyance,
-      pfDeduction,
-      taxDeduction: professionalTax + esiDeduction,
-      lopDeduction: lop,
-    });
-    if (result?.success) {
-      notify.success('Payslip generated successfully');
-      fetchHistory(selectedEmployee.id, year, 1, year, 12);
-    }
-  };
-
   const handleGeneratePayroll = async () => {
     const result = await generatePayroll(year, month);
-    if (result?.success) notify.success('Payroll generated for all employees');
+    if (result?.success) {
+      notify.success('Payroll generated for all employees');
+      if (selectedEmployee) fetchHistory(selectedEmployee.id, year, month);
+    }
   };
 
-  // ─── CSV Download ─────────────────────────────────────────────
+  const handleGeneratePayslip = async () => {
+    if (!selectedEmployee) return;
+    const result = await generatePayroll(year, month);
+    if (result?.success) {
+      notify.success('Payslip generated successfully');
+      fetchHistory(selectedEmployee.id, year, month);
+    }
+  };
+
+  // ✅ FIX 2: Delete Payroll handler
+  const handleDeletePayroll = async () => {
+    const confirm = window.confirm(`Delete payroll for ${MONTHS[month - 1]} ${year}? This cannot be undone.`);
+    if (!confirm) return;
+    try {
+      setDeleteLoading(true);
+      await payslipService.deletePayroll(year, month);
+      notify.success(`Payroll for ${MONTHS[month - 1]} ${year} deleted`);
+      if (selectedEmployee) fetchHistory(selectedEmployee.id, year, month);
+    } catch {
+      notify.error('Failed', 'Could not delete payroll');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const handleDownloadCSV = () => {
     if (!payrollData.length) return;
-    const header = 'EmployeeId,Year,Month,Basic,HRA,Transport,PF,Tax,LOP,NetSalary';
-    const rows = payrollData.map(r =>
-      `${r.employeeId},${r.year},${r.month},${r.basic},${r.hra},${r.transport},${r.pf},${r.tax},${r.lop},${r.netSalary}`
+    const header = 'EmployeeId,Year,Month,BasicSalary,HRA,Conveyance,PF,ProfessionalTax,LOP,NetSalary';
+    const rows = (payrollData as Payslip[]).map(r =>
+      `${r.employeeId},${r.year},${r.month},${r.basicSalary},${r.hra},${r.conveyance},${r.pf},${r.professionalTax},${r.lop},${r.netSalary}`
     );
     const csv = [header, ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -295,9 +298,28 @@ export const PayslipPage: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleSaveStructures = async (updated: SalaryStructureConfig[]) => {
+    try {
+      await Promise.all(updated.map(s =>
+        payslipService.updateSalaryStructure(s.role, {
+          hra: s.hra,
+          conveyance: s.conveyance,
+          medical: s.medical,
+          otherAllowance: s.otherAllowance,
+          pfPercent: s.pfPercent,
+          professionalTax: s.professionalTax,
+          esiPercent: s.esiPercent,
+        })
+      ));
+      setStructures(updated);
+      notify.success('Salary structure updated');
+    } catch {
+      notify.error('Failed', 'Could not update salary structure');
+    }
+  };
+
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  // ─── CSV Download Button (reusable) ──────────────────────────
   const CSVDownloadButton = () => (
     <button
       onClick={handleDownloadCSV}
@@ -326,6 +348,21 @@ export const PayslipPage: React.FC = () => {
             <FaCog className="text-slate-400" />
             Salary Structure
           </button>
+
+          {/* ✅ Delete Payroll button */}
+          <button
+            onClick={handleDeletePayroll}
+            disabled={deleteLoading}
+            className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl text-xs font-bold text-rose-600 transition-colors disabled:opacity-50"
+          >
+            {deleteLoading ? (
+              <div className="h-3 w-3 border-2 border-rose-300 border-t-rose-600 rounded-full animate-spin" />
+            ) : (
+              <FaTrash className="text-xs" />
+            )}
+            Delete Payroll
+          </button>
+
           <button
             onClick={handleGeneratePayroll}
             disabled={loading}
@@ -341,7 +378,6 @@ export const PayslipPage: React.FC = () => {
 
         {/* ─── Left — Employee List ─────────────────────── */}
         <div className="w-72 shrink-0 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-
           <div className="p-4 border-b border-slate-100">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
@@ -369,7 +405,6 @@ export const PayslipPage: React.FC = () => {
                   onClick={async () => {
                     setSelectedEmployee(emp);
                     setLopDeduction('0');
-                    // Only fetch if not already in map — switch pannalum delete aagathu
                     if (basicSalaryMap[emp.id] === undefined) {
                       const saved = await fetchEmployeeSalary(emp.id);
                       setBasicSalaryMap(prev => ({
@@ -415,7 +450,7 @@ export const PayslipPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Payroll Data Table — always show */}
+            {/* Payroll Data Table */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -435,21 +470,21 @@ export const PayslipPage: React.FC = () => {
                         <th className="text-left py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Emp ID</th>
                         <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Basic</th>
                         <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">HRA</th>
-                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Transport</th>
+                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Conveyance</th>
                         <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">PF</th>
-                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tax</th>
+                        <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Prof. Tax</th>
                         <th className="text-right py-2 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Net Salary</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
-                      {payrollData.map(row => (
-                        <tr key={row.employeeId} className="hover:bg-slate-50 transition-colors">
+                      {(payrollData as Payslip[]).map(row => (
+                        <tr key={row.id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-2.5 px-3 font-semibold text-slate-700">#{row.employeeId}</td>
-                          <td className="py-2.5 px-3 text-right text-slate-600">₹{row.basic.toLocaleString('en-IN')}</td>
+                          <td className="py-2.5 px-3 text-right text-slate-600">₹{row.basicSalary.toLocaleString('en-IN')}</td>
                           <td className="py-2.5 px-3 text-right text-slate-600">₹{row.hra.toLocaleString('en-IN')}</td>
-                          <td className="py-2.5 px-3 text-right text-slate-600">₹{row.transport.toLocaleString('en-IN')}</td>
+                          <td className="py-2.5 px-3 text-right text-slate-600">₹{(row.conveyance || 0).toLocaleString('en-IN')}</td>
                           <td className="py-2.5 px-3 text-right text-rose-500">₹{row.pf.toLocaleString('en-IN')}</td>
-                          <td className="py-2.5 px-3 text-right text-rose-500">₹{row.tax.toLocaleString('en-IN')}</td>
+                          <td className="py-2.5 px-3 text-right text-rose-500">₹{row.professionalTax.toLocaleString('en-IN')}</td>
                           <td className="py-2.5 px-3 text-right font-black text-slate-800">₹{row.netSalary.toLocaleString('en-IN')}</td>
                         </tr>
                       ))}
@@ -462,27 +497,22 @@ export const PayslipPage: React.FC = () => {
         ) : (
           <div className="flex-1 flex flex-col gap-4">
 
-            {/* Employee Info + CSV button */}
+            {/* Employee Info */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
-                    {selectedEmployee.name?.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-800">{selectedEmployee.name}</p>
-                    <p className="text-xs text-slate-400">#{selectedEmployee.id} · {selectedEmployee.role}</p>
-                  </div>
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg">
+                  {selectedEmployee.name?.charAt(0)}
                 </div>
-                {/* CSV button — employee selected view-layum */}
-                <CSVDownloadButton />
+                <div>
+                  <p className="font-bold text-slate-800">{selectedEmployee.name}</p>
+                  <p className="text-xs text-slate-400">#{selectedEmployee.id} · {selectedEmployee.role}</p>
+                </div>
               </div>
             </div>
 
-            {/* Salary Setup + Generate */}
+            {/* Salary Setup */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-5">
 
-              {/* Month Year + Basic Salary */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Month</label>
@@ -513,7 +543,6 @@ export const PayslipPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Set Salary Button */}
               <button onClick={handleSetSalary} disabled={loading || !basicSalary}
                 className="w-full py-2.5 border border-indigo-200 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors disabled:opacity-50"
               >
@@ -522,14 +551,12 @@ export const PayslipPage: React.FC = () => {
 
               <div className="border-t border-slate-100" />
 
-              {/* Salary Components */}
               <div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
                   Salary Components ({selectedEmployee.role})
                 </p>
                 <div className="grid grid-cols-2 gap-3">
 
-                  {/* Earnings */}
                   <div className="bg-emerald-50 rounded-xl p-3 space-y-2">
                     <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Earnings</p>
                     {[
@@ -546,7 +573,6 @@ export const PayslipPage: React.FC = () => {
                     ))}
                   </div>
 
-                  {/* Deductions */}
                   <div className="bg-rose-50 rounded-xl p-3 space-y-2">
                     <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Deductions</p>
                     <div className="flex justify-between text-xs">
@@ -585,7 +611,9 @@ export const PayslipPage: React.FC = () => {
               </div>
 
               {/* Generate Payslip Button */}
-              <button onClick={handleGenerate} disabled={loading || !basicSalary}
+              <button
+                onClick={handleGeneratePayslip}
+                disabled={loading || !basicSalary}
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {loading ? (
@@ -598,19 +626,24 @@ export const PayslipPage: React.FC = () => {
 
             </div>
 
-            {/* History */}
+            {/* History — all employees */}
             {history.length > 0 && (
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
-                  Payslip History
-                </p>
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Payslip History
+                  </p>
+                  <CSVDownloadButton />
+                </div>
                 <div className="max-h-[250px] overflow-y-auto space-y-2 pr-1">
                   {history.map(h => (
                     <div key={h.id}
                       className="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
                     >
                       <div>
-                        <p className="text-xs font-bold text-slate-700">{MONTHS[h.month - 1]} {h.year}</p>
+                        <p className="text-xs font-bold text-slate-700">
+                          #{h.employeeId} · {MONTHS[h.month - 1]} {h.year}
+                        </p>
                         <p className="text-[10px] text-slate-400">
                           Generated: {new Date(h.generatedDate).toLocaleDateString()}
                         </p>
@@ -635,10 +668,7 @@ export const PayslipPage: React.FC = () => {
         <SalaryStructureModal
           structures={structures}
           onClose={() => setShowStructureModal(false)}
-          onSave={(updated) => {
-            setStructures(updated);
-            notify.success('Salary structure updated');
-          }}
+          onSave={handleSaveStructures}
         />
       )}
 
