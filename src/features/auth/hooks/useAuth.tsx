@@ -16,6 +16,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   mustChangePassword: boolean;
+  personalDetailsComplete : boolean;
+
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
 
 }
@@ -101,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         mustChangePassword: user?.mustChangePassword ?? false,
+        personalDetailsComplete : user?.personalDetailsComplete ?? false,
         setUser
       }}
     >

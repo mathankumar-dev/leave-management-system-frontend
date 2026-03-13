@@ -19,6 +19,8 @@ import ManagerStatCardTeam from "../../components/ManagerStatCardTeam";
 const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
   const { fetchManagerDashboard, processApproval, loading: dashboardLoading } = useDashboard();
+  
+console.log(user);
 
   const [dashboardData, setDashboardData] = useState<ManagerDashBoardResponse>();
   const [approvals, setApprovals] = useState<any[]>([]);

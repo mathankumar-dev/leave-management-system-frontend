@@ -1,5 +1,5 @@
 import api from "../../../api/axiosInstance";
-import type { LoginCredentials, AuthResponse, User } from "../types";
+import type { LoginCredentials, AuthResponse, User, PersonalDetailsRequest } from "../types";
 
 export const authService = {
 
@@ -13,6 +13,13 @@ export const authService = {
     const response = await api.get<User>(`/employees/profile/${id}`);
     return response.data;
   },
+// features/auth/services/AuthService.ts
+
+updatePersonalDetails: async (id: number, data: PersonalDetailsRequest): Promise<any> => {
+
+    const response = await api.post(`/employees/personal-details/${id}`, data);
+    return response.data;
+},
 
 
   changePassword: async (newPassword: string): Promise<void> => {

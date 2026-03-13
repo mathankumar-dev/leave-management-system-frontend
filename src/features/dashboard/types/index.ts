@@ -216,49 +216,7 @@ export interface AuditLog {
 // Profile
 // ==============================
 
-export interface ProfileData {
 
-  name?: string;
-  role: string;
-
-  email: string;
-
-  phone: string;
-
-  id: number;
-
-  photo: string;
-
-  department: string;
-
-  designation: string;
-
-  joiningDate: string;
-
-  workLocation: string;
-
-  managerName: string;
-  managerId?: number;
-
-  employmentType: 'Full-time' | 'Contract' | 'Intern';
-
-  dob: string;
-
-  gender: string;
-
-  bloodGroup?: string;
-
-  nationality: string;
-
-  address: string;
-
-  linkedin?: string;
-
-  github?: string;
-
-  skills: string[];
-
-}
 
 
 
@@ -391,4 +349,49 @@ export interface MeetingRequest{
   locationOrLink? : string;
   agenda? : string;
   priority? : string;
+}
+
+
+export interface ProfileData {
+  // --- Auth & Core Identity ---
+  id: number;
+  name: string;
+  email: string; // Work Email
+  role: string;
+  active: boolean;
+  personalDetailsComplete: boolean;
+  personalDetailsLocked: boolean;
+
+  // --- Employment Details ---
+  designation: string;
+  joiningDate: string;
+  managerId: number | null;
+  managerName: string | null;
+  teamLeaderId: number | null;
+  teamLeaderName: string | null;
+  biometricStatus: string;
+  vpnStatus: string;
+
+  // --- Contact & Personal ---
+  contactNumber: string;
+  personalEmail: string;
+  gender: string;
+  bloodGroup: string;
+  dateOfBirth: string;
+  aadharNumber: string; // Will be masked in UI
+  emergencyContactNumber: string;
+
+  // --- Addresses ---
+  presentAddress: string;
+  permanentAddress: string;
+
+  // --- Family ---
+  fatherName: string;
+  motherName: string;
+
+  // --- Skills & Socials ---
+  skillSet: string[]; // Backend returns array of strings
+  linkedin?: string;
+  github?: string;
+  photo?: string;
 }

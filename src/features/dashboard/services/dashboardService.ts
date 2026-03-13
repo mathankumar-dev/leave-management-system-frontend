@@ -64,11 +64,11 @@ export const dashboardService = {
   //   return response.data;
   // },
 
-  submitLeaveRequest: async (data: FormData ) => {
+  submitLeaveRequest: async (data: FormData) => {
     const isMultipart = data instanceof FormData;
-   for (const [key, value] of data.entries()) {
-        console.log(key, value);
-    }   
+    for (const [key, value] of data.entries()) {
+      console.log(key, value);
+    }
 
     const response = await api.post('/leaves/apply', data, {
       headers: {
@@ -120,6 +120,10 @@ export const dashboardService = {
 
   getPendingApprovals: async (managerId: number) => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
+    return response.data.content;
+  },
+  getPendingApprovalsForTeamLeader: async (teamLeaderId: number) => {
+    const response = await api.get(`/leave-approvals/pending/team-leader/${teamLeaderId}`);
     return response.data.content;
   },
 

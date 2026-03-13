@@ -20,7 +20,7 @@ type RequestType = "OD" | "MEETING" | "OVERTIME";
 const OtherRequestForm = () => {
     const { user } = useAuth();
     const { createOD, createMeeting, loading, error, setError } = useRequest();
-    
+
     const [activeTab, setActiveTab] = useState<RequestType>("OD");
     const [submitted, setSubmitted] = useState(false);
 
@@ -88,7 +88,7 @@ const OtherRequestForm = () => {
                 const success = await createMeeting(meetingPayload, user.id, undefined);
                 if (success) setSubmitted(true);
             }
-            
+
             if (activeTab === "OVERTIME") {
                 console.log("Submit OT:", { start, end, reason: formData.reason });
                 setSubmitted(true);
@@ -102,7 +102,7 @@ const OtherRequestForm = () => {
                 <HiOutlineCheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">{activeTab} Request Submitted</h2>
                 <p className="text-slate-500 mt-2">The request has been recorded in the system.</p>
-                <button onClick={() => setSubmitted(false)} className="mt-8 text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                <button onClick={() => setSubmitted(false)} className="mt-8 text-sm font-medium text-indigo hover:text-indigo-500">
                     Raise another request →
                 </button>
             </div>
@@ -122,9 +122,8 @@ const OtherRequestForm = () => {
                         key={tab.id}
                         type="button"
                         onClick={() => { setActiveTab(tab.id as RequestType); }}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-sm transition-all ${
-                            activeTab === tab.id ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-                        }`}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-sm transition-all ${activeTab === tab.id ? "bg-primary-500 text-white shadow-md shadow-indigo-200" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                            }`}
                     >
                         {tab.icon} {tab.label}
                     </button>
@@ -146,30 +145,30 @@ const OtherRequestForm = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                    
+
                     {activeTab === "MEETING" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                                    <HiOutlineUsers size={14}/> Meeting Title
+                                    <HiOutlineUsers size={14} /> Meeting Title
                                 </label>
-                                <input 
+                                <input
                                     className="w-full border border-slate-200 bg-slate-50 p-3 rounded-sm text-xs font-black uppercase outline-none focus:border-indigo-600 transition-all"
                                     placeholder="Enter meeting subject"
                                     value={formData.title}
-                                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                                    <HiOutlineBuildingOffice2 size={14}/> Location
+                                    <HiOutlineBuildingOffice2 size={14} /> Location
                                 </label>
-                                <input 
+                                <input
                                     className="w-full border border-slate-200 bg-slate-50 p-3 rounded-sm text-xs font-black uppercase outline-none focus:border-indigo-600 transition-all"
                                     placeholder="Room name or Link"
                                     value={formData.location}
-                                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                     required
                                 />
                             </div>
@@ -225,7 +224,7 @@ const OtherRequestForm = () => {
 
                     <div className="space-y-3">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
-                            <HiOutlineChatBubbleLeftRight size={16} /> 
+                            <HiOutlineChatBubbleLeftRight size={16} />
                             {activeTab === "OVERTIME" ? "Work Description" : "Purpose"}
                         </label>
                         <textarea
@@ -241,7 +240,7 @@ const OtherRequestForm = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                        className="w-full bg-primary-500 hover:bg-primary-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
                     >
                         {loading ? "Processing..." : `Submit ${activeTab} Request`}
                         {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
