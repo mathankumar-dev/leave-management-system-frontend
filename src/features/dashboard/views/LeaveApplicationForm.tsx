@@ -140,16 +140,39 @@ const LeaveApplicationForm = () => {
     const result = await applyLeave(fd);
     if (result) setSubmitted(true);
   };
+  const calculateDays = () => {
+    if (!formData.startDate) return 0;
+
+    // If it's a single day toggle or Comp-Off (usually single day)
+    if (formData.isHalfDay || formData.category === "COMP_OFF") {
+      return formData.startDateHalfDayType ? 0.5 : 1;
+    }
+
+    if (!formData.endDate) return 1;
+
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
+
+    // Calculate difference in days
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    let days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+    // Subtract half days if selected
+    if (formData.startDateHalfDayType) days -= 0.5;
+    if (formData.endDateHalfDayType) days -= 0.5;
+
+    return days;
+  };
 
   // Helper to render half-day toggle buttons
-  const HalfDaySelector = ({ 
-    label, 
-    value, 
-    onChange 
-  }: { 
-    label: string, 
-    value: HalfDayType, 
-    onChange: (v: HalfDayType) => void 
+  const HalfDaySelector = ({
+    label,
+    value,
+    onChange
+  }: {
+    label: string,
+    value: HalfDayType,
+    onChange: (v: HalfDayType) => void
   }) => (
     <div className="flex flex-col gap-2">
       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
@@ -159,9 +182,8 @@ const LeaveApplicationForm = () => {
             key={String(type)}
             type="button"
             onClick={() => onChange(type as HalfDayType)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              value === type ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
-            }`}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${value === type ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              }`}
           >
             {type === null ? "Full Day" : type === "FIRST_HALF" ? "1st Half" : "2nd Half"}
           </button>
@@ -226,6 +248,27 @@ const LeaveApplicationForm = () => {
           <h1 className="text-xl font-bold text-slate-800">
             {formData.category === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
           </h1>
+
+          {/* Replace the static span with this */}
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+              Required Approvals
+            </span>
+            <div className="flex gap-2">
+              {/* Always show TL */}
+              <Badge label={`TL: ${user?.teamLeaderName || 'Assigning...'}`} active />
+
+              {/* Show Manager if > 1 day */}
+              {calculateDays() > 1 && (
+                <Badge label={`Manager: ${user?.managerName || 'Assigning...'}`} active />
+              )}
+
+              {/* Show HR if > 7 days */}
+              {calculateDays() > 7 && (
+                <Badge label="HR Finalization" active />
+              )}
+            </div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
@@ -240,9 +283,8 @@ const LeaveApplicationForm = () => {
                   key={type}
                   type="button"
                   onClick={() => setFormData({ ...formData, category: type })}
-                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${
-                    formData.category === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                  }`}
+                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${formData.category === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
                 >
                   {leaveLabels[type]}
                 </button>
@@ -260,10 +302,10 @@ const LeaveApplicationForm = () => {
                   onChange={(date) => setFormData({ ...formData, startDate: date })}
                   required
                 />
-                <HalfDaySelector 
-                  label="Start Day Type" 
-                  value={formData.startDateHalfDayType} 
-                  onChange={(v) => setFormData({...formData, startDateHalfDayType: v})} 
+                <HalfDaySelector
+                  label="Start Day Type"
+                  value={formData.startDateHalfDayType}
+                  onChange={(v) => setFormData({ ...formData, startDateHalfDayType: v })}
                 />
               </div>
 
@@ -272,18 +314,18 @@ const LeaveApplicationForm = () => {
                   <MyDatePicker
                     label={formData.category === "COMP_OFF" ? "03. Planned Leave Date" : "03. End Date"}
                     selected={formData.category === "COMP_OFF" ? formData.compOffPlannedDate : formData.endDate}
-                    onChange={(date) => setFormData({ 
-                      ...formData, 
-                      [formData.category === "COMP_OFF" ? "compOffPlannedDate" : "endDate"]: date 
+                    onChange={(date) => setFormData({
+                      ...formData,
+                      [formData.category === "COMP_OFF" ? "compOffPlannedDate" : "endDate"]: date
                     })}
                     minDate={formData.startDate || new Date()}
                     required
                   />
                   {formData.category !== "COMP_OFF" && (
-                    <HalfDaySelector 
-                      label="End Day Type" 
-                      value={formData.endDateHalfDayType} 
-                      onChange={(v) => setFormData({...formData, endDateHalfDayType: v})} 
+                    <HalfDaySelector
+                      label="End Day Type"
+                      value={formData.endDateHalfDayType}
+                      onChange={(v) => setFormData({ ...formData, endDateHalfDayType: v })}
                     />
                   )}
                 </div>
@@ -297,8 +339,8 @@ const LeaveApplicationForm = () => {
                   type="checkbox"
                   className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                   checked={formData.isHalfDay}
-                  onChange={(e) => setFormData({ 
-                    ...formData, 
+                  onChange={(e) => setFormData({
+                    ...formData,
                     isHalfDay: e.target.checked,
                     endDate: e.target.checked ? null : formData.endDate,
                     endDateHalfDayType: e.target.checked ? null : formData.endDateHalfDayType
@@ -309,7 +351,6 @@ const LeaveApplicationForm = () => {
             </div>
           </div>
 
-          {/* 04. Attachments & 05. Reason (Keep your original code here) */}
           <div className="space-y-3">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
               <HiOutlinePaperClip size={16} /> 04. Attachments (Required for future Sick Leave)
@@ -346,5 +387,13 @@ const LeaveApplicationForm = () => {
     </div>
   );
 };
+const Badge = ({ label, active }: { label: string; active: boolean }) => (
+  <span className={`px-2 py-1 rounded text-[10px] font-bold border transition-all ${active
+    ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+    : "bg-slate-50 text-slate-400 border-slate-100"
+    }`}>
+    {label}
+  </span>
+);
 
 export default LeaveApplicationForm;
