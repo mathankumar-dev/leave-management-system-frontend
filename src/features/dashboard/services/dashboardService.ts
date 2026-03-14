@@ -9,7 +9,9 @@ import type {
   TeamCalendarResponse,
   TeamMemberBalance,
   CompOffRequest,
-  ProfileData
+  LeaveBalanceResponse,
+  ProfileResponse
+  
 
 } from '../types';
 
@@ -37,6 +39,13 @@ export const dashboardService = {
   getManagerDashboard: async (managerId: number) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
+
+    return response.data;
+
+  },
+  getTeamLeaderDashboard: async (teamLeaderId: number) => {
+
+    const response = await api.get(`/dashboard/teamleader/${teamLeaderId}`);
 
     return response.data;
 
@@ -143,6 +152,7 @@ fetchProfile: async (employeeId: number) => {
   updateDecision: async (
     decisionRequest: LeaveDecisionRequest
   ): Promise<void> => {
+    console.log(decisionRequest);
     await api.patch(
       "/leave-approvals/decision",
       decisionRequest
@@ -241,7 +251,7 @@ fetchProfile: async (employeeId: number) => {
     return response.data;
   },
 
-  getProfile: async (employeeId: number): Promise<ProfileData> => {
+  getProfile: async (employeeId: number): Promise<ProfileResponse> => {
   const response = await api.get(`/employees/${employeeId}/profile`);
   return response.data;
 },

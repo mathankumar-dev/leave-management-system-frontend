@@ -18,9 +18,7 @@ import ManagerStatCardTeam from "../../components/ManagerStatCardTeam";
 
 const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
-  const { fetchManagerDashboard, processApproval, loading: dashboardLoading } = useDashboard();
-  
-console.log(user);
+  const { fetchManagerDashboard, fetchTeamLeaderDashboard, processApproval, loading: dashboardLoading } = useDashboard();
 
   const [dashboardData, setDashboardData] = useState<ManagerDashBoardResponse>();
   const [approvals, setApprovals] = useState<any[]>([]);
@@ -33,7 +31,7 @@ console.log(user);
   }>({ isOpen: false, type: null });
 
   let UserRole = user?.role.toString();
-  if(user?.role === "TEAM_LEADER"){
+  if (user?.role === "TEAM_LEADER") {
     UserRole = "TEAM LEADER";
   }
 
@@ -44,17 +42,25 @@ console.log(user);
   }>({ isOpen: false, req: null, status: null });
 
 
-
+  let data;
   const loadAllData = useCallback(async () => {
     if (!user?.id) return;
 
-    const data = await fetchManagerDashboard(user.id);
+    try {
+      // Fixed the 'data' scoping issue
+      const response = user.role === "TEAM_LEADER"
+        ? await fetchTeamLeaderDashboard(user.id)
+        : await fetchManagerDashboard(user.id);
 
-    if (data) {
-      setDashboardData(data);
-      setApprovals(data.pendingTeamRequests || []);
+      if (response) {
+        setDashboardData(response);
+        setApprovals(response.pendingTeamRequests || []);
+      }
+    } catch (error) {
+      console.error("Failed to sync dashboard:", error);
+      notify.error("Failed to fetch dashboard data");
     }
-  }, [user?.id, fetchManagerDashboard]);
+  }, [user?.id, user?.role, fetchManagerDashboard, fetchTeamLeaderDashboard]);
 
   useEffect(() => {
     if (!authLoading) loadAllData();
@@ -63,7 +69,7 @@ console.log(user);
   const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
     const success = await processApproval({
       leaveId: req.leaveId,
-      managerId: Number(user?.id),
+      approverId: Number(user?.id),
       decision: status,
       comments: commentText
     });
@@ -79,6 +85,7 @@ console.log(user);
       setDialogConfig({ isOpen: false, req: null, status: null });
     }
   };
+  console.log(dashboardData);
 
   if (dashboardLoading || authLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -146,8 +153,6 @@ console.log(user);
                         </span>
                       </div>
                     </div>
-
-                    {/* Optional: Add a small indicator for half-days if they exist */}
                     {item.halfDayCount > 0 && (
                       <span className="text-[9px] font-bold text-slate-400">
                         Includes {item.halfDayCount} half-day{item.halfDayCount > 1 ? 's' : ''}
@@ -279,6 +284,20 @@ console.log(user);
             label="Earned Leave"
             value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.usedDays || 0}
             total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.allocatedDays || 1}
+            iconType="leave"
+            strokeColor="#6366f1"
+          />
+          <ManagerStatCard
+            label="Personal"
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'PERSONAL')?.usedDays || 0}
+            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'PERSONAL')?.allocatedDays || 1}
+            iconType="leave"
+            strokeColor="#6366f1"
+          />
+          <ManagerStatCard
+            label="Monthly Stats"
+            value={dashboardData?.personalStats.monthlyUsed || 0}
+            total={dashboardData?.personalStats.monthlyAllocated || 1}
             iconType="leave"
             strokeColor="#6366f1"
           />

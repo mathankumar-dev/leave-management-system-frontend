@@ -36,6 +36,7 @@ import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialo
 import OtherRequestForm from "../../../common/OtherRequestForm";
 import PayrollView from "../views/Payroll";
 import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
+import { PayslipPage } from "../views/hr/pages/PayslipPage";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -43,6 +44,7 @@ const ROLES = {
   HR: "HR",
   MANAGER: "MANAGER",
   EMPLOYEE: "EMPLOYEE",
+  TEAMLEADER: "TEAM_LEADER"
 };
 
 /* ---------------- SIMPLE STAT CARD ---------------- */
@@ -54,13 +56,13 @@ const StatCard = ({ title, value }: { title: string; value: number }) => (
 );
 
 const DashboardLayout: React.FC = () => {
-  const { user, logout, mustChangePassword , personalDetailsComplete } = useAuth();
+  const { user, logout, mustChangePassword, personalDetailsComplete } = useAuth();
   const userRole = user?.role;
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -77,26 +79,26 @@ const navigate = useNavigate();
 
 
   useEffect(() => {
-  const checkProfile = async () => {
-    try {
-      if (!user?.id) return;
+    const checkProfile = async () => {
+      try {
+        if (!user?.id) return;
 
-      const profile = await dashboardService.getProfile(user.id);
+        const profile = await dashboardService.getProfile(user.id);
 
-      if (!profile.personalDetailsComplete) {
-        navigate("/complete-profile");
-        return;
+        if (!profile.personalDetailsComplete) {
+          navigate("/complete-profile");
+          return;
+        }
+
+        setCheckingProfile(false);
+      } catch (error) {
+        console.error("Profile verification failed", error);
+        setCheckingProfile(false);
       }
+    };
 
-      setCheckingProfile(false);
-    } catch (error) {
-      console.error("Profile verification failed", error);
-      setCheckingProfile(false);
-    }
-  };
-
-  checkProfile();
-}, [user?.id, navigate]);
+    checkProfile();
+  }, [user?.id, navigate]);
 
   /* ---------------- ADMIN DASHBOARD FETCH ---------------- */
   useEffect(() => {
@@ -183,7 +185,7 @@ const navigate = useNavigate();
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
-        if (userRole === ROLES.MANAGER)
+        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.HR) return <HRDashboard />;
         return null;
@@ -210,8 +212,9 @@ const navigate = useNavigate();
       case "My Leaves":
         return <MyLeavesView />;
 
-        case "Payroll":
-  return <PayrollView />;
+      case "Payroll":
+        if (user?.role === "HR") return <PayslipPage />;
+        return <PayrollView />;
 
       case "Pending Approvals":
         return <PendingApprovalsView />;
@@ -223,8 +226,10 @@ const navigate = useNavigate();
         return <TeamMembersView />;
 
       case "Profile":
-        if (userRole === ROLES.MANAGER) return <ManagerProfile />;
+        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
+      case "Other Approvals":
+        return <OtherRequestForm />;
 
       default:
         return <DashboardView onNavigate={setActiveTab} />;
@@ -232,18 +237,18 @@ const navigate = useNavigate();
   };
 
   if (checkingProfile) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-}
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (mustChangePassword) {
     return <ChangePasswordDialog />;
   }
-  if(!personalDetailsComplete){
-    return <PersonalDetailsModal /> ;
+  if (!personalDetailsComplete) {
+    return <PersonalDetailsModal />;
   }
 
 

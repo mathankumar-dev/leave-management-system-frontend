@@ -12,6 +12,7 @@ import type {
   TeamCalendarResponse,
   TeamMemberBalance,
   ManagerDashBoardResponse,
+  LeaveBalanceResponse,
 } from "../types";
 
 
@@ -25,11 +26,13 @@ export const useDashboard = () => {
   const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
   const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
 
-  const [leaveBalance, setLeaveBalance] = useState({
-  CASUAL: 0,
-  SICK: 0,
-  EARNED_LEAVES: 0
-});
+  const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponse | null>(null);
+
+//   const [leaveBalance, setLeaveBalance] = useState({
+//   CASUAL: 0,
+//   SICK: 0,
+//   EARNED_LEAVES: 0
+// });
 
   /* ================= APPROVALS ================= */
 
@@ -61,6 +64,24 @@ export const useDashboard = () => {
       setLoading(false);
     }
   };
+  const fetchLeaveBalance = useCallback(async (employeeId: number, year: number = 2026) => {
+    setLoading(true);
+    setError(null);
+    try {
+        const data = await service.getLeaveBalances(employeeId, year);
+        setLeaveBalance(data);
+        return data;
+    } catch (err: any) {
+        setError(err.message || "Failed to fetch leave balance");
+        return null;
+    } finally {
+        setLoading(false);
+    }
+}, []);
+
+const hasExceededLimits = useMemo(() => {
+    return leaveBalance?.exceededMonthlyLimit || (leaveBalance?.totalRemaining ?? 0) <= 0;
+}, [leaveBalance]);
 
   /* ================= EMPLOYEES ================= */
 
@@ -229,6 +250,21 @@ const applyLeave = useCallback(async (data: FormData ) => {
     },
     []
   );
+  const fetchTeamLeaderDashboard = useCallback(
+    async (id: number): Promise<ManagerDashBoardResponse | null> => {
+      setLoading(true);
+      try {
+        const response = await service.getTeamLeaderDashboard(id);
+        return response;
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch team leader data");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
 
   const [filters, setFilters] = useState({
@@ -319,6 +355,7 @@ const applyLeave = useCallback(async (data: FormData ) => {
     setError,
     fetchDashboard,
     fetchManagerDashboard,
+    fetchTeamLeaderDashboard,
     // fetchApprovals,
     processApproval,
     fetchEmployees,
@@ -327,12 +364,13 @@ const applyLeave = useCallback(async (data: FormData ) => {
 
     applyLeave,
     getTeamMembers,
+    fetchLeaveBalance, 
+    leaveBalance,
 
     removeLeaveType,
     cancelLeave,
     editLeave,
     fetchTeamSchedule,
-     leaveBalance,
     teamCalendar,
     fetchWeeklyLeaveSummary,
     weeklyLeaveSummary,

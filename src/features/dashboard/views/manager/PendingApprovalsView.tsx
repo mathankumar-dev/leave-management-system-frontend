@@ -108,7 +108,7 @@ const PendingApprovalsView: React.FC = () => {
         } else {
             const decisionPayload: LeaveDecisionRequest = {
                 leaveId: req.id,
-                managerId: Number(user?.id),
+                approverId: Number(user?.id),
                 decision: status,
                 comments: commentText
             };

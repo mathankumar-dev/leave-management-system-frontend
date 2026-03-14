@@ -34,8 +34,11 @@ const OtherRequestForm = () => {
     });
 
     useEffect(() => {
+        if (activeTab === "MEETING" && user?.role === "EMPLOYEE") {
+            setActiveTab("OD");
+        }
         setError(null);
-    }, [activeTab, setError]);
+    }, [activeTab, user?.role, setError]);
 
     // Helper to merge the selected Date with the selected Time
     const mergeDateAndTime = (baseDate: Date, timeDate: Date | null) => {
@@ -117,17 +120,21 @@ const OtherRequestForm = () => {
                     { id: "OD", label: "On Duty", icon: <HiOutlineMapPin /> },
                     { id: "MEETING", label: "Meeting", icon: <HiOutlineUsers /> },
                     { id: "OVERTIME", label: "Overtime", icon: <HiOutlineClock /> },
-                ].map((tab) => (
-                    <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => { setActiveTab(tab.id as RequestType); }}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-sm transition-all ${activeTab === tab.id ? "bg-primary-500 text-white shadow-md shadow-indigo-200" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
-                            }`}
-                    >
-                        {tab.icon} {tab.label}
-                    </button>
-                ))}
+                ]
+                    .filter(tab => tab.id !== "MEETING" || user?.role !== "EMPLOYEE") // Filter out Meeting for Employees
+                    .map((tab) => (
+                        <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setActiveTab(tab.id as RequestType)}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-sm transition-all ${activeTab === tab.id
+                                ? "bg-primary-500 text-white shadow-md shadow-indigo-200"
+                                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                                }`}
+                        >
+                            {tab.icon} {tab.label}
+                        </button>
+                    ))}
             </div>
 
             {error && (
@@ -146,7 +153,7 @@ const OtherRequestForm = () => {
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
 
-                    {activeTab === "MEETING" && (
+                    {activeTab === "MEETING" && user?.role != "EMPLOYEE" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
