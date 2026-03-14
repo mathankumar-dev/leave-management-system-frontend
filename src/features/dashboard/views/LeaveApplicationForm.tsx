@@ -15,6 +15,9 @@ import {
   HiOutlineXMark,
 } from "react-icons/hi2";
 
+// Define the HalfDay type to match backend Enums
+type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
+
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
   const {
@@ -35,8 +38,9 @@ const LeaveApplicationForm = () => {
     startDate: null as Date | null,
     endDate: null as Date | null,
     compOffPlannedDate: null as Date | null,
-    isHalfDay: false,
-    halfDayType: "FIRST_HALF" as "FIRST_HALF" | "SECOND_HALF",
+    isHalfDay: false, // UI Helper for single-day applications
+    startDateHalfDayType: null as HalfDayType,
+    endDateHalfDayType: null as HalfDayType,
     reason: "",
   });
 
@@ -49,7 +53,6 @@ const LeaveApplicationForm = () => {
     COMP_OFF: "Bank Comp-Off",
   };
 
-  // Fetch balance on mount
   useEffect(() => {
     if (user?.id) {
       fetchLeaveBalance(user.id, 2026);
@@ -71,7 +74,7 @@ const LeaveApplicationForm = () => {
 
     const employeeId = user?.id;
     if (!employeeId) {
-      setError("User session not found. Please log in again.");
+      setError("User session not found.");
       return;
     }
 
@@ -87,7 +90,7 @@ const LeaveApplicationForm = () => {
           workedDate: formData.startDate.toISOString().split("T")[0],
           days: formData.isHalfDay ? 0.5 : 1.0,
           plannedLeaveDate: formData.compOffPlannedDate.toISOString().split("T")[0],
-          halfDayType: formData.isHalfDay ? formData.halfDayType : null
+          halfDayType: formData.isHalfDay ? formData.startDateHalfDayType : null
         }],
       };
       const result = await bankCompOff(compOffPayload);
@@ -101,6 +104,7 @@ const LeaveApplicationForm = () => {
     fd.append("leaveType", formData.category);
     fd.append("startDate", formData.startDate.toISOString().split("T")[0]);
 
+    // Determine end date
     const endDateStr = formData.isHalfDay
       ? formData.startDate.toISOString().split("T")[0]
       : formData.endDate?.toISOString().split("T")[0];
@@ -109,13 +113,24 @@ const LeaveApplicationForm = () => {
       setError("Please select an end date.");
       return;
     }
-
     fd.append("endDate", endDateStr);
     fd.append("reason", formData.reason);
     fd.append("confirmLossOfPay", "false");
 
-    if (formData.isHalfDay && formData.halfDayType) {
-      fd.append("halfDayType", formData.halfDayType);
+    // Map Half Day logic to Backend Params
+    if (formData.isHalfDay) {
+      // For single day, we use startDateHalfDayType
+      fd.append("startDateHalfDayType", formData.startDateHalfDayType || "");
+      // Optional: Backend also checks 'halfDayType' as fallback
+      fd.append("halfDayType", formData.startDateHalfDayType || "");
+    } else {
+      // Multi-day granular logic
+      if (formData.startDateHalfDayType) {
+        fd.append("startDateHalfDayType", formData.startDateHalfDayType);
+      }
+      if (formData.endDateHalfDayType) {
+        fd.append("endDateHalfDayType", formData.endDateHalfDayType);
+      }
     }
 
     if (selectedFile) {
@@ -126,8 +141,34 @@ const LeaveApplicationForm = () => {
     if (result) setSubmitted(true);
   };
 
-  console.log(leaveBalance);
-
+  // Helper to render half-day toggle buttons
+  const HalfDaySelector = ({ 
+    label, 
+    value, 
+    onChange 
+  }: { 
+    label: string, 
+    value: HalfDayType, 
+    onChange: (v: HalfDayType) => void 
+  }) => (
+    <div className="flex flex-col gap-2">
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+      <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-fit">
+        {[null, "FIRST_HALF", "SECOND_HALF"].map((type) => (
+          <button
+            key={String(type)}
+            type="button"
+            onClick={() => onChange(type as HalfDayType)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+              value === type ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {type === null ? "Full Day" : type === "FIRST_HALF" ? "1st Half" : "2nd Half"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   if (submitted) {
     return (
@@ -135,10 +176,7 @@ const LeaveApplicationForm = () => {
         <HiOutlineCheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
         <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Request Submitted</h2>
         <p className="text-slate-500 mt-2">Your application is awaiting approval.</p>
-        <button
-          onClick={() => setSubmitted(false)}
-          className="mt-8 text-sm font-medium text-indigo-600 hover:text-indigo-500"
-        >
+        <button onClick={() => setSubmitted(false)} className="mt-8 text-sm font-medium text-indigo-600 hover:text-indigo-500">
           Apply for another leave →
         </button>
       </div>
@@ -154,43 +192,26 @@ const LeaveApplicationForm = () => {
         </div>
       )}
 
-      {/* 00. Ultra-Compact Leave Balance Bar */}
+      {/* Leave Balance Bar (Remains same) */}
       {leaveBalance && (
         <div className="mb-6 bg-white border border-slate-200 rounded shadow-sm">
           <div className="flex flex-wrap md:flex-row items-center divide-x divide-slate-100">
-            {[...leaveBalance.breakdown].map((item) => {
+            {leaveBalance.breakdown.map((item) => {
               const isActive = formData.category === item.leaveType;
-              const isCompOff = item.leaveType === "COMP_OFF";
-
               return (
                 <div
                   key={item.leaveType}
-                  onClick={() => {
-                    setError(null);
-                    setFormData({ ...formData, category: item.leaveType as any });
-                  }}
-                  className={`flex-1 min-w-[120px] px-4 py-2 cursor-pointer transition-all relative ${isActive ? 'bg-indigo-50/50' : 'hover:bg-slate-50'
-                    }`}
+                  onClick={() => setFormData({ ...formData, category: item.leaveType as any })}
+                  className={`flex-1 min-w-[120px] px-4 py-2 cursor-pointer transition-all relative ${isActive ? 'bg-indigo-50/50' : 'hover:bg-slate-50'}`}
                 >
-                  {/* Active Indicator (Bottom Line) */}
-                  {isActive && (
-                    <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${isCompOff ? 'bg-amber-500' : 'bg-indigo-600'}`} />
-                  )}
-
+                  {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
                   <div className="flex flex-col">
-                    <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? 'text-indigo-600' : 'text-slate-400'
-                      }`}>
+                    <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
                       {item.leaveType.replace('_', ' ')}
                     </span>
-
                     <div className="flex items-baseline gap-1">
-                      <span className={`text-base font-bold ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
-                        {item.remainingDays}
-                      </span>
-                      <span className="text-[10px] font-medium text-slate-400">
-                        / {isCompOff ? '∞' : item.allocatedDays}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-medium ml-0.5">left</span>
+                      <span className="text-base font-bold text-slate-700">{item.remainingDays}</span>
+                      <span className="text-[10px] font-medium text-slate-400">/ {item.allocatedDays}</span>
                     </div>
                   </div>
                 </div>
@@ -199,17 +220,12 @@ const LeaveApplicationForm = () => {
           </div>
         </div>
       )}
+
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-200 flex justify-between items-center">
           <h1 className="text-xl font-bold text-slate-800">
             {formData.category === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
           </h1>
-          <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-600">
-            <HiOutlineShieldCheck size={16} className="text-indigo-500" />
-            Reviewer: {user?.teamLeaderName
-              ? `${user.teamLeaderName} → ${user.managerName || "Manager"}`
-              : (user?.managerName || "Manager")}
-          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-8">
@@ -223,11 +239,10 @@ const LeaveApplicationForm = () => {
                 <button
                   key={type}
                   type="button"
-                  onClick={() => { setError(null); setFormData({ ...formData, category: type }); }}
-                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${formData.category === type
-                    ? "bg-slate-900 border-slate-900 text-white shadow-md"
-                    : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
+                  onClick={() => setFormData({ ...formData, category: type })}
+                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${
+                    formData.category === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                  }`}
                 >
                   {leaveLabels[type]}
                 </button>
@@ -235,115 +250,95 @@ const LeaveApplicationForm = () => {
             </div>
           </div>
 
-          {/* 02. Date Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <MyDatePicker
-              label={formData.category === "COMP_OFF" ? "02. Date Worked (Holiday)" : "02. Start Date"}
-              selected={formData.startDate}
-              onChange={(date) => setFormData({ ...formData, startDate: date })}
-              maxDate={formData.category === "COMP_OFF" ? new Date() : undefined}
-              required
-            />
-
-            {formData.category === "COMP_OFF" ? (
-              <MyDatePicker
-                label="03. Planned Leave Date"
-                selected={formData.compOffPlannedDate}
-                onChange={(date) => setFormData({ ...formData, compOffPlannedDate: date })}
-                minDate={new Date()}
-                required
-              />
-            ) : !formData.isHalfDay && (
-              <MyDatePicker
-                label="03. End Date"
-                selected={formData.endDate}
-                onChange={(date) => setFormData({ ...formData, endDate: date })}
-                minDate={formData.startDate || new Date()}
-                required
-              />
-            )}
-          </div>
-
-          {/* 03. Options (Half Day) */}
-          <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                checked={formData.isHalfDay}
-                onChange={(e) => setFormData({ ...formData, isHalfDay: e.target.checked })}
-              />
-              <span className="text-sm font-medium text-slate-700">
-                {formData.category === "COMP_OFF" ? "Register as half-day credit" : "Register as half-day leave"}
-              </span>
-            </label>
-
-            {formData.isHalfDay && (
-              <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200">
-                {["FIRST_HALF", "SECOND_HALF"].map((h) => (
-                  <button
-                    key={h}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, halfDayType: h as any })}
-                    className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${formData.halfDayType === h
-                      ? "bg-white text-indigo-600 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700"
-                      }`}
-                  >
-                    {h === "FIRST_HALF" ? "First Half" : "Second Half"}
-                  </button>
-                ))}
+          {/* 02. Date & Half-Day Selection */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <MyDatePicker
+                  label={formData.category === "COMP_OFF" ? "02. Date Worked" : "02. Start Date"}
+                  selected={formData.startDate}
+                  onChange={(date) => setFormData({ ...formData, startDate: date })}
+                  required
+                />
+                <HalfDaySelector 
+                  label="Start Day Type" 
+                  value={formData.startDateHalfDayType} 
+                  onChange={(v) => setFormData({...formData, startDateHalfDayType: v})} 
+                />
               </div>
-            )}
-          </div>
 
-          {/* 04. Attachments */}
-          <div className="space-y-3">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <HiOutlinePaperClip size={16} /> 04. Attachments (Optional)
-            </label>
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all ${selectedFile ? 'border-indigo-400 bg-indigo-50/30' : 'border-slate-200 hover:bg-slate-50'
-                }`}
-            >
-              <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png" />
-              {selectedFile ? (
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-700">{selectedFile.name}</span>
-                  <HiOutlineXMark
-                    onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }}
-                    className="text-rose-500 w-5 h-5"
+              {!formData.isHalfDay && (
+                <div className="space-y-4">
+                  <MyDatePicker
+                    label={formData.category === "COMP_OFF" ? "03. Planned Leave Date" : "03. End Date"}
+                    selected={formData.category === "COMP_OFF" ? formData.compOffPlannedDate : formData.endDate}
+                    onChange={(date) => setFormData({ 
+                      ...formData, 
+                      [formData.category === "COMP_OFF" ? "compOffPlannedDate" : "endDate"]: date 
+                    })}
+                    minDate={formData.startDate || new Date()}
+                    required
                   />
+                  {formData.category !== "COMP_OFF" && (
+                    <HalfDaySelector 
+                      label="End Day Type" 
+                      value={formData.endDateHalfDayType} 
+                      onChange={(v) => setFormData({...formData, endDateHalfDayType: v})} 
+                    />
+                  )}
                 </div>
-              ) : (
-                <span className="text-sm text-slate-500">Click to upload medical certificate or proof</span>
               )}
+            </div>
+
+            {/* Helper Toggle for Single Day */}
+            <div className="pt-4 border-t border-slate-100">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  checked={formData.isHalfDay}
+                  onChange={(e) => setFormData({ 
+                    ...formData, 
+                    isHalfDay: e.target.checked,
+                    endDate: e.target.checked ? null : formData.endDate,
+                    endDateHalfDayType: e.target.checked ? null : formData.endDateHalfDayType
+                  })}
+                />
+                <span className="text-sm font-medium text-slate-700">This is a single-day application</span>
+              </label>
             </div>
           </div>
 
-          {/* 05. Reason */}
+          {/* 04. Attachments & 05. Reason (Keep your original code here) */}
           <div className="space-y-3">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-              <HiOutlineChatBubbleLeftRight size={16} /> 05. Justification / Reason
+              <HiOutlinePaperClip size={16} /> 04. Attachments (Required for future Sick Leave)
+            </label>
+            <div onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all ${selectedFile ? 'border-indigo-400 bg-indigo-50/30' : 'border-slate-200 hover:bg-slate-50'}`}>
+              <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
+              <span className="text-sm text-slate-500">{selectedFile ? selectedFile.name : "Click to upload proof"}</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <HiOutlineChatBubbleLeftRight size={16} /> 05. Reason
             </label>
             <textarea
               rows={3}
-              placeholder="Provide a reason..."
-              className="w-full bg-white border border-slate-200 p-4 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              className="w-full bg-white border border-slate-200 p-4 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
               value={formData.reason}
               onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-              required={formData.category !== "COMP_OFF"}
+              required
             />
           </div>
 
-          {/* Submit Action */}
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
           >
-            {loading ? "Processing..." : formData.category === "COMP_OFF" ? "Request Comp-Off Credit" : "Submit Leave Application"}
+            {loading ? "Processing..." : "Submit Application"}
             {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
           </button>
         </form>

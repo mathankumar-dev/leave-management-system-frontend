@@ -5,8 +5,6 @@ import { useAuth } from "../hooks/useAuth";
 import type { LoginCredentials } from "../types";
 
 import logoSVG from '../../../assets/logo.svg';
-import FailureModal from "../../../components/ui/FailureModal";
-import SuccessModal from "../../../components/ui/SuccessModal";
 import { authService } from "../services/AuthService";
 import { Link } from "react-router-dom";
 
@@ -71,20 +69,7 @@ const LoginForm: React.FC = () => {
 
   return (
     <div className=' flex flex-col items-center justify-center  bg-white rounded-lg filter drop-shadow-lg  w-full max-w-140 min-h-154.25 h-auto p-6  '>
-      {showError && (
-        <FailureModal
-          title="Login Failed"
-          message="Invalid credentials. Please try again."
-          onClose={() => setShowError(false)}
-        />
-      )}
 
-      {showSuccess && (
-        <SuccessModal
-          title="Success!"
-          message={`Login successful. Redirecting to dashboard in ${timer} seconds...`}
-        />
-      )}
 
       <img src={logoSVG} alt="logo image" className="w-20 h-20" />
       <form onSubmit={handleLogin} className="space-y-6 w-full">

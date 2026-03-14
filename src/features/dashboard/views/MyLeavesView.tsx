@@ -65,6 +65,9 @@ const MyLeavesView: React.FC = () => {
     }));
   }, [history, statusFilter]);
 
+  console.log(history);
+  
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
       <CustomLoader label="Loading History" />
