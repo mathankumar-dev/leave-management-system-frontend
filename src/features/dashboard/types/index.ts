@@ -9,22 +9,26 @@ export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 export interface LeaveRecord {
   id: number;
   employeeId: number;
-  leaveType: LeaveType;
-  halfDayType: string | null;
-  year: number;
+  employeeName: string;
+  leaveType: string;
+  startDateHalfDayType: string | null;
+  endDateHalfDayType: string | null;
+  isAppointment: boolean | null;
   startDate: string;
   endDate: string;
   days: number;
   reason: string;
-  status: LeaveStatus;
-  approvedBy: number | null;
-  approvedRole: string | null;
-  approvedAt: string | null;
+  status: string;
+  teamLeaderDecision: string | null;
+  teamLeaderDecidedAt: string | null;
+  managerDecision: string | null;
+  managerDecidedAt: string | null;
+  hrDecision: string | null;
   carryForwardUsed: number;
   compOffUsed: number;
   lossOfPayApplied: number;
+  pendingLopDays: number | null;
   createdAt: string;
-  updatedAt: string;
   escalated: boolean;
   escalatedAt: string | null;
   managerId: number;
@@ -290,14 +294,14 @@ export type CompOffResponse = {
 }
 
 export type LeaveBreakDown = {
-  leaveType : LeaveType;
-  allocatedDays : number;
-  usedDays : number;
-  remainingDays : number;
-  halfDayCount : number;
+  leaveType: LeaveType;
+  allocatedDays: number;
+  usedDays: number;
+  remainingDays: number;
+  halfDayCount: number;
 }
 
-export interface EmployeeData  {
+export interface EmployeeData {
   employeeId: number;
   employeeName: string;
   currentYear: number;
@@ -359,54 +363,54 @@ export interface LeaveBalanceResponse {
 }
 
 export type TeamPendingLeave = {
-  leaveId : number;
-  employeeId : number;
-  employeeName : string;
-  leaveType : LeaveType;
-  reason : string;
-  status : LeaveStatus;
-  startDate : string;
-  endDate : string;
-  days : number;
-  appliedAt : string;
+  leaveId: number;
+  employeeId: number;
+  employeeName: string;
+  leaveType: LeaveType;
+  reason: string;
+  status: LeaveStatus;
+  startDate: string;
+  endDate: string;
+  days: number;
+  appliedAt: string;
 }
 
 export type TeamMemberOnLeave = {
-  employeeId : number;
-  employeeName : string;
-  leaveType : LeaveType;
-  startDate : string;
-  endDate : string;
-  daysRemaining : number;
+  employeeId: number;
+  employeeName: string;
+  leaveType: LeaveType;
+  startDate: string;
+  endDate: string;
+  daysRemaining: number;
 }
 
-export interface ManagerDashBoardResponse  {
-  personalStats : EmployeeData;
-  teamSize : number;
-  teamPendingRequestCount : number;
-  teamOnLeaveCount : number;
-  pendingTeamRequests : TeamPendingLeave[];
-  teamOnLeaveToday : TeamMemberOnLeave[];
-}
-
-
-export interface ODRequest{
-  employeeId : number;
-  reason : string;
-  fromDate : string;
-  toDate : string;
-
+export interface ManagerDashBoardResponse {
+  personalStats: EmployeeData;
+  teamSize: number;
+  teamPendingRequestCount: number;
+  teamOnLeaveCount: number;
+  pendingTeamRequests: TeamPendingLeave[];
+  teamOnLeaveToday: TeamMemberOnLeave[];
 }
 
 
-export interface MeetingRequest{
-  title : string;
-  startTime : string;
-  endTime : string;
-  type? : string;
-  locationOrLink? : string;
-  agenda? : string;
-  priority? : string;
+export interface ODRequest {
+  employeeId: number;
+  reason: string;
+  fromDate: string;
+  toDate: string;
+
+}
+
+
+export interface MeetingRequest {
+  title: string;
+  startTime: string;
+  endTime: string;
+  type?: string;
+  locationOrLink?: string;
+  agenda?: string;
+  priority?: string;
 }
 
 
@@ -443,7 +447,7 @@ export interface ProfileData {
 
   skills?: string[];
 
-  biometricStatus: string ;
+  biometricStatus: string;
   vpnStatus: string;
 
   personalDetailsLocked: boolean;
