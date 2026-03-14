@@ -36,6 +36,7 @@ import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialo
 import OtherRequestForm from "../../../common/OtherRequestForm";
 import PayrollView from "../views/Payroll";
 import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
+import { PayslipPage } from "../views/hr/pages/PayslipPage";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -61,7 +62,7 @@ const DashboardLayout: React.FC = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -78,26 +79,26 @@ const navigate = useNavigate();
 
 
   useEffect(() => {
-  const checkProfile = async () => {
-    try {
-      if (!user?.id) return;
+    const checkProfile = async () => {
+      try {
+        if (!user?.id) return;
 
-      const profile = await dashboardService.getProfile(user.id);
+        const profile = await dashboardService.getProfile(user.id);
 
-      if (!profile.personalDetailsComplete) {
-        navigate("/complete-profile");
-        return;
+        if (!profile.personalDetailsComplete) {
+          navigate("/complete-profile");
+          return;
+        }
+
+        setCheckingProfile(false);
+      } catch (error) {
+        console.error("Profile verification failed", error);
+        setCheckingProfile(false);
       }
+    };
 
-      setCheckingProfile(false);
-    } catch (error) {
-      console.error("Profile verification failed", error);
-      setCheckingProfile(false);
-    }
-  };
-
-  checkProfile();
-}, [user?.id, navigate]);
+    checkProfile();
+  }, [user?.id, navigate]);
 
   /* ---------------- ADMIN DASHBOARD FETCH ---------------- */
   useEffect(() => {
@@ -212,6 +213,7 @@ const navigate = useNavigate();
         return <MyLeavesView />;
 
       case "Payroll":
+        if (user?.role === "HR") return <PayslipPage />;
         return <PayrollView />;
 
       case "Pending Approvals":
@@ -235,12 +237,12 @@ const navigate = useNavigate();
   };
 
   if (checkingProfile) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-}
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (mustChangePassword) {
     return <ChangePasswordDialog />;

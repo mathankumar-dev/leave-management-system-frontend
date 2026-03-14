@@ -128,8 +128,8 @@ const OtherRequestForm = () => {
                             type="button"
                             onClick={() => setActiveTab(tab.id as RequestType)}
                             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-sm transition-all ${activeTab === tab.id
-                                    ? "bg-primary-500 text-white shadow-md shadow-indigo-200"
-                                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                                ? "bg-primary-500 text-white shadow-md shadow-indigo-200"
+                                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                                 }`}
                         >
                             {tab.icon} {tab.label}

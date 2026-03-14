@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import type { ProfileData } from "../../types";
+import api from "../../../../api/axiosInstance";
 
 export const useEmployeeProfile = (employeeId?: number) => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -11,7 +12,7 @@ export const useEmployeeProfile = (employeeId?: number) => {
 
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`/api/employees/profile/${employeeId}`);
+        const res = await api.get(`/employees/profile/${employeeId}`);
         setProfile(res.data);
       } catch (err) {
         console.error("Profile fetch failed", err);
