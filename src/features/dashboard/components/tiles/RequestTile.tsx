@@ -9,8 +9,11 @@ export interface RequestTileProps {
     dateRange: string;
     startDate: string;
     endDate: string;
-    halfDayType?: "FIRST_HALF" | "SECOND_HALF" | string | null;
+    // Updated to handle multiple types from the backend
+    startDateHalfDayType?: "FIRST_HALF" | "SECOND_HALF" | string | null;
+    endDateHalfDayType?: "FIRST_HALF" | "SECOND_HALF" | string | null;
     reasonMessage: string;
+    days: number; // Use this as the source of truth
     createdAt: string;
     onAccept: () => void;
     onReject: () => void;
@@ -23,39 +26,44 @@ const RequestTile: React.FC<RequestTileProps> = ({
     dateRange,
     startDate,
     endDate,
-    halfDayType,
+    startDateHalfDayType,
+    endDateHalfDayType,
     reasonMessage,
+    days,
     createdAt,
     onAccept,
     onReject,
     onDiscuss,
 }) => {
 
-    const getHalfDayLabel = (type: string) => {
+    const getHalfDayLabel = (type?: string | null) => {
         if (type === "FIRST_HALF") return "Morning";
         if (type === "SECOND_HALF") return "Evening";
-        return type;
+        return null;
     };
 
-    const calculateDays = () => {
-        if (halfDayType && halfDayType !== "null") {
+    const getDurationInfo = () => {
+        // 1. Logic for Single Day Half Day
+        if (days === 0.5) {
+            // Check which type is available
+            const session = getHalfDayLabel(startDateHalfDayType || endDateHalfDayType);
             return {
                 count: '0.5 Days',
-                session: getHalfDayLabel(halfDayType)
+                session: session
             };
         }
 
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const diffTime = Math.abs(end.getTime() - start.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        // 2. Logic for Full Days (1 or more)
+        const isMultiDayPartial = getHalfDayLabel(startDateHalfDayType) || getHalfDayLabel(endDateHalfDayType);
+        
         return {
-            count: diffDays === 1 ? '1 Day' : `${diffDays} Days`,
-            session: null
+            count: days === 1 ? '1 Day' : `${days} Days`,
+            // If it's a multi-day (e.g. 1.5), we can show "Partial" or specific sessions
+            session: isMultiDayPartial ? "Partial Days" : null
         };
     };
 
-    const duration = calculateDays();
+    const duration = getDurationInfo();
 
     return (
         <div className='bg-white w-full rounded-sm flex flex-col md:flex-row md:items-center justify-between p-4 gap-3 md:gap-4 border border-slate-100 shadow-sm hover:border-slate-300 transition-all'>
@@ -84,7 +92,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
             <div className='hidden md:flex flex-col items-center min-w-35 px-2 text-center'>
                 <span className='text-[11px] font-bold text-slate-600'>{dateRange}</span>
                 <div className='flex flex-col items-center mt-0.5'>
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${duration.session ? 'text-amber-500' : 'text-indigo-400'}`}>
+                    <span className={`text-[9px] font-black uppercase tracking-widest ${days % 1 !== 0 ? 'text-amber-500' : 'text-indigo-400'}`}>
                         {duration.count}
                     </span>
                     {duration.session && (
@@ -125,14 +133,14 @@ const RequestTile: React.FC<RequestTileProps> = ({
                     />
                     <CTAButton
                         label='Reject'
+                        labelColor='text-red-500'
                         isOutlineOnly
-                        className='flex-1 md:px-5 border-red-200! text-red-500! hover:bg-red-50 text-[10px] uppercase font-bold h-9 rounded-sm'
+                        className='flex-1 md:px-5 border-red-200! hover:bg-red-50 text-[10px] uppercase font-bold h-9 rounded-sm'
                         onClick={onReject}
                     />
                 </div>
 
                 {onDiscuss && (
-
                     <CTAButton
                         label='Discuss'
                         isOutlineOnly

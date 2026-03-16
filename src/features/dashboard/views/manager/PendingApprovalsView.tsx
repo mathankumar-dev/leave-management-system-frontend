@@ -122,6 +122,7 @@ const PendingApprovalsView: React.FC = () => {
             notify.error("Update Failed", "Please check your connection and try again.");
         }
     };
+    console.log(requests);
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -219,7 +220,9 @@ const PendingApprovalsView: React.FC = () => {
                             dateRange={formatDateRange(req.startDate, req.endDate)}
                             startDate={req.startDate}
                             endDate={req.endDate}
-                            halfDayType={req.halfDayType}
+                            startDateHalfDayType={req.startDateHalfDayType || req.halfDayType}
+                            endDateHalfDayType={req.endDateHalfDayType}
+                            days={req.days}
                             createdAt={formatTimeAgo(req.createdAt)}
                             onAccept={() => onActionTriggered(req, 'APPROVED')}
                             onReject={() => onActionTriggered(req, 'REJECTED')}

@@ -35,6 +35,7 @@ import OtherRequestForm from "../../../common/OtherRequestForm";
 import PayrollView from "../views/Payroll";
 import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
 import { PayslipPage } from "../views/hr/pages/PayslipPage";
+import RequestCenter from "../../../common/RequestCenter";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -198,9 +199,11 @@ const DashboardLayout: React.FC = () => {
 
       case "Leave Config":
         return <LeaveTypesView />;
-
       case "Apply Leave":
         return <LeaveApplicationForm />;
+
+      case "Request Center":
+        return <RequestCenter />;
 
       case "My Leaves":
         return <MyLeavesView />;
@@ -218,6 +221,8 @@ const DashboardLayout: React.FC = () => {
         return <TeamMembersView />;
 
       case "Profile":
+        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
+        return <EmployeeProfile />;
         return (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           ? <ManagerProfile />
           : <EmployeeProfile />;
@@ -264,7 +269,6 @@ const DashboardLayout: React.FC = () => {
         />
 
         <main
-          ref={scrollContainerRef}
           className="flex-1 overflow-y-auto overflow-x-hidden p-6"
         >
           <div className="max-w-7xl mx-auto w-full">
