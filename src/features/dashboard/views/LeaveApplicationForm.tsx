@@ -14,8 +14,8 @@ import {
   HiOutlinePaperClip,
   HiOutlineXMark,
 } from "react-icons/hi2";
+import { toLocalISOString } from "../../../utils/dateUtils";
 
-// Define the HalfDay type to match backend Enums
 type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
 const LeaveApplicationForm = () => {
@@ -67,6 +67,7 @@ const LeaveApplicationForm = () => {
     e.preventDefault();
     setError(null);
 
+
     if (!formData.startDate) {
       setError("Please select a start date.");
       return;
@@ -87,9 +88,9 @@ const LeaveApplicationForm = () => {
       const compOffPayload = {
         employeeId,
         entries: [{
-          workedDate: formData.startDate.toISOString().split("T")[0],
+          workedDate: toLocalISOString(formData.startDate),
           days: formData.isHalfDay ? 0.5 : 1.0,
-          plannedLeaveDate: formData.compOffPlannedDate.toISOString().split("T")[0],
+          plannedLeaveDate: toLocalISOString(formData.compOffPlannedDate),
           halfDayType: formData.isHalfDay ? formData.startDateHalfDayType : null
         }],
       };
@@ -102,12 +103,11 @@ const LeaveApplicationForm = () => {
     const fd = new FormData();
     fd.append("employeeId", employeeId.toString());
     fd.append("leaveType", formData.category);
-    fd.append("startDate", formData.startDate.toISOString().split("T")[0]);
+    fd.append("startDate", toLocalISOString(formData.startDate));
 
-    // Determine end date
     const endDateStr = formData.isHalfDay
-      ? formData.startDate.toISOString().split("T")[0]
-      : formData.endDate?.toISOString().split("T")[0];
+      ? toLocalISOString(formData.startDate)
+      : toLocalISOString(formData.endDate);
 
     if (!endDateStr) {
       setError("Please select an end date.");
@@ -131,9 +131,9 @@ const LeaveApplicationForm = () => {
 
     if (selectedFile) {
       fd.append("files", selectedFile);
-    }x
+    }
     console.log(fd);
-    
+
     const result = await applyLeave(fd);
     if (result) setSubmitted(true);
   };
@@ -187,7 +187,7 @@ const LeaveApplicationForm = () => {
   );
 
   console.log(user);
-  
+
 
   if (submitted) {
     return (

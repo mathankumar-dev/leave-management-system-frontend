@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --font-internal: "Inter", "Figtree", "SF Pro Display", "Roboto", system-ui, sans-serif;
+  --font-internal: "Inter",  sans-serif , "Figtree", "SF Pro Display", "Roboto", system-ui,;
 }
 
 @layer utilities {
