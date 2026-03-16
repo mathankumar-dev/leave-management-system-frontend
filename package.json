@@ -1,9 +1,6 @@
 {
-<<<<<<< HEAD
   "name": "launch_page",
-=======
   "name": "leave-management-system-frontend",
->>>>>>> ef840b7b368a91125478269a5a0dd298eab966cc
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -14,7 +11,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
@@ -30,8 +26,7 @@
     "globals": "^17.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.0.0"
-=======
+    "vite": "^8.0.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.7",
@@ -71,6 +66,5 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4"
->>>>>>> ef840b7b368a91125478269a5a0dd298eab966cc
   }
 }
