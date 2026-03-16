@@ -117,14 +117,10 @@ const LeaveApplicationForm = () => {
     fd.append("reason", formData.reason);
     fd.append("confirmLossOfPay", "false");
 
-    // Map Half Day logic to Backend Params
     if (formData.isHalfDay) {
-      // For single day, we use startDateHalfDayType
       fd.append("startDateHalfDayType", formData.startDateHalfDayType || "");
-      // Optional: Backend also checks 'halfDayType' as fallback
       fd.append("halfDayType", formData.startDateHalfDayType || "");
     } else {
-      // Multi-day granular logic
       if (formData.startDateHalfDayType) {
         fd.append("startDateHalfDayType", formData.startDateHalfDayType);
       }
@@ -135,15 +131,15 @@ const LeaveApplicationForm = () => {
 
     if (selectedFile) {
       fd.append("files", selectedFile);
-    }
-
+    }x
+    console.log(fd);
+    
     const result = await applyLeave(fd);
     if (result) setSubmitted(true);
   };
   const calculateDays = () => {
     if (!formData.startDate) return 0;
 
-    // If it's a single day toggle or Comp-Off (usually single day)
     if (formData.isHalfDay || formData.category === "COMP_OFF") {
       return formData.startDateHalfDayType ? 0.5 : 1;
     }
@@ -153,11 +149,9 @@ const LeaveApplicationForm = () => {
     const start = new Date(formData.startDate);
     const end = new Date(formData.endDate);
 
-    // Calculate difference in days
     const diffTime = Math.abs(end.getTime() - start.getTime());
     let days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-    // Subtract half days if selected
     if (formData.startDateHalfDayType) days -= 0.5;
     if (formData.endDateHalfDayType) days -= 0.5;
 
@@ -191,6 +185,9 @@ const LeaveApplicationForm = () => {
       </div>
     </div>
   );
+
+  console.log(user);
+  
 
   if (submitted) {
     return (
@@ -265,7 +262,7 @@ const LeaveApplicationForm = () => {
 
               {/* Show HR if > 7 days */}
               {calculateDays() > 7 && (
-                <Badge label="HR Finalization" active />
+                <Badge label={`HR: ${user?.hrname || 'Assigning...'}`} active />
               )}
             </div>
           </div>

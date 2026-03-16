@@ -50,6 +50,7 @@ export interface User {
   teamLeaderId?: number | null;
   teamLeaderName?: string | null; 
   managerName: string;
+  hrname? : string | null;
   active: boolean;
   joiningDate: string;
   biometricStatus: string;

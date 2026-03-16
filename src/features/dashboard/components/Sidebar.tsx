@@ -53,7 +53,7 @@ function Sidebar({
     // { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR", "ADMIN"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
-    { name: "Other Approvals", icon: <FaFileSignature />, roles: ["MANAGER","TEAM_LEADER","EMPLOYEE",""] },
+    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER","TEAM_LEADER","EMPLOYEE",""] },
     { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "HR"] },
     
 
