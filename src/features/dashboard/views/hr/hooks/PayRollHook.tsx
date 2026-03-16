@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import api from "../../../../../api/axiosInstance";
 
 export const usePayroll = () => {
   const [loading, setLoading] = useState(false);
@@ -10,7 +11,8 @@ export const usePayroll = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`/api/payslip/my/${year}/${month}`);
+      const res = await api.get(`/payslip/my/${year}/${month}`);
+      console.log(res.data);
       return res.data;
     } catch (e: any) {
       console.error(e);

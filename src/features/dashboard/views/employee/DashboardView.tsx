@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { FaChartLine, FaPlus } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 
-import StatCard from "../../components/StatCard";
 import LeaveDetailsDrawer from "../../components/LeaveDetailsDrawer";
 import { useDashboard } from "../../hooks/useDashboard";
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
@@ -21,7 +20,6 @@ interface LeaveTypeBreakdown {
   allocatedDays: number;
   usedDays: number;
   remainingDays: number;
-  halfDayCount: number;
 }
 
 interface StatItem {
@@ -29,17 +27,11 @@ interface StatItem {
   used: number;
   total?: number;
   color: string;
-  breakdown?: LeaveTypeBreakdown[];
 }
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0 },
 };
 
 const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
@@ -149,26 +141,25 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     return <CustomLoader label="Loading dashboard..." />;
   }
 
-  const sickRemaining = (stats[0]?.total ?? 0) - (stats[0]?.used ?? 0);
-  const casualRemaining = (stats[1]?.total ?? 0) - (stats[1]?.used ?? 0);
-
   return (
     <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="max-w-7xl mx-auto px-4 py-6 space-y-10 min-h-screen bg-gradient-to-b from-slate-50 to-white"
+      className="max-w-7xl mx-auto px-6 py-6 space-y-6 bg-gradient-to-b from-slate-50 to-white min-h-screen"
     >
 
       {/* HEADER */}
 
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
+
         <div>
           <h2 className="text-2xl font-semibold text-slate-800">
             Welcome back, {user?.name}
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Here's your leave summary for 2026
+
+          <p className="text-sm text-slate-500">
+            Leave summary for 2026
           </p>
         </div>
 
@@ -176,74 +167,24 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           onClick={() => onNavigate?.("Apply Leave")}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700"
         >
-          <FaPlus />
-          Apply Leave
+          <FaPlus /> Apply Leave
         </button>
-      </div>
-
-      {/* HIGHLIGHT PANEL */}
-
-      <div className="grid md:grid-cols-3 gap-6">
-
-        <HighlightCard
-          title="Sick Leaves Remaining"
-          value={sickRemaining}
-          color="bg-red-500"
-        />
-
-        <HighlightCard
-          title="Casual Leaves Remaining"
-          value={casualRemaining}
-          color="bg-green-500"
-        />
-
-        <HighlightCard
-          title="Approved Leaves"
-          value={stats[6]?.used}
-          color="bg-indigo-600"
-        />
 
       </div>
 
-      {/* LEAVE BALANCE */}
+      {/* DASHBOARD GRID */}
 
-      <Section title="Leave Balance">
+      <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
 
-        {stats.slice(0, 4).map((stat) => (
-          <ProgressStat key={stat.title} stat={stat} setSelectedCard={setSelectedCard} />
+        {stats.map((stat) => (
+          <SummaryCard
+            key={stat.title}
+            stat={stat}
+            setSelectedCard={setSelectedCard}
+          />
         ))}
 
-      </Section>
-
-      {/* ADJUSTMENTS */}
-
-      <Section title="Adjustments">
-
-        {stats.slice(4, 6).map((stat) => (
-          <ProgressStat key={stat.title} stat={stat} setSelectedCard={setSelectedCard} />
-        ))}
-
-      </Section>
-
-      {/* REQUEST STATUS */}
-
-      <Section title="Leave Requests">
-
-        {stats.slice(6, 9).map((stat) => (
-          <StatWrapper key={stat.title} stat={stat} setSelectedCard={setSelectedCard} />
-        ))}
-
-      </Section>
-
-      {/* ANALYTICS */}
-
-      <Section title="Analytics">
-
-        {stats.slice(9).map((stat) => (
-          <StatWrapper key={stat.title} stat={stat} setSelectedCard={setSelectedCard} />
-        ))}
-
-      </Section>
+      </div>
 
       <LeaveDetailsDrawer
         open={!!selectedCard}
@@ -253,13 +194,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       />
 
       {user?.role !== "EMPLOYEE" && (
-  <MyFloatingActionButton
-        icon={<FaPlus />}
-        onClick={() => onNavigate?.("Apply Leave")}
-        title="New Leave Request"
-        tooltipLabel="Apply Leave"
-      />
-)}
+        <MyFloatingActionButton
+          icon={<FaPlus />}
+          onClick={() => onNavigate?.("Apply Leave")}
+          title="New Leave Request"
+          tooltipLabel="Apply Leave"
+        />
+      )}
 
     </motion.div>
   );
@@ -269,76 +210,145 @@ export default DashboardView;
 
 
 
-/* COMPONENTS */
+/* PROFESSIONAL CARD */
 
-const Section = ({ title, children }: any) => (
-  <div>
-    <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
-      {title}
-    </h3>
+const SummaryCard = ({ stat, setSelectedCard }: any) => {
 
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      {children}
-    </div>
-  </div>
-);
-
-
-
-const HighlightCard = ({ title, value, color }: any) => (
-  <div className={`${color} text-white rounded-xl p-6 shadow`}>
-    <p className="text-sm opacity-80">{title}</p>
-    <h2 className="text-3xl font-bold mt-1">{value}</h2>
-  </div>
-);
-
-
-
-const ProgressStat = ({ stat, setSelectedCard }: any) => {
+  const remaining = (stat.total ?? 0) - (stat.used ?? 0);
 
   const percent = stat.total
     ? Math.min((stat.used / stat.total) * 100, 100)
     : 0;
 
+  /* color map for each card */
+
+  const colorMap: any = {
+    "Sick Leave": {
+      bar: "from-red-500 to-rose-500",
+      title: "text-red-500",
+      progress: "from-red-400 to-rose-500"
+    },
+    "Casual Leave": {
+      bar: "from-green-500 to-emerald-500",
+      title: "text-green-600",
+      progress: "from-green-400 to-emerald-500"
+    },
+    "Yearly Balance": {
+      bar: "from-indigo-500 to-blue-500",
+      title: "text-indigo-600",
+      progress: "from-indigo-400 to-blue-500"
+    },
+    "Monthly Balance": {
+      bar: "from-cyan-500 to-sky-500",
+      title: "text-cyan-600",
+      progress: "from-cyan-400 to-sky-500"
+    },
+    "Carry Forward": {
+      bar: "from-amber-500 to-orange-500",
+      title: "text-amber-600",
+      progress: "from-amber-400 to-orange-500"
+    },
+    "Comp Off Balance": {
+      bar: "from-violet-500 to-purple-500",
+      title: "text-violet-600",
+      progress: "from-violet-400 to-purple-500"
+    },
+    "Approved Leaves": {
+      bar: "from-emerald-500 to-green-500",
+      title: "text-emerald-600",
+      progress: "from-emerald-400 to-green-500"
+    },
+    "Pending Leaves": {
+      bar: "from-yellow-400 to-amber-500",
+      title: "text-yellow-600",
+      progress: "from-yellow-400 to-amber-500"
+    },
+    "Rejected Leaves": {
+      bar: "from-rose-500 to-red-500",
+      title: "text-rose-600",
+      progress: "from-rose-400 to-red-500"
+    },
+    "Loss Of Pay %": {
+      bar: "from-red-600 to-rose-600",
+      title: "text-red-600",
+      progress: "from-red-500 to-rose-500"
+    }
+  };
+
+  const theme = colorMap[stat.title] || {
+    bar: "from-indigo-500 to-blue-500",
+    title: "text-indigo-600",
+    progress: "from-indigo-400 to-blue-500"
+  };
+
   return (
     <motion.div
-      whileHover={{ y: -6 }}
+      whileHover={{ y: -6, scale: 1.02 }}
+      transition={{ duration: 0.25 }}
       onClick={() => setSelectedCard(stat)}
-      className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-lg cursor-pointer"
+      className="relative bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-xl cursor-pointer overflow-hidden"
     >
 
-      <div className="flex justify-between text-sm text-slate-500 mb-2">
-        <span>{stat.title}</span>
-        <span className="font-semibold">
-          {stat.used}/{stat.total}
-        </span>
+      {/* TOP COLOR BAR */}
+
+      <div
+        className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${theme.bar}`}
+      />
+
+      {/* TITLE */}
+
+      <h3
+        className={`text-sm font-semibold mb-4 tracking-wide ${theme.title}`}
+      >
+        {stat.title}
+      </h3>
+
+      {/* NUMBERS */}
+
+      <div className="grid grid-cols-3 text-center mb-4">
+
+        <div>
+          <p className="text-xs text-slate-400 uppercase">Total</p>
+          <p className="text-lg font-semibold text-slate-700">
+            {stat.total ?? stat.used}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs text-slate-400 uppercase">Used</p>
+          <p className="text-lg font-semibold text-orange-500">
+            {stat.used}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs text-slate-400 uppercase">Remaining</p>
+          <p className="text-lg font-semibold text-emerald-600">
+            {remaining}
+          </p>
+        </div>
+
       </div>
 
-      <div className="w-full bg-slate-100 rounded-full h-2">
-        <div
-          style={{ width: `${percent}%` }}
-          className={`h-2 rounded-full bg-${stat.color}-500`}
-        />
-      </div>
+      {/* PROGRESS BAR */}
+
+      {stat.total && (
+        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${percent}%` }}
+            transition={{ duration: 0.8 }}
+            className={`h-2 rounded-full bg-gradient-to-r ${theme.progress}`}
+          />
+
+        </div>
+      )}
+
+      {/* HOVER GLOW */}
+
+      <div className="absolute inset-0 opacity-0 hover:opacity-100 transition duration-300 bg-gradient-to-br from-white via-transparent to-slate-50 pointer-events-none" />
 
     </motion.div>
   );
 };
-
-
-
-const StatWrapper = ({ stat, setSelectedCard }: any) => (
-  <motion.div
-    whileHover={{ y: -6 }}
-    onClick={() => setSelectedCard(stat)}
-    className="cursor-pointer bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-lg"
-  >
-    <StatCard
-      title={stat.title}
-      used={stat.used}
-      total={stat.total ?? 0}
-      color={stat.color}
-      period="2026"
-    />
-  </motion.div>
-);

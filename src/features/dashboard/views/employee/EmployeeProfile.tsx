@@ -1,208 +1,224 @@
-import React, { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { FaShieldAlt, FaMapMarkerAlt } from "react-icons/fa"
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  FaShieldAlt,
+  FaMapMarkerAlt,
+  FaEnvelope,
+  FaPhone,
+  FaUserTie
+} from "react-icons/fa";
 
-import { useAuth } from "../../../auth/hooks/useAuth"
-// import { useEmployeeProfile } from "../../hooks/useEmployeeProfile"
-import CustomLoader from "../../../../components/ui/CustomLoader"
+import { useAuth } from "../../../auth/hooks/useAuth";
+import { useEmployeeProfile } from "./UseEmployeeProfile";
+import CustomLoader from "../../../../components/ui/CustomLoader";
 
-import type { ProfileData } from "../../types"
-import { useEmployeeProfile } from "./UseEmployeeProfile"
+import type { ProfileData } from "../../types";
 
 const EmployeeProfile: React.FC = () => {
 
-  const { user } = useAuth()
+  const { user } = useAuth();
+  const { profile: backendProfile, loading } = useEmployeeProfile(user?.id);
 
-  const { profile: backendProfile, loading } = useEmployeeProfile(user?.id)
-
-  const [profile, setProfile] = useState<ProfileData | null>(null)
-  const [originalProfile, setOriginalProfile] = useState<ProfileData | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
+  const [profile, setProfile] = useState<ProfileData | null>(null);
 
   useEffect(() => {
-    if (backendProfile) {
-      setProfile(backendProfile)
-      setOriginalProfile(backendProfile)
-    }
-  }, [backendProfile])
+    if (backendProfile) setProfile(backendProfile);
+  }, [backendProfile]);
 
   if (loading || !profile) {
     return (
       <div className="flex h-screen items-center justify-center">
         <CustomLoader label="Loading Profile..." />
       </div>
-    )
+    );
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-
-    setProfile(prev => ({
-      ...prev!,
-      [name]: value
-    }))
-  }
-
-  const Field = ({ label, name, value }: any) => (
+  const Field = ({ label, value }: any) => (
     <div className="flex flex-col gap-1">
-      <label className="text-xs text-gray-500">{label}</label>
-
-      {isEditing ? (
-        <input
-          name={name}
-          value={value || ""}
-          onChange={handleChange}
-          className="border rounded-lg px-3 py-2 text-sm"
-        />
-      ) : (
-        <span className="text-sm text-gray-700">{value || "-"}</span>
-      )}
+      <span className="text-xs text-slate-400 uppercase tracking-wide">
+        {label}
+      </span>
+      <span className="text-sm font-semibold text-slate-700">
+        {value || "-"}
+      </span>
     </div>
-  )
+  );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-6">
+    <div className="min-h-screen bg-slate-100 p-8">
 
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-8">
+      <div className="max-w-6xl mx-auto space-y-8">
 
-        {/* PROFILE CARD */}
+        {/* PROFILE HEADER */}
 
-        <div className="lg:col-span-4">
+        <motion.div
+          initial={{ opacity: 0, y: -15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="
+          bg-white
+          rounded-2xl
+          shadow-sm
+          border border-slate-200
+          p-8
+          flex flex-col md:flex-row
+          items-center md:items-start
+          gap-6
+        "
+        >
 
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-2xl shadow border p-6 text-center"
-          >
+          {/* Avatar */}
 
-            <div className="w-32 h-32 rounded-full bg-indigo-600 flex items-center justify-center text-white text-3xl mx-auto">
-              {profile.name?.charAt(0)}
-            </div>
+          <div className="w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-md">
+            {profile.name?.charAt(0)}
+          </div>
 
-            <h2 className="text-xl font-bold mt-4">{profile.name}</h2>
+          {/* Main Info */}
 
-            <p className="text-indigo-600 text-sm">
+          <div className="flex-1 text-center md:text-left">
+
+            <h2 className="text-2xl font-bold text-slate-800">
+              {profile.name}
+            </h2>
+
+            <p className="text-indigo-600 font-medium text-sm mt-1">
               {profile.designation || "Employee"}
             </p>
 
-            <p className="text-xs text-gray-400">{profile.role}</p>
+            <p className="text-xs text-slate-400 mt-1">
+              Employee ID: {profile.id}
+            </p>
 
-            <div className="mt-4 text-xs text-gray-500 space-y-2">
+            {/* Contact row */}
 
-              <div className="flex gap-2 items-center">
-                <FaMapMarkerAlt />
-                {profile.presentAddress || "No address"}
-              </div>
+            <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-4 text-sm text-slate-600">
 
-              <div className="flex gap-2 items-center">
-                <FaShieldAlt />
-                Manager: {profile.managerName || "Not Assigned"}
-              </div>
+              <Contact icon={<FaEnvelope />} value={profile.email} />
+
+              <Contact icon={<FaPhone />} value={profile.contactNumber} />
+
+              <Contact
+                icon={<FaMapMarkerAlt />}
+                value={profile.presentAddress || "No Address"}
+              />
+
+              <Contact
+                icon={<FaShieldAlt />}
+                value={`Manager: ${profile.managerName || "Not Assigned"}`}
+              />
 
             </div>
 
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="mt-6 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm"
-            >
-              {isEditing ? "Cancel Edit" : "Edit Profile"}
-            </button>
+          </div>
 
-          </motion.div>
-
-        </div>
+        </motion.div>
 
 
-        {/* DETAILS SECTION */}
+        {/* GRID SECTIONS */}
 
-        <div className="lg:col-span-8 space-y-6">
-
-          {/* PERSONAL */}
+        <div className="grid lg:grid-cols-2 gap-6">
 
           <Section title="Personal Information">
 
-            <Field label="Full Name" name="name" value={profile.name} />
-            <Field label="Email" name="email" value={profile.email} />
-            <Field label="Personal Email" name="personalEmail" value={profile.personalEmail} />
-            <Field label="Phone" name="contactNumber" value={profile.contactNumber} />
-            <Field label="Gender" name="gender" value={profile.gender} />
-            <Field label="Date Of Birth" name="dateOfBirth" value={profile.dateOfBirth} />
-            <Field label="Blood Group" name="bloodGroup" value={profile.bloodGroup} />
+            <Field label="Full Name" value={profile.name} />
+            <Field label="Gender" value={profile.gender} />
+            <Field label="Date Of Birth" value={profile.dateOfBirth} />
+            <Field label="Blood Group" value={profile.bloodGroup} />
+            <Field label="Personal Email" value={profile.personalEmail} />
+            <Field label="Phone Number" value={profile.contactNumber} />
+            <Field label="Father Name" value={profile.fatherName} />
+            <Field label="Mother Name" value={profile.motherName} />
 
           </Section>
-
-          {/* ADDRESS */}
 
           <Section title="Address">
 
-            <Field label="Present Address" name="presentAddress" value={profile.presentAddress} />
-            <Field label="Permanent Address" name="permanentAddress" value={profile.permanentAddress} />
+            <Field label="Present Address" value={profile.presentAddress} />
+            <Field label="Permanent Address" value={profile.permanentAddress} />
 
           </Section>
 
-          {/* FAMILY */}
+          <Section title="Work Information">
 
-          <Section title="Family">
-
-            <Field label="Father Name" name="fatherName" value={profile.fatherName} />
-            <Field label="Mother Name" name="motherName" value={profile.motherName} />
-            <Field label="Emergency Contact" name="emergencyContactNumber" value={profile.emergencyContactNumber} />
-
-          </Section>
-
-          {/* WORK */}
-
-          <Section title="Work Details">
-
-            <Field label="Employee ID" name="id" value={profile.id} />
-            <Field label="Designation" name="designation" value={profile.designation} />
-            <Field label="Manager" name="managerName" value={profile.managerName} />
-            <Field label="Team Leader" name="teamLeaderName" value={profile.teamLeaderName} />
-            <Field label="Joining Date" name="joiningDate" value={profile.joiningDate} />
+            <Field label="Employee ID" value={profile.id} />
+            <Field label="Designation" value={profile.designation} />
+            <Field label="Manager" value={profile.managerName} />
+            <Field label="Team Leader" value={profile.teamLeaderName} />
+            <Field label="Joining Date" value={profile.joiningDate} />
 
           </Section>
 
-          {/* SKILLS */}
 
-          <Section title="Skills">
+          {/* Skills */}
+
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+
+            <h3 className="text-sm font-semibold text-slate-700 mb-4">
+              Skills
+            </h3>
 
             <div className="flex flex-wrap gap-2">
 
-              {profile.skillSet?.length
-                ? profile.skillSet.map((s, i) => (
-                    <span
-                      key={i}
-                      className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded"
-                    >
-                      {s}
-                    </span>
-                  ))
-                : "No skills added"}
+              {profile.skillSet?.length ? (
+                profile.skillSet.map((s, i) => (
+                  <span
+                    key={i}
+                    className="
+                    bg-indigo-50
+                    text-indigo-700
+                    text-xs
+                    font-medium
+                    px-3 py-1
+                    rounded-full
+                  "
+                  >
+                    {s}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-slate-400">
+                  No skills added
+                </span>
+              )}
 
             </div>
 
-          </Section>
+          </div>
 
         </div>
 
       </div>
 
     </div>
-  )
-}
+  );
+};
 
-export default EmployeeProfile
+export default EmployeeProfile;
+
 
 
 const Section = ({ title, children }: any) => (
 
-  <div className="bg-white border rounded-xl p-6">
+  <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
 
-    <h3 className="text-sm font-semibold text-gray-700 mb-4">{title}</h3>
+    <h3 className="text-sm font-semibold text-slate-700 mb-5 flex items-center gap-2">
+      <FaUserTie className="text-indigo-500" />
+      {title}
+    </h3>
 
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-6">
       {children}
     </div>
 
   </div>
-)
+);
+
+
+
+const Contact = ({ icon, value }: any) => (
+
+  <div className="flex items-center gap-2 text-sm text-slate-600">
+    <span className="text-slate-400">{icon}</span>
+    {value}
+  </div>
+
+);
