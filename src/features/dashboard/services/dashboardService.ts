@@ -12,7 +12,7 @@ import type {
   LeaveBalanceResponse,
   // ProfileResponse
   ProfileData
-  
+
 
 } from '../types';
 
@@ -27,8 +27,6 @@ export const dashboardService = {
     return response.data;
   },
 
-  
-
 
 
   getEmpDashboard: async (employeeId: number) => {
@@ -39,6 +37,7 @@ export const dashboardService = {
     return response.data;
 
   },
+
   getManagerDashboard: async (managerId: number) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
@@ -139,7 +138,7 @@ export const dashboardService = {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
     return response.data.content;
   },
-  
+
   getPendingApprovalsForTeamLeader: async (teamLeaderId: number) => {
     const response = await api.get(`/leave-approvals/pending/team-leader/${teamLeaderId}`);
     return response.data.content;
@@ -260,14 +259,21 @@ export const dashboardService = {
     return response.data;
   },
 
-//   getProfile: async (employeeId: number): Promise<ProfileData> => {
-//   const response = await api.get(`/employees//profile/${employeeId}`);
-//   return response.data;
-// },
+  //   getProfile: async (employeeId: number): Promise<ProfileData> => {
+  //   const response = await api.get(`/employees//profile/${employeeId}`);
+  //   return response.data;
+  // },
 
-completeProfile: async (data: any) => {
-  const response = await api.post("/employees/profile/complete", data);
-  return response.data;
-},
+  completeProfile: async (data: any) => {
+    const response = await api.post("/employees/profile/complete", data);
+    return response.data;
+  },
+
+  getLeaveBalances: async (employeeId: number, year: number = 2026): Promise<LeaveBalanceResponse> => {
+    const res = await api.get(`leaves-balance/${employeeId}`, {
+      params: { year }
+    });
+    return res.data;
+  },
 };
 
