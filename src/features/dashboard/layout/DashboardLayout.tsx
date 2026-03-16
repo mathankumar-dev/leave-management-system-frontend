@@ -80,10 +80,10 @@ const DashboardLayout: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    if (!personalDetailsComplete) {
-      navigate("/complete-profile");
-      return;
-    }
+    // if (!personalDetailsComplete) {
+    //   navigate("/complete-profile");
+    //   return;
+    // }
 
     setCheckingProfile(false);
   }, [user, personalDetailsComplete, navigate]);
@@ -223,9 +223,7 @@ const DashboardLayout: React.FC = () => {
       case "Profile":
         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
-        return (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
-          ? <ManagerProfile />
-          : <EmployeeProfile />;
+        
 
       case "Other Approvals":
         return <OtherRequestForm />;

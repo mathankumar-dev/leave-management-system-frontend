@@ -65,19 +65,19 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           title: "Sick Leave",
           used: sickLeave?.usedDays ?? 0,
           total: sickLeave?.allocatedDays ?? 0,
-          color: "red",
+          color: "emerald",
         },
         {
           title: "Casual Leave",
           used: casualLeave?.usedDays ?? 0,
           total: casualLeave?.allocatedDays ?? 0,
-          color: "green",
+          color: "emerald",
         },
         {
           title: "Yearly Balance",
           used: data.yearlyUsed || 0,
           total: data.yearlyAllocated || 0,
-          color: "indigo",
+          color: "emerald",
         },
         {
           title: "Monthly Balance",
@@ -91,13 +91,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             (data.carryForwardTotal || 0) -
             (data.carryForwardRemaining || 0),
           total: data.carryForwardTotal || 0,
-          color: "amber",
+          color: "emerald",
         },
         {
           title: "Comp Off Balance",
           used: data.compoffBalance || 0,
           total: data.compoffBalance || 0,
-          color: "slate",
+          color: "emerald",
         },
         {
           title: "Approved Leaves",
@@ -165,7 +165,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
 
         <button
           onClick={() => onNavigate?.("Apply Leave")}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700"
+          className="flex items-center gap-2 bg-indigo-500 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700"
         >
           <FaPlus /> Apply Leave
         </button>
@@ -224,19 +224,19 @@ const SummaryCard = ({ stat, setSelectedCard }: any) => {
 
   const colorMap: any = {
     "Sick Leave": {
-      bar: "from-red-500 to-rose-500",
-      title: "text-red-500",
-      progress: "from-red-400 to-rose-500"
+      bar: "from-cyan-500 to-sky-500",
+      title: "text-cyan-600",
+      progress: "from-cyan-400 to-sky-500"
     },
     "Casual Leave": {
-      bar: "from-green-500 to-emerald-500",
-      title: "text-green-600",
-      progress: "from-green-400 to-emerald-500"
+     bar: "from-cyan-500 to-sky-500",
+      title: "text-cyan-600",
+      progress: "from-cyan-400 to-sky-500"
     },
     "Yearly Balance": {
-      bar: "from-indigo-500 to-blue-500",
-      title: "text-indigo-600",
-      progress: "from-indigo-400 to-blue-500"
+      bar: "from-cyan-500 to-sky-500",
+      title: "text-cyan-600",
+      progress: "from-cyan-400 to-sky-500"
     },
     "Monthly Balance": {
       bar: "from-cyan-500 to-sky-500",
@@ -244,14 +244,14 @@ const SummaryCard = ({ stat, setSelectedCard }: any) => {
       progress: "from-cyan-400 to-sky-500"
     },
     "Carry Forward": {
-      bar: "from-amber-500 to-orange-500",
-      title: "text-amber-600",
-      progress: "from-amber-400 to-orange-500"
+      bar: "from-cyan-500 to-sky-500",
+      title: "text-cyan-600",
+      progress: "from-cyan-400 to-sky-500"
     },
     "Comp Off Balance": {
-      bar: "from-violet-500 to-purple-500",
-      title: "text-violet-600",
-      progress: "from-violet-400 to-purple-500"
+      bar: "from-cyan-500 to-sky-500",
+      title: "text-cyan-600",
+      progress: "from-cyan-400 to-sky-500"
     },
     "Approved Leaves": {
       bar: "from-emerald-500 to-green-500",

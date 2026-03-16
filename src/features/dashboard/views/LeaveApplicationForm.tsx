@@ -131,7 +131,7 @@ const LeaveApplicationForm = () => {
 
     if (selectedFile) {
       fd.append("files", selectedFile);
-    }x
+    }
     console.log(fd);
     
     const result = await applyLeave(fd);

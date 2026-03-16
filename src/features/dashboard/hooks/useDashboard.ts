@@ -26,6 +26,10 @@ export const useDashboard = () => {
   const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
   const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
 
+   const [payslip,setPayslip] = useState<any>(null);
+  const [history,setHistory] = useState<any[]>([]);
+
+
   const [employeeCalendar, setEmployeeCalendar] = useState<
   Record<string, any[]>
 >({});
@@ -68,20 +72,52 @@ export const useDashboard = () => {
       setLoading(false);
     }
   };
-  const fetchLeaveBalance = useCallback(async (employeeId: number, year: number = 2026) => {
-    setLoading(true);
-    setError(null);
-    try {
-        const data = await service.getLeaveBalances(employeeId, year);
-        setLeaveBalance(data);
-        return data;
-    } catch (err: any) {
-        setError(err.message || "Failed to fetch leave balance");
-        return null;
-    } finally {
-        setLoading(false);
+//   const fetchLeaveBalance = useCallback(async (employeeId: number, year: number = 2026) => {
+//     setLoading(true);
+//     setError(null);
+//     try {
+//         const data = await dashboardService.getLeaveBalances(employeeId, year);
+//         setLeaveBalance(data);
+//         return data;
+//     } catch (err: any) {
+//         setError(err.message || "Failed to fetch leave balance");
+//         return null;
+//     } finally {
+//         setLoading(false);
+//     }
+// }, []);
+
+
+ const fetchPayslip = async(year:number,month:number)=>{
+    try{
+      setLoading(true);
+      const res = await dashboardService.getMyPayslip(year,month);
+setPayslip(res.data);
+      
+    }catch(e){
+      setPayslip(null);
+      setError("Payslip not found");
+    }finally{
+      setLoading(false);
     }
-}, []);
+  };
+
+  const fetchHistory = async(year:number)=>{
+    try{
+      setLoading(true);
+      const data = await dashboardService.getHistory(year);
+      setHistory(data);
+    }catch(e){
+      setHistory([]);
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  const download = async(year:number,month:number)=>{
+    await dashboardService.downloadPayslip(year,month);
+  };
+
 
 
 const fetchEmployeeCalendar = async (employeeId: number) => {
@@ -385,9 +421,16 @@ const applyLeave = useCallback(async (data: FormData ) => {
      fetchEmployeeCalendar,
   employeeCalendar,
 
+   payslip,
+    history,
+    
+    fetchPayslip,
+    fetchHistory,
+    download,
+
     applyLeave,
     getTeamMembers,
-    fetchLeaveBalance, 
+    
     leaveBalance,
 
     removeLeaveType,
