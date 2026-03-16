@@ -1,0 +1,213 @@
+// ==============================
+// Leave Record
+// ==============================
+
+export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+export type LeaveType = "SICK" | "CASUAL" | "EARNED" | "COMP_OFF"; // Add types as per your backend
+
+export interface LeaveRecord {
+  id: number;
+  employeeId: number;
+  leaveType: LeaveType;
+  halfDayType: string | null; // e.g., "FIRST_HALF" or "SECOND_HALF"
+  year: number;
+  startDate: string; // ISO Date string
+  endDate: string;   // ISO Date string
+  days: number;
+  reason: string;
+  status: LeaveStatus;
+  approvedBy: number | null;
+  approvedRole: string | null;
+  approvedAt: string | null;
+  carryForwardUsed: number;
+  compOffUsed: number;
+  lossOfPayApplied: number;
+  createdAt: string;
+  updatedAt: string;
+  escalated: boolean;
+  escalatedAt: string | null;
+  managerId: number;
+  version: number;
+  attachments: string[]; // Adjust type if attachments have a specific object structure
+}
+
+
+// ==============================
+// Employee
+// ==============================
+
+export interface Employee {
+  employeeId: number;
+  employeeName: string;
+  totalAllocated: number;   // Handles 0.0 or other decimals
+  totalUsed: number;
+  totalRemaining: number;
+  compOffBalance: number;
+  lopPercentage: number;
+  totalWorkingDays: number | null; // Use union type because your data shows 'null'
+}
+
+
+// ==============================
+// Approval Request
+// ==============================
+
+export interface ApprovalRequest {
+
+  id: number;
+
+  initial: string;
+
+  employee: string;
+
+  dept: string;
+
+  type: string;
+
+  range: string;
+
+  days: number;
+
+  avatarColor?: string;
+
+  appliedOn: string;
+
+  balance: number;
+
+  reason: string;
+
+}
+
+
+// ==============================
+// Dashboard Stats
+// ==============================
+
+export interface DashboardStats {
+
+  title: string;
+
+  used: number;
+
+  total: number;
+
+  color: string;
+
+  icon: string;
+
+}
+
+
+// ==============================
+// Chart Data
+// ==============================
+
+export interface ChartData {
+
+  month: string;
+
+  Casual: number;
+
+  Sick: number;
+
+  Earned: number;
+
+}
+
+
+// ==============================
+// Notification
+// ==============================
+
+export interface Notification {
+
+  id: number;
+
+  type: 'success' | 'info' | 'error' | 'default';
+
+  title: string;
+
+  desc: string;
+
+  time: string;
+
+  unread: boolean;
+
+  category: 'Personal' | 'Team' | 'System' | 'All';
+
+}
+
+
+// ==============================
+// Audit Log
+// ==============================
+
+export interface AuditLog {
+
+  action: string;
+
+  target: string;
+
+  actor: string;
+
+  role: 'Manager' | 'Employee' | 'Admin' | 'System Admin';
+
+  time: string;
+
+  timestamp: string;
+
+  status: 'success' | 'error' | 'security' | 'info';
+
+  details: string;
+
+  icon: React.ReactNode;
+
+}
+
+
+// ==============================
+// Profile
+// ==============================
+
+export interface ProfileData {
+  // Identity & Basic Info
+  name?: string;
+  role: string;
+
+  email: string;
+
+  phone: string;
+
+  employeeId: string;
+
+  photo: string;
+
+  department: string;
+
+  designation: string;
+
+  joiningDate: string;
+
+  workLocation: string;
+
+  managerName: string;
+
+  employmentType: 'Full-time' | 'Contract' | 'Intern';
+
+  dob: string;
+
+  gender: string;
+
+  bloodGroup?: string;
+
+  nationality: string;
+
+  address: string;
+
+  linkedin?: string;
+
+  github?: string;
+
+  skills: string[];
+
+}

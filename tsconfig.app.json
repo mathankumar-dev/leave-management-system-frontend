@@ -1,9 +1,15 @@
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+<<<<<<< HEAD
     "target": "ES2023",
     "useDefineForClassFields": true,
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
+=======
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+>>>>>>> ef840b7b368a91125478269a5a0dd298eab966cc
     "module": "ESNext",
     "types": ["vite/client"],
     "skipLibCheck": true,
