@@ -8,23 +8,23 @@ import {
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../../auth/hooks/useAuth";
-import type { TeamMemberBalance } from "../../types";
+import type { TeamMember, TeamMemberBalance } from "../../types";
 import CustomLoader from "../../../../components/ui/CustomLoader";
 interface TeamMembersViewProps {
   onNavigate?: (tab: string) => void;
 }
 const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
-    const { getTeamMembers, loading } = useDashboard();
+    const { fetchTeamMembers, loading } = useDashboard();
     const { user } = useAuth();
 
-    const [members, setMembers] = useState<TeamMemberBalance[]>([]);
+    const [members, setMembers] = useState<TeamMember[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         if (user?.id) {
-            getTeamMembers(user.id).then(setMembers);
+            fetchTeamMembers(user.id).then(setMembers);
         }
-    }, [user?.id, getTeamMembers]);
+    }, [user?.id, fetchTeamMembers]);
 
     const filteredMembers = useMemo(() => {
         return members.filter((emp) =>
@@ -97,17 +97,17 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                             <div className="grid grid-cols-3 gap-2 border-t border-slate-50 pt-3">
                                 <div className="text-center">
                                     <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Leave</p>
-                                    <p className="text-xs font-black text-indigo-600 bg-indigo-50 py-1 rounded-sm">{emp.totalRemaining?.toFixed(1)}</p>
+                                    <p className="text-xs font-black text-indigo-600 bg-indigo-50 py-1 rounded-sm">{emp.designation}</p>
                                 </div>
                                 <div className="text-center">
                                     <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Comp</p>
-                                    <p className="text-xs font-black text-slate-700 bg-slate-50 py-1 rounded-sm">{emp.compOffBalance?.toFixed(1)}</p>
+                                    <p className="text-xs font-black text-slate-700 bg-slate-50 py-1 rounded-sm">{emp.skills}</p>
                                 </div>
                                 <div className="text-center">
                                     <p className="text-[8px] font-black text-slate-400 uppercase mb-1">LOP</p>
-                                    <p className={`text-xs font-black py-1 rounded-sm ${emp.lopPercentage! > 0 ? "text-rose-600 bg-rose-50" : "text-emerald-600 bg-emerald-50"}`}>
+                                    {/* <p className={`text-xs font-black py-1 rounded-sm ${emp.lopPercentage! > 0 ? "text-rose-600 bg-rose-50" : "text-emerald-600 bg-emerald-50"}`}>
                                         {emp.lopPercentage}%
-                                    </p>
+                                    </p> */}
                                 </div>
                             </div>
                         </motion.div>
@@ -122,7 +122,7 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                             <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider">Member</th>
                             <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Designation</th>
                             <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Skills</th>
-                            <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Salary Status</th>
+                            {/* <th className="px-6 py-4 text-[10px] font-black uppercase text-slate-500 tracking-wider text-center">Salary Status</th> */}
                             <th className="px-6 py-4 w-20"></th>
                         </tr>
                     </thead>
@@ -152,36 +152,23 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
 
                                     <td className="px-6 py-4 text-center">
                                         <span className="text-xs font-black text-indigo-600 bg-indigo-50/50 border border-indigo-100 px-3 py-1 rounded-sm">
-                                            {emp.totalRemaining!.toFixed(1)} Days
+                                            {emp.designation }
                                         </span>
                                     </td>
 
                                     <td className="px-6 py-4 text-center">
                                         <span className="text-xs font-bold text-slate-600 uppercase tracking-tighter">
-                                            {emp.compOffBalance!.toFixed(1)} <span className="text-[9px] text-slate-400">Bal</span>
+                                            {emp.skills}
                                         </span>
                                     </td>
 
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col items-center max-w-25 mx-auto">
-                                            <span className={`text-[10px] font-black mb-1 ${emp.lopPercentage! > 0 ? "text-rose-500" : "text-emerald-500"}`}>
-                                                {emp.lopPercentage}%
-                                            </span>
-                                            <div className="w-full h-1 bg-slate-100 rounded-sm overflow-hidden">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${Math.min(emp.lopPercentage!, 100)}%` }}
-                                                    className={`h-full ${emp.lopPercentage! > 0 ? "bg-rose-500" : "bg-emerald-500"}`}
-                                                />
-                                            </div>
-                                        </div>
-                                    </td>
+                                    
 
-                                    <td className="px-6 py-4 text-right">
+                                    {/* <td className="px-6 py-4 text-right">
                                         <button className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-sm transition-all">
                                             <FaChartPie size={14} />
                                         </button>
-                                    </td>
+                                    </td> */}
                                 </motion.tr>
                             ))}
                         </AnimatePresence>

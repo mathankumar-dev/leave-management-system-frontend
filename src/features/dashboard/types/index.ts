@@ -2,9 +2,11 @@
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF";
-export type LeaveType = "SICK" | "CASUAL" | "EARNED_LEAVES" | "COMP_OFF" | "PERSONAL";
+export type LeaveType = 'SICK'|'ANNUAL_LEAVE'|'MATERNITY'|'PATERNITY'|'COMP_OFF';
 
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
+
+export type ODStatus = 'PENDING_TEAM_LEADER'| 'PENDING_MANAGER' | 'PENDING_HR' | 'APPROVED' | 'REJECTED' | 'CANCELLED' ;
 
 export interface LeaveRecord {
   id: number;
@@ -399,7 +401,15 @@ export interface ODRequest {
   reason: string;
   fromDate: string;
   toDate: string;
+}
 
+export interface ODResponse {
+  id : number;
+  employeeId : string;
+  reason : string;
+  fromDate : string;
+  toDate : string;
+  status : ODStatus;
 }
 
 
@@ -451,4 +461,12 @@ export interface ProfileData {
   personalDetailsLocked: boolean;
 
   photo?: string;
+}
+
+
+export interface TeamMember {
+  employeeName : string;
+  employeeId : number;
+  designation : string | null;
+  skills : string | null;
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { dashboardService } from "../../services/dashboardService";
-import type { CompOffResponse, LeaveDecisionRequest } from "../../types";
+import type { CompOffResponse, LeaveDecisionRequest, ODResponse } from "../../types";
 
 export const useManagerApprovals = (userId: number, role?: string) => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -13,24 +13,59 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       const isTeamLeader = role?.toUpperCase() === 'TEAM_LEADER';
 
       if (isTeamLeader) {
-        const tlRequests = await dashboardService.getPendingApprovalsForTeamLeader(userId);
-        setRequests(tlRequests || []);
-      } else {
-        const [leaves, compOffs] = await Promise.all([
-          dashboardService.getPendingApprovals(userId),
-          dashboardService.getPendingCompOffs(userId)
+        // Fetch Standard and OD requests for Team Leader
+        const [tlRequests, tlODRequests] = await Promise.all([
+          dashboardService.getPendingApprovalsForTeamLeader(userId),
+          dashboardService.getPendingODApprovalsForTeamLeader(userId)
         ]);
-        const formattedCompOffs = compOffs.map((co: CompOffResponse) => ({
+
+        const formattedODs = (tlODRequests || []).map((od: ODResponse) => ({
+          ...od,
+          leaveType: 'ON_DUTY',
+          isOD: true,
+        }));
+
+        const combined = [...(tlRequests || []), ...formattedODs].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        console.log(`combined : ${combined.forEach(a => {
+          console.log(a);
+          
+        })}`);
+        
+        setRequests(combined);
+
+      } else {
+        const [leaves, compOffs, ods] = await Promise.all([
+          dashboardService.getPendingApprovals(userId),
+          dashboardService.getPendingCompOffs(userId),
+          dashboardService.getPendingODApprovals(userId)
+        ]);
+
+        const formattedCompOffs = (compOffs || []).map((co: CompOffResponse) => ({
           ...co,
-          id: co.compoffId,
+          id: co.compoffId, 
           leaveType: 'COMP_OFF',
           startDate: co.workedDate,
           endDate: co.workedDate,
           isCompOff: true
         }));
-        const combined = [...leaves, ...formattedCompOffs].sort(
+
+        const formattedODs = (ods || []).map((od: ODResponse) => ({
+          ...od,
+          leaveType: 'ON_DUTY',
+          isOD: true,
+          startDate: od.fromDate, 
+          endDate: od.toDate
+        }));
+
+        const combined = [...leaves, ...formattedCompOffs, ...formattedODs].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
+                console.log(`combined : ${combined.forEach(a => {
+          console.log(a);
+          
+        })}`);
         setRequests(combined);
       }
     } catch (err) {
@@ -39,6 +74,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchRequests();
@@ -77,6 +113,10 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       return { success: false, error: err };
     }
   };
+  console.log("from manager dashboard");
+  
+  console.log(requests);
+  
 
   return {
     requests,

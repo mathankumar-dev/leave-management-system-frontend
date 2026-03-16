@@ -47,9 +47,8 @@ const LeaveApplicationForm = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const leaveLabels: Record<string, string> = {
+    ANNUAL_LEAVE: "Annual Leave",
     SICK: "Sick Leave",
-    CASUAL: "Casual Leave",
-    EARNED_LEAVES: "Earned Leave",
     COMP_OFF: "Bank Comp-Off",
   };
 
@@ -219,7 +218,7 @@ const LeaveApplicationForm = () => {
                 <div
                   key={item.leaveType}
                   onClick={() => setFormData({ ...formData, category: item.leaveType as any })}
-                  className={`flex-1 min-w-[120px] px-4 py-2 cursor-pointer transition-all relative ${isActive ? 'bg-indigo-50/50' : 'hover:bg-slate-50'}`}
+                  className={`flex-1 min-w-30 px-4 py-2 cursor-pointer transition-all relative ${isActive ? 'bg-indigo-50/50' : 'hover:bg-slate-50'}`}
                 >
                   {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
                   <div className="flex flex-col">
@@ -273,7 +272,7 @@ const LeaveApplicationForm = () => {
               <HiOutlineClock size={16} /> 01. Leave Category
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {(["SICK", "CASUAL", "EARNED_LEAVES", "COMP_OFF"] as const).map((type) => (
+              {(["SICK", "ANNUAL_LEAVE", "COMP_OFF"] as const).map((type) => (
                 <button
                   key={type}
                   type="button"

@@ -13,6 +13,7 @@ import type {
   TeamMemberBalance,
   ManagerDashBoardResponse,
   LeaveBalanceResponse,
+  TeamMember,
 } from "../types";
 
 
@@ -22,13 +23,11 @@ const service = dashboardService;
 export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
   const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
   const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
-
-  const [employeeCalendar, setEmployeeCalendar] = useState<
-  Record<string, any[]>
->({});
+  
+  const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
+  const [employeeCalendar, setEmployeeCalendar] = useState<TeamCalendarResponse>({});
 
   const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponse | null>(null);
 
@@ -84,20 +83,7 @@ export const useDashboard = () => {
 }, []);
 
 
-const fetchEmployeeCalendar = async (employeeId: number) => {
-  try {
-    setLoading(true);
 
-    const data = await dashboardService.getEmployeeCalendar(employeeId);
-
-    setEmployeeCalendar(data);
-
-  } catch (err: any) {
-    setError(err.message || "Failed to fetch calendar");
-  } finally {
-    setLoading(false);
-  }
-};
 
 const hasExceededLimits = useMemo(() => {
     return leaveBalance?.exceededMonthlyLimit || (leaveBalance?.totalRemaining ?? 0) <= 0;
@@ -161,6 +147,7 @@ const fetchDashboard = useCallback(async (employeeId: number) => {
       setLoading(false);
     }
   }, []);
+
   const fetchTeamOnLeave = useCallback(async (managerId: number): Promise<TeamMemberBalance[]> => {
     setLoading(true);
     try {
@@ -241,10 +228,10 @@ const applyLeave = useCallback(async (data: FormData ) => {
 
   /* ================= TEAM ================= */
 
-  const fetchTeamSchedule = useCallback(async (managerId: number) => {
+  const fetchTeamSchedule = useCallback(async (id: number) => {
     setLoading(true);
     try {
-      const data = await dashboardService.getTeamCalendar(managerId);
+      const data = await dashboardService.getTeamCalendar(id);
       setTeamCalendar(data);
       return data;
     } catch (error) {
@@ -254,6 +241,22 @@ const applyLeave = useCallback(async (data: FormData ) => {
       setLoading(false);
     }
   }, []);
+
+  const fetchEmployeeCalendar = useCallback( async (employeeId: number) => {
+  try {
+    setLoading(true);
+
+    const data = await dashboardService.getEmployeeCalendar(employeeId);
+
+    setEmployeeCalendar(data);
+
+  } catch (err: any) {
+    setError(err.message || "Failed to fetch calendar");
+  } finally {
+    setLoading(false);
+  }
+},[]);
+
 
   const fetchManagerDashboard = useCallback(
     async (id: number): Promise<ManagerDashBoardResponse | null> => {
@@ -364,6 +367,25 @@ const applyLeave = useCallback(async (data: FormData ) => {
     }
   }, []);
 
+
+    const fetchTeamMembers = useCallback(async (id : number) : Promise<TeamMember[]> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await service.getTeamMembers(id);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || "Comp-Off banking failed";
+      setError(errorMessage);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
+
+
   /* ================= EXPORT ================= */
 
 
@@ -376,6 +398,7 @@ const applyLeave = useCallback(async (data: FormData ) => {
     fetchDashboard,
     fetchManagerDashboard,
     fetchTeamLeaderDashboard,
+    fetchTeamMembers,
     // fetchApprovals,
     processApproval,
     fetchEmployees,

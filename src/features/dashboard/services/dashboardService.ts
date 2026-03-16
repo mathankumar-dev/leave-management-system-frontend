@@ -11,7 +11,9 @@ import type {
   CompOffRequest,
   LeaveBalanceResponse,
   // ProfileResponse
-  ProfileData
+  ProfileData,
+  ODResponse,
+  TeamMember
 
 
 } from '../types';
@@ -20,14 +22,17 @@ import type {
 
 export const dashboardService = {
 
-  getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
+  getEmployeeCalendar: async (employeeId: number): Promise<TeamCalendarResponse> => {
+    const response = await api.get(`/dashboard/employee/calendar/${employeeId}`);
+    console.log(response.data);
+    return response.data;
+  },
+  getTeamCalendar: async (id: number): Promise<TeamCalendarResponse> => {
     const response = await api.get<TeamCalendarResponse>(
-      `/dashboard/manager/team-calendar/${managerId}`
+      `/dashboard/team-calendar/${id}`
     );
     return response.data;
   },
-
-
 
   getEmpDashboard: async (employeeId: number) => {
 
@@ -46,11 +51,6 @@ export const dashboardService = {
 
   },
 
-  getEmployeeCalendar: async (employeeId: number) => {
-    const response = await api.get(`/dashboard/employee/calendar/${employeeId}`);
-    console.log(response.data);
-    return response.data;
-  },
 
   getTeamLeaderDashboard: async (teamLeaderId: number) => {
 
@@ -144,9 +144,19 @@ export const dashboardService = {
     return response.data.content;
   },
 
-
   getPendingCompOffs: async (managerId: number) => {
     const response = await api.get(`/compoff/pending/${managerId}/approvals`);
+    return response.data.content;
+  },
+
+  getPendingODApprovalsForTeamLeader: async (teamLeaderId: number): Promise<ODResponse[]> => {
+
+    const response = await api.get(`/od/pending/teamleader/${teamLeaderId}`);
+
+    return response.data;
+  },
+  getPendingODApprovals: async (managerId: number): Promise<ODResponse[]> => {
+    const response = await api.get(`/od/pending/manager/${managerId}`);
     return response.data.content;
   },
 
@@ -275,5 +285,16 @@ export const dashboardService = {
     });
     return res.data;
   },
+
+
+  getTeamMembers: async (id: number): Promise<TeamMember[]> => {
+    const res = await api.get(`/dashboard/team-members/${id}`);
+    console.log("employee data");
+
+    console.log(res);
+
+
+    return res.data;
+  }
 };
 
