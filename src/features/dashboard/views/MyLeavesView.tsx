@@ -77,11 +77,27 @@ const MyLeavesView: React.FC = () => {
       list = list.filter((item) => item.status === statusFilter);
     }
     list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return list.map((item) => ({
-      ...item,
-      displayType: item.leaveType.replace(/_/g, " "),
-      displayRange: `${new Date(item.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })} - ${new Date(item.endDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}`,
-    }));
+
+    return list.map((item) => {
+      const start = new Date(item.startDate);
+      const end = new Date(item.endDate);
+
+      // Formatting options
+      const dateOptions: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short" };
+
+      // Check if start and end dates are the same
+      const isSameDay = item.startDate === item.endDate;
+
+      const displayRange = isSameDay
+        ? start.toLocaleDateString("en-GB", dateOptions)
+        : `${start.toLocaleDateString("en-GB", dateOptions)} - ${end.toLocaleDateString("en-GB", dateOptions)}`;
+
+      return {
+        ...item,
+        displayType: item.leaveType.replace(/_/g, " "),
+        displayRange,
+      };
+    });
   }, [history, statusFilter]);
 
   if (loading) return (
@@ -255,7 +271,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
   const { user } = useAuth();
   const days = item.days;
 
-  const needsTL = true; 
+  const needsTL = true;
   const needsManager = days > 1;
   const needsHR = days > 7;
 
@@ -277,20 +293,20 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
       </div>
 
       {/* Timing Section */}
-      <div className="space-y-3">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-          <FaCalendarAlt className="text-indigo-400" /> Timing
-        </h4>
-        <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm">
-          <div className="p-2.5 flex justify-between items-center">
-            <span className="text-[9px] font-black text-slate-500 uppercase">Starts</span>
-            <span className="text-xs font-black text-slate-700">{item.startDate}</span>
-          </div>
+      {/* Inside DetailContent Timing Section */}
+      <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm">
+        <div className="p-2.5 flex justify-between items-center">
+          <span className="text-[9px] font-black text-slate-500 uppercase">
+            {item.startDate === item.endDate ? "Date" : "Starts"}
+          </span>
+          <span className="text-xs font-black text-slate-700">{item.startDate}</span>
+        </div>
+        {item.startDate !== item.endDate && (
           <div className="p-2.5 flex justify-between items-center">
             <span className="text-[9px] font-black text-slate-500 uppercase">Ends</span>
             <span className="text-xs font-black text-slate-700">{item.endDate}</span>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Dynamic Approval Tracker */}
