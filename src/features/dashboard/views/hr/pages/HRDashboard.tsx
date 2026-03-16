@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { useHRDashboard } from '../hooks/useHRDashboard';
+import { useHRDashboard } from '../../../hooks/hr/useHRDashboard';
 import { DashboardSkeleton } from '../components/Dashboardskeleton';
 import { DashboardFilters } from '../components/DashboardFilters';
 import { SummarySection } from '../components/SummarySection';

@@ -50,7 +50,7 @@ function Sidebar({
     { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
     // { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
-    { name: "Payslip", icon: <FaFileInvoiceDollar />, roles: ["HR"] },
+    { name: "Payslip", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
 
   ];
 

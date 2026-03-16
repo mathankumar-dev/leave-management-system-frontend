@@ -1,4 +1,8 @@
 
+// =========================
+//     HR data types
+// ===========================
+
 
 // ─── Unions ──────────────────────────────────────────────────────
 export type OnboardingStatus = 'PENDING' | 'COMPLETED' | 'IN_PROGRESS';
@@ -82,145 +86,95 @@ export interface DashboardResponse {
 
 // ------------- payslip salary --------------//
 
+//   export interface Payslip {
+//   id: number;
+//   employeeId: number;
+//   month: number;
+//   year: number;
+//   basicSalary: number;
+//   hra: number;
+//   conveyance: number;
+//   medical: number | null;
+//   otherAllowance: number | null;
+//   pf: number;
+//   esi: number | null;
+//   professionalTax: number;
+//   lop: number;
+//   netSalary: number;
+//   generatedDate: string;
+//   status: string;
+// }
+
+  // export interface SalaryStructure {
+  //   role : string ;
+  //   hra :number;
+  //   conveyance :number;
+  //   medical : number;
+  //   otherAllowance : number;
+  //   pfPercent : number;
+  //   professionalTax  : number;
+  //   esiPercent : number ;
+
+  // }
+
+  // export interface EmployeeSalary {
+  //   id : number;
+  //   employeeId : number;
+  //   basicSalary : number;
+  //   effectiveFrom : string;
+  // }
+
+  // export interface EmployeeSalaryRequest {
+  //    employeeId : number
+  //    basicSalary : number;
+  //    effectiveFrom :string;
+  // }
+
+
+
+  // ======================
+  //    CFO data types
+  // ======================
+
+
   export interface Payslip {
-  id: number;
   employeeId: number;
   month: number;
   year: number;
   basicSalary: number;
   hra: number;
   conveyance: number;
-  medical: number | null;
-  otherAllowance: number | null;
+  medical: number;
+  otherAllowance: number;
+  bonus: number;
+  incentive: number;
+  stipend: number;
   pf: number;
-  esi: number | null;
+  esi: number;
   professionalTax: number;
+  tds: number;
   lop: number;
+  grossSalary: number;
   netSalary: number;
-  generatedDate: string;
-  status: string;
 }
 
-  export interface SalaryStructure {
-    role : string ;
-    hra :number;
-    conveyance :number;
-    medical : number;
-    otherAllowance : number;
-    pfPercent : number;
-    professionalTax  : number;
-    esiPercent : number ;
+export interface PayslipCreateRequest {
+  employeeId: number;
+  month: number;
+  year: number;
+  basicSalary: number;
+  hra: number;
+  conveyance: number;
+  medical: number;
+  otherAllowance: number;
+  bonus: number;
+  incentive: number;
+  stipend: number;
+  pf: number;
+  esi: number;
+  professionalTax: number;
+  tds: number;
+  lop: number;
+}
 
-  }
-
-  export interface EmployeeSalary {
-    id : number;
-    employeeId : number;
-    basicSalary : number;
-    effectiveFrom : string;
-  }
-
-  export interface EmployeeSalaryRequest {
-     employeeId : number
-     basicSalary : number;
-     effectiveFrom :string;
-  }
-
-
-
-
-
-
-
-
-
-
-
-// export interface DashboardResponse {
-//   summaryStats: { compOffUsed?: number | undefined; halfDayLeaves?: number | undefined; avgUtilization?: string | number | undefined; };
-//   currentYear: number;
-//   lastUpdated: string;
-//   totalEmployees: number;
-//   activeEmployees: number;
-//   employeesOnLeaveToday: number;
-//   totalPendingLeaves: number;
-//   totalApprovedLeaves: number;
-//   newEmployeesCount: number;
-//   pendingBiometricCount: number;
-//   pendingVPNCount: number;
-//   onboardingPendingList: OnboardingEmployee[];
-//   employeesOnLeave: any[];
-//   totalManagersWithApprovals: number;
-//   managerApprovalStats: any[];
-//   teamStructure: TeamStructure[];
-// }
-
-// export interface OnboardingEmployee {
-//   employeeId: number;
-//   employeeName: string;
-//   email: string;
-//   joiningDate: string;
-//   biometricStatus: string;
-//   vpnStatus: string;
-//   daysInOnboarding: number;
-// }
-
-// export interface TeamStructure {
-//   managerId: number;
-//   managerName: string;
-//   teamMemberCount: number;
-//   teamMembers: TeamMember[];
-// }
-
-// export interface TeamMember {
-//   employeeId: number;
-//   employeeName: string;
-//   email: string;
-//   yearlyBalance: number;
-//   carryForwardBalance: number;
-//   compOffBalance: number;
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // export interface DepartmentData {
-// //   name: string;
-// //   leaves: number;
-// // }
-
-// // export interface ManagerTracking {
-// //   name: string;
-// //   approved: number;
-// //   pending: number;
-// //   rejected: number;
-// // }
-
-
-// // export interface ManagerData {
-// //   name: string;
-// //   department: string;
-// //   approved: number;
-// //   pending: number;
-// //   rejected: number;
-// //   avgApprovalHrs: number;
-// // }
-
-// // export interface LeaveInsight {
-// //   manager: string;
-// //   employee: string;
-// //   type: string;
-// //   date: string;
-// // }
+export interface PayslipUpdateRequest extends PayslipCreateRequest {}

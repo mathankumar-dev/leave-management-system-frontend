@@ -1,5 +1,4 @@
 import { Filter } from 'lucide-react';
-import { Card, CardContent } from '../ui/card';
 import {
   Select,
   SelectContent,
@@ -7,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import { MONTHS, DEPARTMENTS } from '../data/mockData';
+import { Card, CardContent } from '../ui/card';
 
 interface DashboardFiltersProps {
   filters: {
@@ -49,11 +48,11 @@ export function DashboardFilters({ filters, updateFilter  }: DashboardFiltersPro
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Months</SelectItem>
-              {MONTHS.map((m, i) => (
+              {/* {MONTHS.map((m, i) => (
                 <SelectItem key={m} value={String(i + 1)}>
                   {m}
                 </SelectItem>
-              ))}
+              ))} */}
             </SelectContent>
           </Select> 
 
@@ -71,7 +70,7 @@ export function DashboardFilters({ filters, updateFilter  }: DashboardFiltersPro
             </SelectContent>
           </Select>
 
-          {/* Department Filter */}
+          {/* Department Filter
           <Select 
             value={filters.department} 
             onValueChange={(v) => updateFilter('department', v)}
@@ -87,7 +86,7 @@ export function DashboardFilters({ filters, updateFilter  }: DashboardFiltersPro
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
 
           {/* Leave Type Filter */}
           <Select 

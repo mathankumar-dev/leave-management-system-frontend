@@ -11,7 +11,6 @@ import LeaveTypesView from "../views/admin/LeaveTypesView";
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
 import LowBalancePage from "../views/hr/pages/LowBalancePage";
-import { PayslipPage } from "../views/hr/pages/PayslipPage";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -29,12 +28,18 @@ import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialo
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 import TeamMembersView from "../views/manager/TeamMembersView";
 
+
+/* ---------------------- CFO -----------------------*/
+import { PayslipPage } from "../views/CFO/pages/PayslipPage";
+ 
+
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
   ADMIN: "ADMIN",
   HR: "HR",
   MANAGER: "MANAGER",
   EMPLOYEE: "EMPLOYEE",
+  CFO : "CFO",
 };
 
 const DashboardLayout: React.FC = () => {
@@ -50,6 +55,9 @@ const DashboardLayout: React.FC = () => {
   useEffect(() => {
     if (userRole === ROLES.ADMIN && activeTab === "Dashboard") {
       setActiveTab("Employees");
+    }
+    if (userRole === ROLES.CFO && activeTab === "Dashboard") {
+      setActiveTab("Payslip");
     }
   }, [userRole, activeTab]);
 
@@ -80,7 +88,8 @@ const DashboardLayout: React.FC = () => {
         return <EmployeesView />;
 
       case "Payslip":
-        if (userRole === ROLES.HR) return <PayslipPage />;
+        if (userRole === ROLES.CFO) return <PayslipPage />;
+        return null;
 
       case "LowBalance Employee":
         return <LowBalancePage />;

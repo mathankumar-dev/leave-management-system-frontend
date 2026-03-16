@@ -1,7 +1,8 @@
-import { useEffect as useEff, useState as useSt, useRef } from "react";
-import { hrDashboardService } from "../service/hrDashboardService";
-import type { LowBalanceEmployee } from "../types";
-import { LowBalanceTable } from "../components/LowBalanceTable";
+import { useEffect as useEff, useState as useSt, useRef, type SetStateAction, } from "react";
+import { dashboardService } from "../../../services/dashboardService";
+import type { LowBalanceEmployee } from "../../types";
+import { LowBalanceTable } from "../components/Lowbalancetable";
+
 // import { set } from "react-datepicker/dist/dist/date_utils.js";
 
 function LowBalancePage() {
@@ -16,11 +17,11 @@ function LowBalancePage() {
     const timer = setTimeout(() => {        // ← 100ms delay
       if (!isMounted.current) return;
       
-      hrDashboardService.getLowBalanceEmployees()  // signal illama
-        .then((res) => {
+      dashboardService.getLowBalanceEmployees()  // signal illama
+        .then((res: SetStateAction<LowBalanceEmployee[]>) => {
           if (isMounted.current) { setData(res); setLoading(false); }
         })
-        .catch((err) => {
+        .catch((err: { message: SetStateAction<string | null>; }) => {
           if (isMounted.current) {
             setError(err instanceof Error ? err.message : 'Failed to load');
             setLoading(false);
