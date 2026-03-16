@@ -255,17 +255,10 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
   const { user } = useAuth();
   const days = item.days;
 
-  /**
-   * Logic:
-   * 0-1 Day: Only TL
-   * 1-7 Days: TL + Manager
-   * > 7 Days: TL + Manager + HR
-   */
-  const needsTL = true; // Always needed
+  const needsTL = true; 
   const needsManager = days > 1;
   const needsHR = days > 7;
 
-  // For a user who IS a TL, we skip the TL step visually as discussed before
   const isEmployee = userRole === "EMPLOYEE" || userRole === "USER";
   const showTLStep = isEmployee && needsTL;
 
@@ -276,7 +269,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
           <FaInfoCircle className="text-indigo-400" /> Reason & Impact
         </h4>
-        <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-[60px]">
+        <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-15">
           <p className="text-xs text-slate-600 leading-relaxed italic">
             {item.reason ? `"${item.reason}"` : "No reason provided."}
           </p>
@@ -305,7 +298,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
           Approval Flow ({days} {days === 1 ? 'Day' : 'Days'})
         </h4>
-        <div className="space-y-4 relative before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
+        <div className="space-y-4 relative before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
 
           {/* TEAM LEADER STEP */}
           {showTLStep && (

@@ -186,8 +186,6 @@ const LeaveApplicationForm = () => {
     </div>
   );
 
-  console.log(user);
-
 
   if (submitted) {
     return (
