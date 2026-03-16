@@ -3,9 +3,7 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
-import { dashboardService } from "../services/dashboardService";
-// import PayrollView from "../views/PayrollView";
+import api from "../../../api/axiosInstance";
 
 /* ---------------- ADMIN VIEWS ---------------- */
 import EmployeesView from "../views/admin/EmployeesView";
@@ -47,7 +45,7 @@ const ROLES = {
   TEAMLEADER: "TEAM_LEADER"
 };
 
-/* ---------------- SIMPLE STAT CARD ---------------- */
+/* ---------------- STAT CARD ---------------- */
 const StatCard = ({ title, value }: { title: string; value: number }) => (
   <div className="bg-white p-4 rounded shadow">
     <h3 className="text-sm text-gray-500">{title}</h3>
@@ -56,84 +54,82 @@ const StatCard = ({ title, value }: { title: string; value: number }) => (
 );
 
 const DashboardLayout: React.FC = () => {
+
   const { user, logout, mustChangePassword, personalDetailsComplete } = useAuth();
+
   const userRole = user?.role;
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
-  const navigate = useNavigate();
-
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [adminData, setAdminData] = useState<any>(null);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState<string | null>(null);
 
+  const navigate = useNavigate();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   /* ---------------- SCROLL RESET ---------------- */
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({ top: 0 });
-    }
+    scrollContainerRef.current?.scrollTo({ top: 0 });
   }, [activeTab]);
 
-
+  /* ---------------- PROFILE CHECK ---------------- */
   useEffect(() => {
-    const checkProfile = async () => {
-      try {
-        if (!user?.id) return;
+    if (!user) return;
 
-        const profile = await dashboardService.getProfile(user.id);
+    if (!personalDetailsComplete) {
+      navigate("/complete-profile");
+      return;
+    }
 
-        if (!profile.personalDetailsComplete) {
-          navigate("/complete-profile");
-          return;
-        }
-
-        setCheckingProfile(false);
-      } catch (error) {
-        console.error("Profile verification failed", error);
-        setCheckingProfile(false);
-      }
-    };
-
-    checkProfile();
-  }, [user?.id, navigate]);
+    setCheckingProfile(false);
+  }, [user, personalDetailsComplete, navigate]);
 
   /* ---------------- ADMIN DASHBOARD FETCH ---------------- */
   useEffect(() => {
+
     if (userRole !== ROLES.ADMIN || !user?.id) return;
 
-    const controller = new AbortController();
-    setAdminLoading(true);
+    const fetchAdminDashboard = async () => {
+      try {
 
-    fetch(`/dashboard/admin/${user.id}`, {
-      signal: controller.signal,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setAdminData(data);
-        setAdminLoading(false);
-      })
-      .catch((err) => {
-        if (err.name === "AbortError") return;
+        setAdminLoading(true);
+
+        const res = await api.get(`/dashboard/admin/${user.id}`);
+
+        setAdminData(res.data);
+
+      } catch (error) {
+
+        console.error(error);
         setAdminError("Failed to load admin dashboard");
-        setAdminLoading(false);
-      });
 
-    return () => controller.abort();
+      } finally {
+        setAdminLoading(false);
+      }
+    };
+
+    fetchAdminDashboard();
+
   }, [userRole, user?.id]);
 
   /* ---------------- VIEW RENDERER ---------------- */
   const renderView = () => {
+
     switch (activeTab) {
+
       case "Dashboard":
+
         if (userRole === ROLES.ADMIN) {
+
           if (adminLoading) return <div>Loading admin dashboard...</div>;
           if (adminError) return <div>{adminError}</div>;
 
           return (
             <div className="space-y-6">
+
               <h1 className="text-2xl font-bold">Admin Dashboard</h1>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -152,6 +148,7 @@ const DashboardLayout: React.FC = () => {
                 <h2 className="text-xl font-semibold mt-6">Leave Type Breakdown</h2>
 
                 <table className="w-full mt-3 border">
+
                   <thead>
                     <tr className="bg-gray-100">
                       <th className="p-2">Type</th>
@@ -171,8 +168,10 @@ const DashboardLayout: React.FC = () => {
                       </tr>
                     ))}
                   </tbody>
+
                 </table>
               </div>
+
             </div>
           );
         }
@@ -180,19 +179,13 @@ const DashboardLayout: React.FC = () => {
         if (userRole === ROLES.MANAGER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
 
-        if (userRole === ROLES.HR) return <HRDashboard />;
+        if (userRole === ROLES.HR)
+          return <HRDashboard />;
 
         return <DashboardView onNavigate={setActiveTab} />;
 
-      case "Reports":
-        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
-          return <ManagerDashboardView onNavigate={setActiveTab} />;
-        if (userRole === ROLES.HR) return <HRDashboard />;
-        return null;
-
       case "All Employees":
-        if (userRole === ROLES.HR) return <HREmployeesPage />;
-        return <EmployeesView />;
+        return userRole === ROLES.HR ? <HREmployeesPage /> : <EmployeesView />;
 
       case "LowBalance Employee":
         return <LowBalancePage />;
@@ -213,8 +206,7 @@ const DashboardLayout: React.FC = () => {
         return <MyLeavesView />;
 
       case "Payroll":
-        if (user?.role === "HR") return <PayslipPage />;
-        return <PayrollView />;
+        return userRole === ROLES.HR ? <PayslipPage /> : <PayrollView />;
 
       case "Pending Approvals":
         return <PendingApprovalsView />;
@@ -226,8 +218,10 @@ const DashboardLayout: React.FC = () => {
         return <TeamMembersView />;
 
       case "Profile":
-        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
-        return <EmployeeProfile />;
+        return (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
+          ? <ManagerProfile />
+          : <EmployeeProfile />;
+
       case "Other Approvals":
         return <OtherRequestForm />;
 
@@ -244,16 +238,14 @@ const DashboardLayout: React.FC = () => {
     );
   }
 
-  if (mustChangePassword) {
-    return <ChangePasswordDialog />;
-  }
-  if (!personalDetailsComplete) {
-    return <PersonalDetailsModal />;
-  }
+  if (mustChangePassword) return <ChangePasswordDialog />;
 
+  if (!personalDetailsComplete) return <PersonalDetailsModal />;
 
   return (
+
     <div className="flex h-screen bg-neutral-25 overflow-hidden">
+
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -262,7 +254,8 @@ const DashboardLayout: React.FC = () => {
         onLogout={logout}
       />
 
-      <div className="flex-1 flex flex-col md:ml-80 h-full min-w-0 transition-all duration-300">
+      <div className="flex-1 flex flex-col md:ml-80 h-full min-w-0">
+
         <Topbar
           activeTab={activeTab}
           onMenuClick={() => setSidebarOpen(true)}
@@ -274,11 +267,13 @@ const DashboardLayout: React.FC = () => {
           ref={scrollContainerRef}
           className="flex-1 overflow-y-auto overflow-x-hidden p-6"
         >
-          <div className="max-w-400 mx-auto w-full">
+          <div className="max-w-7xl mx-auto w-full">
             {renderView()}
           </div>
         </main>
+
       </div>
+
     </div>
   );
 };

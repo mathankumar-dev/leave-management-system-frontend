@@ -26,6 +26,10 @@ export const useDashboard = () => {
   const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
   const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
 
+  const [employeeCalendar, setEmployeeCalendar] = useState<
+  Record<string, any[]>
+>({});
+
   const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponse | null>(null);
 
 //   const [leaveBalance, setLeaveBalance] = useState({
@@ -78,6 +82,22 @@ export const useDashboard = () => {
         setLoading(false);
     }
 }, []);
+
+
+const fetchEmployeeCalendar = async (employeeId: number) => {
+  try {
+    setLoading(true);
+
+    const data = await dashboardService.getEmployeeCalendar(employeeId);
+
+    setEmployeeCalendar(data);
+
+  } catch (err: any) {
+    setError(err.message || "Failed to fetch calendar");
+  } finally {
+    setLoading(false);
+  }
+};
 
 const hasExceededLimits = useMemo(() => {
     return leaveBalance?.exceededMonthlyLimit || (leaveBalance?.totalRemaining ?? 0) <= 0;
@@ -361,6 +381,9 @@ const applyLeave = useCallback(async (data: FormData ) => {
     fetchEmployees,
     fetchMyLeaves,
     bankCompOff,
+
+     fetchEmployeeCalendar,
+  employeeCalendar,
 
     applyLeave,
     getTeamMembers,

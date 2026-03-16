@@ -10,7 +10,8 @@ import type {
   TeamMemberBalance,
   CompOffRequest,
   LeaveBalanceResponse,
-  ProfileResponse
+  // ProfileResponse
+  ProfileData
   
 
 } from '../types';
@@ -25,6 +26,8 @@ export const dashboardService = {
     );
     return response.data;
   },
+
+  
 
 
 
@@ -43,6 +46,13 @@ export const dashboardService = {
     return response.data;
 
   },
+
+  getEmployeeCalendar: async (employeeId: number) => {
+    const response = await api.get(`/dashboard/employee/calendar/${employeeId}`);
+    console.log(response.data);
+    return response.data;
+  },
+
   getTeamLeaderDashboard: async (teamLeaderId: number) => {
 
     const response = await api.get(`/dashboard/teamleader/${teamLeaderId}`);
@@ -51,10 +61,7 @@ export const dashboardService = {
 
   },
 
-fetchProfile: async (employeeId: number) => {
-  const response = await api.get(`/employees/profile/${employeeId}`);
-  return response.data;
-},
+
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
     const currentYear = new Date().getFullYear();
@@ -251,10 +258,10 @@ fetchProfile: async (employeeId: number) => {
     return response.data;
   },
 
-  getProfile: async (employeeId: number): Promise<ProfileResponse> => {
-  const response = await api.get(`/employees/${employeeId}/profile`);
-  return response.data;
-},
+//   getProfile: async (employeeId: number): Promise<ProfileData> => {
+//   const response = await api.get(`/employees//profile/${employeeId}`);
+//   return response.data;
+// },
 
 completeProfile: async (data: any) => {
   const response = await api.post("/employees/profile/complete", data);

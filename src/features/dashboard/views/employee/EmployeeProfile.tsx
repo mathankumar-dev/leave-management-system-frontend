@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaShieldAlt, FaMapMarkerAlt, FaEnvelope, FaPhone } from "react-icons/fa";
+import {
+  FaShieldAlt,
+  FaMapMarkerAlt,
+  FaEnvelope,
+  FaPhone,
+  FaUserTie
+} from "react-icons/fa";
 
 import { useAuth } from "../../../auth/hooks/useAuth";
 import { useEmployeeProfile } from "./UseEmployeeProfile";
@@ -16,9 +22,7 @@ const EmployeeProfile: React.FC = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
   useEffect(() => {
-    if (backendProfile) {
-      setProfile(backendProfile);
-    }
+    if (backendProfile) setProfile(backendProfile);
   }, [backendProfile]);
 
   if (loading || !profile) {
@@ -31,69 +35,76 @@ const EmployeeProfile: React.FC = () => {
 
   const Field = ({ label, value }: any) => (
     <div className="flex flex-col gap-1">
-      <span className="text-xs text-slate-400">{label}</span>
-      <span className="text-sm font-medium text-slate-700">{value || "-"}</span>
+      <span className="text-xs text-slate-400 uppercase tracking-wide">
+        {label}
+      </span>
+      <span className="text-sm font-semibold text-slate-700">
+        {value || "-"}
+      </span>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-100 p-8">
 
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-8">
 
         {/* PROFILE HEADER */}
 
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl border shadow-sm p-6 flex items-center gap-6"
+          className="
+          bg-white
+          rounded-2xl
+          shadow-sm
+          border border-slate-200
+          p-8
+          flex flex-col md:flex-row
+          items-center md:items-start
+          gap-6
+        "
         >
 
-          {/* AVATAR */}
+          {/* Avatar */}
 
-          <div className="w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold">
+          <div className="w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-md">
             {profile.name?.charAt(0)}
           </div>
 
-          {/* BASIC INFO */}
+          {/* Main Info */}
 
-          <div className="flex-1">
+          <div className="flex-1 text-center md:text-left">
 
-            <h2 className="text-xl font-semibold text-slate-800">
+            <h2 className="text-2xl font-bold text-slate-800">
               {profile.name}
             </h2>
 
-            <p className="text-indigo-600 text-sm">
+            <p className="text-indigo-600 font-medium text-sm mt-1">
               {profile.designation || "Employee"}
             </p>
 
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 mt-1">
               Employee ID: {profile.id}
             </p>
 
-            {/* CONTACT */}
+            {/* Contact row */}
 
-            <div className="flex flex-wrap gap-6 mt-3 text-sm text-slate-600">
+            <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-4 text-sm text-slate-600">
 
-              <div className="flex items-center gap-2">
-                <FaEnvelope className="text-slate-400" />
-                {profile.email}
-              </div>
+              <Contact icon={<FaEnvelope />} value={profile.email} />
 
-              <div className="flex items-center gap-2">
-                <FaPhone className="text-slate-400" />
-                {profile.contactNumber}
-              </div>
+              <Contact icon={<FaPhone />} value={profile.contactNumber} />
 
-              <div className="flex items-center gap-2">
-                <FaMapMarkerAlt className="text-slate-400" />
-                {profile.presentAddress || "No Address"}
-              </div>
+              <Contact
+                icon={<FaMapMarkerAlt />}
+                value={profile.presentAddress || "No Address"}
+              />
 
-              <div className="flex items-center gap-2">
-                <FaShieldAlt className="text-slate-400" />
-                Manager: {profile.managerName || "Not Assigned"}
-              </div>
+              <Contact
+                icon={<FaShieldAlt />}
+                value={`Manager: ${profile.managerName || "Not Assigned"}`}
+              />
 
             </div>
 
@@ -102,69 +113,74 @@ const EmployeeProfile: React.FC = () => {
         </motion.div>
 
 
-        {/* PERSONAL INFO */}
+        {/* GRID SECTIONS */}
 
-        <Section title="Personal Information">
+        <div className="grid lg:grid-cols-2 gap-6">
 
-          <Field label="Full Name" value={profile.name} />
-          <Field label="Gender" value={profile.gender} />
-          <Field label="Date Of Birth" value={profile.dateOfBirth} />
-          <Field label="Blood Group" value={profile.bloodGroup} />
-          <Field label="Personal Email" value={profile.personalEmail} />
-          <Field label="Phone Number" value={profile.contactNumber} />
-          <Field label="Father Name" value={profile.fatherName} />
-          <Field label="Mother Name" value={profile.motherName} />
+          <Section title="Personal Information">
 
-        </Section>
+            <Field label="Full Name" value={profile.name} />
+            <Field label="Gender" value={profile.gender} />
+            <Field label="Date Of Birth" value={profile.dateOfBirth} />
+            <Field label="Blood Group" value={profile.bloodGroup} />
+            <Field label="Personal Email" value={profile.personalEmail} />
+            <Field label="Phone Number" value={profile.contactNumber} />
+            <Field label="Father Name" value={profile.fatherName} />
+            <Field label="Mother Name" value={profile.motherName} />
 
+          </Section>
 
-        {/* ADDRESS */}
+          <Section title="Address">
 
-        <Section title="Address">
+            <Field label="Present Address" value={profile.presentAddress} />
+            <Field label="Permanent Address" value={profile.permanentAddress} />
 
-          <Field label="Present Address" value={profile.presentAddress} />
-          <Field label="Permanent Address" value={profile.permanentAddress} />
+          </Section>
 
-        </Section>
+          <Section title="Work Information">
 
+            <Field label="Employee ID" value={profile.id} />
+            <Field label="Designation" value={profile.designation} />
+            <Field label="Manager" value={profile.managerName} />
+            <Field label="Team Leader" value={profile.teamLeaderName} />
+            <Field label="Joining Date" value={profile.joiningDate} />
 
-        {/* WORK DETAILS */}
-
-        <Section title="Work Information">
-
-          <Field label="Employee ID" value={profile.id} />
-          <Field label="Designation" value={profile.designation} />
-          <Field label="Manager" value={profile.managerName} />
-          <Field label="Team Leader" value={profile.teamLeaderName} />
-          <Field label="Joining Date" value={profile.joiningDate} />
-
-        </Section>
+          </Section>
 
 
-        {/* SKILLS */}
+          {/* Skills */}
 
-        <div className="bg-white border rounded-xl p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
 
-          <h3 className="text-sm font-semibold text-slate-700 mb-4">
-            Skills
-          </h3>
+            <h3 className="text-sm font-semibold text-slate-700 mb-4">
+              Skills
+            </h3>
 
-          <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2">
 
-            {profile.skillSet?.length ? (
-              profile.skillSet.map((s, i) => (
-                <span
-                  key={i}
-                  className="bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded-full"
-                >
-                  {s}
+              {profile.skillSet?.length ? (
+                profile.skillSet.map((s, i) => (
+                  <span
+                    key={i}
+                    className="
+                    bg-indigo-50
+                    text-indigo-700
+                    text-xs
+                    font-medium
+                    px-3 py-1
+                    rounded-full
+                  "
+                  >
+                    {s}
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm text-slate-400">
+                  No skills added
                 </span>
-              ))
-            ) : (
-              <span className="text-sm text-slate-400">
-                No skills added
-              </span>
-            )}
+              )}
+
+            </div>
 
           </div>
 
@@ -182,15 +198,27 @@ export default EmployeeProfile;
 
 const Section = ({ title, children }: any) => (
 
-  <div className="bg-white border rounded-xl p-6">
+  <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
 
-    <h3 className="text-sm font-semibold text-slate-700 mb-5">
+    <h3 className="text-sm font-semibold text-slate-700 mb-5 flex items-center gap-2">
+      <FaUserTie className="text-indigo-500" />
       {title}
     </h3>
 
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-2 gap-6">
       {children}
     </div>
 
   </div>
+);
+
+
+
+const Contact = ({ icon, value }: any) => (
+
+  <div className="flex items-center gap-2 text-sm text-slate-600">
+    <span className="text-slate-400">{icon}</span>
+    {value}
+  </div>
+
 );
