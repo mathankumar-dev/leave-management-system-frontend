@@ -1,0 +1,109 @@
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+background:#eef2f7;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+position:fixed;
+left:0;
+top:0;
+width:230px;
+height:100%;
+background:#0f1e3a;
+color:white;
+}
+
+.logo{
+display:flex;
+align-items:center;
+gap:10px;
+padding:20px;
+font-size:18px;
+font-weight:600;
+}
+
+.logo img{
+width:35px;
+}
+
+.sidebar a{
+display:block;
+padding:14px 25px;
+color:#cbd5f5;
+text-decoration:none;
+}
+
+.sidebar a:hover{
+background:#1e293b;
+color:white;
+}
+
+/* HEADER */
+
+.header{
+margin-left:230px;
+height:65px;
+background:white;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 30px;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+
+.date{
+color:#6b7280;
+}
+
+/* MAIN */
+
+.main{
+margin-left:230px;
+padding:35px;
+}
+
+/* CARD */
+
+.card{
+background:white;
+padding:25px;
+border-radius:12px;
+margin-bottom:25px;
+box-shadow:0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card h3{
+margin-top:0;
+}
+
+/* NEWS */
+
+.news{
+background:#fde8a7;
+padding:12px;
+border-radius:8px;
+overflow:hidden;
+white-space:nowrap;
+}
+
+.news span{
+display:inline-block;
+animation:move 12s linear infinite;
+}
+
+@keyframes move{
+0%{transform:translateX(100%)}
+100%{transform:translateX(-100%)}
+}
+
+/* QUOTE */
+
+.quote{
+background:#cde6a6;
+padding:12px;
+border-radius:8px;
+font-style:italic;
+}
