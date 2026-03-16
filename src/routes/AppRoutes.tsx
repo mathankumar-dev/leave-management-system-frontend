@@ -6,9 +6,9 @@ import DashboardLayout from "../features/dashboard/layout/DashboardLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import ForgotPassword from "../features/auth/pages/ForgotPassword";
 import NotFoundPage from "../components/pages/NotFoundPage";
-import HeroPage from "../features/hero/HeroPage";
 import PrivacyPolicy from "../components/pages/PrivacyPolicy";
 import TermsOfService from "../components/pages/TermsOfService";
+import LandingPage from "../features/landing/LandingPage";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -27,7 +27,7 @@ const AppRoutes: React.FC = () => {
       <Route 
         path="/" 
         element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <HeroPage />
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />
         } 
       />
 

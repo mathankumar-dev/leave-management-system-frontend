@@ -80,10 +80,10 @@ const DashboardLayout: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    if (!personalDetailsComplete) {
-      navigate("/complete-profile");
-      return;
-    }
+    // if (!personalDetailsComplete) {
+    //   navigate("/complete-profile");
+    //   return;
+    // }
 
     setCheckingProfile(false);
   }, [user, personalDetailsComplete, navigate]);

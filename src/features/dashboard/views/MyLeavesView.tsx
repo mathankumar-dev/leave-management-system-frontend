@@ -293,7 +293,6 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
       </div>
 
       {/* Timing Section */}
-      {/* Inside DetailContent Timing Section */}
       <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm">
         <div className="p-2.5 flex justify-between items-center">
           <span className="text-[9px] font-black text-slate-500 uppercase">
@@ -320,7 +319,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
           {showTLStep && (
             <div className="relative pl-6">
               <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.teamLeaderDecision === 'APPROVED' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Team Leader</p>
+              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Team Leader ({user?.teamLeaderName})</p>
               <p className="text-[10px] text-slate-500 mt-1">
                 {item.teamLeaderDecision ? `${item.teamLeaderDecision} ${formatDate(item.teamLeaderDecidedAt)}` : 'Awaiting Review'}
               </p>
@@ -331,7 +330,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
           {needsManager && (
             <div className="relative pl-6">
               <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.managerDecision === 'APPROVED' ? 'bg-emerald-500' : item.managerDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Manager</p>
+              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Manager ({user?.managerName})</p>
               <p className="text-[10px] text-slate-500 mt-1">
                 {item.managerDecision
                   ? `${item.managerDecision} on ${formatDate(item.managerDecidedAt)}`
@@ -344,7 +343,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
           {needsHR && (
             <div className="relative pl-6">
               <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.hrDecision === 'APPROVED' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">HR Finalization</p>
+              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">HR ({user?.hrname})</p>
               <p className="text-[10px] text-slate-500 mt-1">
                 {item.hrDecision
                   ? `${item.hrDecision}`

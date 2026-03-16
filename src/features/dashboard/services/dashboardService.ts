@@ -139,6 +139,7 @@ export const dashboardService = {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
     return response.data.content;
   },
+  
   getPendingApprovalsForTeamLeader: async (teamLeaderId: number) => {
     const response = await api.get(`/leave-approvals/pending/team-leader/${teamLeaderId}`);
     return response.data.content;
@@ -201,6 +202,7 @@ export const dashboardService = {
     const response = await api.get(`/manager/${managerId}/team-leaves/week`);
     return response.data;
   },
+
   getTeamOnLeave: async (managerId: number): Promise<TeamMemberBalance[]> => {
     const response = await api.get(`/dashboard/manager/team-on-leave/${managerId}`);
     return response.data;

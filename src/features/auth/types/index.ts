@@ -78,6 +78,7 @@ export interface User {
 }
 
 export interface PersonalDetailsRequest {
+  // fullName : string;
   contactNumber: string;
   gender: Gender;
   aadharNumber: string;
