@@ -17,6 +17,8 @@ import {
 import { useAuth } from "../../auth/hooks/useAuth";
 import NameSVG from "../../../assets/svg/NameSVG";
 
+import logoSVG from "../../../assets/logo.svg";
+
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -43,7 +45,8 @@ function Sidebar({
   const tabs = [
     { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER", "HR","ADMIN"] },
     { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER","HR","TEAM_LEADER"] },
-    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
+    // { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
+    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER","TEAM_LEADER","EMPLOYEE","HR","ADMIN"] },
     { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: [ "ADMIN","EMPLOYEE"] },
     { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER","TEAM_LEADER", "HR",] },
@@ -53,11 +56,8 @@ function Sidebar({
     // { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR", "ADMIN"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
-    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER","TEAM_LEADER","EMPLOYEE",""] },
     { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "HR"] },
     
-
-
   ];
 
   const visibleTabs = tabs.filter((tab) =>
@@ -80,8 +80,10 @@ function Sidebar({
       >
         {/* Logo */}
         <div className="flex items-center justify-between mb-8 px-2 shrink-0">
-          <div className="h-auto w-42">
-            <NameSVG color="#ffffff" isDotNeeded={false} />
+          <div className="h-auto w-42 flex">
+            
+             <img src={logoSVG} alt="" width={50} height={50}/>
+            {/* <NameSVG color="#ffffff" isDotNeeded={false} /> */}
           </div>
 
           <button

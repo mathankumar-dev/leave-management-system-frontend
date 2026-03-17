@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useAuth } from "../../auth/hooks/useAuth";
-import { useDashboard } from "../hooks/useDashboard";
-import type { LeaveType } from "../types";
-import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
+import { useAuth } from "../../features/auth/hooks/useAuth";
+import { useDashboard } from "../../features/dashboard/hooks/useDashboard";
+import type { LeaveType } from "../../features/dashboard/types";
+import MyDatePicker from "../../components/ui/datepicker/MyDatePicker";
 
 import {
   HiOutlineClock,
@@ -14,7 +14,7 @@ import {
   HiOutlinePaperClip,
   HiOutlineXMark,
 } from "react-icons/hi2";
-import { toLocalISOString } from "../../../utils/dateUtils";
+import { toLocalISOString } from "../../utils/dateUtils";
 
 type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
@@ -38,7 +38,7 @@ const LeaveApplicationForm = () => {
     startDate: null as Date | null,
     endDate: null as Date | null,
     compOffPlannedDate: null as Date | null,
-    isHalfDay: false, // UI Helper for single-day applications
+    isHalfDay: false,
     startDateHalfDayType: null as HalfDayType,
     endDateHalfDayType: null as HalfDayType,
     reason: "",
@@ -157,28 +157,22 @@ const LeaveApplicationForm = () => {
     return days;
   };
 
-  // Helper to render half-day toggle buttons
-  const HalfDaySelector = ({
-    label,
-    value,
-    onChange
-  }: {
-    label: string,
-    value: HalfDayType,
-    onChange: (v: HalfDayType) => void
-  }) => (
+
+  const HalfDaySelector = ({ label, value, onChange }: { label: string, value: HalfDayType, onChange: (v: HalfDayType) => void }) => (
     <div className="flex flex-col gap-2">
       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
       <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-fit">
-        {[null, "FIRST_HALF", "SECOND_HALF"].map((type) => (
+        {["FIRST_HALF", "SECOND_HALF"].map((type) => (
           <button
-            key={String(type)}
+            key={type}
             type="button"
-            onClick={() => onChange(type as HalfDayType)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${value === type ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            onClick={() => onChange(value === type ? null : type as HalfDayType)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${value === type
+              ? "bg-white text-indigo-600 shadow-sm"
+              : "text-slate-500 hover:text-slate-700"
               }`}
           >
-            {type === null ? "Full Day" : type === "FIRST_HALF" ? "1st Half" : "2nd Half"}
+            {type === "FIRST_HALF" ? "1st Half" : "2nd Half"}
           </button>
         ))}
       </div>
@@ -208,31 +202,36 @@ const LeaveApplicationForm = () => {
         </div>
       )}
 
-      {/* Leave Balance Bar (Remains same) */}
       {leaveBalance && (
         <div className="mb-6 bg-white border border-slate-200 rounded shadow-sm">
           <div className="flex flex-wrap md:flex-row items-center divide-x divide-slate-100">
-            {leaveBalance.breakdown.map((item) => {
-              const isActive = formData.category === item.leaveType;
-              return (
-                <div
-                  key={item.leaveType}
-                  onClick={() => setFormData({ ...formData, category: item.leaveType as any })}
-                  className={`flex-1 min-w-30 px-4 py-2 cursor-pointer transition-all relative ${isActive ? 'bg-indigo-50/50' : 'hover:bg-slate-50'}`}
-                >
-                  {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
-                  <div className="flex flex-col">
-                    <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
-                      {item.leaveType.replace('_', ' ')}
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-base font-bold text-slate-700">{item.remainingDays}</span>
-                      <span className="text-[10px] font-medium text-slate-400">/ {item.allocatedDays}</span>
+            {leaveBalance.breakdown
+              .filter((item) => ["SICK", "ANNUAL_LEAVE", "COMP_OFF"].includes(item.leaveType))
+              .map((item) => {
+                const isActive = formData.category === item.leaveType;
+                return (
+                  <div
+                    key={item.leaveType}
+                    onClick={() => setFormData({ ...formData, category: item.leaveType as any })}
+                    className={`flex-1 min-w-30 px-4 py-2 cursor-pointer transition-all relative ${isActive ? "bg-indigo-50/50" : "hover:bg-slate-50"
+                      }`}
+                  >
+                    {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
+                    <div className="flex flex-col">
+                      <span
+                        className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? "text-indigo-600" : "text-slate-400"
+                          }`}
+                      >
+                        {item.leaveType.replace("_", " ")}
+                      </span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-base font-bold text-slate-700">{item.usedDays}</span>
+                        <span className="text-[10px] font-medium text-slate-400">/ {item.allocatedDays}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       )}
@@ -242,25 +241,46 @@ const LeaveApplicationForm = () => {
           <h1 className="text-xl font-bold text-slate-800">
             {formData.category === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
           </h1>
-
-          {/* Replace the static span with this */}
           <div className="flex flex-col items-end">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
               Required Approvals
             </span>
             <div className="flex gap-2">
-              {/* Always show TL */}
-              <Badge label={`TL: ${user?.teamLeaderName || 'Assigning...'}`} active />
+              {(() => {
+                const approvers = [];
+                const days = calculateDays();
+                const role = user?.role?.toUpperCase();
 
-              {/* Show Manager if > 1 day */}
-              {calculateDays() > 1 && (
-                <Badge label={`Manager: ${user?.managerName || 'Assigning...'}`} active />
-              )}
+                // Logic for Employee
+                if (role === "EMPLOYEE") {
+                  approvers.push({ label: `TL: ${user?.teamLeaderName || 'Assigning...'}`, active: true });
+                  if (days > 1) {
+                    approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+                  }
+                }
 
-              {/* Show HR if > 7 days */}
-              {calculateDays() > 7 && (
-                <Badge label={`HR: ${user?.hrname || 'Assigning...'}`} active />
-              )}
+                // Logic for Team Leader
+                if (role === "TEAM_LEADER") {
+                  approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+                }
+
+                // Logic for Manager
+                if (role === "MANAGER") {
+                  approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
+                }
+
+                // Global HR Rule (if not already added by Manager role)
+                if (days > 7 && role !== "MANAGER") {
+                  // Prevent duplicate HR badge if already added
+                  if (!approvers.some(a => a.label.startsWith("HR"))) {
+                    approvers.push({ label: `HR: ${user?.hrname || 'Assigning...'}`, active: true });
+                  }
+                }
+
+                return approvers.map((app, index) => (
+                  <Badge key={index} label={app.label} active={app.active} />
+                ));
+              })()}
             </div>
           </div>
         </div>
@@ -286,7 +306,6 @@ const LeaveApplicationForm = () => {
             </div>
           </div>
 
-          {/* 02. Date & Half-Day Selection */}
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -368,14 +387,26 @@ const LeaveApplicationForm = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
-          >
-            {loading ? "Processing..." : "Submit Application"}
-            {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
-          </button>
+          {
+            leaveBalance?.exceededMonthlyLimit ? (
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+              >
+                {loading ? "Processing..." : "Submit Application"}
+                {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
+              </button>
+            ) : (<button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+            >
+              {loading ? "Processing..." : "Submit Application"}
+              {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
+            </button>)
+          }
+
         </form>
       </div>
     </div>

@@ -95,7 +95,7 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                             <div className="grid grid-cols-2 gap-2 border-t border-slate-50 pt-3">
                                 <div className="text-center">
                                     <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Designation</p>
-                                    <p className="text-xs font-black text-indigo-600 bg-indigo-50 py-1 rounded-sm">{emp.designation ? emp.designation  : "Not Set Yet"}</p>
+                                    <p className="text-xs font-black text-indigo-600 bg-indigo-50 py-1 rounded-sm">{emp.designation ? emp.designation : "Not Set Yet"}</p>
                                 </div>
                                 <div className="text-center">
                                     <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Skills</p>

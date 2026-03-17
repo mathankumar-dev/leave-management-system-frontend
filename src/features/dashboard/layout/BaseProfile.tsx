@@ -53,7 +53,7 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
             <label className={labelClass}>Contact Number</label>
             <div className="relative mt-1">
               <FaPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input name="phone" value={profile.phone} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} />
+              {/* <input name="phone" value={profile.phone} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} /> */}
             </div>
           </div>
 
@@ -74,7 +74,7 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className={labelClass}>Employee ID</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.employeeId}</p>
+            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.id}</p>
           </div>
 
           <div>
@@ -83,7 +83,7 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
           </div>
           <div>
             <label className={labelClass}>Work Location</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.workLocation}</p>
+            {/* <p className="mt-1 font-bold text-slate-700 text-sm">{profile.workLocation}</p> */}
           </div>
           <div>
             <label className={labelClass}>Joining Date</label>
@@ -91,9 +91,9 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
           </div>
           <div>
             <label className={labelClass}>Type</label>
-            <span className="inline-block mt-1 px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase">
-              {profile.employmentType}
-            </span>
+            {/* <span className="inline-block mt-1 px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase"> */}
+              {/* {profile.employmentType}
+            </span> */}
           </div>
         </div>
       </div>

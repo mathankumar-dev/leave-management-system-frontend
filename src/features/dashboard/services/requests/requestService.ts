@@ -1,5 +1,5 @@
 import api from "../../../../api/axiosInstance";
-import type {  MeetingRequest, ODRequest } from "../../types";
+import type { MeetingRequest, ODRequest } from "../../types";
 
 
 export const requestService = {
@@ -11,12 +11,41 @@ export const requestService = {
     return response.data;
   },
 
-createMeetingRequest: async (request: MeetingRequest, employeeId: number, attendeeIds?: number[]) => {
-  const response = await api.post(`/meetings/create/${employeeId}`, request, {
-    params: { 
-      attendeeIds: attendeeIds?.join(',') 
-    }
-  });
-  return response.data;
-},
+  createMeetingRequest: async (request: MeetingRequest, employeeId: number, attendeeIds?: number[]) => {
+    const response = await api.post(`/meetings/create/${employeeId}`, request, {
+      params: {
+        attendeeIds: attendeeIds?.join(',')
+      }
+    });
+    return response.data;
+  },
+
+  approveOD: async (odId: number, approverId: number): Promise<void> => {
+    console.log("gonig to call approve OD");
+    
+    
+    const res = await api.put(`/od/approve/${odId}`, {}, {
+      params: { approverId }
+    });
+    console.log("response:");
+    
+    console.log(res);
+    
+  },
+  rejectOD: async (odId: number, approverId: number, reason: string): Promise<void> => {
+    await api.patch(`/od/reject/${odId}`, {}, {
+      params: { approverId, reason }
+    });
+  },
+  approveMeeting: async (meetingId: number, managerId: number): Promise<void> => {
+    await api.patch(`/meetings/approve/manager/${meetingId}/${managerId}`,);
+  },
+
+
+  rejectMeeting: async (meetingId: number, reviewerId: number): Promise<void> => {
+    await api.patch(`/meetings/${meetingId}/reject`, {}, {
+      params: { reviewerId }
+    });
+  },
+
 };
