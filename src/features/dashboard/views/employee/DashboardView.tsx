@@ -1,38 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  LabelList,
-} from "recharts";
-import {
-  FaChartLine,
-  FaCheckCircle,
-  FaClock,
-  FaPlus,
-  FaTimesCircle,
-} from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 
-import StatCard from "../../components/StatCard";
-import RecentLeavePopup from "../../components/popup";
 import LeaveDetailsDrawer from "../../components/LeaveDetailsDrawer";
-
 import { useDashboard } from "../../hooks/useDashboard";
-
-
-// ✅ MOCK DATA IMPORT
-import {
-  MOCK_CHART_DATA,
-  MOCK_DASHBOARD_STATS,
-  MOCK_LEAVE_HISTORY,
-} from "../../../../mockData";
-
 import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
-import ActivityCard from "../../../../components/ui/ActivityCard";
-
+import { useAuth } from "../../../auth/hooks/useAuth";
+import CustomLoader from "../../../../components/ui/CustomLoader";
 
 export type DashboardScope = "SELF" | "TEAM" | "ALL";
 
@@ -41,302 +15,340 @@ interface DashboardViewProps {
   onNavigate?: (tab: string) => void;
 }
 
+interface LeaveTypeBreakdown {
+  leaveType: string;
+  allocatedDays: number;
+  usedDays: number;
+  remainingDays: number;
+}
 
+interface StatItem {
+  title: string;
+  used: number;
+  total?: number;
+  color: string;
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
+const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
+  const { fetchDashboard, setError } = useDashboard();
+  const { user } = useAuth();
+  const employeeId = user?.id;
 
-
-const statusConfig: Record<
-  string,
-  { type: "success" | "warning" | "danger"; icon: React.ReactNode }
-> = {
-  Approved: { type: "success", icon: <FaCheckCircle /> },
-  Pending: { type: "warning", icon: <FaClock /> },
-  Rejected: { type: "danger", icon: <FaTimesCircle /> },
-};
-
-
-
-const DashboardView: React.FC<DashboardViewProps> = ({
-  scope = "SELF",
-  onNavigate,
-}) => {
-
-  const { fetchStats, fetchDashboard, setError } = useDashboard();
-
-
-  // ✅ USE MOCK DATA AS DEFAULT
-  const [stats, setStats] = useState<any[]>(MOCK_DASHBOARD_STATS);
-
-  const [chartData, setChartData] = useState<any[]>(MOCK_CHART_DATA);
-
-  const [recentLeaves, setRecentLeaves] = useState<any[]>(MOCK_LEAVE_HISTORY);
-
-
-
+  const [stats, setStats] = useState<StatItem[]>([]);
   const [fetching, setFetching] = useState(true);
-
-  const [selectedCard, setSelectedCard] = useState<string | null>(null);
-
-
-
+  const [selectedCard, setSelectedCard] = useState<StatItem | null>(null);
 
   const loadDashboardData = useCallback(async () => {
+    if (!employeeId) return;
 
     try {
-
       setFetching(true);
 
-      // const data = await fetchStats(scope);
-      const data = await fetchDashboard();
+      const data = await fetchDashboard(employeeId);
+      const breakdown: LeaveTypeBreakdown[] = data.breakdown || [];
 
-      console.log(data);
+      const sickLeave = breakdown.find((b) =>
+        b.leaveType?.toUpperCase().includes("SICK")
+      );
 
+      const casualLeave = breakdown.find((b) =>
+        b.leaveType?.toUpperCase().includes("CASUAL")
+      );
 
-      // ✅ ONLY REPLACE IF API RETURNS DATA
+      const newStats: StatItem[] = [
+        {
+          title: "Sick Leave",
+          used: sickLeave?.usedDays ?? 0,
+          total: sickLeave?.allocatedDays ?? 0,
+          color: "red",
+        },
+        {
+          title: "Casual Leave",
+          used: casualLeave?.usedDays ?? 0,
+          total: casualLeave?.allocatedDays ?? 0,
+          color: "green",
+        },
+        {
+          title: "Yearly Balance",
+          used: data.yearlyUsed || 0,
+          total: data.yearlyAllocated || 0,
+          color: "indigo",
+        },
+        {
+          title: "Monthly Balance",
+          used: data.monthlyUsed || 0,
+          total: data.monthlyAllocated || 0,
+          color: "emerald",
+        },
+        {
+          title: "Carry Forward",
+          used:
+            (data.carryForwardTotal || 0) -
+            (data.carryForwardRemaining || 0),
+          total: data.carryForwardTotal || 0,
+          color: "amber",
+        },
+        {
+          title: "Comp Off Balance",
+          used: data.compoffBalance || 0,
+          total: data.compoffBalance || 0,
+          color: "slate",
+        },
+        {
+          title: "Approved Leaves",
+          used: data.approvedCount || 0,
+          total: data.approvedCount || 0,
+          color: "emerald",
+        },
+        {
+          title: "Pending Leaves",
+          used: data.pendingCount || 0,
+          total: data.pendingCount || 0,
+          color: "amber",
+        },
+        {
+          title: "Rejected Leaves",
+          used: data.rejectedCount || 0,
+          total: data.rejectedCount || 0,
+          color: "rose",
+        },
+        {
+          title: "Loss Of Pay %",
+          used: data.lossOfPayPercentage || 0,
+          color: "rose",
+        },
+      ];
 
-      if (data?.summaryStats)
-        setStats(data.summaryStats);
-
-      if (data?.chartData)
-        setChartData(data.chartData);
-
-      if (data?.recentLeaves)
-        setRecentLeaves(data.recentLeaves);
-
-
+      setStats(newStats);
     } catch (err: any) {
-
-      console.log("API Failed → Using MOCK DATA");
-
-      setError(err?.message || "Mock Data Used");
-
+      console.error("Dashboard API Error:", err);
+      setError(err?.message || "Failed to load dashboard data");
     } finally {
-
       setFetching(false);
-
     }
-
-    // }, [fetchStats, scope, setError]);
-  }, [fetchDashboard, setError]);
-
-
+  }, [employeeId, fetchDashboard, setError]);
 
   useEffect(() => {
-
     loadDashboardData();
-
   }, [loadDashboardData]);
 
-
-
-
   if (fetching) {
-
-    return (
-
-      <div className="flex flex-col items-center justify-center h-screen space-y-4">
-
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1 }}
-          className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-600 rounded-full"
-        />
-
-        <p className="text-slate-400 font-bold animate-pulse text-xs">
-
-          Loading Dashboard...
-
-        </p>
-
-      </div>
-
-    );
-
+    return <CustomLoader label="Loading dashboard..." />;
   }
 
-
-
-  const handleAdd = () => {
-
-    onNavigate?.("Apply Leave");
-
-  };
-
-
-  const handleSelectLeave = (id: number) => {
-
-    console.log("Selected Leave:", id);
-
-  };
-
-
-
   return (
-
     <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-6 max-w-7xl mx-auto"
+      className="max-w-7xl mx-auto px-6 py-6 space-y-6 bg-gradient-to-b from-slate-50 to-white min-h-screen"
     >
 
+      {/* HEADER */}
 
+      <div className="flex justify-between items-center">
 
-      {/* RECENT LEAVES */}
+        <div>
+          <h2 className="text-2xl font-semibold text-slate-800">
+            Welcome back, {user?.name}
+          </h2>
 
-      {recentLeaves.map((req) => {
+          <p className="text-sm text-slate-500">
+            Leave summary for 2026
+          </p>
+        </div>
 
-        const config = statusConfig[req.status];
+        <button
+          onClick={() => onNavigate?.("Apply Leave")}
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700"
+        >
+          <FaPlus /> Apply Leave
+        </button>
 
-        return (
+      </div>
 
-          <ActivityCard
-            key={req.id}
-            title={req.type}
-            subtitle={req.range}
-            label={`${req.days} Days`}
-            statusText={req.status}
-            statusType={config?.type}
-            icon={config?.icon}
-            description={req.comment}
-            onClick={() => handleSelectLeave(req.id)}
+      {/* DASHBOARD GRID */}
+
+      <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
+
+        {stats.map((stat) => (
+          <SummaryCard
+            key={stat.title}
+            stat={stat}
+            setSelectedCard={setSelectedCard}
           />
-
-        );
-
-      })}
-
-
-
-
-      {/* STATS */}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-        {stats.map((stat, i) => (
-
-          <motion.div
-            key={i}
-            variants={itemVariants}
-            onClick={() => setSelectedCard(stat.title)}
-          >
-
-            <StatCard
-              title={stat.title}
-              used={stat.used}
-              total={stat.total}
-              color={stat.color}
-              period="ANNUAL CYCLE 2026"
-            />
-
-          </motion.div>
-
         ))}
 
       </div>
 
+      <LeaveDetailsDrawer
+        open={!!selectedCard}
+        stat={selectedCard}
+        onClose={() => setSelectedCard(null)}
+        onClick={() => onNavigate?.("Apply Leave")}
+      />
+
+      {user?.role !== "EMPLOYEE" && (
+        <MyFloatingActionButton
+          icon={<FaPlus />}
+          onClick={() => onNavigate?.("Apply Leave")}
+          title="New Leave Request"
+          tooltipLabel="Apply Leave"
+        />
+      )}
+
+    </motion.div>
+  );
+};
+
+export default DashboardView;
 
 
 
-      {/* CHART */}
+/* PROFESSIONAL CARD */
 
-      <div className="bg-white border rounded-md p-5 shadow-sm">
+const SummaryCard = ({ stat, setSelectedCard }: any) => {
 
-        <div className="flex justify-between mb-4">
+  const remaining = (stat.total ?? 0) - (stat.used ?? 0);
 
-          <h4 className="text-xs font-bold text-slate-400">
+  const percent = stat.total
+    ? Math.min((stat.used / stat.total) * 100, 100)
+    : 0;
 
-            Monthly Utilization
+  /* color map for each card */
 
-          </h4>
+  const colorMap: any = {
+    "Sick Leave": {
+      bar: "from-red-500 to-rose-500",
+      title: "text-red-500",
+      progress: "from-red-400 to-rose-500"
+    },
+    "Casual Leave": {
+      bar: "from-green-500 to-emerald-500",
+      title: "text-green-600",
+      progress: "from-green-400 to-emerald-500"
+    },
+    "Yearly Balance": {
+      bar: "from-indigo-500 to-blue-500",
+      title: "text-indigo-600",
+      progress: "from-indigo-400 to-blue-500"
+    },
+    "Monthly Balance": {
+      bar: "from-cyan-500 to-sky-500",
+      title: "text-cyan-600",
+      progress: "from-cyan-400 to-sky-500"
+    },
+    "Carry Forward": {
+      bar: "from-amber-500 to-orange-500",
+      title: "text-amber-600",
+      progress: "from-amber-400 to-orange-500"
+    },
+    "Comp Off Balance": {
+      bar: "from-violet-500 to-purple-500",
+      title: "text-violet-600",
+      progress: "from-violet-400 to-purple-500"
+    },
+    "Approved Leaves": {
+      bar: "from-emerald-500 to-green-500",
+      title: "text-emerald-600",
+      progress: "from-emerald-400 to-green-500"
+    },
+    "Pending Leaves": {
+      bar: "from-yellow-400 to-amber-500",
+      title: "text-yellow-600",
+      progress: "from-yellow-400 to-amber-500"
+    },
+    "Rejected Leaves": {
+      bar: "from-rose-500 to-red-500",
+      title: "text-rose-600",
+      progress: "from-rose-400 to-red-500"
+    },
+    "Loss Of Pay %": {
+      bar: "from-red-600 to-rose-600",
+      title: "text-red-600",
+      progress: "from-red-500 to-rose-500"
+    }
+  };
 
-          <FaChartLine className="text-slate-300" />
+  const theme = colorMap[stat.title] || {
+    bar: "from-indigo-500 to-blue-500",
+    title: "text-indigo-600",
+    progress: "from-indigo-400 to-blue-500"
+  };
 
+  return (
+    <motion.div
+      whileHover={{ y: -6, scale: 1.02 }}
+      transition={{ duration: 0.25 }}
+      onClick={() => setSelectedCard(stat)}
+      className="relative bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-xl cursor-pointer overflow-hidden"
+    >
+
+      {/* TOP COLOR BAR */}
+
+      <div
+        className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${theme.bar}`}
+      />
+
+      {/* TITLE */}
+
+      <h3
+        className={`text-sm font-semibold mb-4 tracking-wide ${theme.title}`}
+      >
+        {stat.title}
+      </h3>
+
+      {/* NUMBERS */}
+
+      <div className="grid grid-cols-3 text-center mb-4">
+
+        <div>
+          <p className="text-xs text-slate-400 uppercase">Total</p>
+          <p className="text-lg font-semibold text-slate-700">
+            {stat.total ?? stat.used}
+          </p>
         </div>
 
+        <div>
+          <p className="text-xs text-slate-400 uppercase">Used</p>
+          <p className="text-lg font-semibold text-orange-500">
+            {stat.used}
+          </p>
+        </div>
 
-        <div className="h-48">
-
-          <ResponsiveContainer>
-
-            <BarChart data={chartData}>
-
-              <CartesianGrid strokeDasharray="3 3" />
-
-              <XAxis dataKey="month" />
-
-
-              <Bar dataKey="Casual">
-
-                <LabelList dataKey="Casual" position="top" />
-
-              </Bar>
-
-
-              <Bar dataKey="Sick">
-
-                <LabelList dataKey="Sick" position="top" />
-
-              </Bar>
-
-
-            </BarChart>
-
-          </ResponsiveContainer>
-
+        <div>
+          <p className="text-xs text-slate-400 uppercase">Remaining</p>
+          <p className="text-lg font-semibold text-emerald-600">
+            {remaining}
+          </p>
         </div>
 
       </div>
 
+      {/* PROGRESS BAR */}
 
+      {stat.total && (
+        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
 
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${percent}%` }}
+            transition={{ duration: 0.8 }}
+            className={`h-2 rounded-full bg-gradient-to-r ${theme.progress}`}
+          />
 
-      {/* POPUP */}
+        </div>
+      )}
 
-      <RecentLeavePopup latestLeave={recentLeaves[0]} />
+      {/* HOVER GLOW */}
 
-
-
-
-      {/* DRAWER */}
-
-      <LeaveDetailsDrawer
-        open={!!selectedCard}
-        title={selectedCard}
-        onClose={() => setSelectedCard(null)}
-      />
-
-
-
-
-      {/* FLOAT BUTTON */}
-
-      <MyFloatingActionButton
-        icon={<FaPlus />}
-        onClick={handleAdd}
-        title="New Leave Request"
-        tooltipLabel="Apply Leave"
-      />
-
-
+      <div className="absolute inset-0 opacity-0 hover:opacity-100 transition duration-300 bg-gradient-to-br from-white via-transparent to-slate-50 pointer-events-none" />
 
     </motion.div>
-
   );
-
 };
-
-
-export default DashboardView;

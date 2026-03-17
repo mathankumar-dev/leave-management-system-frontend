@@ -1,396 +1,395 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import leaveImg from "../../../assets/leave.png";
+import React, { useState, useRef, useEffect } from "react";
+import { useAuth } from "../../auth/hooks/useAuth";
+import { useDashboard } from "../hooks/useDashboard";
+import type { LeaveType } from "../types";
+import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
 
+import {
+  HiOutlineClock,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlinePaperAirplane,
+  HiOutlineCheckCircle,
+  HiOutlineShieldCheck,
+  HiOutlineExclamationTriangle,
+  HiOutlinePaperClip,
+  HiOutlineXMark,
+} from "react-icons/hi2";
+import { toLocalISOString } from "../../../utils/dateUtils";
 
-// import {leave.png } from "@/assets/leave.png";
-
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  Paperclip, 
-  Calendar, 
-  FileText, 
-  CheckCircle2,
-  Clock,
-  Umbrella,
-  Heart,
-  Coffee,
-  Award
-} from "lucide-react";
+type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
 const LeaveApplicationForm = () => {
-  const [step, setStep] = useState(1);
+  const { user } = useAuth();
+  const {
+    applyLeave,
+    bankCompOff,
+    loading,
+    error,
+    setError,
+    leaveBalance,
+    fetchLeaveBalance
+  } = useDashboard();
+
+  const [submitted, setSubmitted] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [formData, setFormData] = useState({
-    category: "",
-    startDate: "",
-    endDate: "",
-    startHalfDay: false,
-    endHalfDay: false,
+    category: "CASUAL" as LeaveType | "COMP_OFF",
+    startDate: null as Date | null,
+    endDate: null as Date | null,
+    compOffPlannedDate: null as Date | null,
+    isHalfDay: false,
+    startDateHalfDayType: null as HalfDayType,
+    endDateHalfDayType: null as HalfDayType,
     reason: "",
-    attachment: null as File | null
   });
 
-  const nextStep = () => setStep((p) => Math.min(3, p + 1));
-  const prevStep = () => setStep((p) => Math.max(1, p - 1));
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const calculateTotalDays = () => {
-    if (!formData.startDate || !formData.endDate) return "--";
-    const start = new Date(formData.startDate);
-    const end = new Date(formData.endDate);
-    let diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    if (diff <= 0) return "--";
-    if (formData.startHalfDay) diff -= 0.5;
-    if (formData.endHalfDay && diff > 0.5) diff -= 0.5;
-    return diff;
+  const leaveLabels: Record<string, string> = {
+    ANNUAL_LEAVE: "Annual Leave",
+    SICK: "Sick Leave",
+    COMP_OFF: "Bank Comp-Off",
   };
 
-  const leaveCategories = [
-    { name: "Annual", icon: Umbrella, color: "blue", desc: "Planned vacation time" },
-    { name: "Sick", icon: Heart, color: "red", desc: "Health recovery" },
-    { name: "Casual", icon: Coffee, color: "amber", desc: "Personal matters" },
-    { name: "Comp Off", icon: Award, color: "green", desc: "Compensatory leave" }
-  ];
+  useEffect(() => {
+    if (user?.id) {
+      fetchLeaveBalance(user.id, 2026);
+    }
+  }, [user?.id, fetchLeaveBalance]);
 
-  // --- Step Progress Component ---
-  const ProgressHeader = () => (
-    <div className="flex items-center justify-between mb-10 px-4 relative">
-      {/* Progress line background */}
-      <div className="absolute top-5 left-0 w-full h-0.5 bg-slate-200 -z-10" />
-      {/* Active progress line */}
-      <motion.div 
-        className="absolute top-5 left-0 h-0.5 bg-indigo-600 -z-10"
-        initial={{ width: "0%" }}
-        animate={{ width: step === 1 ? "0%" : step === 2 ? "50%" : "100%" }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-      />
-      
-      {[1, 2, 3].map((num) => (
-        <div key={num} className="flex flex-col items-center gap-2">
-          <motion.div 
-            initial={{ scale: 0.9 }}
-            animate={{ 
-              scale: step >= num ? 1 : 0.9,
-            }}
-            className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 font-bold shadow-sm ${
-              step > num 
-                ? "bg-indigo-600 border-indigo-600 text-white" 
-                : step === num
-                ? "bg-indigo-600 border-indigo-600 text-white scale-110 shadow-lg shadow-indigo-500/30"
-                : "bg-white border-slate-300 text-slate-400"
-            }`}
-          >
-            {step > num ? <CheckCircle2 size={20} /> : num}
-          </motion.div>
-          <span className={`text-xs font-bold transition-colors ${
-            step >= num ? "text-indigo-600" : "text-slate-400"
-          }`}>
-            {num === 1 ? "Category" : num === 2 ? "Dates" : "Details"}
-          </span>
-        </div>
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) setSelectedFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+
+    if (!formData.startDate) {
+      setError("Please select a start date.");
+      return;
+    }
+
+    const employeeId = user?.id;
+    if (!employeeId) {
+      setError("User session not found.");
+      return;
+    }
+
+    // --- CASE A: Bank Comp-Off Logic ---
+    if (formData.category === "COMP_OFF") {
+      if (!formData.compOffPlannedDate) {
+        setError("Please select the date you plan to take your leave.");
+        return;
+      }
+      const compOffPayload = {
+        employeeId,
+        entries: [{
+          workedDate: toLocalISOString(formData.startDate),
+          days: formData.isHalfDay ? 0.5 : 1.0,
+          plannedLeaveDate: toLocalISOString(formData.compOffPlannedDate),
+          halfDayType: formData.isHalfDay ? formData.startDateHalfDayType : null
+        }],
+      };
+      const result = await bankCompOff(compOffPayload);
+      if (result) setSubmitted(true);
+      return;
+    }
+
+    // --- CASE B: Standard Leave Logic ---
+    const fd = new FormData();
+    fd.append("employeeId", employeeId.toString());
+    fd.append("leaveType", formData.category);
+    fd.append("startDate", toLocalISOString(formData.startDate));
+
+    const endDateStr = formData.isHalfDay
+      ? toLocalISOString(formData.startDate)
+      : toLocalISOString(formData.endDate);
+
+    if (!endDateStr) {
+      setError("Please select an end date.");
+      return;
+    }
+    fd.append("endDate", endDateStr);
+    fd.append("reason", formData.reason);
+    fd.append("confirmLossOfPay", "false");
+
+    if (formData.isHalfDay) {
+      fd.append("startDateHalfDayType", formData.startDateHalfDayType || "");
+      fd.append("halfDayType", formData.startDateHalfDayType || "");
+    } else {
+      if (formData.startDateHalfDayType) {
+        fd.append("startDateHalfDayType", formData.startDateHalfDayType);
+      }
+      if (formData.endDateHalfDayType) {
+        fd.append("endDateHalfDayType", formData.endDateHalfDayType);
+      }
+    }
+
+    if (selectedFile) {
+      fd.append("files", selectedFile);
+    }
+    console.log(fd);
+
+    const result = await applyLeave(fd);
+    if (result) setSubmitted(true);
+  };
+  const calculateDays = () => {
+    if (!formData.startDate) return 0;
+
+    if (formData.isHalfDay || formData.category === "COMP_OFF") {
+      return formData.startDateHalfDayType ? 0.5 : 1;
+    }
+
+    if (!formData.endDate) return 1;
+
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
+
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    let days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+    if (formData.startDateHalfDayType) days -= 0.5;
+    if (formData.endDateHalfDayType) days -= 0.5;
+
+    return days;
+  };
+
+  const HalfDaySelector = ({ label, value, onChange }: { label: string, value: HalfDayType, onChange: (v: HalfDayType) => void }) => (
+  <div className="flex flex-col gap-2">
+    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+    <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-fit">
+      {["FIRST_HALF", "SECOND_HALF"].map((type) => (
+        <button
+          key={type}
+          type="button"
+          // If already selected, clicking again sets it to null (Full Day)
+          onClick={() => onChange(value === type ? null : type as HalfDayType)}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+            value === type 
+              ? "bg-white text-indigo-600 shadow-sm" 
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          {type === "FIRST_HALF" ? "1st Half" : "2nd Half"}
+        </button>
       ))}
     </div>
-  );
+  </div>
+);
+
+
+  if (submitted) {
+    return (
+      <div className="max-w-2xl mx-auto my-10 p-10 text-center bg-white border border-slate-200 rounded-lg shadow-sm">
+        <HiOutlineCheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
+        <h2 className="text-2xl font-semibold text-slate-800 tracking-tight">Request Submitted</h2>
+        <p className="text-slate-500 mt-2">Your application is awaiting approval.</p>
+        <button onClick={() => setSubmitted(false)} className="mt-8 text-sm font-medium text-indigo-600 hover:text-indigo-500">
+          Apply for another leave →
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50/20 to-indigo-50/30 p-4 md:p-8 flex items-center justify-center font-sans">
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-5">
-        
-        {/* Left Side: Image/Branding Section */}
-        <div className="lg:col-span-5 bg-linear-to-br rounded-2xl flex flex-col justify-between shadow-2xl shadow-indigo-900/20 border border-indigo-500/20 w-full">
-          <img src={leaveImg} alt="Leave" className="w-full h-full object-cover rounded-2xl" />
-        
+    <div className="max-w-4xl mx-auto py-6 px-4">
+      {error && (
+        <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-md flex items-start gap-3">
+          <HiOutlineExclamationTriangle size={20} className="text-rose-500 shrink-0 mt-0.5" />
+          <p className="text-sm text-rose-700">{error}</p>
+        </div>
+      )}
 
-          {/* <div className="flex-1 flex flex-col justify-center">
-            <div className="mb-8">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl rotate-6 mb-6 flex items-center justify-center shadow-xl border border-white/30">
-                <Calendar className="text-white -rotate-6" size={40} strokeWidth={2.5} />
-              </div>
-              <h1 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
-                Time Off<br />Request
-              </h1>
-              <p className="text-indigo-200 text-base leading-relaxed">
-                Take the time you need. We've got you covered with a seamless leave application process.
-              </p>
+      {/* Leave Balance Bar (Remains same) */}
+      {leaveBalance && (
+        <div className="mb-6 bg-white border border-slate-200 rounded shadow-sm">
+          <div className="flex flex-wrap md:flex-row items-center divide-x divide-slate-100">
+            {leaveBalance.breakdown.map((item) => {
+              const isActive = formData.category === item.leaveType;
+              return (
+                <div
+                  key={item.leaveType}
+                  onClick={() => setFormData({ ...formData, category: item.leaveType as any })}
+                  className={`flex-1 min-w-30 px-4 py-2 cursor-pointer transition-all relative ${isActive ? 'bg-indigo-50/50' : 'hover:bg-slate-50'}`}
+                >
+                  {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
+                  <div className="flex flex-col">
+                    <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
+                      {item.leaveType.replace('_', ' ')}
+                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-base font-bold text-slate-700">{item.remainingDays}</span>
+                      <span className="text-[10px] font-medium text-slate-400">/ {item.allocatedDays}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-200 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-slate-800">
+            {formData.category === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
+          </h1>
+
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+              Required Approvals
+            </span>
+            <div className="flex gap-2">
+              {(user?.role === "EMPLOYEE") && (
+                <>
+                  <Badge label={`TL: ${user?.teamLeaderName || 'Assigning...'}`} active />
+                  {calculateDays() > 1 && (
+                    <Badge label={`Manager: ${user?.managerName || 'Assigning...'}`} active />
+                  )}
+                </>
+              )}
+
+              {/* Case 2: User is a Team Leader (TL). 
+      They skip the TL badge and start directly with Manager.
+    */}
+              {user?.role === "TEAM_LEADER" && (
+                <Badge label={`Manager: ${user?.managerName || 'Assigning...'}`} active />
+              )}
+
+              {/* HR Step: Same for everyone if > 7 days */}
+              {calculateDays() > 7 && (
+                <Badge label={`HR: ${user?.hrname || 'Assigning...'}`} active />
+              )}
             </div>
+          </div>
+        </div>
 
-            <div className="space-y-3">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl">⚡</span>
-                  </div>
-                  <div>
-                    <p className="font-bold text-white text-sm">Quick & Easy</p>
-                    <p className="text-xs text-indigo-200">Submit in just 3 simple steps</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-5 border border-white/20">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl">✓</span>
-                  </div>
-                  <div>
-                    <p className="font-bold text-white text-sm">Instant Processing</p>
-                    <p className="text-xs text-indigo-200">Fast approval workflow</p>
-                  </div>
-                </div>
-              </div>
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
+          {/* 01. Category Selection */}
+          <div className="space-y-3">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <HiOutlineClock size={16} /> 01. Leave Category
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {(["SICK", "ANNUAL_LEAVE", "COMP_OFF"] as const).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, category: type })}
+                  className={`py-2.5 px-4 text-sm font-medium rounded-md border transition-all ${formData.category === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                >
+                  {leaveLabels[type]}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <p className="text-indigo-200/60 text-xs">
-              Step {step} of 3 • {step === 1 ? "Select Category" : step === 2 ? "Choose Dates" : "Add Details"}
-            </p>
-          </div> */}
-        </div>
+          {/* 02. Date & Half-Day Selection */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <MyDatePicker
+                  label={formData.category === "COMP_OFF" ? "02. Date Worked" : "02. Start Date"}
+                  selected={formData.startDate}
+                  onChange={(date) => setFormData({ ...formData, startDate: date })}
+                  required
+                />
+                <HalfDaySelector
+                  label="Start Day Type"
+                  value={formData.startDateHalfDayType}
+                  onChange={(v) => setFormData({ ...formData, startDateHalfDayType: v })}
+                />
+              </div>
 
-        {/* Right Side: Step Form */}
-        <div className="lg:col-span-7 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 md:p-10">
-          <ProgressHeader />
-
-          <AnimatePresence mode="wait">
-            {/* STEP 1: Leave Category */}
-            {step === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                <div className="mb-8">
-                  <h2 className="text-3xl font-black text-slate-800 mb-2">Select Leave Category</h2>
-                  <p className="text-slate-500 text-sm">Choose the type of leave you need</p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {leaveCategories.map(({ name, icon: Icon, color, desc }) => (
-                    <button
-                      key={name}
-                      onClick={() => setFormData({ ...formData, category: name })}
-                      className={`group p-6 rounded-2xl border-2 text-left transition-all duration-300 ${
-                        formData.category === name 
-                          ? "border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-500/10 scale-[1.02]" 
-                          : "border-slate-200 hover:border-indigo-300 hover:shadow-md"
-                      }`}
-                    >
-                      <div className={`w-12 h-12 rounded-xl mb-4 flex items-center justify-center transition-all ${
-                        formData.category === name 
-                          ? "bg-indigo-600 text-white scale-110" 
-                          : "bg-slate-100 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600"
-                      }`}>
-                        <Icon size={22} strokeWidth={2.5} />
-                      </div>
-                      <h3 className="font-bold text-slate-800 mb-1">{name} Leave</h3>
-                      <p className="text-xs text-slate-500">{desc}</p>
-                      
-                      {/* Radio indicator */}
-                      <div className="mt-4 flex items-center gap-2">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                          formData.category === name 
-                            ? "border-indigo-600 bg-indigo-600" 
-                            : "border-slate-300"
-                        }`}>
-                          {formData.category === name && (
-                            <motion.div 
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-2 h-2 bg-white rounded-full"
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                <button 
-                  disabled={!formData.category}
-                  onClick={nextStep}
-                  className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
-                >
-                  Continue <ChevronRight size={20} />
-                </button>
-              </motion.div>
-            )}
-
-            {/* STEP 2: Dates */}
-            {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                <div className="mb-8">
-                  <h2 className="text-3xl font-black text-slate-800 mb-2">When are you away?</h2>
-                  <p className="text-slate-500 text-sm">Select your leave dates</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <DateInput 
-                    label="Starting Date" 
-                    value={formData.startDate} 
-                    onChange={(v: any) => setFormData({...formData, startDate: v})}
-                    halfDay={formData.startHalfDay}
-                    onHalfDayChange={() => setFormData({...formData, startHalfDay: !formData.startHalfDay})}
+              {!formData.isHalfDay && (
+                <div className="space-y-4">
+                  <MyDatePicker
+                    label={formData.category === "COMP_OFF" ? "03. Planned Leave Date" : "03. End Date"}
+                    selected={formData.category === "COMP_OFF" ? formData.compOffPlannedDate : formData.endDate}
+                    onChange={(date) => setFormData({
+                      ...formData,
+                      [formData.category === "COMP_OFF" ? "compOffPlannedDate" : "endDate"]: date
+                    })}
+                    minDate={formData.startDate || new Date()}
+                    required
                   />
-                  <DateInput 
-                    label="Ending Date" 
-                    value={formData.endDate}
-                    min={formData.startDate}
-                    onChange={(v: any) => setFormData({...formData, endDate: v})}
-                    halfDay={formData.endHalfDay}
-                    onHalfDayChange={() => setFormData({...formData, endHalfDay: !formData.endHalfDay})}
-                  />
-                </div>
-
-                {/* Calculated Days Display */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-indigo-100"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-xs font-black text-indigo-600 uppercase tracking-widest block mb-1">
-                        Calculated Duration
-                      </span>
-                      <p className="text-xs font-medium text-slate-500">Automatically calculated</p>
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-5xl font-black text-slate-800">{calculateTotalDays()}</span>
-                      <span className="text-sm font-bold text-slate-400 uppercase">Days</span>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <div className="flex gap-4 pt-4">
-                  <button 
-                    onClick={prevStep} 
-                    className="flex-1 py-4 rounded-2xl font-bold text-slate-600 border-2 border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
-                  >
-                    <ChevronLeft size={20} /> Back
-                  </button>
-                  <button 
-                    onClick={nextStep}
-                    disabled={!formData.startDate || !formData.endDate}
-                    className="flex-[2] bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.98]"
-                  >
-                    Continue <ChevronRight size={20} />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* STEP 3: Details */}
-            {step === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                className="space-y-6"
-              >
-                <div className="mb-8">
-                  <h2 className="text-3xl font-black text-slate-800 mb-2">Final Details</h2>
-                  <p className="text-slate-500 text-sm">Tell us more about your request</p>
-                </div>
-
-                <div className="space-y-5">
-                  {/* Reason Textarea */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
-                      Reason for Absence
-                    </label>
-                    <textarea 
-                      placeholder="Please provide details about your leave request..."
-                      className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 h-36 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium text-slate-700 resize-none"
-                      value={formData.reason}
-                      onChange={(e) => setFormData({...formData, reason: e.target.value})}
+                  {formData.category !== "COMP_OFF" && (
+                    <HalfDaySelector
+                      label="End Day Type"
+                      value={formData.endDateHalfDayType}
+                      onChange={(v) => setFormData({ ...formData, endDateHalfDayType: v })}
                     />
-                  </div>
-
-                  {/* File Attachment */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
-                      Attach Documents (Optional)
-                    </label>
-                    <label className="flex items-center gap-4 p-5 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-400 transition-all group">
-                      <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
-                        <Paperclip size={20} className="text-slate-400 group-hover:text-indigo-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-slate-700 font-semibold text-sm">
-                          {formData.attachment ? formData.attachment.name : "Click to upload supporting documents"}
-                        </p>
-                        <p className="text-xs text-slate-400 mt-0.5">PDF, JPG, PNG up to 10MB</p>
-                      </div>
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        onChange={(e) => setFormData({...formData, attachment: e.target.files?.[0] || null})}
-                      />
-                    </label>
-                  </div>
+                  )}
                 </div>
+              )}
+            </div>
 
-                <div className="flex gap-4 pt-6">
-                  <button 
-                    onClick={prevStep} 
-                    className="flex-1 py-4 rounded-2xl font-bold text-slate-600 border-2 border-slate-200 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
-                  >
-                    <ChevronLeft size={20} /> Back
-                  </button>
-                  <button 
-                    disabled={!formData.reason}
-                    onClick={() => console.log("Submitted:", formData)}
-                    className="flex-[2] bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-green-500/30 hover:shadow-green-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-[0.98]"
-                  >
-                    <CheckCircle2 size={20} /> Submit Application
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+            {/* Helper Toggle for Single Day */}
+            <div className="pt-4 border-t border-slate-100">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  className="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  checked={formData.isHalfDay}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    isHalfDay: e.target.checked,
+                    endDate: e.target.checked ? null : formData.endDate,
+                    endDateHalfDayType: e.target.checked ? null : formData.endDateHalfDayType
+                  })}
+                />
+                <span className="text-sm font-medium text-slate-700">This is a single-day application</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <HiOutlinePaperClip size={16} /> 04. Attachments (Required for future Sick Leave)
+            </label>
+            <div onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all ${selectedFile ? 'border-indigo-400 bg-indigo-50/30' : 'border-slate-200 hover:bg-slate-50'}`}>
+              <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
+              <span className="text-sm text-slate-500">{selectedFile ? selectedFile.name : "Click to upload proof"}</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <HiOutlineChatBubbleLeftRight size={16} /> 05. Reason
+            </label>
+            <textarea
+              rows={3}
+              className="w-full bg-white border border-slate-200 p-4 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+              value={formData.reason}
+              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+          >
+            {loading ? "Processing..." : "Submit Application"}
+            {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
+          </button>
+        </form>
       </div>
     </div>
   );
 };
-
-const DateInput = ({ label, value, onChange, halfDay, onHalfDayChange, min }: any) => (
-  <div className="space-y-3">
-    <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">
-      {label}
-    </label>
-    <input 
-      type="date" 
-      min={min}
-      className="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl px-5 py-4 font-bold text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-    <button 
-      type="button"
-      onClick={onHalfDayChange}
-      className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full transition-all ${
-        halfDay 
-          ? "bg-amber-100 text-amber-700 border-2 border-amber-300" 
-          : "bg-slate-100 text-slate-500 border-2 border-slate-200 hover:bg-slate-200"
-      }`}
-    >
-      <Clock size={14} /> {halfDay ? "Half Day Active" : "Set Half Day"}
-    </button>
-  </div>
+const Badge = ({ label, active }: { label: string; active: boolean }) => (
+  <span className={`px-2 py-1 rounded text-[10px] font-bold border transition-all ${active
+    ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+    : "bg-slate-50 text-slate-400 border-slate-100"
+    }`}>
+    {label}
+  </span>
 );
 
 export default LeaveApplicationForm;

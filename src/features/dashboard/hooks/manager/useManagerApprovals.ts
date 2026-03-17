@@ -1,51 +1,129 @@
-import { useEffect, useState } from "react"
-import { managerService } from "../../services/manager/managerService";
+import { useState, useEffect } from "react";
+import { dashboardService } from "../../services/dashboardService";
+import type { CompOffResponse, LeaveDecisionRequest, ODResponse } from "../../types";
 
-export const useManagerApprovals = (managerId : string) => {
-    const [requests ,  setRequests] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+export const useManagerApprovals = (userId: number, role?: string) => {
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const fetchRequests = async () =>{
+  const fetchRequests = async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      const isTeamLeader = role?.toUpperCase() === 'TEAM_LEADER';
 
-        setLoading(true);
+      if (isTeamLeader) {
+        // Fetch Standard and OD requests for Team Leader
+        const [tlRequests, tlODRequests] = await Promise.all([
+          dashboardService.getPendingApprovalsForTeamLeader(userId),
+          dashboardService.getPendingODApprovalsForTeamLeader(userId)
+        ]);
 
-        try{
-            const data = await managerService.getPendingApprovals(managerId);
-            setRequests(data);
-        }
-        catch(err){
-            console.error(err);
-        }
-        finally{
-            setLoading(false);
-        }
+        const formattedODs = (tlODRequests || []).map((od: ODResponse) => ({
+          ...od,
+          leaveType: 'ON_DUTY',
+          isOD: true,
+        }));
 
-    };
+        const combined = [...(tlRequests || []), ...formattedODs].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        console.log(`combined : ${combined.forEach(a => {
+          console.log(a);
+          
+        })}`);
+        
+        setRequests(combined);
 
-    useEffect(() => {
-        fetchRequests();
-    },[managerId]);
+      } else {
+        const [leaves, compOffs, ods] = await Promise.all([
+          dashboardService.getPendingApprovals(userId),
+          dashboardService.getPendingCompOffs(userId),
+          dashboardService.getPendingODApprovals(userId)
+        ]);
+
+        const formattedCompOffs = (compOffs || []).map((co: CompOffResponse) => ({
+          ...co,
+          id: co.compoffId, 
+          leaveType: 'COMP_OFF',
+          startDate: co.workedDate,
+          endDate: co.workedDate,
+          isCompOff: true
+        }));
+
+        const formattedODs = (ods || []).map((od: ODResponse) => ({
+          ...od,
+          leaveType: 'ON_DUTY',
+          isOD: true,
+          startDate: od.fromDate, 
+          endDate: od.toDate
+        }));
+
+        const combined = [...leaves, ...formattedCompOffs, ...formattedODs].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+                console.log(`combined : ${combined.forEach(a => {
+          console.log(a);
+          
+        })}`);
+        setRequests(combined);
+      }
+    } catch (err) {
+      console.error("Failed to fetch approvals:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
-    const handleDecision = async (leaveId : number , type : 'approve' | 'reject' | 'discuss') =>{
-        try{
-            if(type === 'approve'){
-                await managerService.approveLeave(leaveId,managerId);
-            }
-            else if(type == 'reject'){
-                await managerService.rejectLeave(leaveId,managerId);
-            }
-            else{
-                await managerService.discussLeave(leaveId , managerId)
-            }
+  useEffect(() => {
+    fetchRequests();
+  }, [userId, role]);
 
-            setRequests((prev) => prev.filter((req) => String(req.id) !== String(leaveId)));
-        }catch(err){
-            console.error(err);
-            alert("Failed to process decision. Please try again.");
-            
-        }
-    };
+  const removeFromState = (id: number) => {
+    setRequests((prev) => prev.filter((req) => req.id !== id));
+  };
 
-    return {  requests, loading , handleDecision , refresh : fetchRequests };
-}
+  const handleDecision = async (decisionRequest: LeaveDecisionRequest) => {
+    try {
+      await dashboardService.updateDecision(decisionRequest);
+      removeFromState(decisionRequest.leaveId);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
+    }
+  };
+
+  const handleCompOffApprove = async (compOffId: number) => {
+    try {
+      await dashboardService.approveCompOff(compOffId);
+      removeFromState(compOffId);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
+    }
+  };
+
+  const handleCompOffReject = async (compOffId: number, reason: string) => {
+    try {
+      await dashboardService.rejectCompOff(compOffId, reason);
+      removeFromState(compOffId);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
+    }
+  };
+  console.log("from manager dashboard");
+  
+  console.log(requests);
+  
+
+  return {
+    requests,
+    loading,
+    handleDecision,
+    handleCompOffApprove,
+    handleCompOffReject,
+    refresh: fetchRequests
+  };
+};

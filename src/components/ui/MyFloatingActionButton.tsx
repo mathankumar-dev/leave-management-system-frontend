@@ -1,5 +1,5 @@
 import React from "react";
-import { Tooltip, Zoom } from "@mui/material"; // Keeping MUI Tooltip for the nice logic
+import { Tooltip, Zoom } from "@mui/material";
 import { FaBolt } from "react-icons/fa";
 
 interface MyFABProps {
@@ -26,7 +26,7 @@ const MyFloatingActionButton: React.FC<MyFABProps> = ({
         onClick={onClick}
         className={`
           /* Positioning & Z-Index */
-          fixed bottom-8 right-8 z-[1000]
+          fixed bottom-8 right-8 z-[998]
           
           /* Flexbox & Alignment */
           flex items-center justify-center gap-2

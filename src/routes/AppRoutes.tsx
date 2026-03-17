@@ -1,10 +1,14 @@
-// src/routes/AppRoutes.tsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "../features/auth/hooks/useAuth"; // Use your hook
+import { useAuth } from "../features/auth/hooks/useAuth"; 
 import AuthPage from "../features/auth/pages/AuthPage";
 import DashboardLayout from "../features/dashboard/layout/DashboardLayout";
 import ProtectedRoute from "./ProtectedRoute";
+import ForgotPassword from "../features/auth/pages/ForgotPassword";
+import NotFoundPage from "../components/pages/NotFoundPage";
+import PrivacyPolicy from "../components/pages/PrivacyPolicy";
+import TermsOfService from "../components/pages/TermsOfService";
+import LandingPage from "../features/landing/LandingPage";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,23 +23,34 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
+      {/* 2. Hero Page as the Landing Site */}
       <Route 
-        path="/login" 
+        path="/" 
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />
+        } 
+      />
+
+      <Route
+        path="/login"
         element={
           !isAuthenticated ? (
             <AuthPage />
           ) : (
             <Navigate to="/dashboard" replace />
           )
-        } 
+        }
       />
 
-      
+      {/* 3. Protected Dashboard Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard/*" element={<DashboardLayout />} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

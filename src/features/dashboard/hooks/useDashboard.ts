@@ -1,67 +1,101 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { dashboardService } from "../services/dashboardService";
-import { dashboardMockService } from "../services/dashboardMockService";
-import { useMemo } from "react";
 import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockData";
 
-
 import type {
-  ApprovalRequest,
   LeaveRecord,
   Employee,
   Notification,
   AuditLog,
+  LeaveApplication,
+  LeaveDecisionRequest,
+  TeamCalendarResponse,
+  TeamMemberBalance,
+  ManagerDashBoardResponse,
+  LeaveBalanceResponse,
+  TeamMember,
 } from "../types";
-import type { CalendarScope } from "../views/employee/CalendarView";
-// import type { CalendarScope } from "../types/scope";
 
-// toggle this to false when the API is ready
-const USE_MOCK = false;
-// const service = USE_MOCK ? dashboardMockService : dashboardService;
-const service =  dashboardService;
 
+
+const service = dashboardService;
 
 export const useDashboard = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
+  const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
+  
+  const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
+  const [employeeCalendar, setEmployeeCalendar] = useState<TeamCalendarResponse>({});
+
+  const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponse | null>(null);
+
+//   const [leaveBalance, setLeaveBalance] = useState({
+//   CASUAL: 0,
+//   SICK: 0,
+//   EARNED_LEAVES: 0
+// });
 
   /* ================= APPROVALS ================= */
 
-  const fetchApprovals = useCallback(async (): Promise<ApprovalRequest[]> => {
-    setLoading(true);
-    try {
-      return await service.getPendingApprovals();
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch approvals");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // const fetchApprovals = useCallback(async (): Promise<ApprovalRequest[]> => {
+  //   setLoading(true);
+  //   try {
+  //     return await service.getPendingApprovals();
+  //   } catch (err: any) {
+  //     setError(err.message || "Failed to fetch approvals");
+  //     return [];
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
   const processApproval = async (
-    id: number,
-    status: "Approved" | "Rejected",
-    comment?: string
+    decisionRequest: LeaveDecisionRequest
   ): Promise<boolean> => {
     setLoading(true);
+    setError(null);
     try {
-      await service.updateApprovalStatus(id, status, comment);
+      await service.updateDecision(decisionRequest);
       return true;
     } catch (err: any) {
+      console.error("Full Error Object:", err);
       setError(err.message || "Action failed");
       return false;
     } finally {
       setLoading(false);
     }
   };
+  const fetchLeaveBalance = useCallback(async (employeeId: number, year: number = 2026) => {
+    setLoading(true);
+    setError(null);
+    try {
+        const data = await service.getLeaveBalances(employeeId, year);
+        setLeaveBalance(data);
+        return data;
+    } catch (err: any) {
+        setError(err.message || "Failed to fetch leave balance");
+        return null;
+    } finally {
+        setLoading(false);
+    }
+}, []);
+
+
+
+
+const hasExceededLimits = useMemo(() => {
+    return leaveBalance?.exceededMonthlyLimit || (leaveBalance?.totalRemaining ?? 0) <= 0;
+}, [leaveBalance]);
 
   /* ================= EMPLOYEES ================= */
 
   const fetchEmployees = async (): Promise<Employee[]> => {
     setLoading(true);
     try {
-      return await service.getAllEmployees();
+      return await dashboardService.getEmployeeDashboard();
+      
     } catch (err: any) {
       setError(err.message || "Failed to fetch employees");
       return [];
@@ -70,27 +104,13 @@ export const useDashboard = () => {
     }
   };
 
-  const fetchStats = useCallback(
-  async (scope: "SELF" | "TEAM" | "ALL" = "SELF") => {
-    setLoading(true);
-    try {
-      return await service.getHRStats(scope);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch HR analytics");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  },
-  []
-);
 
-const fetchDashboard = useCallback(async (employeeId : number) => {
+const fetchDashboard = useCallback(async (employeeId: number) => {
   setLoading(true);
   try {
     const response = await service.getEmpDashboard(employeeId);
-    console.log("API Response Success:", response); // Look for this in console
-    return response;
+    console.log("FULL RESPONSE", response); // Use this directly
+    return response; // Not response.data
   } catch (err: any) {
     console.error("API ERROR DETAILS:", err.response?.data || err.message);
     setError(err.message);
@@ -99,11 +119,9 @@ const fetchDashboard = useCallback(async (employeeId : number) => {
     setLoading(false);
   }
 }, []);
-
-
   /* ================= LEAVES ================= */
 
-  const fetchMyLeaves = useCallback(async (employeeId : number): Promise<LeaveRecord[]> => {
+  const fetchMyLeaves = useCallback(async (employeeId: number): Promise<LeaveRecord[]> => {
     setLoading(true);
     try {
       return await service.getMyLeaveHistory(employeeId);
@@ -113,108 +131,87 @@ const fetchDashboard = useCallback(async (employeeId : number) => {
     } finally {
       setLoading(false);
     }
-  },[]);
+  }, []);
 
-   /* ================= Admin STATS ================= */
 
-  
-
-  const fetchDeptDistribution = useCallback(async () => {
+  const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<LeaveRecord[]> => {
     setLoading(true);
     try {
-      return await service.getDeptDistribution();
+      const data = await service.getWeeklyLeaveSummary(managerId);
+      setWeeklyLeaveSummary(data);
+      return data;
     } catch (err: any) {
-      setError(err.message || "Failed to fetch department distribution");
+      setError(err.message || "Failed to fetch leave history");
       return [];
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const fetchTeamOnLeave = useCallback(async (managerId: number): Promise<TeamMemberBalance[]> => {
+    setLoading(true);
+    try {
+      const data = await service.getTeamOnLeave(managerId);
+      setTeamOnLeave(data);
+      return data;
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch leave history");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
   /* ================= NOTIFICATIONS ================= */
 
-  const fetchNotifications = useCallback(async (): Promise<Notification[]> => {
-    setLoading(true);
-    try {
-      return await service.getNotifications();
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch notifications");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
-  const fetchAuditLogs = useCallback(async (): Promise<AuditLog[]> => {
-    setLoading(true);
-    try {
-      return await service.getAuditLogs();
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch audit logs");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+
+
 
   /* ================= CALENDAR (FIXED) ================= */
 
-  const fetchCalendar = useCallback(
-    async (
-      year: number,
-      month: number,
-      scope: CalendarScope = "SELF"
-    ) => {
-      setLoading(true);
-      try {
-        return await service.getCalendarLeaves(year, month, scope);
-      } catch (err: any) {
-        setError(err.message || "Failed to load calendar data");
-        return {};
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+
 
   /* ================= LEAVE ACTIONS ================= */
+const applyLeave = useCallback(async (data: FormData ) => {
+  setLoading(true);
+  setError(null);
+  try {
+    const result = await service.submitLeaveRequest(data);
+    return result;
+  } catch (err: any) {
+    const errorMessage = err.response?.data?.message || err.message || "Submission failed";
+    setError(errorMessage);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
-  const applyLeave = async (formData: any) => {
-    setLoading(true);
-    setError(null);
-    try {
-      return await service.submitLeaveRequest(formData);
-    } catch (err: any) {
-      setError(err.message || "Failed to submit leave request");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchLeaveTypes = useCallback(async () => {
+  //   setLoading(true);
+  //   try {
+  //     return await service.getLeaveTypes();
+  //   } catch (err: any) {
+  //     setError(err.message || "Failed to fetch leave types");
+  //     return [];
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
-  const fetchLeaveTypes = useCallback(async () => {
-    setLoading(true);
-    try {
-      return await service.getLeaveTypes();
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch leave types");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const addLeaveType = async (data: any) => {
-    setLoading(true);
-    try {
-      return await service.createLeaveType(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to create leave type");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const addLeaveType = async (data: any) => {
+  //   setLoading(true);
+  //   try {
+  //     return await service.createLeaveType(data);
+  //   } catch (err: any) {
+  //     setError(err.message || "Failed to create leave type");
+  //     return null;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const removeLeaveType = async (id: number) => {
     setLoading(true);
@@ -231,21 +228,59 @@ const fetchDashboard = useCallback(async (employeeId : number) => {
 
   /* ================= TEAM ================= */
 
-  const fetchTeamSchedule = useCallback(
-    async (
-      year: number,
-      month: number,
-      scope: CalendarScope = "TEAM"
-    ) => {
+  const fetchTeamSchedule = useCallback(async (id: number) => {
+    setLoading(true);
+    try {
+      const data = await dashboardService.getTeamCalendar(id);
+      setTeamCalendar(data);
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch team calendar", error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchEmployeeCalendar = useCallback( async (employeeId: number) => {
+  try {
+    setLoading(true);
+
+    const data = await dashboardService.getEmployeeCalendar(employeeId);
+
+    setEmployeeCalendar(data);
+
+  } catch (err: any) {
+    setError(err.message || "Failed to fetch calendar");
+  } finally {
+    setLoading(false);
+  }
+},[]);
+
+
+  const fetchManagerDashboard = useCallback(
+    async (id: number): Promise<ManagerDashBoardResponse | null> => {
       setLoading(true);
       try {
-        const [calendar, members] = await Promise.all([
-          service.getCalendarLeaves(year, month, scope),
-          service.getAllEmployees(),
-        ]);
-        return { calendar, members };
+        const response = await service.getManagerDashboard(id);
+        return response;
       } catch (err: any) {
-        setError(err.message || "Failed to sync team schedule");
+        setError(err.message || "Failed to fetch manager data");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+  const fetchTeamLeaderDashboard = useCallback(
+    async (id: number): Promise<ManagerDashBoardResponse | null> => {
+      setLoading(true);
+      try {
+        const response = await service.getTeamLeaderDashboard(id);
+        return response;
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch team leader data");
         return null;
       } finally {
         setLoading(false);
@@ -254,34 +289,8 @@ const fetchDashboard = useCallback(async (employeeId : number) => {
     []
   );
 
-  // Add this to your useDashboard.ts
-const fetchManagerDashboard = useCallback(async (id: number) => {
-  setLoading(true);
-  try {
-    // Calling the service with the dynamic ID
-    const response = await service.getManagerDashboard(id); 
-    return response;
-  } catch (err: any) {
-    setError(err.message || "Failed to fetch manager data");
-    return null;
-  } finally {
-    setLoading(false);
-  }
-}, []);
-  // ================= HR ===========================
-  // const topDepartment = useMemo(() => {
-  //   return departmentLeaveData.reduce((max, d) =>
-  //     d.leaves > max.leaves ? d : max
-  //   );
-  // }, []);
 
-  // const topApprover = useMemo(() => {
-  //   return managerTrackingData.reduce((max, m) =>
-  //     m.approved > max.approved ? m : max
-  //   );
-  // }, []);
-
-    const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState({
     month: 'all',
     year: '2026',
     department: 'all',
@@ -289,22 +298,47 @@ const fetchManagerDashboard = useCallback(async (id: number) => {
     manager: 'all',
   });
 
+  const cancelLeave = useCallback(async (id: number, employeeId: number) => {
+    setLoading(true);
+    try {
+      await service.cancelLeave(id, employeeId);
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Cancel failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const editLeave = useCallback(async (id: number, data: any) => {
+    setLoading(true);
+    try {
+      await service.updateLeave(id, data);
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Update failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
 
   const getTeamMembers = useCallback(async (managerId: number): Promise<Employee[]> => {
-  setLoading(true);
-  try {
-    // Replace 'service' with your actual API service name
-    const response = await service.getTeamLeaveStats(managerId);
-    return response;
-  } catch (err: any) {
-    const message = err.message || "Failed to fetch team members";
-    setError(message);
-    console.error(message);
-    return [];
-  } finally {
-    setLoading(false);
-  }
-}, []);
+    setLoading(true);
+    try {
+      const response = await service.getTeamLeaveStats(managerId);
+      return response;
+    } catch (err: any) {
+      const message = err.message || "Failed to fetch team members";
+      setError(message);
+      console.error(message);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const updateFilter = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -316,34 +350,78 @@ const fetchManagerDashboard = useCallback(async (id: number) => {
     topPending: managerTrackingData.reduce((max, m) => (m.pending > max.pending ? m : max), managerTrackingData[0]),
   }), []);
 
+
+
+  const bankCompOff = useCallback(async (payload: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await service.submitCompOffRequest(payload);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || "Comp-Off banking failed";
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
+    const fetchTeamMembers = useCallback(async (id : number) : Promise<TeamMember[]> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await service.getTeamMembers(id);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || "Comp-Off banking failed";
+      setError(errorMessage);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
+
+
   /* ================= EXPORT ================= */
 
 
 
-  
+
   return {
     loading,
     error,
     setError,
     fetchDashboard,
     fetchManagerDashboard,
-    fetchApprovals,
+    fetchTeamLeaderDashboard,
+    fetchTeamMembers,
+    // fetchApprovals,
     processApproval,
     fetchEmployees,
     fetchMyLeaves,
-    fetchStats,
-    fetchDeptDistribution,
-    fetchNotifications,
-    fetchAuditLogs,
-    fetchCalendar,
+    bankCompOff,
+
+     fetchEmployeeCalendar,
+  employeeCalendar,
+
     applyLeave,
     getTeamMembers,
-    fetchLeaveTypes,
-    addLeaveType,
+    fetchLeaveBalance, 
+    leaveBalance,
+
     removeLeaveType,
+    cancelLeave,
+    editLeave,
     fetchTeamSchedule,
-    // topDepartment,
-    // topApprover,
-    filters, updateFilter, stats 
+    teamCalendar,
+    fetchWeeklyLeaveSummary,
+    weeklyLeaveSummary,
+    fetchTeamOnLeave,
+    teamOnLeave,
+    filters, updateFilter, stats
   };
 };

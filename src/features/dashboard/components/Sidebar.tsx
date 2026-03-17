@@ -1,4 +1,4 @@
-import React from "react";
+
 import {
   FaChevronLeft,
   FaSignOutAlt,
@@ -9,9 +9,13 @@ import {
   FaBell,
   FaUsers,
   FaCog,
+  FaExclamationTriangle,
+  FaFileSignature,
+  FaDollarSign,
   FaChartBar,
 } from "react-icons/fa";
 import { useAuth } from "../../auth/hooks/useAuth";
+import NameSVG from "../../../assets/svg/NameSVG";
 
 interface SidebarProps {
   activeTab: string;
@@ -37,17 +41,23 @@ function Sidebar({
   const userName = user?.name;
 
   const tabs = [
-    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
-    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
-    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "HR"] },
-    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER"] },
-    { name: "Employees", icon: <FaUsers />, roles: ["HR"] },
-    { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
-    { name: "Leave Config", icon: <FaCog />, roles: ["HR"] },
-    { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
-    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER"] },
+    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER", "HR","ADMIN"] },
+    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER","HR","TEAM_LEADER"] },
+    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
+    { name: "Calendar", icon: <FaCalendarAlt />, roles: [ "ADMIN","EMPLOYEE"] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER","TEAM_LEADER", "HR",] },
+    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER" ,"TEAM_LEADER", "ADMIN"] },
+    { name: "All Employees", icon: <FaUsers />, roles: ["HR"] },
+    { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
+    // { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
+    { name: "Reports", icon: <FaChartBar />, roles: ["HR", "ADMIN"] },
+    { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
+    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER","TEAM_LEADER","EMPLOYEE",""] },
+    { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "HR"] },
+    
+
+
   ];
 
   const visibleTabs = tabs.filter((tab) =>
@@ -55,7 +65,6 @@ function Sidebar({
   );
   return (
     <>
-      {/* Mobile Overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-neutral-950/40 backdrop-blur-sm z-35 md:hidden no-scrollbar"
@@ -63,7 +72,6 @@ function Sidebar({
         />
       )}
 
-      {/* Sidebar - Using Neutral 900 for a deep professional navy */}
       <aside
         className={`fixed top-0 left-0 z-40 h-screen w-80 bg-neutral-800
         p-6 border-r border-neutral-800 flex flex-col
@@ -72,10 +80,9 @@ function Sidebar({
       >
         {/* Logo */}
         <div className="flex items-center justify-between mb-8 px-2 shrink-0">
-          <h1 className="text-white font-black text-xl italic tracking-tight uppercase">
-            Leave <span className="text-primary-500">Management</span> System
-            <span className="text-primary-500">.</span>
-          </h1>
+          <div className="h-auto w-42">
+            <NameSVG color="#ffffff" isDotNeeded={false} />
+          </div>
 
           <button
             onClick={() => setIsOpen(false)}
@@ -85,7 +92,6 @@ function Sidebar({
           </button>
         </div>
 
-        {/* Profile Card - Using subtle background contrast */}
         <div
           onClick={() => {
             setActiveTab("Profile");
@@ -103,7 +109,7 @@ function Sidebar({
 
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">
-              {userName|| "User"}
+              {userName || "User"}
             </p>
             <p className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest">
               {userRole}
@@ -119,9 +125,8 @@ function Sidebar({
 
           <ul className="space-y-1.5">
             {visibleTabs.map((tab) => {
-              const isActive = activeTab === tab.name;
               return (
-                // Inside your sidebar visibleTabs.map...
+
                 <li
                   key={tab.name}
                   onClick={() => setActiveTab(tab.name)}
@@ -131,7 +136,6 @@ function Sidebar({
                     : "text-neutral-300 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
                     }`}
                 >
-                  {/* icon contrast fix */}
                   <span className={`text-lg ${activeTab === tab.name ? "text-white" : "text-neutral-400"}`}>
                     {tab.icon}
                   </span>
@@ -142,7 +146,6 @@ function Sidebar({
           </ul>
         </div>
 
-        {/* Sign Out - Using your Danger color */}
         <div className="pt-4 mt-4 border-t border-neutral-800 shrink-0">
           <button
             onClick={onLogout}
