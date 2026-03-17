@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { 
-    HiOutlineMapPin, 
-    HiOutlineChatBubbleLeftRight, 
+import {
+    HiOutlineMapPin,
+    HiOutlineChatBubbleLeftRight,
     HiOutlinePaperAirplane,
-    HiOutlineCheckCircle
+    HiOutlineCheckCircle,
+    HiOutlineUsers
 } from "react-icons/hi2";
 import MyDatePicker from "../../components/ui/datepicker/MyDatePicker";
 import { useAuth } from "../../features/auth/hooks/useAuth";
 import { useRequest } from "../../features/dashboard/hooks/requests/useRequest";
 import type { ODRequest } from "../../features/dashboard/types";
+import Badge from "../../components/ui/Badge";
 
 const ODRequestForm = () => {
     const { user } = useAuth();
@@ -42,6 +44,30 @@ const ODRequestForm = () => {
         const success = await createOD(payload, user.id);
         if (success) setSubmitted(true);
     };
+    const totalDays = 1;
+
+    const renderApprovers = () => {
+        const approvers = [];
+
+        if (user?.role === "EMPLOYEE") {
+            approvers.push({ label: `TL: ${user?.teamLeaderName || 'Assigning...'}`, active: true });
+            if (totalDays > 1) {
+                approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+            }
+        }
+
+        if (user?.role === "TEAM_LEADER") {
+            approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+        }
+
+        if (totalDays > 7) {
+            approvers.push({ label: `HR: ${user?.hrname || 'Assigning...'}`, active: true });
+        }
+
+        return approvers.map((app, index) => (
+            <Badge key={index} label={app.label} active={app.active} />
+        ));
+    };
 
     if (submitted) {
         return (
@@ -49,11 +75,11 @@ const ODRequestForm = () => {
                 <HiOutlineCheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-slate-800 tracking-tight">OD Request Submitted</h2>
                 <p className="text-slate-500 mt-2">Your On-Duty application has been sent for approval.</p>
-                <button 
+                <button
                     onClick={() => {
                         setSubmitted(false);
                         setFormData({ fromDate: null, toDate: null, reason: "" });
-                    }} 
+                    }}
                     className="mt-8 text-sm font-bold text-indigo-600 hover:text-indigo-800"
                 >
                     Raise another request →
@@ -64,10 +90,19 @@ const ODRequestForm = () => {
 
     return (
         <div className=" rounded-2xl overflow-hidden">
-            <div className="px-8 py-5 bg-slate-50/50 border-b border-slate-200">
+            <div className="px-8 py-5 bg-slate-50/50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <HiOutlineMapPin className="text-indigo-600" /> On-Duty Application
+                    <HiOutlineUsers className="text-indigo-600" /> Schedule Meeting
                 </h1>
+
+                <div className="flex flex-col items-start sm:items-end">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                        Required Approvals
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                        {renderApprovers()}
+                    </div>
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
