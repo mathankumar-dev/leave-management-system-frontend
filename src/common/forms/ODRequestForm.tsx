@@ -44,23 +44,33 @@ const ODRequestForm = () => {
         const success = await createOD(payload, user.id);
         if (success) setSubmitted(true);
     };
-    const totalDays = 1;
+    // 1. First, calculate the actual days inside the component
+    const calculateDays = () => {
+        if (!formData.fromDate || !formData.toDate) return 0;
+        const diffTime = Math.abs(formData.toDate.getTime() - formData.fromDate.getTime());
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    };
+
+    const totalDays = calculateDays();
 
     const renderApprovers = () => {
         const approvers = [];
+        const role = user?.role?.toUpperCase();
 
-        if (user?.role === "EMPLOYEE") {
+        if (role === "EMPLOYEE") {
             approvers.push({ label: `TL: ${user?.teamLeaderName || 'Assigning...'}`, active: true });
+
             if (totalDays > 1) {
                 approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
             }
         }
-
-        if (user?.role === "TEAM_LEADER") {
+        if (role === "TEAM_LEADER") {
             approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
         }
-
-        if (totalDays > 7) {
+        if (role === "MANAGER") {
+            approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
+        }
+        if (totalDays > 7 && role !== "MANAGER") {
             approvers.push({ label: `HR: ${user?.hrname || 'Assigning...'}`, active: true });
         }
 

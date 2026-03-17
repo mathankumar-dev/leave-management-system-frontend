@@ -241,29 +241,46 @@ const LeaveApplicationForm = () => {
           <h1 className="text-xl font-bold text-slate-800">
             {formData.category === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
           </h1>
-
           <div className="flex flex-col items-end">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
               Required Approvals
             </span>
             <div className="flex gap-2">
-              {(user?.role === "EMPLOYEE") && (
-                <>
-                  <Badge label={`TL: ${user?.teamLeaderName || 'Assigning...'}`} active />
-                  {calculateDays() > 1 && (
-                    <Badge label={`Manager: ${user?.managerName || 'Assigning...'}`} active />
-                  )}
-                </>
-              )}
+              {(() => {
+                const approvers = [];
+                const days = calculateDays();
+                const role = user?.role?.toUpperCase();
 
-              {user?.role === "TEAM_LEADER" && (
-                <Badge label={`Manager: ${user?.managerName || 'Assigning...'}`} active />
-              )}
+                // Logic for Employee
+                if (role === "EMPLOYEE") {
+                  approvers.push({ label: `TL: ${user?.teamLeaderName || 'Assigning...'}`, active: true });
+                  if (days > 1) {
+                    approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+                  }
+                }
 
-              {/* HR Step: Same for everyone if > 7 days */}
-              {calculateDays() > 7 && (
-                <Badge label={`HR: ${user?.hrname || 'Assigning...'}`} active />
-              )}
+                // Logic for Team Leader
+                if (role === "TEAM_LEADER") {
+                  approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+                }
+
+                // Logic for Manager
+                if (role === "MANAGER") {
+                  approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
+                }
+
+                // Global HR Rule (if not already added by Manager role)
+                if (days > 7 && role !== "MANAGER") {
+                  // Prevent duplicate HR badge if already added
+                  if (!approvers.some(a => a.label.startsWith("HR"))) {
+                    approvers.push({ label: `HR: ${user?.hrname || 'Assigning...'}`, active: true });
+                  }
+                }
+
+                return approvers.map((app, index) => (
+                  <Badge key={index} label={app.label} active={app.active} />
+                ));
+              })()}
             </div>
           </div>
         </div>
