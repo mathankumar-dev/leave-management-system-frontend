@@ -157,6 +157,7 @@ const LeaveApplicationForm = () => {
     return days;
   };
 
+
   const HalfDaySelector = ({ label, value, onChange }: { label: string, value: HalfDayType, onChange: (v: HalfDayType) => void }) => (
     <div className="flex flex-col gap-2">
       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
@@ -224,7 +225,7 @@ const LeaveApplicationForm = () => {
                         {item.leaveType.replace("_", " ")}
                       </span>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-base font-bold text-slate-700">{item.remainingDays}</span>
+                        <span className="text-base font-bold text-slate-700">{item.usedDays}</span>
                         <span className="text-[10px] font-medium text-slate-400">/ {item.allocatedDays}</span>
                       </div>
                     </div>
@@ -372,14 +373,26 @@ const LeaveApplicationForm = () => {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
-          >
-            {loading ? "Processing..." : "Submit Application"}
-            {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
-          </button>
+          {
+            leaveBalance?.exceededMonthlyLimit ? (
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+              >
+                {loading ? "Processing..." : "Submit Application"}
+                {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
+              </button>
+            ) : (<button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+            >
+              {loading ? "Processing..." : "Submit Application"}
+              {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
+            </button>)
+          }
+
         </form>
       </div>
     </div>
