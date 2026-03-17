@@ -283,6 +283,7 @@ getMyPayslip: async (year: number, month: number) => {
     const res = await api.get(`/download/${year}/${month}`, {
       responseType: "blob"
     });
+     console.log("PAYSLIP ", res.data); 
 
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement("a");
