@@ -1,109 +1,209 @@
-body{
-margin:0;
-font-family:'Segoe UI',sans-serif;
-background:#eef2f7;
+/* 1. Base Variables & Theme */
+:root {
+    --primary-indigo: #4f46e5;
+    --primary-indigo-dark: #4338ca;
+    --bg-slate-light: #f8fafc;
+    --text-main: #0f172a;
+    --border-subtle: #e2e8f0;
+    --sidebar-dark: #0f172a;
 }
 
-/* SIDEBAR */
 
-.sidebar{
-position:fixed;
-left:0;
-top:0;
-width:230px;
-height:100%;
-background:#0f1e3a;
-color:white;
+/* 2. Global Resets */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.logo{
-display:flex;
-align-items:center;
-gap:10px;
-padding:20px;
-font-size:18px;
-font-weight:600;
+body {
+    background-color: var(--bg-slate-light);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
-.logo img{
-width:35px;
+/* 3. Layout Components */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-.sidebar a{
-display:block;
-padding:14px 25px;
-color:#cbd5f5;
-text-decoration:none;
+.main-layout {
+    display: flex;
+    max-width: 1280px; /* 7xl equivalent */
+    margin: 0 auto;
+    width: 100%;
+    padding: 1.5rem;
+    gap: 2rem;
 }
 
-.sidebar a:hover{
-background:#1e293b;
-color:white;
+/* 4. Navigation Styling */
+.nav-link {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #64748b;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
 }
 
-/* HEADER */
-
-.header{
-margin-left:230px;
-height:65px;
-background:white;
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:0 30px;
-box-shadow:0 2px 8px rgba(0,0,0,0.05);
+.nav-link:hover, .nav-link.active {
+    color: var(--primary-indigo);
+    border-bottom-color: var(--primary-indigo);
 }
 
-.date{
-color:#6b7280;
+/* 5. Custom Card Styling (Glassmorphism & Shadows) */
+.engagement-card {
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-subtle);
+    background: white;
 }
 
-/* MAIN */
-
-.main{
-margin-left:230px;
-padding:35px;
+.announcement-item {
+    border-left: 4px solid #fbbf24;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
 }
 
-/* CARD */
-
-.card{
-background:white;
-padding:25px;
-border-radius:12px;
-margin-bottom:25px;
-box-shadow:0 4px 12px rgba(0,0,0,0.05);
+/* 6. Directory Table Styling */
+.directory-table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.card h3{
-margin-top:0;
+.directory-table th {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
 }
 
-/* NEWS */
-
-.news{
-background:#fde8a7;
-padding:12px;
-border-radius:8px;
-overflow:hidden;
-white-space:nowrap;
+.directory-table tr {
+    transition: background-color 0.2s;
 }
 
-.news span{
-display:inline-block;
-animation:move 12s linear infinite;
+.directory-table tr:hover {
+    background-color: #f1f5f9;
 }
 
-@keyframes move{
-0%{transform:translateX(100%)}
-100%{transform:translateX(-100%)}
+.directory-table td {
+    padding: 1.25rem 0;
 }
 
-/* QUOTE */
+/* 7. Status Badges */
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
 
-.quote{
-background:#cde6a6;
-padding:12px;
-border-radius:8px;
-font-style:italic;
+.badge-cfo { background-color: #f3e8ff; color: #7e22ce; }
+.badge-manager { background-color: #dbeafe; color: #1d4ed8; }
+.badge-tl { background-color: #dcfce7; color: #15803d; }
+.badge-hr { background-color: #fef3c7; color: #b45309; }
+
+/* 8. Quick Action Buttons */
+.action-card {
+    background: white;
+    border: 1px solid var(--border-subtle);
+    border-radius: 1.5rem;
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    gap: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-color: #c7d2fe;
+}
+
+/* 9. Scrollbar Customization */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* 10. Responsive Utilities */
+@media (max-width: 1024px) {
+    .sidebar { display: none; }
+    .main-layout { padding: 1rem; }
+}
+.flash-card {
+  width: 100%;
+  background: linear-gradient(135deg, #030a19, #1b2637);
+  color: #f1ecec;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(6, 6, 6, 0.3);
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.flash-card:hover {
+  transform: translateY(-5px) scale(1.02);
+}
+
+.flash-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.flash-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.icon {
+  font-size: 18px;
+  color: #f59e0b;
+}
+
+.flash-item {
+  margin-bottom: 12px;
+}
+
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: #60a5fa;
+  margin-bottom: 5px;
+}
+
+.text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #e2e8f0;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 10px 0;
 }

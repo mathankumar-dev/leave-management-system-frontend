@@ -1,3 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 :root {
   --font-internal: "Inter", "Figtree", "SF Pro Display", "Roboto", system-ui, sans-serif;
 }

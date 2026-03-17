@@ -1,4 +1,4 @@
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo.png";
 import heroBg from "../../assets/bg-img.jpeg"; 
 import CTAButton from "../../components/ui/CTAButton";
 import { useNavigate } from "react-router-dom";

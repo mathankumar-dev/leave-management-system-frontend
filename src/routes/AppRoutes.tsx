@@ -9,6 +9,7 @@ import NotFoundPage from "../components/pages/NotFoundPage";
 import PrivacyPolicy from "../components/pages/PrivacyPolicy";
 import TermsOfService from "../components/pages/TermsOfService";
 import LandingPage from "../features/landing/LandingPage";
+import Dashboard from "../components/Dashboard";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -27,7 +28,7 @@ const AppRoutes: React.FC = () => {
       <Route 
         path="/" 
         element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Dashboard />
         } 
       />
 
