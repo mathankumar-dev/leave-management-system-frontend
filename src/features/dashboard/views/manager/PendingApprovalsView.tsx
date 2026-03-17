@@ -122,6 +122,8 @@ const PendingApprovalsView: React.FC = () => {
             notify.error("Update Failed", "Please check your connection and try again.");
         }
     };
+    console.log("pending approvals");
+    
     console.log(requests);
 
     if (loading) return (

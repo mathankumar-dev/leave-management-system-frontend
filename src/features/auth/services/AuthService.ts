@@ -10,11 +10,10 @@ export const authService = {
 
 
   getEmployeeProfile: async (id: number): Promise<User> => {
+    
     const response = await api.get<User>(`/employees/profile/${id}`);
     return response.data;
   },
-// features/auth/services/AuthService.ts
-
 updatePersonalDetails: async (id: number, data: PersonalDetailsRequest): Promise<any> => {
 
     const response = await api.post(`/employees/personal-details/${id}`, data);

@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom' // 1. Import the provider
+import { BrowserRouter } from 'react-router-dom' 
+import "@fontsource/inter"; 
+import "@fontsource/inter/700.css";
 import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './features/auth/hooks/useAuth.tsx'

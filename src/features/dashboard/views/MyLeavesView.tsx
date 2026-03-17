@@ -77,11 +77,27 @@ const MyLeavesView: React.FC = () => {
       list = list.filter((item) => item.status === statusFilter);
     }
     list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return list.map((item) => ({
-      ...item,
-      displayType: item.leaveType.replace(/_/g, " "),
-      displayRange: `${new Date(item.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })} - ${new Date(item.endDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}`,
-    }));
+
+    return list.map((item) => {
+      const start = new Date(item.startDate);
+      const end = new Date(item.endDate);
+
+      // Formatting options
+      const dateOptions: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short" };
+
+      // Check if start and end dates are the same
+      const isSameDay = item.startDate === item.endDate;
+
+      const displayRange = isSameDay
+        ? start.toLocaleDateString("en-GB", dateOptions)
+        : `${start.toLocaleDateString("en-GB", dateOptions)} - ${end.toLocaleDateString("en-GB", dateOptions)}`;
+
+      return {
+        ...item,
+        displayType: item.leaveType.replace(/_/g, " "),
+        displayRange,
+      };
+    });
   }, [history, statusFilter]);
 
   if (loading) return (
@@ -255,17 +271,10 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
   const { user } = useAuth();
   const days = item.days;
 
-  /**
-   * Logic:
-   * 0-1 Day: Only TL
-   * 1-7 Days: TL + Manager
-   * > 7 Days: TL + Manager + HR
-   */
-  const needsTL = true; // Always needed
+  const needsTL = true;
   const needsManager = days > 1;
   const needsHR = days > 7;
 
-  // For a user who IS a TL, we skip the TL step visually as discussed before
   const isEmployee = userRole === "EMPLOYEE" || userRole === "USER";
   const showTLStep = isEmployee && needsTL;
 
@@ -276,7 +285,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
           <FaInfoCircle className="text-indigo-400" /> Reason & Impact
         </h4>
-        <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-[60px]">
+        <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-15">
           <p className="text-xs text-slate-600 leading-relaxed italic">
             {item.reason ? `"${item.reason}"` : "No reason provided."}
           </p>
@@ -284,20 +293,19 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
       </div>
 
       {/* Timing Section */}
-      <div className="space-y-3">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-          <FaCalendarAlt className="text-indigo-400" /> Timing
-        </h4>
-        <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm">
-          <div className="p-2.5 flex justify-between items-center">
-            <span className="text-[9px] font-black text-slate-500 uppercase">Starts</span>
-            <span className="text-xs font-black text-slate-700">{item.startDate}</span>
-          </div>
+      <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm">
+        <div className="p-2.5 flex justify-between items-center">
+          <span className="text-[9px] font-black text-slate-500 uppercase">
+            {item.startDate === item.endDate ? "Date" : "Starts"}
+          </span>
+          <span className="text-xs font-black text-slate-700">{item.startDate}</span>
+        </div>
+        {item.startDate !== item.endDate && (
           <div className="p-2.5 flex justify-between items-center">
             <span className="text-[9px] font-black text-slate-500 uppercase">Ends</span>
             <span className="text-xs font-black text-slate-700">{item.endDate}</span>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Dynamic Approval Tracker */}
@@ -305,13 +313,13 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
           Approval Flow ({days} {days === 1 ? 'Day' : 'Days'})
         </h4>
-        <div className="space-y-4 relative before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
+        <div className="space-y-4 relative before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
 
           {/* TEAM LEADER STEP */}
           {showTLStep && (
             <div className="relative pl-6">
               <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.teamLeaderDecision === 'APPROVED' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Team Leader</p>
+              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Team Leader ({user?.teamLeaderName})</p>
               <p className="text-[10px] text-slate-500 mt-1">
                 {item.teamLeaderDecision ? `${item.teamLeaderDecision} ${formatDate(item.teamLeaderDecidedAt)}` : 'Awaiting Review'}
               </p>
@@ -322,7 +330,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
           {needsManager && (
             <div className="relative pl-6">
               <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.managerDecision === 'APPROVED' ? 'bg-emerald-500' : item.managerDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Manager</p>
+              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Manager ({user?.managerName})</p>
               <p className="text-[10px] text-slate-500 mt-1">
                 {item.managerDecision
                   ? `${item.managerDecision} on ${formatDate(item.managerDecidedAt)}`
@@ -335,7 +343,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
           {needsHR && (
             <div className="relative pl-6">
               <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.hrDecision === 'APPROVED' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">HR Finalization</p>
+              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">HR ({user?.hrname})</p>
               <p className="text-[10px] text-slate-500 mt-1">
                 {item.hrDecision
                   ? `${item.hrDecision}`
