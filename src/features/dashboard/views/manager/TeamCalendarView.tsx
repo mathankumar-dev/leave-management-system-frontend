@@ -189,7 +189,7 @@ const TeamCalendarView: React.FC = () => {
             <p className="text-[10px] font-black text-indigo-600 uppercase italic">{monthName.slice(0, 3)} {selectedDay}</p>
           </div>
 
-          <div className="p-4 min-h-[250px]">
+          <div className="p-4 min-h-62.5">
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedDateKey}

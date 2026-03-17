@@ -17,6 +17,8 @@ import {
 import { useAuth } from "../../auth/hooks/useAuth";
 import NameSVG from "../../../assets/svg/NameSVG";
 
+import logoSVG from "../../../assets/logo.svg";
+
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -80,8 +82,10 @@ function Sidebar({
       >
         {/* Logo */}
         <div className="flex items-center justify-between mb-8 px-2 shrink-0">
-          <div className="h-auto w-42">
-            <NameSVG color="#ffffff" isDotNeeded={false} />
+          <div className="h-auto w-42 flex">
+            
+             <img src={logoSVG} alt="" width={50} height={50}/>
+            {/* <NameSVG color="#ffffff" isDotNeeded={false} /> */}
           </div>
 
           <button
