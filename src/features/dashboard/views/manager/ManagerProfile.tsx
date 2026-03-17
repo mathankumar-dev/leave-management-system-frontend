@@ -69,15 +69,15 @@ const ManagerProfile: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100 p-4 lg:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
-        
+
         {/* PROFILE HEADER */}
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col md:flex-row items-center md:items-start gap-6"
+          className="bg-white rounded-sm shadow-sm border border-slate-200 p-8 flex flex-col md:flex-row items-center md:items-start gap-6"
         >
           {/* Avatar */}
-          <div className="w-24 h-24 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-indigo-100">
+          <div className="w-24 h-24 rounded-sm bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-indigo-100">
             {profile.name?.charAt(0)}
           </div>
 
@@ -96,11 +96,9 @@ const ManagerProfile: React.FC = () => {
               {profile.designation || "Manager"}
             </p>
 
-            <div className="flex justify-center md:justify-start gap-2 mt-1">
+            <div className="flex flex-col justify-center md:justify-start gap-2 mt-1">
               <span className="text-xs text-slate-400">Employee ID: {profile.id}</span>
-              <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded uppercase">
-                {profile.role}
-              </span>
+              <span className="text-xs text-gray-500">Role: {profile.role}</span>
             </div>
 
             {/* Contact row */}
@@ -115,7 +113,7 @@ const ManagerProfile: React.FC = () => {
 
         {/* GRID SECTIONS */}
         <div className="grid lg:grid-cols-2 gap-6">
-          
+
           <Section title="Personal Information" icon={<FaUserTie />}>
             <Field label="Full Name" value={profile.name} />
             <Field label="Gender" value={profile.gender} />
@@ -131,23 +129,24 @@ const ManagerProfile: React.FC = () => {
             <Field label="Designation" value={profile.designation} />
             <Field label="Joining Date" value={profile.joiningDate} />
             <Field label="Reporting Manager" value={profile.managerName} />
-            <Field label="Team Leader" value={profile.teamLeaderName} />
+            {(profile.role != "MANAGER") && (profile.role != "TEAM_LEADER") && <Field label="Team Leader" value={profile.teamLeaderName} />}
+
             <Field label="Biometric Status" value={profile.biometricStatus} highlight={profile.biometricStatus === 'PENDING'} />
             <Field label="VPN Access" value={profile.vpnStatus} highlight={profile.vpnStatus === 'PENDING'} />
           </Section>
 
           <Section title="Identity & Address" icon={<FaIdCard />}>
             <div className="col-span-2">
-                <Field label="Aadhar Card" value={maskAadhar(profile.aadharNumber)} />
+              <Field label="Aadhar Card" value={maskAadhar(profile.aadharNumber)} />
             </div>
             <div className="col-span-2 space-y-4">
-                <Field label="Present Address" value={profile.presentAddress} />
-                <Field label="Permanent Address" value={profile.permanentAddress} />
+              <Field label="Present Address" value={profile.presentAddress} />
+              <Field label="Permanent Address" value={profile.permanentAddress} />
             </div>
           </Section>
 
           {/* Skills Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-6">
             <h3 className="text-sm font-semibold text-slate-700 mb-5 flex items-center gap-2">
               <FaUsers className="text-indigo-500" />
               Core Expertise
@@ -177,7 +176,7 @@ const ManagerProfile: React.FC = () => {
 // --- Reusable Sub-components ---
 
 const Section = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+  <div className="bg-white rounded-sm shadow-sm border border-slate-200 p-6">
     <h3 className="text-sm font-semibold text-slate-700 mb-5 flex items-center gap-2">
       <span className="text-indigo-500">{icon}</span>
       {title}
