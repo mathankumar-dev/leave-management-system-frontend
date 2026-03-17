@@ -20,11 +20,22 @@ export const requestService = {
     return response.data;
   },
 
-  approveOD: async (odId: number): Promise<void> => {
-    await api.patch(`/od/approve/${odId}`,);
+  approveOD: async (odId: number, approverId: number): Promise<void> => {
+    console.log("gonig to call approve OD");
+    
+    
+    const res = await api.put(`/od/approve/${odId}`, {}, {
+      params: { approverId }
+    });
+    console.log("response:");
+    
+    console.log(res);
+    
   },
-  rejectOD: async (odId: number): Promise<void> => {
-    await api.patch(`/od/reject/${odId}`,);
+  rejectOD: async (odId: number, approverId: number, reason: string): Promise<void> => {
+    await api.patch(`/od/reject/${odId}`, {}, {
+      params: { approverId, reason }
+    });
   },
   approveMeeting: async (meetingId: number, managerId: number): Promise<void> => {
     await api.patch(`/meetings/approve/manager/${meetingId}/${managerId}`,);

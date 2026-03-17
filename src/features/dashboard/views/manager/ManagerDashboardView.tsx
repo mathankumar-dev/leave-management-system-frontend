@@ -292,10 +292,11 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
             <thead className="bg-neutral-800  text-white">
               <tr>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Leave Category</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Used</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Allocated</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Used</th>
                 {/* <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Utilization</th> */}
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Balance</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Remarks</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -311,10 +312,10 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm font-bold text-slate-700">{leave.usedDays} Days</span>
+                      <span className="text-sm font-medium text-slate-400">{leave.allocatedDays} Days</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm font-medium text-slate-400">{leave.allocatedDays} Days</span>
+                      <span className="text-sm font-bold text-slate-700">{leave.usedDays} Days</span>
                     </td>
                     {/* <td className="px-6 py-4 min-w-37.5">
                       <div className="flex items-center gap-3">
@@ -341,8 +342,10 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                 <td className="px-6 py-4">
                   <span className="text-xs font-black text-indigo-600 uppercase italic">Monthly Quota</span>
                 </td>
-                <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyUsed} Days</td>
                 <td className="px-6 py-4 text-slate-400">{dashboardData?.personalStats.monthlyAllocated} Days</td>
+                <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyUsed} Days</td>
+                {/* <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyBalance} Days</td> */}
+
                 {/* <td className="px-6 py-4">
                  
                   {/* <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-tighter">Current Period</span> 

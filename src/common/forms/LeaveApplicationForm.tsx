@@ -256,9 +256,6 @@ const LeaveApplicationForm = () => {
                 </>
               )}
 
-              {/* Case 2: User is a Team Leader (TL). 
-      They skip the TL badge and start directly with Manager.
-    */}
               {user?.role === "TEAM_LEADER" && (
                 <Badge label={`Manager: ${user?.managerName || 'Assigning...'}`} active />
               )}

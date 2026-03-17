@@ -19,7 +19,7 @@ const RequestCenter = () => {
   const menuItems = [
     { id: "LEAVE", label: "Leave Form", icon: <HiOutlineClock size={20} />, description: "Annual, Sick, Comp-off" },
     { id: "OD", label: "OD Form", icon: <HiOutlineBriefcase size={20} />, description: "On-Duty / Field Work" },
-    { id: "MEETING", label: "Meeting", icon: <HiOutlineUserGroup size={20} />, description: "Conference Room" },
+    // { id: "MEETING", label: "Meeting", icon: <HiOutlineUserGroup size={20} />, description: "Conference Room" },
     { id: "WFH", label: "WFH Request", icon: <HiOutlineHome size={20} />, description: "Work from Home" },
     { id: "OVERTIME", label: "Overtime", icon: <HiOutlineMoon size={20} />, description: "Extra Hours Credit" },
   ];
@@ -35,7 +35,6 @@ const RequestCenter = () => {
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="sticky top-24 z-50" // Increased Z-index
         >
-          {/* REMOVED overflow-hidden HERE and replaced with overflow-visible */}
           <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm overflow-visible relative">
 
             {/* Toggle Header */}
@@ -119,7 +118,7 @@ const RequestCenter = () => {
                 {/* Internal form routing */}
                 {activeTab === "LEAVE" && <LeaveApplicationForm />}
                 {activeTab === "OD" && <ODRequestForm />}
-                {activeTab === "MEETING" && <MeetingRequestForm />}
+                {/* {activeTab === "MEETING" && <MeetingRequestForm />} */}
 
                 {/* Placeholders for new forms */}
                 {(activeTab === "WFH" || activeTab === "OVERTIME") && (
