@@ -65,25 +65,25 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           title: "Sick Leave",
           used: sickLeave?.usedDays ?? 0,
           total: sickLeave?.allocatedDays ?? 0,
-          color: "emerald",
+          color: "cyan",
         },
         {
           title: "Casual Leave",
           used: casualLeave?.usedDays ?? 0,
           total: casualLeave?.allocatedDays ?? 0,
-          color: "emerald",
+          color: "cyan",
         },
         {
           title: "Yearly Balance",
           used: data.yearlyUsed || 0,
           total: data.yearlyAllocated || 0,
-          color: "emerald",
+          color: "cyan",
         },
         {
           title: "Monthly Balance",
           used: data.monthlyUsed || 0,
           total: data.monthlyAllocated || 0,
-          color: "emerald",
+          color: "cyan",
         },
         {
           title: "Carry Forward",
@@ -91,13 +91,13 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             (data.carryForwardTotal || 0) -
             (data.carryForwardRemaining || 0),
           total: data.carryForwardTotal || 0,
-          color: "emerald",
+          color: "cyan",
         },
         {
           title: "Comp Off Balance",
           used: data.compoffBalance || 0,
           total: data.compoffBalance || 0,
-          color: "emerald",
+          color: "cyan",
         },
         {
           title: "Approved Leaves",
@@ -120,7 +120,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         {
           title: "Loss Of Pay %",
           used: data.lossOfPayPercentage || 0,
-          color: "rose",
+          color: "red",
         },
       ];
 
@@ -148,16 +148,12 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       variants={containerVariants}
       className="max-w-7xl mx-auto px-6 py-6 space-y-6 bg-gradient-to-b from-slate-50 to-white min-h-screen"
     >
-
       {/* HEADER */}
-
       <div className="flex justify-between items-center">
-
         <div>
           <h2 className="text-2xl font-semibold text-slate-800">
             Welcome back, {user?.name}
           </h2>
-
           <p className="text-sm text-slate-500">
             Leave summary for 2026
           </p>
@@ -169,23 +165,72 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         >
           <FaPlus /> Apply Leave
         </button>
-
       </div>
 
-      {/* DASHBOARD GRID */}
+      {/* TABLE */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
+  
+  {/* HEADER */}
+  <div className="grid grid-cols-5 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+    <div>Type</div>
+    <div className="text-center">Total</div>
+    <div className="text-center">Used</div>
+    <div className="text-center">Remaining</div>
+    
+  </div>
 
-      <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
+  {/* ROWS */}
+  {stats.map((stat) => {
+    const remaining = (stat.total ?? 0) - (stat.used ?? 0);
 
-        {stats.map((stat) => (
-          <SummaryCard
-            key={stat.title}
-            stat={stat}
-            setSelectedCard={setSelectedCard}
-          />
-        ))}
+    const percent = stat.total
+      ? Math.min((stat.used / stat.total) * 100, 100)
+      : 0;
 
+    const colorMap: any = {
+      emerald: "from-emerald-400 to-green-500",
+      amber: "from-yellow-400 to-amber-500",
+      rose: "from-rose-400 to-red-500",
+      red: "from-red-500 to-rose-600",
+      cyan: "from-cyan-400 to-sky-500",
+    };
+
+    return (
+      <motion.div
+        key={stat.title}
+        whileHover={{ scale: 1.01 }}
+        onClick={() => setSelectedCard(stat)}
+        className="grid grid-cols-5 items-center bg-slate-50 hover:bg-white px-4 py-4 rounded-xl transition cursor-pointer shadow-sm hover:shadow-md"
+      >
+        {/* TITLE */}
+        <div className="font-semibold text-slate-700">
+          {stat.title}
+        </div>
+
+        {/* TOTAL */}
+        <div className="text-center text-slate-600">
+          {stat.total ?? stat.used}
+        </div>
+
+        {/* USED */}
+        <div className="text-center text-orange-500 font-medium">
+          {stat.used}
+        </div>
+
+        {/* REMAINING */}
+        <div className="text-center text-emerald-600 font-medium">
+          {remaining}
+        </div>
+
+       
+      </motion.div>
+    );
+  })}
+</div>
       </div>
 
+      {/* DRAWER */}
       <LeaveDetailsDrawer
         open={!!selectedCard}
         stat={selectedCard}
@@ -193,6 +238,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         onClick={() => onNavigate?.("Apply Leave")}
       />
 
+      {/* FAB */}
       {user?.role !== "EMPLOYEE" && (
         <MyFloatingActionButton
           icon={<FaPlus />}
@@ -201,154 +247,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           tooltipLabel="Apply Leave"
         />
       )}
-
     </motion.div>
   );
 };
 
 export default DashboardView;
-
-
-
-/* PROFESSIONAL CARD */
-
-const SummaryCard = ({ stat, setSelectedCard }: any) => {
-
-  const remaining = (stat.total ?? 0) - (stat.used ?? 0);
-
-  const percent = stat.total
-    ? Math.min((stat.used / stat.total) * 100, 100)
-    : 0;
-
-  /* color map for each card */
-
-  const colorMap: any = {
-    "Sick Leave": {
-      bar: "from-cyan-500 to-sky-500",
-      title: "text-cyan-600",
-      progress: "from-cyan-400 to-sky-500"
-    },
-    "Casual Leave": {
-     bar: "from-cyan-500 to-sky-500",
-      title: "text-cyan-600",
-      progress: "from-cyan-400 to-sky-500"
-    },
-    "Yearly Balance": {
-      bar: "from-cyan-500 to-sky-500",
-      title: "text-cyan-600",
-      progress: "from-cyan-400 to-sky-500"
-    },
-    "Monthly Balance": {
-      bar: "from-cyan-500 to-sky-500",
-      title: "text-cyan-600",
-      progress: "from-cyan-400 to-sky-500"
-    },
-    "Carry Forward": {
-      bar: "from-cyan-500 to-sky-500",
-      title: "text-cyan-600",
-      progress: "from-cyan-400 to-sky-500"
-    },
-    "Comp Off Balance": {
-      bar: "from-cyan-500 to-sky-500",
-      title: "text-cyan-600",
-      progress: "from-cyan-400 to-sky-500"
-    },
-    "Approved Leaves": {
-      bar: "from-emerald-500 to-green-500",
-      title: "text-emerald-600",
-      progress: "from-emerald-400 to-green-500"
-    },
-    "Pending Leaves": {
-      bar: "from-yellow-400 to-amber-500",
-      title: "text-yellow-600",
-      progress: "from-yellow-400 to-amber-500"
-    },
-    "Rejected Leaves": {
-      bar: "from-rose-500 to-red-500",
-      title: "text-rose-600",
-      progress: "from-rose-400 to-red-500"
-    },
-    "Loss Of Pay %": {
-      bar: "from-red-600 to-rose-600",
-      title: "text-red-600",
-      progress: "from-red-500 to-rose-500"
-    }
-  };
-
-  const theme = colorMap[stat.title] || {
-    bar: "from-indigo-500 to-blue-500",
-    title: "text-indigo-600",
-    progress: "from-indigo-400 to-blue-500"
-  };
-
-  return (
-    <motion.div
-      whileHover={{ y: -6, scale: 1.02 }}
-      transition={{ duration: 0.25 }}
-      onClick={() => setSelectedCard(stat)}
-      className="relative bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-xl cursor-pointer overflow-hidden"
-    >
-
-      {/* TOP COLOR BAR */}
-
-      <div
-        className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${theme.bar}`}
-      />
-
-      {/* TITLE */}
-
-      <h3
-        className={`text-sm font-semibold mb-4 tracking-wide ${theme.title}`}
-      >
-        {stat.title}
-      </h3>
-
-      {/* NUMBERS */}
-
-      <div className="grid grid-cols-3 text-center mb-4">
-
-        <div>
-          <p className="text-xs text-slate-400 uppercase">Total</p>
-          <p className="text-lg font-semibold text-slate-700">
-            {stat.total ?? stat.used}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-xs text-slate-400 uppercase">Used</p>
-          <p className="text-lg font-semibold text-orange-500">
-            {stat.used}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-xs text-slate-400 uppercase">Remaining</p>
-          <p className="text-lg font-semibold text-emerald-600">
-            {remaining}
-          </p>
-        </div>
-
-      </div>
-
-      {/* PROGRESS BAR */}
-
-      {stat.total && (
-        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${percent}%` }}
-            transition={{ duration: 0.8 }}
-            className={`h-2 rounded-full bg-gradient-to-r ${theme.progress}`}
-          />
-
-        </div>
-      )}
-
-      {/* HOVER GLOW */}
-
-      <div className="absolute inset-0 opacity-0 hover:opacity-100 transition duration-300 bg-gradient-to-br from-white via-transparent to-slate-50 pointer-events-none" />
-
-    </motion.div>
-  );
-};

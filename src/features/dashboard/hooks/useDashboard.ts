@@ -29,6 +29,9 @@ export const useDashboard = () => {
   const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
   const [employeeCalendar, setEmployeeCalendar] = useState<TeamCalendarResponse>({});
 
+  const [payslip, setPayslip] = useState<any>(null);
+const [history, setHistory] = useState<any[]>([]);
+
   const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponse | null>(null);
 
 //   const [leaveBalance, setLeaveBalance] = useState({
@@ -67,20 +70,20 @@ export const useDashboard = () => {
       setLoading(false);
     }
   };
-//   const fetchLeaveBalance = useCallback(async (employeeId: number, year: number = 2026) => {
-//     setLoading(true);
-//     setError(null);
-//     try {
-//         const data = await dashboardService.getLeaveBalances(employeeId, year);
-//         setLeaveBalance(data);
-//         return data;
-//     } catch (err: any) {
-//         setError(err.message || "Failed to fetch leave balance");
-//         return null;
-//     } finally {
-//         setLoading(false);
-//     }
-// }, []);
+  const fetchLeaveBalance = useCallback(async (employeeId: number, year: number = 2026) => {
+    setLoading(true);
+    setError(null);
+    try {
+        const data = await dashboardService.getLeaveBalances(employeeId, year);
+        setLeaveBalance(data);
+        return data;
+    } catch (err: any) {
+        setError(err.message || "Failed to fetch leave balance");
+        return null;
+    } finally {
+        setLoading(false);
+    }
+}, []);
 
 
  const fetchPayslip = async(year:number,month:number)=>{
@@ -451,6 +454,7 @@ const applyLeave = useCallback(async (data: FormData ) => {
     getTeamMembers,
     
     leaveBalance,
+    fetchLeaveBalance,
 
     removeLeaveType,
     cancelLeave,

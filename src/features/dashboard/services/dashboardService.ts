@@ -302,7 +302,7 @@ getMyPayslip: async (year: number, month: number) => {
     link.setAttribute("download", `payslip-${month}-${year}.pdf`);
     document.body.appendChild(link);
     link.click();
-  }
+  },
 
 
 
