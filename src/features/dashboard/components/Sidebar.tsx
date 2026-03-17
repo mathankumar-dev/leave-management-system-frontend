@@ -46,6 +46,7 @@ function Sidebar({
     { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER", "HR","ADMIN"] },
     { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER","HR","TEAM_LEADER"] },
     { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
+    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER","TEAM_LEADER","EMPLOYEE","HR","ADMIN"] },
     { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: [ "ADMIN","EMPLOYEE"] },
     { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER","TEAM_LEADER", "HR",] },
@@ -55,11 +56,8 @@ function Sidebar({
     // { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR", "ADMIN"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
-    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER","TEAM_LEADER","EMPLOYEE",""] },
     { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "HR"] },
     
-
-
   ];
 
   const visibleTabs = tabs.filter((tab) =>

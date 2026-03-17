@@ -1,6 +1,5 @@
 import logo from "../../assets/logo.svg";
 import heroBg from "../../assets/bg-img.jpeg"; 
-import CTAButton from "../../components/ui/CTAButton";
 import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
@@ -9,8 +8,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen w-full bg-[#f4f6f9] text-slate-900 scroll-smooth overflow-y-auto">
       
-      {/* HEADER - Sticky with Dark Theme from your CSS */}
-      <header className="sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center px-12 py-4 bg-[#0f172a] text-white shadow-lg">
+      <header className="sticky top-0 z-50 flex flex-col md:flex-row justify-between items-center px-12 py-4 bg-neutral-800 text-white shadow-lg">
         <div className="flex items-center gap-3 mb-4 md:mb-0">
           <img src={logo} alt="logo" className="h-10 w-auto" />
           <h2 className="text-xl font-bold tracking-tight">Wenxt Technologies</h2>
@@ -64,7 +62,7 @@ const LandingPage = () => {
             { title: "Payroll System", desc: "Automated salary calculation and payslip generation." },
             { title: "Employee Portal", desc: "Access dashboards to check leave status and salary." }
           ].map((f, i) => (
-            <div key={i} className="w-[300px] p-8 bg-[#f1f5f9] rounded-xl border border-slate-100 hover:shadow-lg transition-all text-center">
+            <div key={i} className="w-75 p-8 bg-[#f1f5f9] rounded-xl border border-slate-100 hover:shadow-lg transition-all text-center">
               <h3 className="text-xl font-bold mb-4 text-slate-800">{f.title}</h3>
               <p className="text-slate-500 leading-relaxed text-sm">{f.desc}</p>
             </div>
@@ -110,7 +108,7 @@ const LandingPage = () => {
       </section>
 
       {/* CONTACT - Dark Navy from CSS */}
-      <section className="py-16 px-6 bg-[#0f172a] text-center text-white">
+      <section className="py-16 px-6 bg-neutral-800 text-center text-white">
         <h2 className="text-3xl font-bold mb-4">Start Managing Your Workforce Today</h2>
         <a href="mailto:support@wenxttech.com" className="text-[#60a5fa] text-xl font-medium hover:underline">
           support@wenxttech.com
@@ -118,7 +116,7 @@ const LandingPage = () => {
       </section>
 
       {/* FOOTER - Extra Dark */}
-      <footer className="py-8 bg-[#020617] text-[#94a3b8] text-center text-sm">
+      <footer className="py-8 bg-[#020617] text-neutral-400 text-center text-sm">
         <p>© 2026 Wenxt Technologies | WorkSphere HRMS</p>
         <p className="mt-1 opacity-50">All Rights Reserved</p>
       </footer>

@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useAuth } from "../../auth/hooks/useAuth";
-import { useDashboard } from "../hooks/useDashboard";
-import type { LeaveType } from "../types";
-import MyDatePicker from "../../../components/ui/datepicker/MyDatePicker";
+import { useAuth } from "../../features/auth/hooks/useAuth";
+import { useDashboard } from "../../features/dashboard/hooks/useDashboard";
+import type { LeaveType } from "../../features/dashboard/types";
+import MyDatePicker from "../../components/ui/datepicker/MyDatePicker";
 
 import {
   HiOutlineClock,
@@ -14,7 +14,7 @@ import {
   HiOutlinePaperClip,
   HiOutlineXMark,
 } from "react-icons/hi2";
-import { toLocalISOString } from "../../../utils/dateUtils";
+import { toLocalISOString } from "../../utils/dateUtils";
 
 type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
@@ -158,27 +158,25 @@ const LeaveApplicationForm = () => {
   };
 
   const HalfDaySelector = ({ label, value, onChange }: { label: string, value: HalfDayType, onChange: (v: HalfDayType) => void }) => (
-  <div className="flex flex-col gap-2">
-    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
-    <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-fit">
-      {["FIRST_HALF", "SECOND_HALF"].map((type) => (
-        <button
-          key={type}
-          type="button"
-          // If already selected, clicking again sets it to null (Full Day)
-          onClick={() => onChange(value === type ? null : type as HalfDayType)}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-            value === type 
-              ? "bg-white text-indigo-600 shadow-sm" 
+    <div className="flex flex-col gap-2">
+      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+      <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-fit">
+        {["FIRST_HALF", "SECOND_HALF"].map((type) => (
+          <button
+            key={type}
+            type="button"
+            onClick={() => onChange(value === type ? null : type as HalfDayType)}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${value === type
+              ? "bg-white text-indigo-600 shadow-sm"
               : "text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          {type === "FIRST_HALF" ? "1st Half" : "2nd Half"}
-        </button>
-      ))}
+              }`}
+          >
+            {type === "FIRST_HALF" ? "1st Half" : "2nd Half"}
+          </button>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
 
 
   if (submitted) {
@@ -203,31 +201,36 @@ const LeaveApplicationForm = () => {
         </div>
       )}
 
-      {/* Leave Balance Bar (Remains same) */}
       {leaveBalance && (
         <div className="mb-6 bg-white border border-slate-200 rounded shadow-sm">
           <div className="flex flex-wrap md:flex-row items-center divide-x divide-slate-100">
-            {leaveBalance.breakdown.map((item) => {
-              const isActive = formData.category === item.leaveType;
-              return (
-                <div
-                  key={item.leaveType}
-                  onClick={() => setFormData({ ...formData, category: item.leaveType as any })}
-                  className={`flex-1 min-w-30 px-4 py-2 cursor-pointer transition-all relative ${isActive ? 'bg-indigo-50/50' : 'hover:bg-slate-50'}`}
-                >
-                  {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
-                  <div className="flex flex-col">
-                    <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>
-                      {item.leaveType.replace('_', ' ')}
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-base font-bold text-slate-700">{item.remainingDays}</span>
-                      <span className="text-[10px] font-medium text-slate-400">/ {item.allocatedDays}</span>
+            {leaveBalance.breakdown
+              .filter((item) => ["SICK", "ANNUAL_LEAVE", "COMP_OFF"].includes(item.leaveType))
+              .map((item) => {
+                const isActive = formData.category === item.leaveType;
+                return (
+                  <div
+                    key={item.leaveType}
+                    onClick={() => setFormData({ ...formData, category: item.leaveType as any })}
+                    className={`flex-1 min-w-30 px-4 py-2 cursor-pointer transition-all relative ${isActive ? "bg-indigo-50/50" : "hover:bg-slate-50"
+                      }`}
+                  >
+                    {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
+                    <div className="flex flex-col">
+                      <span
+                        className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? "text-indigo-600" : "text-slate-400"
+                          }`}
+                      >
+                        {item.leaveType.replace("_", " ")}
+                      </span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-base font-bold text-slate-700">{item.remainingDays}</span>
+                        <span className="text-[10px] font-medium text-slate-400">/ {item.allocatedDays}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       )}
@@ -288,7 +291,6 @@ const LeaveApplicationForm = () => {
             </div>
           </div>
 
-          {/* 02. Date & Half-Day Selection */}
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
