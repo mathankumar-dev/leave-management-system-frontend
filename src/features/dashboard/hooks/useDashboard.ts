@@ -29,6 +29,9 @@ export const useDashboard = () => {
   const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
   const [employeeCalendar, setEmployeeCalendar] = useState<TeamCalendarResponse>({});
 
+  const [payslip, setPayslip] = useState<any>(null);
+const [history, setHistory] = useState<any[]>([]);
+
   const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponse | null>(null);
 
 //   const [leaveBalance, setLeaveBalance] = useState({
@@ -71,7 +74,7 @@ export const useDashboard = () => {
     setLoading(true);
     setError(null);
     try {
-        const data = await service.getLeaveBalances(employeeId, year);
+        const data = await dashboardService.getLeaveBalances(employeeId, year);
         setLeaveBalance(data);
         return data;
     } catch (err: any) {
@@ -81,6 +84,38 @@ export const useDashboard = () => {
         setLoading(false);
     }
 }, []);
+
+
+ const fetchPayslip = async(year:number,month:number)=>{
+    try{
+      setLoading(true);
+      const res = await dashboardService.getMyPayslip(year,month);
+setPayslip(res.data);
+      
+    }catch(e){
+      setPayslip(null);
+      setError("Payslip not found");
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  const fetchHistory = async(year:number)=>{
+    try{
+      setLoading(true);
+      const data = await dashboardService.getHistory(year);
+      setHistory(data);
+    }catch(e){
+      setHistory([]);
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  const download = async(year:number,month:number)=>{
+    await dashboardService.downloadPayslip(year,month);
+  };
+
 
 
 
@@ -408,10 +443,18 @@ const applyLeave = useCallback(async (data: FormData ) => {
      fetchEmployeeCalendar,
   employeeCalendar,
 
+   payslip,
+    history,
+    
+    fetchPayslip,
+    fetchHistory,
+    download,
+
     applyLeave,
     getTeamMembers,
-    fetchLeaveBalance, 
+    
     leaveBalance,
+    fetchLeaveBalance,
 
     removeLeaveType,
     cancelLeave,

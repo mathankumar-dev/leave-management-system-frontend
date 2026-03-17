@@ -116,6 +116,7 @@ const DashboardLayout: React.FC = () => {
       case "Profile":
         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
+        
 
       case "Other Approvals":
         return <OtherRequestForm />;
