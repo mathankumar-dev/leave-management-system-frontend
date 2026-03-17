@@ -45,7 +45,7 @@ export interface ProfileData {
   email: string;
   role: string;
 
-  managerId: number;
+  managerId: number | null;
   managerName: string;
   teamLeaderId: number;
   teamLeaderName: string;

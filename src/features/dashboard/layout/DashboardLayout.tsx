@@ -17,7 +17,7 @@ import LowBalancePage from "../views/hr/pages/LowBalancePage";
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
 import CalendarView from "../views/employee/CalendarView";
-import LeaveApplicationForm from "../views/LeaveApplicationForm";
+import LeaveApplicationForm from "../../../common/forms/LeaveApplicationForm";
 import MyLeavesView from "../views/MyLeavesView";
 import NotificationsView from "../views/NotificationsView";
 import EmployeeProfile from "../views/employee/EmployeeProfile";
@@ -62,59 +62,7 @@ const DashboardLayout: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [checkingProfile, setCheckingProfile] = useState(true);
 
-  const [adminData, setAdminData] = useState<any>(null);
-  const [adminLoading, setAdminLoading] = useState(false);
-  const [adminError, setAdminError] = useState<string | null>(null);
-
-  const navigate = useNavigate();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  /* ---------------- SCROLL RESET ---------------- */
-  useEffect(() => {
-    scrollContainerRef.current?.scrollTo({ top: 0 });
-  }, [activeTab]);
-
-  /* ---------------- PROFILE CHECK ---------------- */
-  useEffect(() => {
-    if (!user) return;
-
-    // if (!personalDetailsComplete) {
-    //   navigate("/complete-profile");
-    //   return;
-    // }
-
-    setCheckingProfile(false);
-  }, [user, personalDetailsComplete, navigate]);
-
-  /* ---------------- ADMIN DASHBOARD FETCH ---------------- */
-  useEffect(() => {
-
-    if (userRole !== ROLES.ADMIN || !user?.id) return;
-
-    const fetchAdminDashboard = async () => {
-      try {
-
-        setAdminLoading(true);
-
-        const res = await api.get(`/dashboard/admin/${user.id}`);
-
-        setAdminData(res.data);
-
-      } catch (error) {
-
-        console.error(error);
-        setAdminError("Failed to load admin dashboard");
-
-      } finally {
-        setAdminLoading(false);
-      }
-    };
-
-    fetchAdminDashboard();
-
-  }, [userRole, user?.id]);
 
   /* ---------------- VIEW RENDERER ---------------- */
   const renderView = () => {
@@ -122,62 +70,7 @@ const DashboardLayout: React.FC = () => {
     switch (activeTab) {
 
       case "Dashboard":
-
-        if (userRole === ROLES.ADMIN) {
-
-          if (adminLoading) return <div>Loading admin dashboard...</div>;
-          if (adminError) return <div>{adminError}</div>;
-
-          return (
-            <div className="space-y-6">
-
-              <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <StatCard title="Total Employees" value={adminData?.totalEmployees} />
-                <StatCard title="Total Managers" value={adminData?.totalManagers} />
-                <StatCard title="Pending Leaves" value={adminData?.totalPendingLeaves} />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <StatCard title="Rejected Leaves" value={adminData?.totalRejectedLeaves} />
-                <StatCard title="Carry Forward Balance" value={adminData?.totalCarryForwardBalance} />
-                <StatCard title="Comp Off Balance" value={adminData?.totalCompOffBalance} />
-              </div>
-
-              <div>
-                <h2 className="text-xl font-semibold mt-6">Leave Type Breakdown</h2>
-
-                <table className="w-full mt-3 border">
-
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="p-2">Type</th>
-                      <th className="p-2">Allocated</th>
-                      <th className="p-2">Used</th>
-                      <th className="p-2">Balance</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {adminData?.leaveTypeUsage?.map((leave: any, index: number) => (
-                      <tr key={index}>
-                        <td className="p-2">{leave.leaveType}</td>
-                        <td className="p-2">{leave.totalAllocated}</td>
-                        <td className="p-2">{leave.totalUsed}</td>
-                        <td className="p-2">{leave.totalBalance}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-
-                </table>
-              </div>
-
-            </div>
-          );
-        }
-
-        if (userRole === ROLES.MANAGER)
+        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
 
         if (userRole === ROLES.HR)
@@ -202,7 +95,7 @@ const DashboardLayout: React.FC = () => {
       case "Apply Leave":
         return <LeaveApplicationForm />;
 
-      case "Request Center":
+      case "Request center":
         return <RequestCenter />;
 
       case "My Leaves":
@@ -233,13 +126,7 @@ const DashboardLayout: React.FC = () => {
     }
   };
 
-  if (checkingProfile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+
 
   if (mustChangePassword) return <ChangePasswordDialog />;
 

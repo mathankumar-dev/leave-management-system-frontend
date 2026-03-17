@@ -42,12 +42,11 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
   }>({ isOpen: false, req: null, status: null });
 
 
-  let data;
   const loadAllData = useCallback(async () => {
     if (!user?.id) return;
 
     try {
-      // Fixed the 'data' scoping issue
+
       const response = user.role === "TEAM_LEADER"
         ? await fetchTeamLeaderDashboard(user.id)
         : await fetchManagerDashboard(user.id);
@@ -260,17 +259,10 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
             View Details
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* CASUAL LEAVE CARD */}
-          <ManagerStatCard
-            label="Casual Leave"
-            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'CASUAL')?.usedDays || 0}
-            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'CASUAL')?.allocatedDays || 1}
-            iconType="calendar"
-            strokeColor="#f97316"
-          />
+        {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-          {/* SICK LEAVE CARD */}
+
+         
           <ManagerStatCard
             label="Sick Leave"
             value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'SICK')?.usedDays || 0}
@@ -278,22 +270,14 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
             iconType="pending"
             strokeColor="#3b82f6"
           />
+          <ManagerStatCard
+            label="Annual Leave"
+            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'ANNUAL_LEAVE')?.usedDays || 0}
+            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'ANNUAL_LEAVE')?.allocatedDays || 1}
+            iconType="pending"
+            strokeColor="#3b82f6"
+          />
 
-          {/* EARNED LEAVE CARD */}
-          <ManagerStatCard
-            label="Earned Leave"
-            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.usedDays || 0}
-            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'EARNED_LEAVES')?.allocatedDays || 1}
-            iconType="leave"
-            strokeColor="#6366f1"
-          />
-          <ManagerStatCard
-            label="Personal"
-            value={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'PERSONAL')?.usedDays || 0}
-            total={dashboardData?.personalStats.breakdown.find(l => l.leaveType === 'PERSONAL')?.allocatedDays || 1}
-            iconType="leave"
-            strokeColor="#6366f1"
-          />
           <ManagerStatCard
             label="Monthly Stats"
             value={dashboardData?.personalStats.monthlyUsed || 0}
@@ -301,6 +285,76 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
             iconType="leave"
             strokeColor="#6366f1"
           />
+        </div> */}
+
+        <div className="w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-neutral-800  text-white">
+              <tr>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Leave Category</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Used</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Allocated</th>
+                {/* <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Utilization</th> */}
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Balance</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {/* MAP THROUGH BREAKDOWN DATA */}
+              {dashboardData?.personalStats.breakdown.map((leave, index) => {
+                const percentage = Math.min(Math.round((leave.usedDays / leave.allocatedDays) * 100), 100);
+
+                return (
+                  <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <span className="text-xs font-bold text-slate-900 uppercase tracking-tight">
+                        {leave.leaveType.replace(/_/g, " ")}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-bold text-slate-700">{leave.usedDays} Days</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-medium text-slate-400">{leave.allocatedDays} Days</span>
+                    </td>
+                    {/* <td className="px-6 py-4 min-w-37.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 rounded-full"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-500">{percentage}%</span>
+                      </div>
+                    </td> */}
+                    <td className="px-6 py-4 text-right">
+                      <span className="px-3 py-1 bg-blue-50 text-[#2563eb] rounded-md text-xs font-black">
+                        {leave.allocatedDays - leave.usedDays} Left
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {/* MONTHLY STATS ROW (SPECIAL HIGHLIGHT) */}
+              <tr className="bg-indigo-50/30">
+                <td className="px-6 py-4">
+                  <span className="text-xs font-black text-indigo-600 uppercase italic">Monthly Quota</span>
+                </td>
+                <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyUsed} Days</td>
+                <td className="px-6 py-4 text-slate-400">{dashboardData?.personalStats.monthlyAllocated} Days</td>
+                {/* <td className="px-6 py-4">
+                 
+                  {/* <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-tighter">Current Period</span> 
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <span className="text-sm font-black text-indigo-700">
+                    {dashboardData?.personalStats.monthlyAllocated! - dashboardData?.personalStats.monthlyUsed!}
+                  </span>
+                </td> */}
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -415,7 +469,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
 
       {
         !drawerConfig.isOpen &&
-        <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Apply Leave")} title="Apply Leave" />}
+        <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Request center")} title="New Request" />}
     </motion.div>
   );
 };

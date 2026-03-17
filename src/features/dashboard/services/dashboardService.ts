@@ -213,12 +213,9 @@ export const dashboardService = {
   },
 
   getTeamOnLeave: async (managerId: number): Promise<TeamMemberBalance[]> => {
-    const response = await api.get(`/dashboard/manager/team-on-leave/${managerId}`);
+    const response = await api.get(`/dashboard/team-on-leave/${managerId}`);
     return response.data;
   },
-
-
-
 
   getEmployeeDashboard: async (employeeId?: number): Promise<Employee[]> => {
     const id = employeeId;

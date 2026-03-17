@@ -14,12 +14,12 @@ import { PUBLIC_HOLIDAYS_2026 } from "../../../../constants/holidays";
 const TeamCalendarView: React.FC = () => {
   const { user } = useAuth();
   const id = user?.id;
-  const { 
-    fetchTeamSchedule, 
-    teamCalendar, 
-    loading, 
-    fetchEmployeeCalendar, 
-    employeeCalendar 
+  const {
+    fetchTeamSchedule,
+    teamCalendar,
+    loading,
+    fetchEmployeeCalendar,
+    employeeCalendar
   } = useDashboard();
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -54,7 +54,7 @@ const TeamCalendarView: React.FC = () => {
   const prevMonth = () => setCurrentDate(new Date(year, month - 1));
 
   const selectedDateKey = getFormattedDateKey(selectedDay);
- 
+
   const selectedDayTeamLeaves = teamCalendar[selectedDateKey] || [];
   const selectedDayMyStatus = employeeCalendar[selectedDateKey] || [];
   const selectedDayHoliday = PUBLIC_HOLIDAYS_2026[selectedDateKey];
@@ -117,7 +117,7 @@ const TeamCalendarView: React.FC = () => {
               const dateKey = getFormattedDateKey(day);
               const holiday = PUBLIC_HOLIDAYS_2026[dateKey];
               const isSelected = selectedDay === day;
-              
+
               const teamDailyLeaves = teamCalendar[dateKey] || [];
               const myDailyStatus = employeeCalendar[dateKey] || [];
 
@@ -149,7 +149,7 @@ const TeamCalendarView: React.FC = () => {
                         {holiday}
                       </div>
                     )}
-                    
+
                     {/* Render Personal Leave/Status (Yellow) */}
                     {myDailyStatus.map((status, i) => (
                       <div key={`my-${i}`} className="px-1.5 py-0.5 bg-amber-100 border border-amber-200 text-amber-700 text-[8px] font-black uppercase rounded-sm truncate">
@@ -159,7 +159,7 @@ const TeamCalendarView: React.FC = () => {
 
                     {/* Render Team Leaves (Indigo) */}
                     {teamDailyLeaves.slice(0, 1).map((emp, i) => (
-                      <div key={`team-${i}`} className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[8px] font-black uppercase rounded-sm truncate">
+                      <div key={`team-${i}`} className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-100 text-red-600 text-[8px] font-black uppercase rounded-sm truncate">
                         {emp.employeeName}
                       </div>
                     ))}
@@ -178,10 +178,10 @@ const TeamCalendarView: React.FC = () => {
         </div>
       </div>
 
-     
+
       {/* Side Details Panel */}
       <div className="w-full lg:w-80 space-y-3">
-        
+
         {/* 1. DAILY ACTIVITY SECTION */}
         <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
@@ -189,7 +189,7 @@ const TeamCalendarView: React.FC = () => {
             <p className="text-[10px] font-black text-indigo-600 uppercase italic">{monthName.slice(0, 3)} {selectedDay}</p>
           </div>
 
-          <div className="p-4 min-h-[250px]">
+          <div className="p-4 min-h-62.5">
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedDateKey}
@@ -206,7 +206,7 @@ const TeamCalendarView: React.FC = () => {
 
                 {/* PERSONAL STATUS */}
                 {selectedDayMyStatus.map((_, i) => (
-                   <div key={`me-${i}`} className="border border-amber-200 p-3 rounded-sm bg-amber-50/50">
+                  <div key={`me-${i}`} className="border border-amber-200 p-3 rounded-sm bg-amber-50/50">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-amber-100 rounded-sm flex items-center justify-center text-amber-600 border border-amber-200">
                         <FaUserAlt size={12} />
@@ -229,7 +229,7 @@ const TeamCalendarView: React.FC = () => {
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-black text-slate-900 uppercase tracking-tight truncate">{emp.employeeName}</p>
-                          <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Team Member</p>
+                          <p className="text-[9px] font-black text-red-600 uppercase tracking-widest">Team Member</p>
                         </div>
                       </div>
                     </div>

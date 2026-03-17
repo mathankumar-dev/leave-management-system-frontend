@@ -9,8 +9,6 @@ export const notify = {
     
   info: (title: string, description?: string) => 
     toast.info(title, { description }),
-
-  // Updated Leave & Comp-Off logic
   leaveAction: (status: string, name: string, isCompOff: boolean = false) => {
     const typeLabel = isCompOff ? "Comp-Off" : "leave";
 

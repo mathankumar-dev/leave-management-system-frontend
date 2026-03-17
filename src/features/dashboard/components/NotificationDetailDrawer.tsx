@@ -59,11 +59,11 @@ const NotificationDetailDrawer: React.FC<DrawerProps> = ({ notification, isOpen,
                 <span className="text-xs font-bold italic">{new Date(notification.createdAt).toLocaleString()}</span>
               </div>
               
-              <div className="mt-10 pt-6 border-t border-slate-100">
+              {/* <div className="mt-10 pt-6 border-t border-slate-100">
                  <button className="w-full py-3 bg-slate-800 text-white rounded-sm text-xs font-black uppercase tracking-widest hover:bg-slate-700 transition-all">
                     Acknowledge
                  </button>
-              </div>
+              </div> */}
             </div>
           </motion.div>
         </>
