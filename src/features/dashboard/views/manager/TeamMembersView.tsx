@@ -89,26 +89,24 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                                         <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">ID: #00{emp.employeeId}</p>
                                     </div>
                                 </div>
-                                <button className="p-2 bg-slate-50 text-slate-400 rounded-sm">
-                                    <FaChartPie size={12} />
-                                </button>
+
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2 border-t border-slate-50 pt-3">
+                            <div className="grid grid-cols-2 gap-2 border-t border-slate-50 pt-3">
                                 <div className="text-center">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Leave</p>
-                                    <p className="text-xs font-black text-indigo-600 bg-indigo-50 py-1 rounded-sm">{emp.designation}</p>
+                                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Designation</p>
+                                    <p className="text-xs font-black text-indigo-600 bg-indigo-50 py-1 rounded-sm">{emp.designation ? emp.designation  : "Not Set Yet"}</p>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Comp</p>
-                                    <p className="text-xs font-black text-slate-700 bg-slate-50 py-1 rounded-sm">{emp.skills}</p>
+                                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Skills</p>
+                                    <p className="text-xs font-black text-slate-700 bg-slate-50 py-1 rounded-sm">{emp.skills ? emp.skills : "Not Set Yet"}</p>
                                 </div>
-                                <div className="text-center">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase mb-1">LOP</p>
+                                {/* <div className="text-center"> */}
+                                    {/* <p className="text-[8px] font-black text-slate-400 uppercase mb-1">LOP</p> */}
                                     {/* <p className={`text-xs font-black py-1 rounded-sm ${emp.lopPercentage! > 0 ? "text-rose-600 bg-rose-50" : "text-emerald-600 bg-emerald-50"}`}>
                                         {emp.lopPercentage}%
                                     </p> */}
-                                </div>
+                                {/* </div> */}
                             </div>
                         </motion.div>
                     ))}
@@ -152,13 +150,13 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
 
                                     <td className="px-6 py-4 text-center">
                                         <span className="text-xs font-black text-indigo-600 bg-indigo-50/50 border border-indigo-100 px-3 py-1 rounded-sm">
-                                            {emp.designation }
+                                            {emp.designation ? emp.designation : "Not Set Yet" }
                                         </span>
                                     </td>
 
                                     <td className="px-6 py-4 text-center">
                                         <span className="text-xs font-bold text-slate-600 uppercase tracking-tighter">
-                                            {emp.skills}
+                                            {emp.skills ? emp.skills : "Not Set Yet"}
                                         </span>
                                     </td>
 
