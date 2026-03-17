@@ -38,7 +38,7 @@ const LeaveApplicationForm = () => {
     startDate: null as Date | null,
     endDate: null as Date | null,
     compOffPlannedDate: null as Date | null,
-    isHalfDay: false, // UI Helper for single-day applications
+    isHalfDay: false,
     startDateHalfDayType: null as HalfDayType,
     endDateHalfDayType: null as HalfDayType,
     reason: "",
@@ -157,33 +157,28 @@ const LeaveApplicationForm = () => {
     return days;
   };
 
-  // Helper to render half-day toggle buttons
-  const HalfDaySelector = ({
-    label,
-    value,
-    onChange
-  }: {
-    label: string,
-    value: HalfDayType,
-    onChange: (v: HalfDayType) => void
-  }) => (
-    <div className="flex flex-col gap-2">
-      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
-      <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-fit">
-        {[null, "FIRST_HALF", "SECOND_HALF"].map((type) => (
-          <button
-            key={String(type)}
-            type="button"
-            onClick={() => onChange(type as HalfDayType)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${value === type ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
-              }`}
-          >
-            {type === null ? "Full Day" : type === "FIRST_HALF" ? "1st Half" : "2nd Half"}
-          </button>
-        ))}
-      </div>
+  const HalfDaySelector = ({ label, value, onChange }: { label: string, value: HalfDayType, onChange: (v: HalfDayType) => void }) => (
+  <div className="flex flex-col gap-2">
+    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+    <div className="inline-flex p-1 bg-slate-100 rounded-lg border border-slate-200 w-fit">
+      {["FIRST_HALF", "SECOND_HALF"].map((type) => (
+        <button
+          key={type}
+          type="button"
+          // If already selected, clicking again sets it to null (Full Day)
+          onClick={() => onChange(value === type ? null : type as HalfDayType)}
+          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+            value === type 
+              ? "bg-white text-indigo-600 shadow-sm" 
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          {type === "FIRST_HALF" ? "1st Half" : "2nd Half"}
+        </button>
+      ))}
     </div>
-  );
+  </div>
+);
 
 
   if (submitted) {
@@ -243,21 +238,28 @@ const LeaveApplicationForm = () => {
             {formData.category === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
           </h1>
 
-          {/* Replace the static span with this */}
           <div className="flex flex-col items-end">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
               Required Approvals
             </span>
             <div className="flex gap-2">
-              {/* Always show TL */}
-              <Badge label={`TL: ${user?.teamLeaderName || 'Assigning...'}`} active />
+              {(user?.role === "EMPLOYEE") && (
+                <>
+                  <Badge label={`TL: ${user?.teamLeaderName || 'Assigning...'}`} active />
+                  {calculateDays() > 1 && (
+                    <Badge label={`Manager: ${user?.managerName || 'Assigning...'}`} active />
+                  )}
+                </>
+              )}
 
-              {/* Show Manager if > 1 day */}
-              {calculateDays() > 1 && (
+              {/* Case 2: User is a Team Leader (TL). 
+      They skip the TL badge and start directly with Manager.
+    */}
+              {user?.role === "TEAM_LEADER" && (
                 <Badge label={`Manager: ${user?.managerName || 'Assigning...'}`} active />
               )}
 
-              {/* Show HR if > 7 days */}
+              {/* HR Step: Same for everyone if > 7 days */}
               {calculateDays() > 7 && (
                 <Badge label={`HR: ${user?.hrname || 'Assigning...'}`} active />
               )}

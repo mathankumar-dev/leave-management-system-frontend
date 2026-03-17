@@ -130,12 +130,7 @@ const EmployeeProfile: React.FC = () => {
 
           </Section>
 
-          <Section title="Address">
-
-            <Field label="Present Address" value={profile.presentAddress} />
-            <Field label="Permanent Address" value={profile.permanentAddress} />
-
-          </Section>
+          
 
           <Section title="Work Information">
 
@@ -144,6 +139,12 @@ const EmployeeProfile: React.FC = () => {
             <Field label="Manager" value={profile.managerName} />
             <Field label="Team Leader" value={profile.teamLeaderName} />
             <Field label="Joining Date" value={profile.joiningDate} />
+
+          </Section>
+          <Section title="Address">
+
+            <Field label="Present Address" value={profile.presentAddress} />
+            <Field label="Permanent Address" value={profile.permanentAddress} />
 
           </Section>
 

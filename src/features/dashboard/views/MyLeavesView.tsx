@@ -271,12 +271,12 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
   const { user } = useAuth();
   const days = item.days;
 
-  const needsTL = true;
-  const needsManager = days > 1;
-  const needsHR = days > 7;
-
   const isEmployee = userRole === "EMPLOYEE" || userRole === "USER";
-  const showTLStep = isEmployee && needsTL;
+  const isTL = userRole === "TEAM_LEADER";
+
+  const showTLStep = isEmployee; 
+  const needsManager = isTL || days > 1; 
+  const needsHR = days > 7;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -292,7 +292,6 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
         </div>
       </div>
 
-      {/* Timing Section */}
       <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm">
         <div className="p-2.5 flex justify-between items-center">
           <span className="text-[9px] font-black text-slate-500 uppercase">
@@ -308,17 +307,16 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
         )}
       </div>
 
-      {/* Dynamic Approval Tracker */}
       <div className="space-y-3">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
           Approval Flow ({days} {days === 1 ? 'Day' : 'Days'})
         </h4>
         <div className="space-y-4 relative before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
 
-          {/* TEAM LEADER STEP */}
+          {/* TEAM LEADER STEP - Only for regular Employees */}
           {showTLStep && (
             <div className="relative pl-6">
-              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.teamLeaderDecision === 'APPROVED' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.teamLeaderDecision === 'APPROVED' ? 'bg-emerald-500' : item.teamLeaderDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
               <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Team Leader ({user?.teamLeaderName})</p>
               <p className="text-[10px] text-slate-500 mt-1">
                 {item.teamLeaderDecision ? `${item.teamLeaderDecision} ${formatDate(item.teamLeaderDecidedAt)}` : 'Awaiting Review'}
@@ -326,7 +324,6 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
             </div>
           )}
 
-          {/* MANAGER STEP */}
           {needsManager && (
             <div className="relative pl-6">
               <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.managerDecision === 'APPROVED' ? 'bg-emerald-500' : item.managerDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
@@ -339,10 +336,10 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
             </div>
           )}
 
-          {/* HR STEP */}
+          {/* HR STEP - Required for requests > 7 days */}
           {needsHR && (
             <div className="relative pl-6">
-              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.hrDecision === 'APPROVED' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.hrDecision === 'APPROVED' ? 'bg-emerald-500' : item.hrDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
               <p className="text-[11px] font-black text-slate-700 uppercase leading-none">HR ({user?.hrname})</p>
               <p className="text-[10px] text-slate-500 mt-1">
                 {item.hrDecision
@@ -352,9 +349,8 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
             </div>
           )}
 
-          {/* Fallback if only TL is needed and user is a TL */}
           {!showTLStep && !needsManager && !needsHR && (
-            <p className="text-[10px] font-bold text-indigo-500 uppercase italic">Self-Approved / Auto-Finalized</p>
+            <p className="text-[10px] font-bold text-indigo-500 uppercase italic">Auto-Finalized</p>
           )}
         </div>
       </div>
