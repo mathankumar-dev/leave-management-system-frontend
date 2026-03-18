@@ -548,6 +548,10 @@ export interface PaginatedResponse<T> {
   totalElements: number;
   size: number;
   number: number; 
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
 }
 export interface EmployeeFilters {
   name?: string;

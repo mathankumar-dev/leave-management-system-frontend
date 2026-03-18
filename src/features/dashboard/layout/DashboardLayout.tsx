@@ -72,7 +72,7 @@ const DashboardLayout: React.FC = () => {
 
       case "Dashboard":
         if (userRole === ROLES.ADMIN)
-          return <AdminDashboardView />;
+          return <AdminDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
 
@@ -95,7 +95,7 @@ const DashboardLayout: React.FC = () => {
       case "Team Calendar":
         return <TeamCalendarView />;
       case "Employees":
-        return <EmployeesView />;
+        return <EmployeesView  />;
 
       case "Leave Config":
         return <LeaveTypesView />;

@@ -84,7 +84,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
           <p className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Global Oversight: {user?.name}</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => onNavigate?.("User Management")} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none">
+          <button onClick={() => onNavigate?.("Employees")} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none">
             <FaUsers /> Employees
           </button>
         </div>
@@ -158,8 +158,8 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <ManagerStatCardTeam label="Total Workforce" value={dashboardData?.totalEmployees || 0} iconType="team" onClick={() => onNavigate?.("Employee Directory")} />
           <ManagerStatCardTeam label="Pending Onboarding" value={dashboardData?.newEmployeesPendingOnboarding || 0} iconType="pending" colorClass="text-blue-600" />
-          <ManagerStatCardTeam label="Global Pending Leaves" value={dashboardData?.totalPendingLeaves || 0} iconType="calendar" colorClass="text-amber-600" onClick={() => onNavigate?.("All Requests")} />
-          <ManagerStatCardTeam label="AVG LOP (%)" value={dashboardData?.averageLossOfPayPercentage?.toFixed(1) || 0} iconType="processed" colorClass="text-rose-600" />
+          <ManagerStatCardTeam label="Total Managers" value={dashboardData?.totalManagers || 0} iconType="calendar" colorClass="text-amber-600" onClick={() => onNavigate?.("All Requests")} />
+          {/* <ManagerStatCardTeam label="AVG LOP (%)" value={dashboardData?.averageLossOfPayPercentage?.toFixed(1) || 0} iconType="processed" colorClass="text-rose-600" /> */}
         </div>
       </section>
 

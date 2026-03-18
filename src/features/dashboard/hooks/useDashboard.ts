@@ -346,22 +346,28 @@ export const useDashboard = () => {
     []
   );
   const fetchAllEmployees = useCallback(
-    async (filters: EmployeeFilters): Promise<PaginatedResponse<EmployeeEntity> | null> => {
+    async (
+      filters: EmployeeFilters
+    ): Promise<PaginatedResponse<EmployeeEntity> | null> => {
       setLoading(true);
-      setError(null); // Clear previous errors
+      setError(null);
+
       try {
-        // Pass the filters (page, size, name, etc.) to the service
         const response = await service.getAllEmployees(filters);
         return response;
-      } catch (err: any) {
-        const msg = err.message || "Failed to fetch employee directory";
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "Failed to fetch employee directory";
+
         setError(msg);
         return null;
       } finally {
         setLoading(false);
       }
     },
-    []
+    [service]
   );
 
 
@@ -458,15 +464,15 @@ export const useDashboard = () => {
     }
   }, []);
 
-const addUser = async (data: CreateUserRequest): Promise<void> => {
-  try {
-    const message = await dashboardService.createUser(data);
-    toast.success(message);
-  } catch (err: any) {
-    toast.error(err.toString());
-    throw err;
-  }
-};
+  const addUser = async (data: CreateUserRequest): Promise<void> => {
+    try {
+      const message = await dashboardService.createUser(data);
+      toast.success(message);
+    } catch (err: any) {
+      toast.error(err.toString());
+      throw err;
+    }
+  };
 
 
 
