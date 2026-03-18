@@ -80,7 +80,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
       {/* HEADER */}
       <div className="flex justify-between items-center border-b border-slate-200 pb-2 gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 uppercase italic">ADMIN CONSOLE</h2>
+          <h2 className="text-2xl font-black text-slate-900 uppercase">ADMIN CONSOLE</h2>
           <p className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Global Oversight: {user?.name}</p>
         </div>
         <div className="flex gap-2">
@@ -105,9 +105,10 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
             <thead className="bg-neutral-800 text-white">
               <tr>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Category</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Quota</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Allocated</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Used</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Remaining</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Balance</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Remarks</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -122,7 +123,27 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
                     </span>
                   </td>
                 </tr>
+
               ))}
+              {/* MONTHLY STATS ROW (SPECIAL HIGHLIGHT) */}
+              <tr className="bg-indigo-50/30">
+                <td className="px-6 py-4">
+                  <span className="text-xs font-black text-indigo-600 uppercase italic">Monthly Quota</span>
+                </td>
+                <td className="px-6 py-4 text-slate-400">{dashboardData?.personalStats.monthlyAllocated} Days</td>
+                <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyUsed} Days</td>
+                {/* <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyBalance} Days</td> */}
+
+                {/* <td className="px-6 py-4">
+                 
+                  {/* <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-tighter">Current Period</span> 
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <span className="text-sm font-black text-indigo-700">
+                    {dashboardData?.personalStats.monthlyAllocated! - dashboardData?.personalStats.monthlyUsed!}
+                  </span>
+                </td> */}
+              </tr>
             </tbody>
           </table>
         </div>
