@@ -78,7 +78,10 @@ export interface User {
 }
 
 export interface PersonalDetailsRequest {
-  // fullName : string;
+  // --- Identity & Contact ---
+  fullName: string;
+  lastName: string;
+  surName: string;
   contactNumber: string;
   gender: Gender;
   aadharNumber: string;
@@ -88,17 +91,35 @@ export interface PersonalDetailsRequest {
   permanentAddress: string;
   bloodGroup: BloodGroup;
   maritalStatus: MaritalStatus;
-  emergencyContactNumber: string;
+  emergencyContactNumber?: string;
   designation: string;
   skillSet: string;
 
+  // --- NEW: Bank Details ---
+  bankName: string;        // Added this
+  accountNumber: string;   // Added this
+
+  // --- Family Details ---
   fatherName: string;
   fatherDateOfBirth: string;
   fatherOccupation: string;
   fatherAlive: boolean;
-
   motherName: string;
   motherDateOfBirth: string;
   motherOccupation: string;
   motherAlive: boolean;
+
+  // --- Experienced Specific Fields ---
+  unaNumber?: string;
+  previousRole?: string;
+  oldCompanyName?: string;
+  oldCompanyFromDate?: string; // Added this
+  oldCompanyEndDate?: string;   // Added this
+
+  // --- Document Keys ---
+  aadhaarCard?: any; 
+  tc?: any;
+  offerLetter?: any;
+  experienceCertificate?: any;
+  leavingLetter?: any;
 }
