@@ -82,10 +82,10 @@ function Sidebar({
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between mb-8 px-2 shrink-0">
-          <div className="h-auto w-42 flex">
-
+        <div className="flex items-center justify-between item mb-8 px-2 shrink-0 border border-gray-50/25 rounded bg-gray-50/25 ">
+          <div className="h-auto w-42 flex items-center">
             <img src={logoSVG} alt="" width={50} height={50} />
+            <span className="text-black text-xl font-bold">Wenxt</span><span className="text-primary-500 text-xl font-bold">Technologies</span>
             {/* <NameSVG color="#ffffff" isDotNeeded={false} /> */}
           </div>
 
