@@ -338,7 +338,6 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
       const result = await createPayslip(data);
       if (result) {
         notify.success('Payslip created');
-        fetchPayrollData(year, month);
         setShowFormModal(false);
       }
     }
