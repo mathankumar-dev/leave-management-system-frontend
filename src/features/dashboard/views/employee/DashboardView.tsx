@@ -117,11 +117,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           total: data.rejectedCount || 0,
           color: "rose",
         },
-        {
-          title: "Loss Of Pay %",
-          used: data.lossOfPayPercentage || 0,
-          color: "red",
-        },
+        
       ];
 
       setStats(newStats);

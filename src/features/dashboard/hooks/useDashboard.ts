@@ -100,20 +100,41 @@ setPayslip(res.data);
     }
   };
 
-  const fetchHistory = async(year:number)=>{
-    try{
-      setLoading(true);
-      const data = await dashboardService.getHistory(year);
-      setHistory(data);
-    }catch(e){
-      setHistory([]);
-    }finally{
-      setLoading(false);
-    }
-  };
+  // const fetchHistory = async(year:number)=>{
+  //   try{
+  //     setLoading(true);
+  //     const data = await dashboardService.getHistory(year);
+  //     setHistory(data);
+  //   }catch(e){
+  //     setHistory([]);
+  //   }finally{
+  //     setLoading(false);
+  //   }
+  // };
 
-  const download = async(year:number,month:number)=>{
-    await dashboardService.downloadPayslip(year,month);
+  // const download = async(year:number,month:number)=>{
+  //   await dashboardService.downloadPayslip(year,month);
+  // };
+
+   const downloadHistory = async (year:number) => {
+    try {
+      setLoadingHistory(true);
+      const res = await dashboardService.getHistory(year); // backend returns the summary
+      // Convert to blob for download
+      const blob = new Blob([JSON.stringify(res, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Yearly_Summary_${year}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("Failed to download history", e);
+    } finally {
+      setLoadingHistory(false);
+    }
   };
 
 
@@ -445,10 +466,11 @@ const applyLeave = useCallback(async (data: FormData ) => {
 
    payslip,
     history,
+    downloadHistory,
     
     fetchPayslip,
-    fetchHistory,
-    download,
+    // fetchHistory,
+   
 
     applyLeave,
     getTeamMembers,
@@ -468,3 +490,7 @@ const applyLeave = useCallback(async (data: FormData ) => {
     filters, updateFilter, stats
   };
 };
+function setLoadingHistory(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
+
