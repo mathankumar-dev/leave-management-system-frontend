@@ -265,7 +265,7 @@ const LeaveApplicationForm = () => {
                 }
 
                 // Logic for Manager
-                if (role === "MANAGER") {
+                if (role === "MANAGER" || role === "ADMIN" ) {
                   approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
                 }
 

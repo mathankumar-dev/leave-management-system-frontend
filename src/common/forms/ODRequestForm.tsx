@@ -67,7 +67,7 @@ const ODRequestForm = () => {
         if (role === "TEAM_LEADER") {
             approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
         }
-        if (role === "MANAGER") {
+        if (role === "MANAGER" || role === "ADMIN" ) {
             approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
         }
         if (totalDays > 7 && role !== "MANAGER") {
