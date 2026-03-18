@@ -301,13 +301,11 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
   };
 
   const handlePreparePayroll = async () => {
-    // Next month calculate pannuvom
     const nextMonth = month === 12 ? 1 : month + 1;
     const nextYear = month === 12 ? year + 1 : year;
     const result = await preparePayroll(nextYear, nextMonth);
     if (result?.success) {
       notify.success(`Payroll prepared for ${MONTHS[nextMonth - 1]} ${nextYear}`);
-      // Auto switch to next month
       setMonth(nextMonth);
       setYear(nextYear);
     } else {

@@ -99,7 +99,7 @@ export function usePayslip() {
         ];
         setPayrollData(sorted);
       } else {
-      setPayrollData(data);
+        setPayrollData(data);
       }
       return data;
     } catch {

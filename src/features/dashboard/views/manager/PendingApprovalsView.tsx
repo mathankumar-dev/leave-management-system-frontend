@@ -14,7 +14,7 @@ import { useDashboard } from '../../hooks/useDashboard';
 interface PendingRequest {
     id: number;
     employeeName: string;
-    leaveType: string;
+    leaveType: string;  
     reason?: string;
     startDate: string;
     endDate: string;
