@@ -20,6 +20,7 @@ interface LeaveTypeBreakdown {
   allocatedDays: number;
   usedDays: number;
   remainingDays: number;
+  pendingCount? : number ;
 }
 
 interface StatItem {
@@ -27,6 +28,7 @@ interface StatItem {
   used: number;
   total?: number;
   color: string;
+  pendingCount? : number;
 }
 
 const containerVariants = {
@@ -56,8 +58,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         b.leaveType?.toUpperCase().includes("SICK")
       );
 
-      const casualLeave = breakdown.find((b) =>
-        b.leaveType?.toUpperCase().includes("CASUAL")
+      const annualLeave = breakdown.find((b) =>
+        b.leaveType?.toUpperCase().includes("ANNUAL_LEAVE")
       );
 
       const newStats: StatItem[] = [
@@ -66,12 +68,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           used: sickLeave?.usedDays ?? 0,
           total: sickLeave?.allocatedDays ?? 0,
           color: "cyan",
+          pendingCount : sickLeave?.pendingCount ?? 0,
         },
         {
-          title: "Casual Leave",
-          used: casualLeave?.usedDays ?? 0,
-          total: casualLeave?.allocatedDays ?? 0,
+          title: "Annual Leave",
+          used: annualLeave?.usedDays ?? 0,
+          total: annualLeave?.allocatedDays ?? 0,
           color: "cyan",
+          pendingCount : annualLeave?.pendingCount ?? 0,
         },
         {
           title: "Yearly Balance",
@@ -98,6 +102,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           used: data.compoffBalance || 0,
           total: data.compoffBalance || 0,
           color: "cyan",
+          pendingCount : 0,
         },
         {
           title: "Approved Leaves",
@@ -176,6 +181,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
               <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Allocated</th>
               <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Used</th>
               <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Balance</th>
+              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Pending Requests</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -214,6 +220,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                       : 'bg-slate-100 text-slate-500'
                       }`}>
                       {remaining} Left
+                    </span>
+                  </td>
+                                    <td className="px-6 py-4 text-center">
+                    <span className="text-sm font-bold text-slate-700">
+                      {stat.pendingCount} 
                     </span>
                   </td>
                 </tr>

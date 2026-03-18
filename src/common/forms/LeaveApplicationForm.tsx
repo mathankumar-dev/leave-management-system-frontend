@@ -42,6 +42,7 @@ const LeaveApplicationForm = () => {
     startDateHalfDayType: null as HalfDayType,
     endDateHalfDayType: null as HalfDayType,
     reason: "",
+    isAppointment: false,
   });
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -103,6 +104,10 @@ const LeaveApplicationForm = () => {
     fd.append("employeeId", employeeId.toString());
     fd.append("leaveType", formData.category);
     fd.append("startDate", toLocalISOString(formData.startDate));
+    const isFutureDate = formData.startDate ? new Date(formData.startDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) : false;
+    const isAppointment = formData.category === "SICK" && isFutureDate && formData.isAppointment;
+
+    fd.append("isAppointment", isAppointment.toString());
 
     const endDateStr = formData.isHalfDay
       ? toLocalISOString(formData.startDate)
@@ -264,7 +269,7 @@ const LeaveApplicationForm = () => {
                 }
 
                 // Logic for Manager
-                if (role === "MANAGER" || role === "ADMIN" ) {
+                if (role === "MANAGER" || role === "ADMIN") {
                   approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
                 }
 
@@ -362,6 +367,25 @@ const LeaveApplicationForm = () => {
               </label>
             </div>
           </div>
+          {formData.category === "SICK" && formData.startDate &&
+            new Date(formData.startDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) && (
+              <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg animate-in fade-in slide-in-from-top-2">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    className="w-5 h-5 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                    checked={formData.isAppointment}
+                    onChange={(e) => setFormData({ ...formData, isAppointment: e.target.checked })}
+                  />
+                  <div>
+                    <span className="text-sm font-bold text-amber-900 flex items-center gap-2">
+                      <HiOutlineShieldCheck className="text-amber-600" /> Medical Appointment?
+                    </span>
+                    <p className="text-[11px] text-amber-700">Check this if you are scheduling a future doctor's visit or check-up.</p>
+                  </div>
+                </label>
+              </div>
+            )}
 
           <div className="space-y-3">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
