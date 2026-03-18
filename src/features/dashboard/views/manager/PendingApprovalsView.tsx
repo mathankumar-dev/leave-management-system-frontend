@@ -124,9 +124,7 @@ const PendingApprovalsView: React.FC = () => {
     // };
 
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-        console.log("status :: ====>");
-        
-        console.log(status);
+
         
 
         const result = await handleDecision(
@@ -144,9 +142,6 @@ const PendingApprovalsView: React.FC = () => {
         }
     };
 
-    console.log("pending approvals");
-
-    console.log(requests);
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">

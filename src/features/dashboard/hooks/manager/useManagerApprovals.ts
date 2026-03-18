@@ -29,10 +29,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
         const combined = [...(tlRequests || []), ...formattedODs].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        console.log(`combined : ${combined.forEach(a => {
-          console.log(a);
-
-        })}`);
+        
 
         setRequests(combined);
 
@@ -63,10 +60,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
         const combined = [...leaves, ...formattedCompOffs, ...formattedODs].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        console.log(`combined : ${combined.forEach(a => {
-          console.log(a);
 
-        })}`);
         setRequests(combined);
       }
     } catch (err) {
@@ -157,9 +151,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     }
   };
 
-  console.log("from useManager dashboard");
 
-  console.log(requests);
 
 
   return {

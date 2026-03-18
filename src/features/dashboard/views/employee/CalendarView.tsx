@@ -4,7 +4,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaSpinner,
- 
+
 } from "react-icons/fa";
 
 import { useDashboard } from "../../hooks/useDashboard";
@@ -24,10 +24,10 @@ const TeamCalendarView: React.FC = () => {
   const month = currentDate.getMonth();
 
   useEffect(() => {
-  if (employeeId) {
-    fetchEmployeeCalendar(employeeId);
-  }
-}, [employeeId]);
+    if (employeeId) {
+      fetchEmployeeCalendar(employeeId);
+    }
+  }, [employeeId]);
 
   const getFormattedDateKey = (day: number) => {
     const mm = String(month + 1).padStart(2, "0");
@@ -58,7 +58,7 @@ const TeamCalendarView: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 gap-4 bg-slate-50/30">
 
           <div>
-            <h2 className="text-xl font-black text-slate-900 uppercase italic tracking-tighter">
+            <h2 className="text-xl font-black text-slate-900 uppercase   tracking-tighter">
               {monthName} {year}
             </h2>
 

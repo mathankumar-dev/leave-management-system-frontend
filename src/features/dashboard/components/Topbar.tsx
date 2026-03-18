@@ -49,7 +49,7 @@ const Topbar: React.FC<TopbarProps> = ({
           <FaBars size={18} />
         </button>
         <div className="min-w-0">
-          <h1 className="text-xl md:text-2xl font-bold text-primary-500 uppercase italic truncate">
+          <h1 className="text-xl md:text-2xl font-bold text-primary-500 uppercase   truncate">
             {activeTab}
           </h1>
         </div>

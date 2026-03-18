@@ -1,6 +1,6 @@
 import React from "react";
 import logo from "../../assets/logo.svg";
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 interface User {
   name: string;
   role: string;
@@ -45,37 +45,37 @@ const users: User[] = [
     avatar: "https://i.pravatar.cc/100?u=4",
   },
   {
-  name: "David Miller",
-  role: "Admin",
-  designation: "System Administrator",
-  status: "Active",
-  email: "dmiller@wenxt.tech",
-  avatar: "https://i.pravatar.cc/100?u=5",
-},
-{
-  name: "Priya Sharma",
-  role: "Employee",
-  designation: "Software Developer",
-  status: "Active",
-  email: "priya@wenxt.tech",
-  avatar: "https://i.pravatar.cc/100?u=6",
-},
-{
-  name: "Arun Kumar",
-  role: "Employee",
-  designation: "Backend Developer",
-  status: "Inactive",
-  email: "arun@wenxt.tech",
-  avatar: "https://i.pravatar.cc/100?u=7",
-},
-{
-  name: "Meena Raj",
-  role: "Admin",
-  designation: "HR Administrator",
-  status: "Active",
-  email: "meena@wenxt.tech",
-  avatar: "https://i.pravatar.cc/100?u=8",
-}
+    name: "David Miller",
+    role: "Admin",
+    designation: "System Administrator",
+    status: "Active",
+    email: "dmiller@wenxt.tech",
+    avatar: "https://i.pravatar.cc/100?u=5",
+  },
+  {
+    name: "Priya Sharma",
+    role: "Employee",
+    designation: "Software Developer",
+    status: "Active",
+    email: "priya@wenxt.tech",
+    avatar: "https://i.pravatar.cc/100?u=6",
+  },
+  {
+    name: "Arun Kumar",
+    role: "Employee",
+    designation: "Backend Developer",
+    status: "Inactive",
+    email: "arun@wenxt.tech",
+    avatar: "https://i.pravatar.cc/100?u=7",
+  },
+  {
+    name: "Meena Raj",
+    role: "Admin",
+    designation: "HR Administrator",
+    status: "Active",
+    email: "meena@wenxt.tech",
+    avatar: "https://i.pravatar.cc/100?u=8",
+  }
 ];
 
 const LaunchPage: React.FC = () => {
@@ -83,15 +83,15 @@ const LaunchPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const handleLogin = (user: User) => {
-  setCurrentUser(user);
-};
-useEffect(() => {
-  // Auto login first Admin user for demo/testing
-  const adminUser = users.find(u => u.role === "ADMIN");
-  if (adminUser) {
-    setCurrentUser(adminUser);
-  }
-}, []);
+    setCurrentUser(user);
+  };
+  useEffect(() => {
+    // Auto login first Admin user for demo/testing
+    const adminUser = users.find(u => u.role === "ADMIN");
+    if (adminUser) {
+      setCurrentUser(adminUser);
+    }
+  }, []);
   const filteredUsers = users
     .filter(user =>
       selectedRole === "All Staff"
@@ -126,18 +126,18 @@ useEffect(() => {
 
             <div className="flex items-center space-x-4">
               <div className="text-right hidden sm:block">
-  <p className="text-[10px] font-bold text-slate-400 uppercase">
-    Current User
-  </p>
-  <p className="text-sm font-bold">
-    {currentUser ? `${currentUser.name} (${currentUser.role})` : "Guest"}
-  </p>
-</div>
-<img
-  src={currentUser?.avatar || "https://i.pravatar.cc/150?u=guest"}
-  className="w-10 h-10 rounded-full"
-/>
-             
+                <p className="text-[10px] font-bold text-slate-400 uppercase">
+                  Current User
+                </p>
+                <p className="text-sm font-bold">
+                  {currentUser ? `${currentUser.name} (${currentUser.role})` : "Guest"}
+                </p>
+              </div>
+              <img
+                src={currentUser?.avatar || "https://i.pravatar.cc/150?u=guest"}
+                className="w-10 h-10 rounded-full"
+              />
+
             </div>
           </div>
 
@@ -162,10 +162,10 @@ useEffect(() => {
 
         {/* SIDEBAR */}
         <aside className="w-80 hidden lg:block space-y-6">
-<div className="bg-indigo-700 p-6 rounded-3xl text-white 
+          <div className="bg-indigo-700 p-6 rounded-3xl text-white 
             hover:-translate-y-1.25 hover:scale-102 transition-transform duration-300">
             <p className="text-xs uppercase mb-2">Thought of the Day</p>
-            <p className="italic">
+            <p className=" ">
               "Insurtech isn't just about code; it's about engineering trust."
             </p>
           </div>
@@ -211,7 +211,7 @@ useEffect(() => {
               </p>
             </div>
           </div>
-    
+
         </aside>
 
         {/* CONTENT */}
@@ -228,29 +228,28 @@ useEffect(() => {
               </div>
 
               <input
-  type="text"
-  placeholder="Search..."
-  value={searchQuery}
-  onChange={(e) => setSearchQuery(e.target.value)}
-  className="px-4 py-2 border rounded-xl w-72 h-10 mt-8"
-/>
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="px-4 py-2 border rounded-xl w-72 h-10 mt-8"
+              />
             </div>
 
             <div className="flex flex-wrap gap-2 mb-6">
-  {["All Staff", "Employee", "Manager", "HR", "Team Leader", "Admin", "CFO"].map((item) => (
-    <button
-      key={item}
-      onClick={() => setSelectedRole(item)}
-      className={`px-4 py-2 rounded-xl text-xs transition ${
-        selectedRole === item
-          ? "bg-indigo-500 text-white"
-          : "bg-slate-100 hover:bg-indigo-500 hover:text-white"
-      }`}
-    >
-      {item}
-    </button>
-  ))}
-</div>
+              {["All Staff", "Employee", "Manager", "HR", "Team Leader", "Admin", "CFO"].map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setSelectedRole(item)}
+                  className={`px-4 py-2 rounded-xl text-xs transition ${selectedRole === item
+                      ? "bg-indigo-500 text-white"
+                      : "bg-slate-100 hover:bg-indigo-500 hover:text-white"
+                    }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -264,7 +263,7 @@ useEffect(() => {
                 </thead>
 
                 <tbody>
-                  {filteredUsers.map((user, i) =>(
+                  {filteredUsers.map((user, i) => (
                     <tr key={i} className="hover:bg-slate-50">
 
                       <td className="py-4 flex items-center space-x-3">
@@ -287,8 +286,8 @@ useEffect(() => {
                       <td className="text-right">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-bold ${user.status === "Active"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
                             }`}
                         >
                           {user.status}

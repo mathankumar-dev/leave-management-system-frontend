@@ -84,7 +84,6 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       setDialogConfig({ isOpen: false, req: null, status: null });
     }
   };
-  console.log(dashboardData);
 
   if (dashboardLoading || authLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -110,7 +109,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       >
         {drawerConfig.type === 'PERSONAL' ? (
           <div className="space-y-6">
-            <div className="p-4 bg-slate-900 text-white rounded-sm italic ">
+            <div className="p-4 bg-slate-900 text-white rounded-sm   ">
               <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Status: Active</p>
               <p className="text-xs font-bold">You have {dashboardData?.personalStats.yearlyBalance} days remaining in your annual quota.</p>
             </div>
@@ -135,7 +134,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                         <span className="text-[10px] font-bold text-slate-400 uppercase">
                           Used / Total
                         </span>
-                        <span className="text-lg font-black italic text-slate-900">
+                        <span className="text-lg font-black   text-slate-900">
                           {item.usedDays}d
                           <span className="text-slate-300 font-medium mx-1">/</span>
                           {item.allocatedDays}d
@@ -147,7 +146,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                         <span className="text-[10px] font-bold text-slate-400 uppercase">
                           Remaining
                         </span>
-                        <span className={`text-lg font-black italic ${item.remainingDays <= 1 ? 'text-red-500' : 'text-indigo-600'}`}>
+                        <span className={`text-lg font-black   ${item.remainingDays <= 1 ? 'text-red-500' : 'text-indigo-600'}`}>
                           {item.remainingDays}d
                         </span>
                       </div>
@@ -161,24 +160,24 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                 ))}
                 <div className="flex justify-between items-center p-4 border-2 border-slate-100">
                   <span className="text-[10px] font-black uppercase text-slate-400">Comp-Off Bank</span>
-                  <span className="text-lg font-black italic">{dashboardData?.personalStats.compoffBalance || 0}d</span>
+                  <span className="text-lg font-black  ">{dashboardData?.personalStats.compoffBalance || 0}d</span>
                 </div>
                 <div className="flex justify-between items-center p-4 border-2 border-slate-100">
                   <span className="text-[10px] font-black uppercase text-slate-400">Carry Forward</span>
-                  <span className="text-lg font-black italic">{dashboardData?.personalStats.carryForwardRemaining || 0}d</span>
+                  <span className="text-lg font-black  ">{dashboardData?.personalStats.carryForwardRemaining || 0}d</span>
                 </div>
                 <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
                   <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Monthly Stats</span>
                   <div className="flex justify-between items-end">
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
-                      <span className="text-lg font-black italic text-slate-900">
+                      <span className="text-lg font-black   text-slate-900">
                         {dashboardData?.personalStats.monthlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.monthlyAllocated}d
                       </span>
                     </div>
                     <div className="text-right flex flex-col">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
-                      <span className="text-lg font-black italic text-indigo-600">
+                      <span className="text-lg font-black   text-indigo-600">
                         {dashboardData?.personalStats.monthlyBalance || 0}d
                       </span>
                     </div>
@@ -190,13 +189,13 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                   <div className="flex justify-between items-end">
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
-                      <span className="text-lg font-black italic text-slate-900">
+                      <span className="text-lg font-black   text-slate-900">
                         {dashboardData?.personalStats.yearlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.yearlyAllocated}d
                       </span>
                     </div>
                     <div className="text-right flex flex-col">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
-                      <span className="text-lg font-black italic text-indigo-600">
+                      <span className="text-lg font-black   text-indigo-600">
                         {dashboardData?.personalStats.yearlyBalance || 0}d
                       </span>
                     </div>
@@ -205,7 +204,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
 
                 <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50 border-rose-100">
                   <span className="text-[10px] font-black uppercase text-rose-400">Loss of Pay (%)</span>
-                  <span className="text-lg font-black italic text-rose-600">{dashboardData?.personalStats.lossOfPayPercentage || 0}%</span>
+                  <span className="text-lg font-black   text-rose-600">{dashboardData?.personalStats.lossOfPayPercentage || 0}%</span>
                 </div>
               </div>
             </div>
@@ -214,18 +213,18 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           <div className="space-y-6">
             <div className="p-4 border-2 border-slate-900  bg-white">
               <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Managed Reports</p>
-              <p className="text-3xl font-black italic tracking-tighter">{dashboardData?.teamSize} Members</p>
+              <p className="text-3xl font-black   tracking-tighter">{dashboardData?.teamSize} Members</p>
             </div>
 
             <div className="space-y-3">
               <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Team Performance</h4>
               <div className="flex justify-between p-4 border border-slate-200">
                 <span className="text-[10px] font-black uppercase">Approved this year</span>
-                <span className="text-sm font-black italic text-emerald-600">{dashboardData?.personalStats.approvedCount!}</span>
+                <span className="text-sm font-black   text-emerald-600">{dashboardData?.personalStats.approvedCount!}</span>
               </div>
               <div className="flex justify-between p-4 border border-slate-200">
                 <span className="text-[10px] font-black uppercase">Rejected this year</span>
-                <span className="text-sm font-black italic text-rose-600">{dashboardData?.personalStats.rejectedCount}</span>
+                <span className="text-sm font-black   text-rose-600">{dashboardData?.personalStats.rejectedCount}</span>
               </div>
             </div>
           </div>
@@ -234,7 +233,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       {/* HEADER */}
       <div className="flex justify-between items-center border-b border-slate-200 pb-1 gap-4">
         <div>
-          <h2 className="text-2xl font-black  text-slate-900 uppercase italic">WELCOME BACK</h2>
+          <h2 className="text-2xl font-black  text-slate-900 uppercase  ">WELCOME BACK</h2>
           <p className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">{UserRole}: {user?.name}</p>
         </div>
         <button
@@ -340,7 +339,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
               {/* MONTHLY STATS ROW (SPECIAL HIGHLIGHT) */}
               <tr className="bg-indigo-50/30">
                 <td className="px-6 py-4">
-                  <span className="text-xs font-black text-indigo-600 uppercase italic">Monthly Quota</span>
+                  <span className="text-xs font-black text-indigo-600 uppercase  ">Monthly Quota</span>
                 </td>
                 <td className="px-6 py-4 text-slate-400">{dashboardData?.personalStats.monthlyAllocated} Days</td>
                 <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyUsed} Days</td>
@@ -405,10 +404,10 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                     </div>
                     <div>
                       <p className="font-black text-xs text-slate-900 uppercase ">{req.employeeName}</p>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase italic">{req.leaveType}</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase  ">{req.leaveType}</p>
                     </div>
                   </div>
-                  <div className="flex-1 bg-slate-50 p-2 border border-slate-100 rounded-sm italic text-[10px] text-slate-600 flex items-center gap-2">
+                  <div className="flex-1 bg-slate-50 p-2 border border-slate-100 rounded-sm   text-[10px] text-slate-600 flex items-center gap-2">
                     <FaCommentDots className="text-slate-300" /> "{req.reason || "No reason provided."}"
                   </div>
                   <div className="flex gap-2">
@@ -443,10 +442,10 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-slate-500">
                         {emp.leaveType}
                       </p>
-                      <p className="text-xl font-black text-slate-900 tracking-tight italic transition-transform group-hover:-translate-y-0.5 uppercase">
+                      <p className="text-xl font-black text-slate-900 tracking-tight   transition-transform group-hover:-translate-y-0.5 uppercase">
                         {emp.employeeName}
                       </p>
-                      <p className="text-[9px] font-bold text-emerald-600 uppercase mt-1 italic">
+                      <p className="text-[9px] font-bold text-emerald-600 uppercase mt-1  ">
                         Currently Away
                       </p>
                     </div>

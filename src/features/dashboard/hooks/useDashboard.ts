@@ -151,8 +151,7 @@ export const useDashboard = () => {
     setLoading(true);
     try {
       const response = await service.getEmpDashboard(employeeId);
-      console.log("FULL RESPONSE", response); // Use this directly
-      return response; // Not response.data
+      return response; 
     } catch (err: any) {
       console.error("API ERROR DETAILS:", err.response?.data || err.message);
       setError(err.message);

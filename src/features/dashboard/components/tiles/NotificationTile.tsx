@@ -5,14 +5,14 @@ interface NotificationTileProps {
     eventType: string;
     message: string;
     createdAt: string;
-    isUnread: boolean; 
+    isUnread: boolean;
 }
 
-const NotificationTile: React.FC<NotificationTileProps> = ({ 
-    eventType, 
-    message, 
-    createdAt, 
-    isUnread 
+const NotificationTile: React.FC<NotificationTileProps> = ({
+    eventType,
+    message,
+    createdAt,
+    isUnread
 }) => {
     const getIconTheme = (type: string) => {
         switch (type) {
@@ -26,16 +26,15 @@ const NotificationTile: React.FC<NotificationTileProps> = ({
     const theme = getIconTheme(eventType);
 
     return (
-        <div className={`w-full p-4 flex items-center justify-between border-b rounded-sm border-slate-100 last:border-0 hover:bg-slate-50 transition-all duration-200 ${
-            isUnread ? 'bg-indigo-50/40' : 'bg-white'
-        }`}>
+        <div className={`w-full p-4 flex items-center justify-between border-b rounded-sm border-slate-100 last:border-0 hover:bg-slate-50 transition-all duration-200 ${isUnread ? 'bg-indigo-50/40' : 'bg-white'
+            }`}>
             <div className="flex items-center gap-4 min-w-0">
                 {/* ICON & UNREAD DOT CONTAINER */}
                 <div className="relative shrink-0 flex items-center justify-center w-10 h-10 bg-slate-50 rounded-lg">
                     <div className={`${theme.color} text-xl`}>
                         {theme.icon}
                     </div>
-                    
+
                     {/* THE DOT: Positioned absolutely relative to the icon container */}
                     {isUnread && (
                         <span className="absolute -top-1 -right-1 flex h-3 w-3">
@@ -48,21 +47,19 @@ const NotificationTile: React.FC<NotificationTileProps> = ({
                 </div>
 
                 <div className="flex flex-col min-w-0">
-                    <span className={`uppercase font-black text-[10px] md:text-[11px] tracking-wider ${
-                        isUnread ? 'text-slate-900' : 'text-slate-400'
-                    }`}>
+                    <span className={`uppercase font-black text-[10px] md:text-[11px] tracking-wider ${isUnread ? 'text-slate-900' : 'text-slate-400'
+                        }`}>
                         {eventType.replace(/_/g, ' ')}
                     </span>
-                    <p className={`text-xs line-clamp-1 mt-0.5 ${
-                        isUnread ? 'text-slate-700 font-bold' : 'text-slate-500 font-medium'
-                    }`}>
+                    <p className={`text-xs line-clamp-1 mt-0.5 ${isUnread ? 'text-slate-700 font-bold' : 'text-slate-500 font-medium'
+                        }`}>
                         {message}
                     </p>
                 </div>
             </div>
-            
+
             <div className="flex flex-col items-end gap-1 ml-4 shrink-0">
-                <span className="text-[9px] font-bold text-slate-400 whitespace-nowrap italic uppercase tracking-tighter">
+                <span className="text-[9px] font-bold text-slate-400 whitespace-nowrap   uppercase tracking-tighter">
                     {createdAt}
                 </span>
                 {/* Small text indicator for accessibility */}

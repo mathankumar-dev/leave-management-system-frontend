@@ -35,7 +35,6 @@ export function ManagerTrackingTable({
       )
       : null;
 
-  console.log(managerStats);
   // 🔥 Compute Most Pending
   const topPending =
     managerStats.length > 0

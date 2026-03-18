@@ -42,7 +42,7 @@ const NotificationDetailDrawer: React.FC<DrawerProps> = ({ notification, isOpen,
             <div className="p-8 flex flex-col gap-6">
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</label>
-                <p className="text-sm font-bold text-indigo-600 uppercase italic">
+                <p className="text-sm font-bold text-indigo-600 uppercase  ">
                   {notification.eventType.replace(/_/g, ' ')}
                 </p>
               </div>
@@ -56,9 +56,9 @@ const NotificationDetailDrawer: React.FC<DrawerProps> = ({ notification, isOpen,
 
               <div className="flex items-center gap-2 text-slate-400">
                 <FaRegClock size={12} />
-                <span className="text-xs font-bold italic">{new Date(notification.createdAt).toLocaleString()}</span>
+                <span className="text-xs font-bold  ">{new Date(notification.createdAt).toLocaleString()}</span>
               </div>
-              
+
               {/* <div className="mt-10 pt-6 border-t border-slate-100">
                  <button className="w-full py-3 bg-slate-800 text-white rounded-sm text-xs font-black uppercase tracking-widest hover:bg-slate-700 transition-all">
                     Acknowledge

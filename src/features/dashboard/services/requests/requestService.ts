@@ -21,15 +21,12 @@ export const requestService = {
   },
 
   approveOD: async (odId: number, approverId: number): Promise<void> => {
-    console.log("gonig to call approve OD");
     
     
     const res = await api.put(`/od/approve/${odId}`, {}, {
       params: { approverId }
     });
-    console.log("response:");
     
-    console.log(res);
     
   },
   rejectOD: async (odId: number, approverId: number, reason: string): Promise<void> => {

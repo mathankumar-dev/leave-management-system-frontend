@@ -32,7 +32,7 @@ const EditLeaveModal: React.FC<EditLeaveModalProps> = ({ isOpen, leave, onClose,
     <AnimatePresence>
       {isOpen && leave && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -49,7 +49,7 @@ const EditLeaveModal: React.FC<EditLeaveModalProps> = ({ isOpen, leave, onClose,
             className="relative bg-white w-full max-w-md rounded-sm shadow-2xl overflow-hidden"
           >
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-lg font-black text-slate-800 uppercase italic">Edit Leave Request</h3>
+              <h3 className="text-lg font-black text-slate-800 uppercase  ">Edit Leave Request</h3>
               <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-sm transition-colors">
                 <FaTimes className="text-slate-400" />
               </button>

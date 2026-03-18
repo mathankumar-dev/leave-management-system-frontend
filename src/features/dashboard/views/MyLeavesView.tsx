@@ -221,7 +221,7 @@ const MyLeavesView: React.FC = () => {
                         onCancel={() => handleCancel(item.id)}
                       />
                     ) : (
-                      <span className="text-slate-300 text-[10px] font-bold uppercase italic tracking-tighter">Finalized</span>
+                      <span className="text-slate-300 text-[10px] font-bold uppercase   tracking-tighter">Finalized</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase">{formatTimeAgo(item.createdAt)}</td>
@@ -287,7 +287,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
           <FaInfoCircle className="text-indigo-400" /> Reason & Impact
         </h4>
         <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-15">
-          <p className="text-xs text-slate-600 leading-relaxed italic">
+          <p className="text-xs text-slate-600 leading-relaxed  ">
             {item.reason ? `"${item.reason}"` : "No reason provided."}
           </p>
         </div>
@@ -351,7 +351,7 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
           )}
 
           {!showTLStep && !needsManager && !needsHR && (
-            <p className="text-[10px] font-bold text-indigo-500 uppercase italic">Auto-Finalized</p>
+            <p className="text-[10px] font-bold text-indigo-500 uppercase  ">Auto-Finalized</p>
           )}
         </div>
       </div>

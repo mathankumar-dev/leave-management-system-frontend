@@ -42,12 +42,6 @@ function getRemainingBadge(remaining: number) {
 }
 
 export function LowBalanceTable({ data, loading, error }: LowBalanceTableProps) {
-
-  // console.log("in comp");
-  // console.log(data);
-  
-  
-
   const renderBody = () => {
 
     
@@ -128,7 +122,6 @@ export function LowBalanceTable({ data, loading, error }: LowBalanceTableProps) 
       </tr>
     ));
   };
-  // console.log(data);
   
 
   return (

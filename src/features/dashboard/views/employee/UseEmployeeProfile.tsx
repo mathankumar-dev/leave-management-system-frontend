@@ -15,7 +15,6 @@ const fetchProfile = async () => {
   try {
     const res = await api.get(`/employees/profile/${employeeId}`);
 
-    console.log("API RESPONSE:", res.data);  
 
     setProfile(res.data);
   } catch (err) {

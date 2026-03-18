@@ -11,9 +11,9 @@ import { useAuth } from "../../../auth/hooks/useAuth";
 import type { TeamMember, TeamMemberBalance } from "../../types";
 import CustomLoader from "../../../../components/ui/CustomLoader";
 interface TeamMembersViewProps {
-  onNavigate?: (tab: string) => void;
+    onNavigate?: (tab: string) => void;
 }
-const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
+const TeamMembersView: React.FC<TeamMembersViewProps> = ({ onNavigate }) => {
     const { fetchTeamMembers, loading } = useDashboard();
     const { user } = useAuth();
 
@@ -45,15 +45,15 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
             <header className="px-1 md:px-0">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase italic">My Team</h2>
+                        <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase  ">My Team</h2>
                         <p className="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wide">
                             Managing {filteredMembers.length} Direct Reports
                         </p>
                     </div>
                     {onNavigate && (
-                    <button onClick={() => onNavigate("Team Calendar")} className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-sm text-xs font-black uppercase shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
-                        <FaCalendarCheck size={14} /> Team Calendar
-                    </button>)}
+                        <button onClick={() => onNavigate("Team Calendar")} className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-sm text-xs font-black uppercase shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+                            <FaCalendarCheck size={14} /> Team Calendar
+                        </button>)}
                 </div>
             </header>
 
@@ -68,15 +68,15 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                         className="w-full bg-white border border-slate-200 pl-11 pr-4 py-3 rounded-sm text-xs font-bold uppercase focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition-all placeholder:text-slate-300"
                     />
                 </div>
- 
+
             </div>
 
             <div className="md:hidden space-y-3">
                 <AnimatePresence mode="popLayout">
                     {filteredMembers.map((emp) => (
-                        <motion.div 
-                            layout 
-                            key={emp.employeeId} 
+                        <motion.div
+                            layout
+                            key={emp.employeeId}
                             className="bg-white p-4 rounded-sm border border-slate-200 shadow-sm"
                         >
                             <div className="flex justify-between items-start mb-4">
@@ -102,8 +102,8 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                                     <p className="text-xs font-black text-slate-700 bg-slate-50 py-1 rounded-sm">{emp.skills ? emp.skills : "Not Set Yet"}</p>
                                 </div>
                                 {/* <div className="text-center"> */}
-                                    {/* <p className="text-[8px] font-black text-slate-400 uppercase mb-1">LOP</p> */}
-                                    {/* <p className={`text-xs font-black py-1 rounded-sm ${emp.lopPercentage! > 0 ? "text-rose-600 bg-rose-50" : "text-emerald-600 bg-emerald-50"}`}>
+                                {/* <p className="text-[8px] font-black text-slate-400 uppercase mb-1">LOP</p> */}
+                                {/* <p className={`text-xs font-black py-1 rounded-sm ${emp.lopPercentage! > 0 ? "text-rose-600 bg-rose-50" : "text-emerald-600 bg-emerald-50"}`}>
                                         {emp.lopPercentage}%
                                     </p> */}
                                 {/* </div> */}
@@ -150,7 +150,7 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
 
                                     <td className="px-6 py-4 text-center">
                                         <span className="text-xs font-black text-indigo-600 bg-indigo-50/50 border border-indigo-100 px-3 py-1 rounded-sm">
-                                            {emp.designation ? emp.designation : "Not Set Yet" }
+                                            {emp.designation ? emp.designation : "Not Set Yet"}
                                         </span>
                                     </td>
 
@@ -160,7 +160,7 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({onNavigate}) => {
                                         </span>
                                     </td>
 
-                                    
+
 
                                     {/* <td className="px-6 py-4 text-right">
                                         <button className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-sm transition-all">

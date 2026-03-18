@@ -58,7 +58,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
         {/* Reusing your Personal Stats logic from Manager View */}
         {drawerConfig.type === 'PERSONAL' ? (
           <div className="space-y-4">
-            <div className="p-4 bg-slate-900 text-white rounded-sm italic">
+            <div className="p-4 bg-slate-900 text-white rounded-sm  ">
               <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Admin Access</p>
               <p className="text-xs font-bold">Your Balance: {dashboardData?.personalStats.yearlyBalance} days</p>
             </div>
@@ -68,7 +68,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
           <div className="space-y-6">
             <div className="p-4 border-2 border-red-500 bg-red-50">
               <p className="text-[10px] font-black uppercase text-red-400 mb-1">Critical Issues</p>
-              <p className="text-3xl font-black italic tracking-tighter text-red-600">
+              <p className="text-3xl font-black   tracking-tighter text-red-600">
                 {dashboardData?.complianceIssues?.length || 0} Alerts
               </p>
             </div>
@@ -128,7 +128,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
               {/* MONTHLY STATS ROW (SPECIAL HIGHLIGHT) */}
               <tr className="bg-indigo-50/30">
                 <td className="px-6 py-4">
-                  <span className="text-xs font-black text-indigo-600 uppercase italic">Monthly Quota</span>
+                  <span className="text-xs font-black text-indigo-600 uppercase  ">Monthly Quota</span>
                 </td>
                 <td className="px-6 py-4 text-slate-400">{dashboardData?.personalStats.monthlyAllocated} Days</td>
                 <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyUsed} Days</td>
@@ -184,7 +184,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
                   <p className="text-[9px] text-slate-400 font-bold uppercase">{log.leaveType} • Rejected by {log.rejectedByName}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-black text-red-500 italic">"{log.reason}"</p>
+                  <p className="text-[10px] font-black text-red-500  ">"{log.reason}"</p>
                   <p className="text-[8px] text-slate-300 uppercase mt-1">{new Date(log.rejectedAt).toLocaleDateString()}</p>
                 </div>
               </div>

@@ -65,7 +65,7 @@ const TeamCalendarView: React.FC = () => {
         {/* Calendar Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border-b border-slate-100 gap-4 bg-slate-50/30">
           <div>
-            <h2 className="text-xl font-black text-slate-900 uppercase italic tracking-tighter">
+            <h2 className="text-xl font-black text-slate-900 uppercase   tracking-tighter">
               {monthName} {year}
             </h2>
             <div className="flex items-center gap-4 mt-1">
@@ -186,7 +186,7 @@ const TeamCalendarView: React.FC = () => {
         <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Daily Activity</p>
-            <p className="text-[10px] font-black text-indigo-600 uppercase italic">{monthName.slice(0, 3)} {selectedDay}</p>
+            <p className="text-[10px] font-black text-indigo-600 uppercase  ">{monthName.slice(0, 3)} {selectedDay}</p>
           </div>
 
           <div className="p-4 min-h-62.5">
