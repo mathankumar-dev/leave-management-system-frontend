@@ -17,7 +17,7 @@ const ManagerStatCard: React.FC<ManagerStatCardProps> = ({
     total,
     iconType,
     colorClass = "text-slate-900",
-    strokeColor = "#6366f1", 
+    strokeColor = "#6366f1",
     onClick
 }) => {
     const icons = {
@@ -31,7 +31,7 @@ const ManagerStatCard: React.FC<ManagerStatCardProps> = ({
     // Donut Logic
     const numericValue = typeof value === 'string' ? parseInt(value) : value;
     const percentage = total ? Math.min((numericValue / total) * 100, 100) : 0;
-    
+
     // SVG Circle Math
     const radius = 35;
     const circumference = 2 * Math.PI * radius;
@@ -48,11 +48,11 @@ const ManagerStatCard: React.FC<ManagerStatCardProps> = ({
                     {label}
                 </p>
                 <div className="flex items-baseline gap-1">
-                    <span className={`text-3xl font-black ${colorClass} tracking-tight italic transition-transform group-hover:-translate-y-0.5`}>
+                    <span className={`text-3xl font-black ${colorClass} tracking-tight   transition-transform group-hover:-translate-y-0.5`}>
                         {value}
                     </span>
                     {total && (
-                        <span className="text-xs font-bold text-slate-300 italic">/{total}</span>
+                        <span className="text-xs font-bold text-slate-300  ">/{total}</span>
                     )}
                 </div>
                 {total && (
@@ -84,14 +84,14 @@ const ManagerStatCard: React.FC<ManagerStatCardProps> = ({
                         strokeWidth="8"
                         fill="transparent"
                         strokeDasharray={circumference}
-                        style={{ 
-                            strokeDashoffset, 
+                        style={{
+                            strokeDashoffset,
                             transition: 'stroke-dashoffset 1s ease-out',
                             strokeLinecap: 'round'
                         }}
                     />
                 </svg>
-                
+
                 {/* Center Icon */}
                 <div className="absolute text-slate-200 group-hover:text-slate-400 transition-all duration-300 text-xl opacity-60 group-hover:scale-110">
                     {icons[iconType]}

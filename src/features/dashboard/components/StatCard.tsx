@@ -5,29 +5,29 @@ interface StatCardProps {
   title: string;
   used: number;
   total: number;
-  color?: string; 
+  color?: string;
   period?: string;
   onClick?: () => void;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ 
-  title, 
-  used, 
-  total, 
-  color = "indigo", 
-  period = "Cycle 2026", 
-  onClick 
+const StatCard: React.FC<StatCardProps> = ({
+  title,
+  used,
+  total,
+  color = "indigo",
+  period = "Cycle 2026",
+  onClick
 }) => {
   let percent = total > 0 ? Math.round((used / total) * 100) : 0;
-  if(percent > 100){
+  if (percent > 100) {
     percent = 100;
   }
   let daysLeft = total - used;
 
-  if(daysLeft < 0) {
+  if (daysLeft < 0) {
     daysLeft = 0;
   }
-  
+
   const theme = {
     indigo: { text: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100", ring: "#4f46e5" },
     rose: { text: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100", ring: "#e11d48" },
@@ -56,7 +56,7 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="group relative bg-white border border-slate-200 rounded-sm p-5 shadow-sm hover:shadow-md hover:border-slate-400 transition-all cursor-pointer overflow-hidden"
     >
@@ -75,9 +75,9 @@ const StatCard: React.FC<StatCardProps> = ({
 
         <div className="relative flex items-center justify-center">
           <svg width={size} height={size} className="transform -rotate-90">
-            <circle cx={size/2} cy={size/2} r={radius} stroke="#f1f5f9" strokeWidth={strokeWidth} fill="none" />
-            <circle 
-              cx={size/2} cy={size/2} r={radius} stroke={theme.ring} strokeWidth={strokeWidth} fill="none"
+            <circle cx={size / 2} cy={size / 2} r={radius} stroke="#f1f5f9" strokeWidth={strokeWidth} fill="none" />
+            <circle
+              cx={size / 2} cy={size / 2} r={radius} stroke={theme.ring} strokeWidth={strokeWidth} fill="none"
               strokeDasharray={circumference}
               style={{ strokeDashoffset: offset, transition: "stroke-dashoffset 1s ease-in-out" }}
               strokeLinecap="round"
@@ -89,7 +89,7 @@ const StatCard: React.FC<StatCardProps> = ({
 
       <div className="flex items-end justify-between">
         <div className="flex items-baseline gap-2">
-          <span className="text-5xl font-black text-slate-900 tracking-tighter italic">
+          <span className="text-5xl font-black text-slate-900 tracking-tighter  ">
             {daysLeft}
           </span>
           <div className="flex flex-col mb-1">
@@ -99,15 +99,15 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
 
         <div className="text-right pb-1">
-                <div className="flex flex-col items-center">
-        <span className="text-xl font-bold">{total}</span>
-        <span className="text-gray-400 text-xs">remaining</span>
+          <div className="flex flex-col items-center">
+            <span className="text-xl font-bold">{total}</span>
+            <span className="text-gray-400 text-xs">remaining</span>
 
-        <span className="text-lg font-bold">÷</span>
+            <span className="text-lg font-bold">÷</span>
 
-        <span className="text-xl font-bold">{used}</span>
-        <span className="text-gray-400 text-xs">used</span>
-      </div>
+            <span className="text-xl font-bold">{used}</span>
+            <span className="text-gray-400 text-xs">used</span>
+          </div>
         </div>
       </div>
 

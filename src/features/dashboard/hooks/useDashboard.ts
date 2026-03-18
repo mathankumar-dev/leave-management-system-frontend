@@ -14,31 +14,38 @@ import type {
   ManagerDashBoardResponse,
   LeaveBalanceResponse,
   TeamMember,
+  AdminDashBoardResponse,
+  EmployeeEntity,
+  EmployeeFilters,
+  PaginatedResponse,
+  CreateUserRequest,
 } from "../types";
+import { toast } from "sonner";
 
 
 
 const service = dashboardService;
 
 export const useDashboard = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [weeklyLeaveSummary, setWeeklyLeaveSummary] = useState<LeaveRecord[]>([]);
   const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
-  
+
   const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
   const [employeeCalendar, setEmployeeCalendar] = useState<TeamCalendarResponse>({});
 
   const [payslip, setPayslip] = useState<any>(null);
-const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
 
   const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponse | null>(null);
 
-//   const [leaveBalance, setLeaveBalance] = useState({
-//   CASUAL: 0,
-//   SICK: 0,
-//   EARNED_LEAVES: 0
-// });
+  //   const [leaveBalance, setLeaveBalance] = useState({
+  //   CASUAL: 0,
+  //   SICK: 0,
+  //   EARNED_LEAVES: 0
+  // });
 
   /* ================= APPROVALS ================= */
 
@@ -74,76 +81,55 @@ const [history, setHistory] = useState<any[]>([]);
     setLoading(true);
     setError(null);
     try {
-        const data = await dashboardService.getLeaveBalances(employeeId, year);
-        setLeaveBalance(data);
-        return data;
+      const data = await dashboardService.getLeaveBalances(employeeId, year);
+      setLeaveBalance(data);
+      return data;
     } catch (err: any) {
-        setError(err.message || "Failed to fetch leave balance");
-        return null;
+      setError(err.message || "Failed to fetch leave balance");
+      return null;
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-}, []);
+  }, []);
 
 
- const fetchPayslip = async(year:number,month:number)=>{
-    try{
+  const fetchPayslip = async (year: number, month: number) => {
+    try {
       setLoading(true);
-      const res = await dashboardService.getMyPayslip(year,month);
-setPayslip(res.data);
-      
-    }catch(e){
+      const res = await dashboardService.getMyPayslip(year, month);
+      setPayslip(res.data);
+
+    } catch (e) {
       setPayslip(null);
       setError("Payslip not found");
-    }finally{
+    } finally {
       setLoading(false);
     }
   };
 
-  // const fetchHistory = async(year:number)=>{
-  //   try{
-  //     setLoading(true);
-  //     const data = await dashboardService.getHistory(year);
-  //     setHistory(data);
-  //   }catch(e){
-  //     setHistory([]);
-  //   }finally{
-  //     setLoading(false);
-  //   }
-  // };
-
-  // const download = async(year:number,month:number)=>{
-  //   await dashboardService.downloadPayslip(year,month);
-  // };
-
-   const downloadHistory = async (year:number) => {
+  const fetchHistory = async (year: number) => {
     try {
-      setLoadingHistory(true);
-      const res = await dashboardService.getHistory(year); // backend returns the summary
-      // Convert to blob for download
-      const blob = new Blob([JSON.stringify(res, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `Yearly_Summary_${year}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
+      setLoading(true);
+      const data = await dashboardService.getHistory(year);
+      setHistory(data);
     } catch (e) {
-      console.error("Failed to download history", e);
+      setHistory([]);
     } finally {
-      setLoadingHistory(false);
+      setLoading(false);
     }
+  };
+
+  const download = async (year: number, month: number) => {
+    await dashboardService.downloadPayslip(year, month);
   };
 
 
 
 
 
-const hasExceededLimits = useMemo(() => {
+  const hasExceededLimits = useMemo(() => {
     return leaveBalance?.exceededMonthlyLimit || (leaveBalance?.totalRemaining ?? 0) <= 0;
-}, [leaveBalance]);
+  }, [leaveBalance]);
 
   /* ================= EMPLOYEES ================= */
 
@@ -151,7 +137,7 @@ const hasExceededLimits = useMemo(() => {
     setLoading(true);
     try {
       return await dashboardService.getEmployeeDashboard();
-      
+
     } catch (err: any) {
       setError(err.message || "Failed to fetch employees");
       return [];
@@ -161,20 +147,19 @@ const hasExceededLimits = useMemo(() => {
   };
 
 
-const fetchDashboard = useCallback(async (employeeId: number) => {
-  setLoading(true);
-  try {
-    const response = await service.getEmpDashboard(employeeId);
-    console.log("FULL RESPONSE", response); // Use this directly
-    return response; // Not response.data
-  } catch (err: any) {
-    console.error("API ERROR DETAILS:", err.response?.data || err.message);
-    setError(err.message);
-    return null;
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  const fetchDashboard = useCallback(async (employeeId: number) => {
+    setLoading(true);
+    try {
+      const response = await service.getEmpDashboard(employeeId);
+      return response; 
+    } catch (err: any) {
+      console.error("API ERROR DETAILS:", err.response?.data || err.message);
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
   /* ================= LEAVES ================= */
 
   const fetchMyLeaves = useCallback(async (employeeId: number): Promise<LeaveRecord[]> => {
@@ -230,20 +215,20 @@ const fetchDashboard = useCallback(async (employeeId: number) => {
 
 
   /* ================= LEAVE ACTIONS ================= */
-const applyLeave = useCallback(async (data: FormData ) => {
-  setLoading(true);
-  setError(null);
-  try {
-    const result = await service.submitLeaveRequest(data);
-    return result;
-  } catch (err: any) {
-    const errorMessage = err.response?.data?.message || err.message || "Submission failed";
-    setError(errorMessage);
-    return null;
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  const applyLeave = useCallback(async (data: FormData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await service.submitLeaveRequest(data);
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || "Submission failed";
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // const fetchLeaveTypes = useCallback(async () => {
   //   setLoading(true);
@@ -298,20 +283,20 @@ const applyLeave = useCallback(async (data: FormData ) => {
     }
   }, []);
 
-  const fetchEmployeeCalendar = useCallback( async (employeeId: number) => {
-  try {
-    setLoading(true);
+  const fetchEmployeeCalendar = useCallback(async (employeeId: number) => {
+    try {
+      setLoading(true);
 
-    const data = await dashboardService.getEmployeeCalendar(employeeId);
+      const data = await dashboardService.getEmployeeCalendar(employeeId);
 
-    setEmployeeCalendar(data);
+      setEmployeeCalendar(data);
 
-  } catch (err: any) {
-    setError(err.message || "Failed to fetch calendar");
-  } finally {
-    setLoading(false);
-  }
-},[]);
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch calendar");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
 
   const fetchManagerDashboard = useCallback(
@@ -343,6 +328,45 @@ const applyLeave = useCallback(async (data: FormData ) => {
       }
     },
     []
+  );
+  const fetchAdminDashboard = useCallback(
+    async (id: number): Promise<AdminDashBoardResponse | null> => {
+      setLoading(true);
+      try {
+        const response = await service.getAdminDashboard(id);
+        return response;
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch team leader data");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+  const fetchAllEmployees = useCallback(
+    async (
+      filters: EmployeeFilters
+    ): Promise<PaginatedResponse<EmployeeEntity> | null> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await service.getAllEmployees(filters);
+        return response;
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "Failed to fetch employee directory";
+
+        setError(msg);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [service]
   );
 
 
@@ -424,7 +448,7 @@ const applyLeave = useCallback(async (data: FormData ) => {
   }, []);
 
 
-    const fetchTeamMembers = useCallback(async (id : number) : Promise<TeamMember[]> => {
+  const fetchTeamMembers = useCallback(async (id: number): Promise<TeamMember[]> => {
     setLoading(true);
     setError(null);
     try {
@@ -438,6 +462,26 @@ const applyLeave = useCallback(async (data: FormData ) => {
       setLoading(false);
     }
   }, []);
+
+  const addUser = async (data: CreateUserRequest): Promise<void> => {
+    try {
+      const message = await dashboardService.createUser(data);
+      toast.success(message);
+    } catch (err: any) {
+      toast.error(err.toString());
+      throw err;
+    }
+  };
+
+  const deleteUser = async (employeeId : number): Promise<void> => {
+    try {
+      const message = await dashboardService.deleteUser(employeeId);
+      toast.success(message);
+    } catch (err: any) {
+      toast.error(err.toString());
+      throw err;
+    }
+  };
 
 
 
@@ -454,17 +498,21 @@ const applyLeave = useCallback(async (data: FormData ) => {
     fetchDashboard,
     fetchManagerDashboard,
     fetchTeamLeaderDashboard,
+    fetchAdminDashboard,
     fetchTeamMembers,
     // fetchApprovals,
     processApproval,
     fetchEmployees,
     fetchMyLeaves,
     bankCompOff,
+    fetchAllEmployees,
+    addUser,
+    deleteUser,
 
-     fetchEmployeeCalendar,
-  employeeCalendar,
+    fetchEmployeeCalendar,
+    employeeCalendar,
 
-   payslip,
+    payslip,
     history,
     downloadHistory,
     
@@ -474,7 +522,7 @@ const applyLeave = useCallback(async (data: FormData ) => {
 
     applyLeave,
     getTeamMembers,
-    
+
     leaveBalance,
     fetchLeaveBalance,
 

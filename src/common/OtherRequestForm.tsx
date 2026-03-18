@@ -93,7 +93,6 @@ const OtherRequestForm = () => {
             }
 
             if (activeTab === "OVERTIME") {
-                console.log("Submit OT:", { start, end, reason: formData.reason });
                 setSubmitted(true);
             }
         }

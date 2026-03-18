@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { dashboardService } from "../../services/dashboardService";
-import type { CompOffResponse, LeaveDecisionRequest, ODResponse } from "../../types";
+import { requestService } from "../../services/requests/requestService";
+import type { CompOffResponse, LeaveDecision, LeaveDecisionRequest, ODResponse } from "../../types";
 
 export const useManagerApprovals = (userId: number, role?: string) => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -28,11 +29,8 @@ export const useManagerApprovals = (userId: number, role?: string) => {
         const combined = [...(tlRequests || []), ...formattedODs].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        console.log(`combined : ${combined.forEach(a => {
-          console.log(a);
-          
-        })}`);
         
+
         setRequests(combined);
 
       } else {
@@ -44,7 +42,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
 
         const formattedCompOffs = (compOffs || []).map((co: CompOffResponse) => ({
           ...co,
-          id: co.compoffId, 
+          id: co.compoffId,
           leaveType: 'COMP_OFF',
           startDate: co.workedDate,
           endDate: co.workedDate,
@@ -55,17 +53,14 @@ export const useManagerApprovals = (userId: number, role?: string) => {
           ...od,
           leaveType: 'ON_DUTY',
           isOD: true,
-          startDate: od.fromDate, 
+          startDate: od.fromDate,
           endDate: od.toDate
         }));
 
         const combined = [...leaves, ...formattedCompOffs, ...formattedODs].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-                console.log(`combined : ${combined.forEach(a => {
-          console.log(a);
-          
-        })}`);
+
         setRequests(combined);
       }
     } catch (err) {
@@ -84,13 +79,55 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     setRequests((prev) => prev.filter((req) => req.id !== id));
   };
 
-  const handleDecision = async (decisionRequest: LeaveDecisionRequest) => {
+  const handleDecision = async (
+    requestId: number,
+    status: LeaveDecision,
+    reason: string = "",
+    type?: string
+  ) => {
     try {
-      await dashboardService.updateDecision(decisionRequest);
-      removeFromState(decisionRequest.leaveId);
+      setLoading(true);
+      if (type === 'ON_DUTY') {
+        if (status === 'APPROVED') {
+          await requestService.approveOD(requestId, userId);
+        } else {
+          await requestService.rejectOD(requestId, userId, reason);
+        }
+      }
+      else if (type === 'COMP_OFF') {
+        if (status === 'APPROVED') {
+          await dashboardService.approveCompOff(requestId);
+        } else {
+          await dashboardService.rejectCompOff(requestId, reason);
+        }
+      }
+      else if (type === 'MEETING') {
+        if (status === 'APPROVED') {
+          await requestService.approveMeeting(requestId, userId);
+        } else {
+          await requestService.rejectMeeting(requestId, userId);
+        }
+      }
+      else {
+        const decisionRequest: LeaveDecisionRequest = {
+          leaveId: requestId,
+          approverId: userId,
+          decision: status,
+          comments: reason   
+        };
+
+        await dashboardService.updateDecision(decisionRequest);
+      }
+
+      // Refresh UI by removing the item
+      removeFromState(requestId);
       return { success: true };
+
     } catch (err) {
+      console.error(`Decision error for ${type || 'LEAVE'}:`, err);
       return { success: false, error: err };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,10 +150,9 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       return { success: false, error: err };
     }
   };
-  console.log("from manager dashboard");
-  
-  console.log(requests);
-  
+
+
+
 
   return {
     requests,

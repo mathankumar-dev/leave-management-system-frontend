@@ -10,9 +10,6 @@ export const loginUser = async (credentials: LoginCredentials) => {
       password: credentials.password,
     });
 
-    console.log("FULL RESPONSE:", response);
-    console.log("RESPONSE DATA:", response.data);
-
     const data: AuthResponse = response.data;
 
     return {

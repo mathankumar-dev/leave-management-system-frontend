@@ -48,7 +48,7 @@ const HeroPage: React.FC = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.8 }}
-                    className="text-sm font-semibold italic text-slate-800"
+                    className="text-sm font-semibold   text-slate-800"
                 >
                     "{quotes[quoteIndex]}"
                 </motion.p>
@@ -77,11 +77,11 @@ const HeroPage: React.FC = () => {
                         animate={{ opacity: 1, x: 0 }}
                         className="space-y-6"
                     >
-                        <h1 className="flex flex-col font-black italic text-slate-900 leading-[0.8]">
+                        <h1 className="flex flex-col font-black   text-slate-900 leading-[0.8]">
                             <span className="text-4xl lg:text-7xl tracking-tight opacity-90">
                                 WORK
                             </span>
-                            <span className="text-7xl lg:text-9xl not-italic uppercase tracking-tighter text-primary-500 -ml-1 lg:-ml-2">
+                            <span className="text-7xl lg:text-9xl not-  uppercase tracking-tighter text-primary-500 -ml-1 lg:-ml-2">
                                 Sphere.
                             </span>
                         </h1>

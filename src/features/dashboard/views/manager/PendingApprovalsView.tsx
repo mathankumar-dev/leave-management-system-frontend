@@ -97,23 +97,42 @@ const PendingApprovalsView: React.FC = () => {
         handleConfirmDecision(req, status);
     };
 
+    // const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
+    //     let result;
+    //     if (req.isCompOff) {
+    //         if (status === 'APPROVED') {
+    //             result = await handleCompOffApprove(req.id);
+    //         } else if (status === 'REJECTED') {
+    //             result = await handleCompOffReject(req.id, commentText || "");
+    //         }
+    //     } else {
+    //         const decisionPayload: LeaveDecisionRequest = {
+    //             leaveId: req.id,
+    //             approverId: Number(user?.id),
+    //             decision: status,
+    //             comments: commentText
+    //         };
+    //         result = await handleDecision(decisionPayload);
+    //     }
+
+    //     if (result?.success) {
+    //         notify.leaveAction(status, req.employeeName, !!req.isCompOff);
+    //         setDialogConfig({ isOpen: false, req: null, status: null });
+    //     } else {
+    //         notify.error("Update Failed", "Please check your connection and try again.");
+    //     }
+    // };
+
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-        let result;
-        if (req.isCompOff) {
-            if (status === 'APPROVED') {
-                result = await handleCompOffApprove(req.id);
-            } else if (status === 'REJECTED') {
-                result = await handleCompOffReject(req.id, commentText || "");
-            }
-        } else {
-            const decisionPayload: LeaveDecisionRequest = {
-                leaveId: req.id,
-                approverId: Number(user?.id),
-                decision: status,
-                comments: commentText
-            };
-            result = await handleDecision(decisionPayload);
-        }
+
+        
+
+        const result = await handleDecision(
+            req.id,
+            status,
+            commentText || "",
+            req.leaveType
+        );
 
         if (result?.success) {
             notify.leaveAction(status, req.employeeName, !!req.isCompOff);
@@ -122,9 +141,7 @@ const PendingApprovalsView: React.FC = () => {
             notify.error("Update Failed", "Please check your connection and try again.");
         }
     };
-    console.log("pending approvals");
-    
-    console.log(requests);
+
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">

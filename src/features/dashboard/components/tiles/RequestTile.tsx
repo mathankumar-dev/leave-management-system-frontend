@@ -55,7 +55,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
 
         // 2. Logic for Full Days (1 or more)
         const isMultiDayPartial = getHalfDayLabel(startDateHalfDayType) || getHalfDayLabel(endDateHalfDayType);
-        
+
         return {
             count: days === 1 ? '1 Day' : `${days} Days`,
             // If it's a multi-day (e.g. 1.5), we can show "Partial" or specific sessions
@@ -111,8 +111,8 @@ const RequestTile: React.FC<RequestTileProps> = ({
 
                     {/* Reason Message */}
                     <div className='flex-1 min-w-0'>
-                        <p className='text-xs md:text-sm text-slate-500 line-clamp-2 leading-relaxed italic md:not-italic'>
-                            <span className='font-bold text-slate-400 mr-1 md:hidden uppercase text-[9px] not-italic'>
+                        <p className='text-xs md:text-sm text-slate-500 line-clamp-2 leading-relaxed   md:not- '>
+                            <span className='font-bold text-slate-400 mr-1 md:hidden uppercase text-[9px] not- '>
                                 Reason:
                             </span>
                             "{reasonMessage}"
@@ -153,7 +153,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
             {/* 5. Timestamp Footer */}
             <div className='flex justify-between items-center md:flex-col md:justify-center border-t border-slate-50 md:border-none pt-2 md:pt-0'>
                 <span className='md:hidden text-[9px] font-bold text-slate-300 uppercase'>Requested</span>
-                <span className='text-slate-400 text-[9px] md:text-[10px] font-medium whitespace-nowrap italic'>
+                <span className='text-slate-400 text-[9px] md:text-[10px] font-medium whitespace-nowrap  '>
                     {createdAt}
                 </span>
             </div>

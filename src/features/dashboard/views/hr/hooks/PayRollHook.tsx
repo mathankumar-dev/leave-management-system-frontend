@@ -12,7 +12,6 @@ export const usePayroll = () => {
     setError(null);
     try {
       const res = await api.get(`/payslip/my/${year}/${month}`);
-      console.log(res.data);
       return res.data;
     } catch (e: any) {
       console.error(e);

@@ -13,7 +13,11 @@ import type {
   // ProfileResponse
   ProfileData,
   ODResponse,
-  TeamMember
+  TeamMember,
+  EmployeeEntity,
+  PaginatedResponse,
+  EmployeeFilters,
+  CreateUserRequest
 
 
 } from '../types';
@@ -24,7 +28,6 @@ export const dashboardService = {
 
   getEmployeeCalendar: async (employeeId: number): Promise<TeamCalendarResponse> => {
     const response = await api.get(`/dashboard/employee/calendar/${employeeId}`);
-    console.log(response.data);
     return response.data;
   },
   getTeamCalendar: async (id: number): Promise<TeamCalendarResponse> => {
@@ -37,7 +40,6 @@ export const dashboardService = {
   getEmpDashboard: async (employeeId: number) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
-    console.log("Dashboard API:", response.data);
 
     return response.data;
 
@@ -55,6 +57,13 @@ export const dashboardService = {
   getTeamLeaderDashboard: async (teamLeaderId: number) => {
 
     const response = await api.get(`/dashboard/teamleader/${teamLeaderId}`);
+
+    return response.data;
+
+  },
+  getAdminDashboard: async (adminId: number) => {
+
+    const response = await api.get(`/dashboard/admin/${adminId}`);
 
     return response.data;
 
@@ -83,7 +92,6 @@ export const dashboardService = {
   submitLeaveRequest: async (data: FormData) => {
     const isMultipart = data instanceof FormData;
     for (const [key, value] of data.entries()) {
-      console.log(key, value);
     }
 
     const response = await api.post('/leaves/apply', data, {
@@ -169,7 +177,6 @@ export const dashboardService = {
   updateDecision: async (
     decisionRequest: LeaveDecisionRequest
   ): Promise<void> => {
-    console.log(decisionRequest);
     await api.patch(
       "/leave-approvals/decision",
       decisionRequest
@@ -278,9 +285,9 @@ export const dashboardService = {
 
 
 
-getMyPayslip: async (year: number, month: number) => {
-  return api.get(`/payslip/my/${year}/${month}`);
-},
+  getMyPayslip: async (year: number, month: number) => {
+    return api.get(`/payslip/my/${year}/${month}`);
+  },
 
   getHistory: async (year: number) => {
     const res = await api.get(`/summary/${year}`);
@@ -291,7 +298,6 @@ getMyPayslip: async (year: number, month: number) => {
     const res = await api.get(`payslip/download/${year}/${month}`, {
       responseType: "blob"
     });
-     console.log("PAYSLIP ", res.data); 
 
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement("a");
@@ -314,12 +320,34 @@ getMyPayslip: async (year: number, month: number) => {
 
   getTeamMembers: async (id: number): Promise<TeamMember[]> => {
     const res = await api.get(`/dashboard/team-members/${id}`);
-    console.log("employee data");
-
-    console.log(res);
-
-
     return res.data;
-  }
+  },
+
+  getAllEmployees: async (filters: EmployeeFilters): Promise<PaginatedResponse<EmployeeEntity>> => {
+    const res = await api.get('/employees/all', {
+      params: filters
+    });
+    return res.data;
+  },
+
+  createUser: async (userData: CreateUserRequest): Promise<string> => {
+    try {
+      const response = await api.post('/admin/users/add', userData);
+
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || "Failed to create user";
+    }
+  },
+
+  deleteUser: async (employeeId: number): Promise<string> => {
+    try {
+      const res = await api.delete(`/employees/${employeeId}`);
+      return res.data.message || "Employee deleted successfully";
+    } catch (error: any) {
+      throw error.response?.data?.message || "Failed to delete user";
+    }
+  },
+
 };
 

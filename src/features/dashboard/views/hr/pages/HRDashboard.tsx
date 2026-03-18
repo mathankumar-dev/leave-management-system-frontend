@@ -28,7 +28,6 @@ export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
 
   const testRef = useRef<HTMLDivElement>(null);
   
-console.log(data);
 
   const [filters, setFilters] = useState({
     month:      '',

@@ -1,6 +1,6 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "../features/auth/hooks/useAuth"; 
+import { useAuth } from "../features/auth/hooks/useAuth";
 import AuthPage from "../features/auth/pages/AuthPage";
 import DashboardLayout from "../features/dashboard/layout/DashboardLayout";
 import ProtectedRoute from "./ProtectedRoute";
@@ -9,6 +9,7 @@ import NotFoundPage from "../components/pages/NotFoundPage";
 import PrivacyPolicy from "../components/pages/PrivacyPolicy";
 import TermsOfService from "../components/pages/TermsOfService";
 import LandingPage from "../features/landing/LandingPage";
+import LaunchPage from "../features/lauchpage/LaunchPage";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -24,11 +25,14 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* 2. Hero Page as the Landing Site */}
-      <Route 
-        path="/" 
+      <Route path="/portal" element={<LaunchPage />} />
+
+
+      <Route
+        path="/"
         element={
           isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />
-        } 
+        }
       />
 
       <Route

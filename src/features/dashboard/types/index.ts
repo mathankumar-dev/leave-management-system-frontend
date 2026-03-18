@@ -1,3 +1,4 @@
+import type { UserRole } from "../../auth/types";
 
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
@@ -99,7 +100,7 @@ export interface LeaveDecisionRequest {
 // ==============================
 
 export interface Employee {
-  department: string;
+  department?: string;
   id: number | null | undefined;
   color: string;
   initial?: string | null;
@@ -395,6 +396,77 @@ export interface ManagerDashBoardResponse {
   teamOnLeaveToday: TeamMemberOnLeave[];
 }
 
+export interface AdminDashBoardResponse {
+  // Admin's Personal View (Consistency)
+  personalStats: EmployeeData;
+
+  // Metadata
+  currentYear: number;
+  lastUpdated: string; // or Date
+
+  // Compliance & Audit Metrics
+  totalEmployees: number;
+  totalManagers: number;
+  newEmployeesPendingOnboarding: number;
+  totalPendingLeaves: number;
+  totalRejectedLeaves: number;
+
+  // Organization-wide Leave Statistics
+  totalLeaveDaysUsedYTD: number;
+  totalCarryForwardBalance: number;
+  totalCompOffBalance: number;
+  averageLossOfPayPercentage: number;
+
+  // Detailed Data Lists
+  leaveTypeUsage: GlobalLeaveTypeUsage[];
+  recentRejections: RejectedLeaveAudit[];
+  complianceIssues: EmployeeCompliance[];
+  newEmployeesStatus: OnboardingStatus[];
+}
+
+export interface GlobalLeaveTypeUsage {
+  leaveType: string; // e.g., "SICK", "VACATION"
+  totalAllocated: number;
+  totalUsed: number;
+  totalBalance: number;
+  countOfApplications: number;
+  averagePerEmployee: number;
+}
+
+export interface RejectedLeaveAudit {
+  leaveId: number;
+  employeeId: number;
+  employeeName: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  rejectedBy: number;
+  rejectedByName: string;
+  rejectedAt: string;
+}
+
+export interface EmployeeCompliance {
+  employeeId: number;
+  employeeName: string;
+  issue: string; // e.g., "Negative Balance Detected"
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  detectedDate: string;
+  recommendation: string;
+}
+
+export interface OnboardingStatus {
+  employeeId: number;
+  employeeName: string;
+  email: string;
+  joiningDate: string;
+  daysInCompany: number;
+  biometricStatus: string; // Matches your Java BiometricVpnStatus enum
+  vpnStatus: string;
+  onboardingComplete: boolean;
+  completionDate?: string;
+}
+
 
 export interface ODRequest {
   employeeId: number;
@@ -431,4 +503,57 @@ export interface TeamMember {
   employeeId : number;
   designation : string | null;
   skills : string | null;
+}
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number; 
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+export interface EmployeeFilters {
+  name?: string;
+  email?: string;
+  role?: string;
+  managerId?: number;
+  active?: boolean;
+  page?: number;
+  size?: number;
+}
+
+export type BiometricVpnStatus = 'PENDING' | 'PROVIDED' | 'FAILED';
+
+export interface EmployeeEntity {
+  id: number;
+  teamId: number | null;
+  teamLeaderId: number | null;
+  name: string;
+  email: string;
+  role: UserRole;
+  managerId: number | null;
+  active: boolean;
+
+  // HR Dashboard Fields
+  joiningDate: string;
+  biometricStatus: BiometricVpnStatus;
+  vpnStatus: BiometricVpnStatus;
+  onboardingCompletedAt: string | null;
+
+  // Audit Fields
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  role: UserRole;
+  teamId?: number | null;
+  teamLeaderId?: number | null;
+  managerId?: number | null;
+  joiningDate: string; 
 }

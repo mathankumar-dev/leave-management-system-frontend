@@ -70,6 +70,31 @@ const MeetingRequestForm = () => {
         const success = await createMeeting(meetingPayload, user.id, undefined);
         if (success) setSubmitted(true);
     };
+    
+    const totalDays = 1;
+
+    const renderApprovers = () => {
+        const approvers = [];
+
+        if (user?.role === "EMPLOYEE") {
+            approvers.push({ label: `TL: ${user?.teamLeaderName || 'Assigning...'}`, active: true });
+            if (totalDays > 1) {
+                approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+            }
+        }
+
+        if (user?.role === "TEAM_LEADER") {
+            approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+        }
+
+        if (totalDays > 7) {
+            approvers.push({ label: `HR: ${user?.hrname || 'Assigning...'}`, active: true });
+        }
+
+        return approvers.map((app, index) => (
+            <Badge key={index} label={app.label} active={app.active} />
+        ));
+    };
 
     if (submitted) {
         return (
@@ -96,12 +121,10 @@ const MeetingRequestForm = () => {
 
                 <div className="flex flex-col items-start sm:items-end">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                        Resource Oversight
+                        Required Approvals
                     </span>
                     <div className="flex flex-wrap gap-2">
-                        {/* Meetings usually require Admin/Office manager to confirm room availability */}
-                        <Badge label="Room Booking: Automatic" active />
-                        <Badge label="Admin: System" active={false} />
+                        {renderApprovers()}
                     </div>
                 </div>
             </div>

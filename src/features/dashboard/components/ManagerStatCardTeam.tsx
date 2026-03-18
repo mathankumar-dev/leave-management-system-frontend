@@ -34,7 +34,7 @@ const ManagerStatCardTeam: React.FC<ManagerStatCardTeamProps> = ({
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-slate-500 transition-colors">
                     {label}
                 </p>
-                <p className={`text-2xl font-black ${colorClass} tracking-tight italic transition-transform group-hover:-translate-y-0.5`}>
+                <p className={`text-2xl font-black ${colorClass} tracking-tight   transition-transform group-hover:-translate-y-0.5`}>
                     {value}
                 </p>
             </div>
