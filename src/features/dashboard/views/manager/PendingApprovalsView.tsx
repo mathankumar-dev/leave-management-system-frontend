@@ -125,7 +125,7 @@ const PendingApprovalsView: React.FC = () => {
 
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
 
-        
+
 
         const result = await handleDecision(
             req.id,

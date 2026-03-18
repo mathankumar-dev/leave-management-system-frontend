@@ -20,6 +20,7 @@ interface LeaveTypeBreakdown {
   allocatedDays: number;
   usedDays: number;
   remainingDays: number;
+  pendingCount? : number ;
 }
 
 interface StatItem {
@@ -27,6 +28,7 @@ interface StatItem {
   used: number;
   total?: number;
   color: string;
+  pendingCount? : number;
 }
 
 const containerVariants = {
@@ -56,8 +58,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         b.leaveType?.toUpperCase().includes("SICK")
       );
 
-      const casualLeave = breakdown.find((b) =>
-        b.leaveType?.toUpperCase().includes("CASUAL")
+      const annualLeave = breakdown.find((b) =>
+        b.leaveType?.toUpperCase().includes("ANNUAL_LEAVE")
       );
 
       const newStats: StatItem[] = [
@@ -66,12 +68,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           used: sickLeave?.usedDays ?? 0,
           total: sickLeave?.allocatedDays ?? 0,
           color: "cyan",
+          pendingCount : sickLeave?.pendingCount ?? 0,
         },
         {
-          title: "Casual Leave",
-          used: casualLeave?.usedDays ?? 0,
-          total: casualLeave?.allocatedDays ?? 0,
+          title: "Annual Leave",
+          used: annualLeave?.usedDays ?? 0,
+          total: annualLeave?.allocatedDays ?? 0,
           color: "cyan",
+          pendingCount : annualLeave?.pendingCount ?? 0,
         },
         {
           title: "Yearly Balance",
@@ -98,6 +102,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           used: data.compoffBalance || 0,
           total: data.compoffBalance || 0,
           color: "cyan",
+          pendingCount : 0,
         },
         {
           title: "Approved Leaves",
@@ -160,55 +165,66 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         </button>
       </div>
 
-      {/* MODERN TABLE */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200 p-4 space-y-4">
-        {/* HEADER */}
-        <div className="grid grid-cols-5 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide bg-slate-50 rounded-xl">
-          <div>Type</div>
-          <div className="text-center">Total</div>
-          <div className="text-center">Used</div>
-          <div className="text-center">Remaining</div>
-        
-        </div>
+      {/* TABLE */}
+      <div className="w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-neutral-800 text-white">
+            <tr>
+              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Leave Category</th>
+              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Allocated</th>
+              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Used</th>
+              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Balance</th>
+              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Pending Requests</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {stats.map((stat, index) => {
+              const remaining = (stat.total ?? 0) - (stat.used ?? 0);
 
-        {/* ROWS */}
-        {stats.map((stat) => {
-          const remaining = (stat.total ?? 0) - (stat.used ?? 0);
-          const percent = stat.total
-            ? Math.min((stat.used / stat.total) * 100, 100)
-            : 0;
+              // Conditional styling for the "Monthly" or special rows if you want to highlight them
+              const isMonthly = stat.title.toLowerCase().includes("monthly");
 
-          const colorMap: any = {
-            emerald: "bg-gradient-to-r from-emerald-400 to-green-500",
-            amber: "bg-gradient-to-r from-yellow-400 to-amber-500",
-            rose: "bg-gradient-to-r from-rose-400 to-red-500",
-            cyan: "bg-gradient-to-r from-cyan-400 to-sky-500",
-          };
-
-          return (
-            <motion.div
-              key={stat.title}
-              whileHover={{ scale: 1.02 }}
-              className="grid grid-cols-5 gap-10 items-center bg-white hover:bg-slate-50 px-4 py-3 rounded-xl transition-shadow shadow-sm hover:shadow-md cursor-pointer"
-              onClick={() => setSelectedCard(stat)}
-            >
-              {/* TITLE */}
-              <div className="font-medium text-slate-700">{stat.title}</div>
-
-              {/* TOTAL */}
-              <div className="text-center text-slate-600">{stat.total ?? stat.used}</div>
-
-              {/* USED */}
-              <div className="text-center text-orange-500 font-medium">{stat.used}</div>
-
-              {/* REMAINING */}
-              <div className="text-center text-emerald-600 font-medium">{remaining}</div>
-
-              
-              
-            </motion.div>
-          );
-        })}
+              return (
+                <tr
+                  key={index}
+                  onClick={() => setSelectedCard(stat)}
+                  className={`group cursor-pointer transition-colors ${isMonthly ? 'bg-indigo-50/30 hover:bg-indigo-50/50' : 'hover:bg-slate-50/50'
+                    }`}
+                >
+                  <td className="px-6 py-4">
+                    <span className={`text-xs font-bold uppercase tracking-tight ${isMonthly ? 'text-indigo-600' : 'text-slate-900'
+                      }`}>
+                      {stat.title}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span className="text-sm font-medium text-slate-400">
+                      {stat.total ?? stat.used} Days
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span className="text-sm font-bold text-slate-700">
+                      {stat.used} Days
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <span className={`px-3 py-1 rounded-md text-xs font-black ${remaining > 0
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'bg-slate-100 text-slate-500'
+                      }`}>
+                      {remaining} Left
+                    </span>
+                  </td>
+                                    <td className="px-6 py-4 text-center">
+                    <span className="text-sm font-bold text-slate-700">
+                      {stat.pendingCount} 
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
       {/* DRAWER */}

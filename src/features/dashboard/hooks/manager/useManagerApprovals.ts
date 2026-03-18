@@ -29,7 +29,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
         const combined = [...(tlRequests || []), ...formattedODs].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        
+
 
         setRequests(combined);
 
@@ -49,13 +49,19 @@ export const useManagerApprovals = (userId: number, role?: string) => {
           isCompOff: true
         }));
 
-        const formattedODs = (ods || []).map((od: ODResponse) => ({
+        const formattedODs = (ods || []).map((od: any) => ({
           ...od,
+          id: od.id || od.odId,
           leaveType: 'ON_DUTY',
           isOD: true,
           startDate: od.fromDate,
-          endDate: od.toDate
+          endDate: od.toDate,
+          // Ensure createdAt exists for the sort to work
+          createdAt: od.createdAt || od.appliedDate || new Date().toISOString()
         }));
+
+        console.log(formattedODs);
+        
 
         const combined = [...leaves, ...formattedCompOffs, ...formattedODs].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -113,7 +119,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
           leaveId: requestId,
           approverId: userId,
           decision: status,
-          comments: reason   
+          comments: reason
         };
 
         await dashboardService.updateDecision(decisionRequest);

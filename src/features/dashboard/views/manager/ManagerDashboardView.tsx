@@ -84,6 +84,8 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       setDialogConfig({ isOpen: false, req: null, status: null });
     }
   };
+  console.log(dashboardData);
+  
 
   if (dashboardLoading || authLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -295,7 +297,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Used</th>
                 {/* <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Utilization</th> */}
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Balance</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Remarks</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Pending Requests</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -330,6 +332,11 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                     <td className="px-6 py-4 text-right">
                       <span className="px-3 py-1 bg-blue-50 text-[#2563eb] rounded-md text-xs font-black">
                         {leave.allocatedDays - leave.usedDays} Left
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="px-3 py-1 bg-blue-50 text-[#2563eb] rounded-md text-xs font-black">
+                        {leave.pendingCount}
                       </span>
                     </td>
                   </tr>

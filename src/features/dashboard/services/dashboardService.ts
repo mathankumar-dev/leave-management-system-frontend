@@ -165,7 +165,7 @@ export const dashboardService = {
   },
   getPendingODApprovals: async (managerId: number): Promise<ODResponse[]> => {
     const response = await api.get(`/od/pending/manager/${managerId}`);
-    return response.data.content;
+    return response.data;
   },
 
 

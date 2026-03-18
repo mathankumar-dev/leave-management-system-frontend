@@ -3,11 +3,11 @@ import type { UserRole } from "../../auth/types";
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF";
-export type LeaveType = 'SICK'|'ANNUAL_LEAVE'|'MATERNITY'|'PATERNITY'|'COMP_OFF';
+export type LeaveType = 'SICK' | 'ANNUAL_LEAVE' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF';
 
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
-export type ODStatus = 'PENDING_TEAM_LEADER'| 'PENDING_MANAGER' | 'PENDING_HR' | 'APPROVED' | 'REJECTED' | 'CANCELLED' ;
+export type ODStatus = 'PENDING_TEAM_LEADER' | 'PENDING_MANAGER' | 'PENDING_HR' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 
 export interface LeaveRecord {
   id: number;
@@ -302,6 +302,7 @@ export type LeaveBreakDown = {
   usedDays: number;
   remainingDays: number;
   halfDayCount: number;
+  pendingCount?: number;
 }
 
 export interface EmployeeData {
@@ -470,18 +471,21 @@ export interface OnboardingStatus {
 
 export interface ODRequest {
   employeeId: number;
+  employeeName?: string | null;
   reason: string;
-  fromDate: string;
-  toDate: string;
+  startDate: string;
+  endDate: string;
 }
 
 export interface ODResponse {
-  id : number;
-  employeeId : string;
-  reason : string;
-  fromDate : string;
-  toDate : string;
-  status : ODStatus;
+  id: number;
+  employeeId: string;
+  employeeName?: string | null;
+  reason: string;
+  startDate: string;
+  endDate: string;
+  status: ODStatus;
+  createdAt: string;
 }
 
 
@@ -499,17 +503,17 @@ export interface MeetingRequest {
 
 
 export interface TeamMember {
-  employeeName : string;
-  employeeId : number;
-  designation : string | null;
-  skills : string | null;
+  employeeName: string;
+  employeeId: number;
+  designation: string | null;
+  skills: string | null;
 }
 export interface PaginatedResponse<T> {
   content: T[];
   totalPages: number;
   totalElements: number;
   size: number;
-  number: number; 
+  number: number;
   first: boolean;
   last: boolean;
   numberOfElements: number;
@@ -555,5 +559,5 @@ export interface CreateUserRequest {
   teamId?: number | null;
   teamLeaderId?: number | null;
   managerId?: number | null;
-  joiningDate: string; 
+  joiningDate: string;
 }
