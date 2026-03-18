@@ -57,12 +57,106 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
       >
         {/* Reusing your Personal Stats logic from Manager View */}
         {drawerConfig.type === 'PERSONAL' ? (
-          <div className="space-y-4">
-            <div className="p-4 bg-slate-900 text-white rounded-sm  ">
-              <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Admin Access</p>
-              <p className="text-xs font-bold">Your Balance: {dashboardData?.personalStats.yearlyBalance} days</p>
+          <div className="space-y-6">
+            <div className="p-4 bg-slate-900 text-white rounded-sm   ">
+              <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Status: Active</p>
+              <p className="text-xs font-bold">You have {dashboardData?.personalStats.yearlyBalance} days remaining in your annual quota.</p>
             </div>
-            {/* Add your table or breakdown list here similar to manager view */}
+
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Balance Breakdown</h4>
+              <div className="grid grid-cols-1 gap-3">
+                {/* Reusing StatCard visual logic manually for drawer consistency */}
+                {dashboardData?.personalStats.breakdown.map((item) => (
+                  <div
+                    key={item.leaveType}
+                    className="flex flex-col gap-2 p-4 border-2 border-slate-100 hover:border-slate-200 transition-all bg-white"
+                  >
+                    {/* Leave Type Title */}
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                      {item.leaveType.replace('_', ' ')}
+                    </span>
+
+                    <div className="flex justify-between items-end">
+                      {/* Left Side: Used / Total */}
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          Used / Total
+                        </span>
+                        <span className="text-lg font-black   text-slate-900">
+                          {item.usedDays}d
+                          <span className="text-slate-300 font-medium mx-1">/</span>
+                          {item.allocatedDays}d
+                        </span>
+                      </div>
+
+                      {/* Right Side: Remaining */}
+                      <div className="text-right flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          Remaining
+                        </span>
+                        <span className={`text-lg font-black   ${item.remainingDays <= 1 ? 'text-red-500' : 'text-indigo-600'}`}>
+                          {item.remainingDays}d
+                        </span>
+                      </div>
+                    </div>
+                    {item.halfDayCount > 0 && (
+                      <span className="text-[9px] font-bold text-slate-400">
+                        Includes {item.halfDayCount} half-day{item.halfDayCount > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                ))}
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Comp-Off Bank</span>
+                  <span className="text-lg font-black  ">{dashboardData?.personalStats.compoffBalance || 0}d</span>
+                </div>
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Carry Forward</span>
+                  <span className="text-lg font-black  ">{dashboardData?.personalStats.carryForwardRemaining || 0}d</span>
+                </div>
+                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Monthly Stats</span>
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
+                      <span className="text-lg font-black   text-slate-900">
+                        {dashboardData?.personalStats.monthlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.monthlyAllocated}d
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
+                      <span className="text-lg font-black   text-indigo-600">
+                        {dashboardData?.personalStats.monthlyBalance || 0}d
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Yearly Stats</span>
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
+                      <span className="text-lg font-black   text-slate-900">
+                        {dashboardData?.personalStats.yearlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.yearlyAllocated}d
+                      </span>
+                    </div>
+                    <div className="text-right flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
+                      <span className="text-lg font-black   text-indigo-600">
+                        {dashboardData?.personalStats.yearlyBalance || 0}d
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50 border-rose-100">
+                  <span className="text-[10px] font-black uppercase text-rose-400">Loss of Pay (%)</span>
+                  <span className="text-lg font-black   text-rose-600">{dashboardData?.personalStats.lossOfPayPercentage || 0}%</span>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
