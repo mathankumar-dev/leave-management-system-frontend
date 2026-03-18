@@ -1,169 +1,251 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import {
-  FaSearch,
   FaUserPlus,
+  FaSearch,
   FaEllipsisV,
-  FaEnvelope,
-  FaFilter,
+  FaChevronLeft,
+  FaChevronRight,
+  FaRegAddressCard,
+  FaFilter
 } from "react-icons/fa";
-import { useDashboard } from "../../hooks/useDashboard";
-import type { Employee } from "../../types";
-import AddEmployeeForm from "../../components/AddEmployeeForm";
 import { useAuth } from "../../../auth/hooks/useAuth";
-import type { User } from "../../../auth/types";
+import { useDashboard } from "../../hooks/useDashboard";
+import type { EmployeeEntity } from "../../types";
+import AddEmployeePopup from "../../../../common/forms/AddEmployeeForm";
 
 const EmployeesView = () => {
-  const { fetchEmployees, loading } = useDashboard();
+  const { fetchAllEmployees, loading, addUser } = useDashboard();
   const { user } = useAuth();
 
-  const [Employees, setEmployees] = useState<Employee[]>([]);
+  // Core Data State
+  const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
+  const [pagination, setPagination] = useState({ totalElements: 0, totalPages: 0 });
+
+  // Filter & Pagination State
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
-  const [hiddenIds, setHiddenIds] = useState<number[]>([]);
+  const [roleFilter, setRoleFilter] = useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState(0);
   const [openAddEmployee, setOpenAddEmployee] = useState(false);
-  
 
-  useEffect(() => {
-    const employeeId = user?.id;
 
-    if (!employeeId) {
-      console.warn("Employee ID not ready yet");
-      return;
+  const loadEmployeeData = useCallback(async () => {
+    const result = await fetchAllEmployees({
+      page: currentPage,
+      size: 10,
+      name: searchTerm,
+      role: roleFilter === "ALL" ? undefined : roleFilter,
+      active: true
+    });
+
+    if (result) {
+      setEmployees(result.content);
+      setPagination({
+        totalElements: result.totalElements,
+        totalPages: result.totalPages
+      });
     }
+  }, [fetchAllEmployees, currentPage, searchTerm, roleFilter]);
 
-    let isMounted = true;
+  // Initial load (no debounce)
+  useEffect(() => {
+    loadEmployeeData();
+  }, [currentPage, roleFilter]);
 
-    fetchEmployees().then((data: Employee[]) => {
-      if (isMounted) {
-        setEmployees(data);
-      }
-    });
+  // Debounce only search
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      loadEmployeeData();
+    }, 300);
 
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return () => clearTimeout(delay);
+  }, [searchTerm]);
 
-  const filteredEmployees = useMemo(() => {
-    return Employees.filter((emp) => {
-      return emp.name.toLowerCase().includes(searchTerm.toLowerCase());
-    });
-  }, [Employees, searchTerm]);
+  // Animation Variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+    exit: { opacity: 0 }
+  };
 
-  if (loading && Employees.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
-        <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">
-          Loading Directory...
-        </p>
-      </div>
-    );
-  }
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
+
 
   return (
-    <div className="space-y-6 p-4 md:p-0">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold">Employee Directory</h2>
-          <p className="text-xs text-slate-500">
-            Total Members: {filteredEmployees.length}
-          </p>
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
+      {/* Header & Controls */}
+      <div className="flex flex-col xl:flex-row justify-between items-end xl:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-slate-900 rounded-sm text-white">
+            <FaRegAddressCard size={20} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Personnel Directory</h2>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+              {pagination.totalElements} Records System-Wide
+            </p>
+          </div>
         </div>
 
-        <button
-          onClick={() => setOpenAddEmployee(true)}
-          className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
-        >
-          <FaUserPlus /> Add Employee
-        </button>
-      </div>
+        <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+          {/* Search Input */}
+          <div className="relative flex-1 min-w-[200px]">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(0); // Reset to page 1 on new search
+              }}
+              className="w-full bg-slate-50 border border-slate-200 pl-10 pr-4 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 transition-all uppercase tracking-tighter"
+            />
+          </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 relative group">
-          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500" />
-          <input
-            type="text"
-            placeholder="Search name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border border-slate-200 pl-11 pr-4 py-3 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm"
-          />
+          {/* Role Filter Dropdown */}
+          <div className="relative">
+            <select
+              value={roleFilter}
+              onChange={(e) => {
+                setRoleFilter(e.target.value);
+                setCurrentPage(0); // Reset to page 1 on filter change
+              }}
+              className="appearance-none bg-slate-50 border border-slate-200 pl-10 pr-8 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 transition-all uppercase tracking-tighter cursor-pointer"
+            >
+              <option value="ALL">All Roles</option>
+              <option value="ADMIN">Admins</option>
+              <option value="HR">HR</option>
+              <option value="MANAGER">Managers</option>
+              <option value="TEAM_LEADER">Team Leaders</option>
+              <option value="EMPLOYEE">Employees</option>
+            </select>
+            <FaFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" />
+          </div>
+
+          <button
+            onClick={() => setOpenAddEmployee(true)}
+            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 shadow-sm"
+          >
+            <FaUserPlus /> Add Member
+          </button>
         </div>
-
-        <button className="px-5 py-3 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 flex items-center gap-2 font-bold text-xs shadow-sm">
-          <FaFilter /> Filters
-        </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      {/* Table Content */}
+      <div className="relative w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm min-h-[400px]">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="hidden md:table-header-group bg-slate-50 border-b">
+            <thead className="bg-neutral-800 text-white">
               <tr>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase text-slate-500">
-                  Employee
-                </th>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase text-slate-500">
-                  Department
-                </th>
-                <th className="px-6 py-4 text-[11px] font-bold uppercase text-slate-500 text-center">
-                  Status
-                </th>
-                <th className="px-6 py-4"></th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Member Identity</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Designated Role</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Status</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Options</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100">
-              <AnimatePresence mode="popLayout">
-                {filteredEmployees.map((emp) => (
-                  <motion.tr
-                    key={emp.id}
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col md:table-row hover:bg-slate-50"
-                  >
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-sm">{emp.name}</p>
+            <AnimatePresence mode="wait">
+              <motion.tbody
+                key={`${currentPage}-${searchTerm}-${roleFilter}`}
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="divide-y divide-slate-100"
+              >
+                {employees.length > 0 ? (
+                  employees.map((emp) => (
+                    <motion.tr
+                      key={emp.id}
+                      variants={itemVariants}
+                      className="hover:bg-slate-50/50 transition-colors group"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-sm bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 border border-slate-200 group-hover:bg-slate-900 group-hover:text-white transition-all uppercase">
+                            {emp.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900 uppercase tracking-tight">{emp.name}</p>
+                            <p className="text-[10px] font-medium text-slate-400">{emp.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-sm text-[10px] font-black uppercase tracking-tight">
+                          {emp.role.replace(/_/g, " ")}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <div className={`h-1.5 w-1.5 rounded-full ${emp.active ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                            {emp.active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="text-slate-300 hover:text-slate-900 p-2">
+                          <FaEllipsisV size={12} />
+                        </button>
+                      </td>
+                    </motion.tr>
+                  ))
+                ) : !loading ? (
+                  <tr>
+                    <td colSpan={4} className="py-24 text-center">
+                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">No Records Found</span>
                     </td>
-
-                    <td className="px-6 py-4">
-                      <p className="text-xs font-semibold">
-                        {emp.department}
-                      </p>
-                    </td>
-
-                    <td className="px-6 py-4 text-center">
-                      <span className="px-3 py-1 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700">
-                        ACTIVE
-                      </span>
-                    </td>
-
-                    <td className="px-6 py-4 text-right">
-                      <button className="p-2 hover:bg-slate-100 rounded">
-                        <FaEllipsisV size={12} />
-                      </button>
-                    </td>
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-            </tbody>
+                  </tr>
+                ) : null}
+              </motion.tbody>
+            </AnimatePresence>
           </table>
         </div>
 
-        {filteredEmployees.length === 0 && !loading && (
-          <div className="py-16 text-center text-slate-500 text-sm">
-            No team members found matching "{searchTerm}"
+        {/* Loading Overlay */}
+        {loading && (
+          <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center z-10">
+            <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mb-2" />
+            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Syncing Personnel...</span>
           </div>
         )}
       </div>
 
-      <AddEmployeeForm
+      {/* Pagination Footer */}
+      <div className="flex justify-between items-center px-2 pt-4">
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          Viewing Page {currentPage + 1} of {pagination.totalPages || 1}
+        </span>
+        <div className="flex gap-2">
+          <button
+            disabled={currentPage === 0 || loading}
+            onClick={() => setCurrentPage(prev => prev - 1)}
+            className="p-2.5 rounded-sm border border-slate-200 hover:bg-slate-50 disabled:opacity-30 transition-all bg-white"
+          >
+            <FaChevronLeft size={10} />
+          </button>
+          <button
+            disabled={currentPage + 1 >= pagination.totalPages || loading}
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            className="p-2.5 rounded-sm border border-slate-200 hover:bg-slate-50 disabled:opacity-30 transition-all bg-white"
+          >
+            <FaChevronRight size={10} />
+          </button>
+        </div>
+      </div>
+
+      <AddEmployeePopup
         open={openAddEmployee}
-        onClose={() => setOpenAddEmployee(false)}
+        addUser={addUser}
+        onClose={() => {
+          setOpenAddEmployee(false);
+          loadEmployeeData();
+        }}
       />
     </div>
   );

@@ -24,6 +24,7 @@ import EmployeeProfile from "../views/employee/EmployeeProfile";
 
 /* ---------------- MANAGER VIEWS ---------------- */
 import ManagerDashboardView from "../views/manager/ManagerDashboardView";
+import AdminDashboardView from "../views/admin/AdminDashboardView";
 import TeamCalendarView from "../views/manager/TeamCalendarView";
 import ManagerProfile from "../views/manager/ManagerProfile";
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
@@ -70,8 +71,12 @@ const DashboardLayout: React.FC = () => {
     switch (activeTab) {
 
       case "Dashboard":
+        if (userRole === ROLES.ADMIN)
+          return <AdminDashboardView />;
         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
+
+
 
         if (userRole === ROLES.HR)
           return <HRDashboard />;
@@ -89,6 +94,8 @@ const DashboardLayout: React.FC = () => {
 
       case "Team Calendar":
         return <TeamCalendarView />;
+      case "Employees":
+        return <EmployeesView />;
 
       case "Leave Config":
         return <LeaveTypesView />;
@@ -113,10 +120,12 @@ const DashboardLayout: React.FC = () => {
       case "Team Members":
         return <TeamMembersView />;
 
+
+
       case "Profile":
         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
-        
+
 
       case "Other Approvals":
         return <OtherRequestForm />;

@@ -13,7 +13,11 @@ import type {
   // ProfileResponse
   ProfileData,
   ODResponse,
-  TeamMember
+  TeamMember,
+  EmployeeEntity,
+  PaginatedResponse,
+  EmployeeFilters,
+  CreateUserRequest
 
 
 } from '../types';
@@ -56,6 +60,14 @@ export const dashboardService = {
 
     const response = await api.get(`/dashboard/teamleader/${teamLeaderId}`);
 
+    return response.data;
+
+  },
+  getAdminDashboard: async (adminId: number) => {
+
+    const response = await api.get(`/dashboard/admin/${adminId}`);
+    console.log(response.data);
+    
     return response.data;
 
   },
@@ -314,12 +326,26 @@ getMyPayslip: async (year: number, month: number) => {
 
   getTeamMembers: async (id: number): Promise<TeamMember[]> => {
     const res = await api.get(`/dashboard/team-members/${id}`);
-    console.log("employee data");
+      return res.data;
+  },
 
-    console.log(res);
+getAllEmployees: async (filters: EmployeeFilters): Promise<PaginatedResponse<EmployeeEntity>> => {
+  const res = await api.get('/employees/all', {
+    params: filters 
+  });
+  return res.data; 
+},
 
-
-    return res.data;
+createUser: async (userData: CreateUserRequest): Promise<string> => {
+    try {
+      const response = await api.post('/admin/users/add', userData);
+      console.log(response);
+      
+      return response.data; 
+    } catch (error: any) {
+      throw error.response?.data || "Failed to create user";
+    }
   }
+
 };
 
