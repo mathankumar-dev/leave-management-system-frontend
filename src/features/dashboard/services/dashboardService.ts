@@ -67,7 +67,7 @@ export const dashboardService = {
 
     const response = await api.get(`/dashboard/admin/${adminId}`);
     console.log(response.data);
-    
+
     return response.data;
 
   },
@@ -290,9 +290,9 @@ export const dashboardService = {
 
 
 
-getMyPayslip: async (year: number, month: number) => {
-  return api.get(`/payslip/my/${year}/${month}`);
-},
+  getMyPayslip: async (year: number, month: number) => {
+    return api.get(`/payslip/my/${year}/${month}`);
+  },
 
   getHistory: async (year: number) => {
     const res = await api.get(`/history/${year}`);
@@ -303,7 +303,7 @@ getMyPayslip: async (year: number, month: number) => {
     const res = await api.get(`/download/${year}/${month}`, {
       responseType: "blob"
     });
-     console.log("PAYSLIP ", res.data); 
+    console.log("PAYSLIP ", res.data);
 
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement("a");
@@ -326,26 +326,35 @@ getMyPayslip: async (year: number, month: number) => {
 
   getTeamMembers: async (id: number): Promise<TeamMember[]> => {
     const res = await api.get(`/dashboard/team-members/${id}`);
-      return res.data;
+    return res.data;
   },
 
-getAllEmployees: async (filters: EmployeeFilters): Promise<PaginatedResponse<EmployeeEntity>> => {
-  const res = await api.get('/employees/all', {
-    params: filters 
-  });
-  return res.data; 
-},
+  getAllEmployees: async (filters: EmployeeFilters): Promise<PaginatedResponse<EmployeeEntity>> => {
+    const res = await api.get('/employees/all', {
+      params: filters
+    });
+    return res.data;
+  },
 
-createUser: async (userData: CreateUserRequest): Promise<string> => {
+  createUser: async (userData: CreateUserRequest): Promise<string> => {
     try {
       const response = await api.post('/admin/users/add', userData);
       console.log(response);
-      
-      return response.data; 
+
+      return response.data;
     } catch (error: any) {
       throw error.response?.data || "Failed to create user";
     }
-  }
+  },
+
+  deleteUser: async (employeeId: number): Promise<string> => {
+    try {
+      const res = await api.delete(`/employees/${employeeId}`);
+      return res.data.message || "Employee deleted successfully";
+    } catch (error: any) {
+      throw error.response?.data?.message || "Failed to delete user";
+    }
+  },
 
 };
 

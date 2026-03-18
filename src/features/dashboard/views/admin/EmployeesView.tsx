@@ -15,7 +15,7 @@ import type { EmployeeEntity } from "../../types";
 import AddEmployeePopup from "../../../../common/forms/AddEmployeeForm";
 
 const EmployeesView = () => {
-  const { fetchAllEmployees, loading, addUser } = useDashboard();
+  const { fetchAllEmployees, loading, addUser, deleteUser } = useDashboard();
   const { user } = useAuth();
 
   const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
@@ -25,6 +25,14 @@ const EmployeesView = () => {
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(0);
   const [openAddEmployee, setOpenAddEmployee] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<number | null>(null);
+
+  // Close menu if clicking outside
+  useEffect(() => {
+    const closeMenu = () => setActiveMenu(null);
+    window.addEventListener("click", closeMenu);
+    return () => window.removeEventListener("click", closeMenu);
+  }, []);
 
   const loadEmployeeData = useCallback(async () => {
     const result = await fetchAllEmployees({
@@ -45,7 +53,6 @@ const EmployeesView = () => {
     }
   }, [fetchAllEmployees, currentPage, searchTerm, roleFilter]);
 
-  // 🔥 SINGLE debounced effect (fix + smoother UX)
   useEffect(() => {
     const delay = setTimeout(() => {
       loadEmployeeData();
@@ -53,7 +60,24 @@ const EmployeesView = () => {
 
     return () => clearTimeout(delay);
   }, [loadEmployeeData]);
+  // Inside EmployeesView component
+  const [confirmState, setConfirmState] = useState<{ isOpen: boolean; empId: number | null }>({
+    isOpen: false,
+    empId: null,
+  });
 
+  const handleDeactivateClick = (id: number) => {
+    setConfirmState({ isOpen: true, empId: id });
+    setActiveMenu(null); // Close the ellipsis menu
+  };
+
+  const processDeactivation = async () => {
+    if (confirmState.empId) {
+      await deleteUser(confirmState.empId);
+      setConfirmState({ isOpen: false, empId: null });
+      loadEmployeeData(); // Refresh the table
+    }
+  };
   // 🎬 Animation Variants (ENHANCED)
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -231,10 +255,70 @@ const EmployeesView = () => {
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 text-right">
-                        <button className="text-slate-300 hover:text-slate-900 p-2">
+                      <td className="px-6 py-4 text-right relative overflow-visible">
+                        {/* Ellipsis Toggle Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevents global click listener from closing it instantly
+                            setActiveMenu(activeMenu === emp.id ? null : emp.id);
+                          }}
+                          className={`p-2 transition-all rounded-sm ${activeMenu === emp.id
+                            ? 'bg-slate-900 text-white shadow-md'
+                            : 'text-slate-400 hover:text-slate-900 hover:bg-slate-100'
+                            }`}
+                        >
                           <FaEllipsisV size={12} />
                         </button>
+
+                        {/* Dropdown Menu */}
+                        <AnimatePresence>
+                          {activeMenu === emp.id && (
+                            <>
+                              {/* Invisible overlay to catch clicks and close the menu */}
+                              <div
+                                className="fixed inset-0 z-40 cursor-default"
+                                onClick={() => setActiveMenu(null)}
+                              />
+
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.95, x: 10 }}
+                                animate={{ opacity: 1, scale: 1, x: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, x: 10 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                                className="absolute right-14 top-1/2 -translate-y-1/2 z-50 min-w-[160px] bg-white border border-slate-200 shadow-xl rounded-sm overflow-hidden"
+                              >
+                                <div className="p-1">
+                                  {/* Action: Deactivate */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // We don't call the API here anymore; we just open the Dialog
+                                      setConfirmState({ isOpen: true, empId: emp.id });
+                                      setActiveMenu(null);
+                                    }}
+                                    className="w-full text-left px-3 py-2.5 text-[10px] font-black uppercase tracking-tighter text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2 group"
+                                  >
+                                    <motion.div
+                                      animate={{ scale: [1, 1.2, 1] }}
+                                      transition={{ repeat: Infinity, duration: 2 }}
+                                      className="w-1.5 h-1.5 rounded-full bg-red-600"
+                                    />
+                                    Deactivate User
+                                  </button>
+
+                                  <div className="h-[1px] bg-slate-100 my-1" />
+
+                                  <button
+                                    className="w-full text-left px-3 py-2 text-[10px] font-bold uppercase tracking-tighter text-slate-400 cursor-not-allowed opacity-50"
+                                    disabled
+                                  >
+                                    View Full Logs
+                                  </button>
+                                </div>
+                              </motion.div>
+                            </>
+                          )}
+                        </AnimatePresence>
                       </td>
                     </motion.tr>
                   ))
@@ -304,8 +388,70 @@ const EmployeesView = () => {
           loadEmployeeData();
         }}
       />
+      <ConfirmDialog
+        isOpen={confirmState.isOpen}
+        title="Security Protocol: Deactivation"
+        message="Are you certain you want to revoke system access for this member? This action will be logged."
+        onConfirm={processDeactivation}
+        onCancel={() => setConfirmState({ isOpen: false, empId: null })}
+      />
     </div>
   );
 };
 
 export default EmployeesView;
+
+interface ConfirmDialogProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel }: ConfirmDialogProps) => (
+  <AnimatePresence>
+    {isOpen && (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+        {/* Backdrop */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onCancel}
+          className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"
+        />
+
+        {/* Dialog Box */}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          className="relative w-full max-w-sm bg-white border border-slate-200 rounded-sm shadow-2xl p-6"
+        >
+          <h3 className="text-sm font-black text-slate-900 uppercase  mb-2">
+            {title}
+          </h3>
+          <p className="text-[11px] font-medium text-slate-500 uppercase  leading-relaxed mb-6">
+            {message}
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={onCancel}
+              className="flex-1 px-4 py-2 border border-slate-200 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              className="flex-1 px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-700 transition-all shadow-sm"
+            >
+              Confirm
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    )}
+  </AnimatePresence>
+);

@@ -474,6 +474,16 @@ export const useDashboard = () => {
     }
   };
 
+  const deleteUser = async (employeeId : number): Promise<void> => {
+    try {
+      const message = await dashboardService.deleteUser(employeeId);
+      toast.success(message);
+    } catch (err: any) {
+      toast.error(err.toString());
+      throw err;
+    }
+  };
+
 
 
 
@@ -498,6 +508,7 @@ export const useDashboard = () => {
     bankCompOff,
     fetchAllEmployees,
     addUser,
+    deleteUser,
 
     fetchEmployeeCalendar,
     employeeCalendar,
