@@ -3,6 +3,8 @@
 //     HR data types
 // ===========================
 
+import type { Variable } from "lucide-react";
+
 
 // ─── Unions ──────────────────────────────────────────────────────
 export type OnboardingStatus = 'PENDING' | 'COMPLETED' | 'IN_PROGRESS';
@@ -153,9 +155,11 @@ export interface DashboardResponse {
   esi: number;
   professionalTax: number;
   tds: number;
+  lopDays : number;
   lop: number;
   grossSalary: number;
   netSalary: number;
+  variablePay : number;
 }
 
 export interface PayslipCreateRequest {
@@ -175,6 +179,8 @@ export interface PayslipCreateRequest {
   professionalTax: number;
   tds: number;
   lop: number;
+  lopDays : number;
+  variablePay : number;
 }
 
 export interface PayslipUpdateRequest extends PayslipCreateRequest {}

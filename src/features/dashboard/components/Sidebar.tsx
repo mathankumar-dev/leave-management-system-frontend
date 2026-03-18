@@ -14,6 +14,7 @@ import {
   FaChartBar,
 } from "react-icons/fa";
 import { useAuth } from "../../auth/hooks/useAuth";
+import { MdVerifiedUser } from "react-icons/md";
 
 interface SidebarProps {
   activeTab: string;
@@ -50,7 +51,9 @@ function Sidebar({
     { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
     // { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
-    { name: "Payslip", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
+    // { name: "Payroll", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
+    { name: "Cfoemployees", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
+    { name: "Verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
 
   ];
 

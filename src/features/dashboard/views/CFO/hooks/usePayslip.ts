@@ -13,6 +13,7 @@ export function usePayslip() {
     try {
       setLoading(true);
       const result = await PayslipService.createPayslip(data);
+      setPayrollData(prev => [result, ...prev]);
       return result;
     } catch {
       setError('Failed to create payslip');
@@ -86,11 +87,20 @@ export function usePayslip() {
   }, []);
 
   // ─── Fetch Payroll Data ───────────────────────────
-  const fetchPayrollData = useCallback(async (year: number, month: number) => {
+  const fetchPayrollData = useCallback(async (year: number, month: number, highlightId?: number) => {
     try {
       setLoading(true);
       const data = await PayslipService.getPayrollData(year, month);
+      // New employee first-a varaum mathiri sort
+      if (highlightId) {
+        const sorted = [
+          ...data.filter(p => p.employeeId === highlightId),
+          ...data.filter(p => p.employeeId !== highlightId),
+        ];
+        setPayrollData(sorted);
+      } else {
       setPayrollData(data);
+      }
       return data;
     } catch {
       setPayrollData([]);

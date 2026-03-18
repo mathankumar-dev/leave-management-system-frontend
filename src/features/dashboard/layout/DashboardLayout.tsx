@@ -11,6 +11,7 @@ import LeaveTypesView from "../views/admin/LeaveTypesView";
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
 import LowBalancePage from "../views/hr/pages/LowBalancePage";
+import { HRVerificationPage } from "../views/hr/pages/Hrverificationpage";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -28,10 +29,9 @@ import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialo
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 import TeamMembersView from "../views/manager/TeamMembersView";
 
-
 /* ---------------------- CFO -----------------------*/
 import { PayslipPage } from "../views/CFO/pages/PayslipPage";
- 
+import { CFOEmployeesPage } from "../views/CFO/pages/Cfoemployeepage";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -39,7 +39,7 @@ const ROLES = {
   HR: "HR",
   MANAGER: "MANAGER",
   EMPLOYEE: "EMPLOYEE",
-  CFO : "CFO",
+  CFO: "CFO",
 };
 
 const DashboardLayout: React.FC = () => {
@@ -48,27 +48,25 @@ const DashboardLayout: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cfoSelectedEmpId, setCfoSelectedEmpId] = useState<number | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  /* ---------------- ADMIN DEFAULT REDIRECT ---------------- */
   useEffect(() => {
     if (userRole === ROLES.ADMIN && activeTab === "Dashboard") {
       setActiveTab("Employees");
     }
     if (userRole === ROLES.CFO && activeTab === "Dashboard") {
-      setActiveTab("Payslip");
+      setActiveTab("Cfoemployees");
     }
   }, [userRole, activeTab]);
 
-  /* Scroll reset on tab change */
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: "auto" });
     }
   }, [activeTab]);
 
-  /* ---------------- VIEW RENDERER ---------------- */
   const renderView = () => {
     switch (activeTab) {
 
@@ -83,13 +81,15 @@ const DashboardLayout: React.FC = () => {
         if (userRole === ROLES.HR) return <HRDashboard />;
         return null;
 
+
+      case "Verifications":
+        if (userRole === ROLES.HR) return <HRVerificationPage />;
+        return null;
+
       case "All Employees":
         if (userRole === ROLES.HR) return <HREmployeesPage />;
         return <EmployeesView />;
 
-      case "Payslip":
-        if (userRole === ROLES.CFO) return <PayslipPage />;
-        return null;
 
       case "LowBalance Employee":
         return <LowBalancePage />;
@@ -115,7 +115,6 @@ const DashboardLayout: React.FC = () => {
       case "Notifications":
         return <NotificationsView />;
 
-
       case "Team Members":
         return <TeamMembersView onNavigate={setActiveTab} />;
 
@@ -123,14 +122,22 @@ const DashboardLayout: React.FC = () => {
         if (userRole === ROLES.MANAGER) return <ManagerProfile />;
         return <EmployeeProfile />;
 
+      // case "Payroll":
+      //   if (userRole === ROLES.CFO) return (
+      //     <PayslipPage />
+      //   );
+      //   return null;
+
+      case "Cfoemployees":
+        if (userRole === ROLES.CFO) return (
+          <CFOEmployeesPage />
+        );
+        return <EmployeesView />;
+
       default:
         return <DashboardView onNavigate={setActiveTab} />;
     }
   };
-
-  if (mustChangePassword) {
-    return <ChangePasswordDialog />;
-  }
 
   if (mustChangePassword) {
     return <ChangePasswordDialog />;
