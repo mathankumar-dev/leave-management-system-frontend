@@ -119,7 +119,7 @@ export const useDashboard = () => {
     }
   };
 
-  const download = async (year: number, month: number) => {
+  const downloadHistory = async (year: number, month: number) => {
     await dashboardService.downloadPayslip(year, month);
   };
 
@@ -514,16 +514,18 @@ export const useDashboard = () => {
 
     payslip,
     history,
-
+    downloadHistory,
+    
     fetchPayslip,
-    fetchHistory,
-    download,
+    // fetchHistory,
+   
 
     applyLeave,
     getTeamMembers,
 
     leaveBalance,
     fetchLeaveBalance,
+    fetchHistory,
 
     removeLeaveType,
     cancelLeave,
@@ -537,3 +539,7 @@ export const useDashboard = () => {
     filters, updateFilter, stats
   };
 };
+function setLoadingHistory(arg0: boolean) {
+  throw new Error("Function not implemented.");
+}
+

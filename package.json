@@ -25,6 +25,8 @@
     "class-variance-authority": "^0.7.1",
     "framer-motion": "^12.34.1",
     "js-cookie": "^3.0.5",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.575.0",
     "motion-react": "^0.15.0-alpha.1",

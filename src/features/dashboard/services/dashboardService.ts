@@ -289,12 +289,12 @@ export const dashboardService = {
   },
 
   getHistory: async (year: number) => {
-    const res = await api.get(`/history/${year}`);
+    const res = await api.get(`/summary/${year}`);
     return res.data;
   },
 
   downloadPayslip: async (year: number, month: number) => {
-    const res = await api.get(`/download/${year}/${month}`, {
+    const res = await api.get(`payslip/download/${year}/${month}`, {
       responseType: "blob"
     });
 

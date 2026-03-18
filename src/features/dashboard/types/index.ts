@@ -500,44 +500,6 @@ export interface MeetingRequest {
 }
 
 
-export interface ProfileData {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-
-  managerId: number | null;
-  managerName: string;
-
-  designation: string;
-  joiningDate: string;
-
-  contactNumber: string;
-  dateOfBirth: string;
-  gender: string;
-
-  presentAddress: string;
-  permanentAddress: string;
-
-  bloodGroup: string;
-
-  fatherName: string;
-  motherName: string;
-
-  emergencyContactNumber: string;
-
-  personalEmail: string;
-  aadharNumber: string;
-
-  skillSet: string[];
-
-  biometricStatus: string;
-  vpnStatus: string;
-
-  personalDetailsLocked: boolean;
-
-  photo?: string;
-}
 
 
 export interface TeamMember {

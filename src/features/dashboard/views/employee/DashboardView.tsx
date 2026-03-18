@@ -122,11 +122,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           total: data.rejectedCount || 0,
           color: "rose",
         },
-        {
-          title: "Loss Of Pay %",
-          used: data.lossOfPayPercentage || 0,
-          color: "red",
-        },
       ];
 
       setStats(newStats);
@@ -159,14 +154,12 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <h2 className="text-2xl font-semibold text-slate-800">
             Welcome back, {user?.name}
           </h2>
-          <p className="text-sm text-slate-500">
-            Leave summary for 2026
-          </p>
+          <p className="text-sm text-slate-500">Leave summary for 2026</p>
         </div>
 
         <button
           onClick={() => onNavigate?.("Apply Leave")}
-          className="flex items-center gap-2 bg-indigo-500 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700"
+          className="flex items-center gap-2 bg-indigo-500 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition"
         >
           <FaPlus /> Apply Leave
         </button>
