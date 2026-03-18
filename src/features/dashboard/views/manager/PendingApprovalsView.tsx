@@ -135,7 +135,7 @@ const PendingApprovalsView: React.FC = () => {
         );
 
         if (result?.success) {
-            notify.leaveAction(status, req.employeeName, !!req.isCompOff);
+            notify.leaveAction(status, req.employeeName, !!req.isCompOff , !!req.isOD);
             setDialogConfig({ isOpen: false, req: null, status: null });
         } else {
             notify.error("Update Failed", "Please check your connection and try again.");
