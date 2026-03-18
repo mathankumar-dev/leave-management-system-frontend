@@ -119,7 +119,7 @@ export const useDashboard = () => {
     }
   };
 
-  const download = async (year: number, month: number) => {
+  const downloadHistory = async (year: number, month: number) => {
     await dashboardService.downloadPayslip(year, month);
   };
 
@@ -525,6 +525,7 @@ export const useDashboard = () => {
 
     leaveBalance,
     fetchLeaveBalance,
+    fetchHistory,
 
     removeLeaveType,
     cancelLeave,
