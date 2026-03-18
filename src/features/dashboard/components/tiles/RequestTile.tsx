@@ -9,11 +9,10 @@ export interface RequestTileProps {
     dateRange: string;
     startDate: string;
     endDate: string;
-    // Updated to handle multiple types from the backend
     startDateHalfDayType?: "FIRST_HALF" | "SECOND_HALF" | string | null;
     endDateHalfDayType?: "FIRST_HALF" | "SECOND_HALF" | string | null;
     reasonMessage: string;
-    days: number; // Use this as the source of truth
+    days: number; 
     createdAt: string;
     onAccept: () => void;
     onReject: () => void;
@@ -43,9 +42,9 @@ const RequestTile: React.FC<RequestTileProps> = ({
     };
 
     const getDurationInfo = () => {
-        // 1. Logic for Single Day Half Day
-        if (days === 0.5) {
-            // Check which type is available
+        const dayCount = days ?? 0;
+
+        if (dayCount === 0.5) {
             const session = getHalfDayLabel(startDateHalfDayType || endDateHalfDayType);
             return {
                 count: '0.5 Days',
@@ -53,17 +52,16 @@ const RequestTile: React.FC<RequestTileProps> = ({
             };
         }
 
-        // 2. Logic for Full Days (1 or more)
         const isMultiDayPartial = getHalfDayLabel(startDateHalfDayType) || getHalfDayLabel(endDateHalfDayType);
 
         return {
-            count: days === 1 ? '1 Day' : `${days} Days`,
-            // If it's a multi-day (e.g. 1.5), we can show "Partial" or specific sessions
+            count: dayCount === 1 ? '1 Day' : `${dayCount} Days`,
             session: isMultiDayPartial ? "Partial Days" : null
         };
     };
 
     const duration = getDurationInfo();
+    const isOnDuty = leaveType === "ON_DUTY";
 
     return (
         <div className='bg-white w-full rounded-sm flex flex-col md:flex-row md:items-center justify-between p-4 gap-3 md:gap-4 border border-slate-100 shadow-sm hover:border-slate-300 transition-all'>
@@ -77,11 +75,15 @@ const RequestTile: React.FC<RequestTileProps> = ({
                     </span>
                     <div className='flex items-center gap-2 mt-0.5'>
                         <span className='text-indigo-600 font-bold text-[10px] uppercase tracking-tighter'>
-                            {leaveType}
+                            {leaveType.replace('_', ' ')}
                         </span>
-                        <span className='md:hidden text-amber-500 text-[10px] font-bold'>
-                            • {duration.count} {duration.session && `(${duration.session})`}
-                        </span>
+                        
+                        {/* MOBILE VIEW: Only show count if NOT On Duty */}
+                        {!isOnDuty && (
+                            <span className='md:hidden text-amber-500 text-[10px] font-bold'>
+                                • {duration.count} {duration.session && `(${duration.session})`}
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -91,34 +93,57 @@ const RequestTile: React.FC<RequestTileProps> = ({
             {/* 2. Desktop Date & Days Section */}
             <div className='hidden md:flex flex-col items-center min-w-35 px-2 text-center'>
                 <span className='text-[11px] font-bold text-slate-600'>{dateRange}</span>
-                <div className='flex flex-col items-center mt-0.5'>
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${days % 1 !== 0 ? 'text-amber-500' : 'text-indigo-400'}`}>
-                        {duration.count}
-                    </span>
-                    {duration.session && (
-                        <span className='text-[8px] font-bold text-amber-600 bg-amber-50 px-1.5 rounded-full uppercase mt-0.5 border border-amber-100'>
-                            {duration.session}
+                
+                {/* DESKTOP: Only show count and session if NOT On Duty */}
+                {!isOnDuty ? (
+                    <div className='flex flex-col items-center mt-0.5'>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${
+                            days % 1 !== 0 ? 'text-amber-500' : 'text-indigo-400'
+                        }`}>
+                            {duration.count}
                         </span>
-                    )}
-                </div>
+                        {duration.session && (
+                            <span className='text-[8px] font-bold text-amber-600 bg-amber-50 px-1.5 rounded-full uppercase mt-0.5 border border-amber-100'>
+                                {duration.session}
+                            </span>
+                        )}
+                    </div>
+                ) : (
+                    <div className='mt-0.5'>
+                        <span className='text-[8px] font-bold text-blue-600 bg-blue-50 px-1.5 rounded-full uppercase border border-blue-100'>
+                            Duty
+                        </span>
+                    </div>
+                )}
             </div>
 
-            {leaveType !== "COMP_OFF" && (
+            {/* 3. Reason Section */}
+            {leaveType !== "COMP_OFF" ? (
                 <>
                     <div className="hidden md:block">
                         <Divider />
                     </div>
 
-                    {/* Reason Message */}
                     <div className='flex-1 min-w-0'>
-                        <p className='text-xs md:text-sm text-slate-500 line-clamp-2 leading-relaxed   md:not- '>
-                            <span className='font-bold text-slate-400 mr-1 md:hidden uppercase text-[9px] not- '>
+                        <p className='text-xs md:text-sm text-slate-500 line-clamp-2 leading-relaxed'>
+                            <span className='font-bold text-slate-400 mr-1 md:hidden uppercase text-[9px]'>
                                 Reason:
                             </span>
                             "{reasonMessage}"
                         </p>
+                        {isOnDuty && (
+                            <span className="text-[8px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase border border-blue-100 mt-1 inline-block">
+                                Official Assignment
+                            </span>
+                        )}
                     </div>
                 </>
+            ) : (
+                <div className='flex-1 flex items-center justify-center'>
+                    <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
+                        Compensatory Off Request
+                    </span>
+                </div>
             )}
 
             <div className="hidden md:block"><Divider /></div>
@@ -153,7 +178,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
             {/* 5. Timestamp Footer */}
             <div className='flex justify-between items-center md:flex-col md:justify-center border-t border-slate-50 md:border-none pt-2 md:pt-0'>
                 <span className='md:hidden text-[9px] font-bold text-slate-300 uppercase'>Requested</span>
-                <span className='text-slate-400 text-[9px] md:text-[10px] font-medium whitespace-nowrap  '>
+                <span className='text-slate-400 text-[9px] md:text-[10px] font-medium whitespace-nowrap'>
                     {createdAt}
                 </span>
             </div>

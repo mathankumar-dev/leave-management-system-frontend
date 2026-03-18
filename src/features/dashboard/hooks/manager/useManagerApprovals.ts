@@ -49,15 +49,15 @@ export const useManagerApprovals = (userId: number, role?: string) => {
           isCompOff: true
         }));
 
-        const formattedODs = (ods || []).map((od: any) => ({
+        const formattedODs = (ods || []).map((od: ODResponse) => ({
           ...od,
-          id: od.id || od.odId,
+          id: od.id ,
+          employeeName : od.employeeName,
           leaveType: 'ON_DUTY',
           isOD: true,
-          startDate: od.fromDate,
-          endDate: od.toDate,
-          // Ensure createdAt exists for the sort to work
-          createdAt: od.createdAt || od.appliedDate || new Date().toISOString()
+          startDate: od.startDate,
+          endDate: od.endDate,
+          createdAt: od.createdAt 
         }));
 
         console.log(formattedODs);

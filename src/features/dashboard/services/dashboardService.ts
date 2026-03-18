@@ -230,7 +230,6 @@ export const dashboardService = {
       console.error("Employee ID is missing! Cannot fetch dashboard.");
       return [];
     }
-
     try {
       const response = await api.get(`/dashboard/employee/${id}`);
       return [response.data];

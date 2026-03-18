@@ -36,8 +36,8 @@ const ODRequestForm = () => {
 
         const payload: ODRequest = {
             employeeId: user.id,
-            fromDate: formData.fromDate.toISOString().split("T")[0],
-            toDate: formData.toDate.toISOString().split("T")[0],
+            startDate: formData.fromDate.toISOString().split("T")[0],
+            endDate: formData.toDate.toISOString().split("T")[0],
             reason: formData.reason,
         };
 
