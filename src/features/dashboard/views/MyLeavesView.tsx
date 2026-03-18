@@ -271,12 +271,13 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
   const { user } = useAuth();
   const days = item.days;
 
-  const isEmployee = userRole === "EMPLOYEE" || userRole === "USER";
+  const isEmployee = userRole === "EMPLOYEE";
   const isTL = userRole === "TEAM_LEADER";
+  const isAdmin = userRole === "ADMIN";
 
-  const showTLStep = isEmployee; 
-  const needsManager = isTL || days > 1; 
-  const needsHR = days > 7;
+  const showTLStep = isEmployee;
+  const needsManager = isTL || days > 1;
+  const needsHR = isAdmin || days > 7;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
