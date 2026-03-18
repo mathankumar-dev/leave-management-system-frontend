@@ -117,7 +117,6 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           total: data.rejectedCount || 0,
           color: "rose",
         },
-        
       ];
 
       setStats(newStats);
@@ -150,80 +149,66 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <h2 className="text-2xl font-semibold text-slate-800">
             Welcome back, {user?.name}
           </h2>
-          <p className="text-sm text-slate-500">
-            Leave summary for 2026
-          </p>
+          <p className="text-sm text-slate-500">Leave summary for 2026</p>
         </div>
 
         <button
           onClick={() => onNavigate?.("Apply Leave")}
-          className="flex items-center gap-2 bg-indigo-500 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700"
+          className="flex items-center gap-2 bg-indigo-500 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition"
         >
           <FaPlus /> Apply Leave
         </button>
       </div>
 
-      {/* TABLE */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
-  
-  {/* HEADER */}
-  <div className="grid grid-cols-5 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-    <div>Type</div>
-    <div className="text-center">Total</div>
-    <div className="text-center">Used</div>
-    <div className="text-center">Remaining</div>
-    
-  </div>
-
-  {/* ROWS */}
-  {stats.map((stat) => {
-    const remaining = (stat.total ?? 0) - (stat.used ?? 0);
-
-    const percent = stat.total
-      ? Math.min((stat.used / stat.total) * 100, 100)
-      : 0;
-
-    const colorMap: any = {
-      emerald: "from-emerald-400 to-green-500",
-      amber: "from-yellow-400 to-amber-500",
-      rose: "from-rose-400 to-red-500",
-      red: "from-red-500 to-rose-600",
-      cyan: "from-cyan-400 to-sky-500",
-    };
-
-    return (
-      <motion.div
-        key={stat.title}
-        whileHover={{ scale: 1.01 }}
-        onClick={() => setSelectedCard(stat)}
-        className="grid grid-cols-5 items-center bg-slate-50 hover:bg-white px-4 py-4 rounded-xl transition cursor-pointer shadow-sm hover:shadow-md"
-      >
-        {/* TITLE */}
-        <div className="font-semibold text-slate-700">
-          {stat.title}
+      {/* MODERN TABLE */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200 p-4 space-y-4">
+        {/* HEADER */}
+        <div className="grid grid-cols-5 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide bg-slate-50 rounded-xl">
+          <div>Type</div>
+          <div className="text-center">Total</div>
+          <div className="text-center">Used</div>
+          <div className="text-center">Remaining</div>
+        
         </div>
 
-        {/* TOTAL */}
-        <div className="text-center text-slate-600">
-          {stat.total ?? stat.used}
-        </div>
+        {/* ROWS */}
+        {stats.map((stat) => {
+          const remaining = (stat.total ?? 0) - (stat.used ?? 0);
+          const percent = stat.total
+            ? Math.min((stat.used / stat.total) * 100, 100)
+            : 0;
 
-        {/* USED */}
-        <div className="text-center text-orange-500 font-medium">
-          {stat.used}
-        </div>
+          const colorMap: any = {
+            emerald: "bg-gradient-to-r from-emerald-400 to-green-500",
+            amber: "bg-gradient-to-r from-yellow-400 to-amber-500",
+            rose: "bg-gradient-to-r from-rose-400 to-red-500",
+            cyan: "bg-gradient-to-r from-cyan-400 to-sky-500",
+          };
 
-        {/* REMAINING */}
-        <div className="text-center text-emerald-600 font-medium">
-          {remaining}
-        </div>
+          return (
+            <motion.div
+              key={stat.title}
+              whileHover={{ scale: 1.02 }}
+              className="grid grid-cols-5 gap-10 items-center bg-white hover:bg-slate-50 px-4 py-3 rounded-xl transition-shadow shadow-sm hover:shadow-md cursor-pointer"
+              onClick={() => setSelectedCard(stat)}
+            >
+              {/* TITLE */}
+              <div className="font-medium text-slate-700">{stat.title}</div>
 
-       
-      </motion.div>
-    );
-  })}
-</div>
+              {/* TOTAL */}
+              <div className="text-center text-slate-600">{stat.total ?? stat.used}</div>
+
+              {/* USED */}
+              <div className="text-center text-orange-500 font-medium">{stat.used}</div>
+
+              {/* REMAINING */}
+              <div className="text-center text-emerald-600 font-medium">{remaining}</div>
+
+              
+              
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* DRAWER */}
