@@ -251,7 +251,7 @@ const PendingApprovalsView: React.FC = () => {
                             createdAt={formatTimeAgo(req.createdAt)}
                             onAccept={() => onActionTriggered(req, 'APPROVED')}
                             onReject={() => onActionTriggered(req, 'REJECTED')}
-                            onDiscuss={((isManager || isTeamLeader) && !req.isCompOff) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
+                            onDiscuss={((isManager || isTeamLeader) && !req.isCompOff  && !req.isOD) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
                             attachments={req.attachments}
                             onViewAttachment={(attachment) => setSelectedAttachment(attachment)}
                         />
@@ -267,7 +267,7 @@ const PendingApprovalsView: React.FC = () => {
             </div>
 
             {selectedAttachment && (
-                <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 transition-all animate-in fade-in duration-300">
+                <div className="fixed inset-0 z-2000 flex items-center justify-center p-4 transition-all animate-in fade-in duration-300">
                     {/* Animated Glass Backdrop */}
                     <div
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
@@ -305,7 +305,7 @@ const PendingApprovalsView: React.FC = () => {
                         </div>
 
                         {/* Content Area */}
-                        <div className="p-8 flex justify-center items-center bg-gradient-to-b from-slate-50 to-slate-100 min-h-[400px] max-h-[80vh] overflow-auto">
+                        <div className="p-8 flex justify-center items-center bg-linear-to-b from-slate-50 to-slate-100 min-h-100 max-h-[80vh] overflow-auto">
                             {selectedAttachment.fileType.includes('image') ? (
                                 <div className="relative group">
                                     <AuthenticatedImage

@@ -30,7 +30,7 @@ export const requestService = {
     
   },
   rejectOD: async (odId: number, approverId: number, reason: string): Promise<void> => {
-    await api.patch(`/od/reject/${odId}`, {}, {
+    await api.put(`/od/reject/${odId}`, {}, {
       params: { approverId, reason }
     });
   },
