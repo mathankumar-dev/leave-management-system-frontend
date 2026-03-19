@@ -5,9 +5,6 @@ import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockD
 import type {
   LeaveRecord,
   Employee,
-  Notification,
-  AuditLog,
-  LeaveApplication,
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
@@ -19,6 +16,7 @@ import type {
   EmployeeFilters,
   PaginatedResponse,
   CreateUserRequest,
+  ODResponse,
 } from "../types";
 import { toast } from "sonner";
 
@@ -173,6 +171,20 @@ export const useDashboard = () => {
       setLoading(false);
     }
   }, []);
+
+    const fetchMyOD = useCallback(async (employeeId: number): Promise<ODResponse[]> => {
+    setLoading(true);
+    try {
+      return await service.getMyODHistory(employeeId);
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch leave history");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
 
 
   const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<LeaveRecord[]> => {
@@ -526,6 +538,7 @@ export const useDashboard = () => {
     leaveBalance,
     fetchLeaveBalance,
     fetchHistory,
+    fetchMyOD,
 
     removeLeaveType,
     cancelLeave,
@@ -539,7 +552,5 @@ export const useDashboard = () => {
     filters, updateFilter, stats
   };
 };
-function setLoadingHistory(arg0: boolean) {
-  throw new Error("Function not implemented.");
-}
+
 

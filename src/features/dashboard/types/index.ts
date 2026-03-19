@@ -549,6 +549,7 @@ export interface ODResponse {
   reason: string;
   startDate: string;
   endDate: string;
+  leaveType : LeaveType;
   status: ODStatus;
   createdAt: string;
 }

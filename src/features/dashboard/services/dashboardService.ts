@@ -217,6 +217,11 @@ export const dashboardService = {
     const response = await api.get(`/leaves/employee/${employeeId}`);
     return response.data;
   },
+  
+  getMyODHistory: async (employeeId: number): Promise<ODResponse[]> => {
+    const response = await api.get(`/od/my/${employeeId}`);
+    return response.data;
+  },
 
 
   getWeeklyLeaveSummary: async (managerId: number): Promise<LeaveRecord[]> => {

@@ -1,9 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import { useNavigate } from "react-router-dom";
-import api from "../../../api/axiosInstance";
 
 /* ---------------- ADMIN VIEWS ---------------- */
 import EmployeesView from "../views/admin/EmployeesView";
@@ -18,7 +16,6 @@ import LowBalancePage from "../views/hr/pages/LowBalancePage";
 import DashboardView from "../views/employee/DashboardView";
 import CalendarView from "../views/employee/CalendarView";
 import LeaveApplicationForm from "../../../common/forms/LeaveApplicationForm";
-import MyLeavesView from "../views/MyLeavesView";
 import NotificationsView from "../views/NotificationsView";
 import EmployeeProfile from "../views/employee/EmployeeProfile";
 
@@ -37,6 +34,7 @@ import PayrollView from "../views/Payroll";
 import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
 import { PayslipPage } from "../views/hr/pages/PayslipPage";
 import RequestCenter from "../../../common/RequestCenter";
+import MyRequestsView from "../views/MyLeavesView";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -105,8 +103,8 @@ const DashboardLayout: React.FC = () => {
       case "Request center":
         return <RequestCenter />;
 
-      case "My Leaves":
-        return <MyLeavesView />;
+      case "My Requests":
+        return <MyRequestsView />;
 
       case "Payroll":
         return userRole === ROLES.HR ? <PayslipPage /> : <PayrollView />;
