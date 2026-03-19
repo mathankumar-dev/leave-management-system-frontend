@@ -24,13 +24,13 @@ const CommentDialog: React.FC<CommentDialogProps> = ({
   const handleConfirm = () => {
     if (!comment.trim()) return;
     onSubmit(comment);
-    setComment(""); // Reset
+    setComment(""); 
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}

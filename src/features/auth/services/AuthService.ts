@@ -7,8 +7,6 @@ export const authService = {
     const response = await api.post<AuthResponse>('/auth/login', credentials);
     return response.data;
   },
-
-
   getEmployeeProfile: async (id: number): Promise<User> => {
 
     const response = await api.get<User>(`/employees/profile/${id}`);
@@ -69,9 +67,6 @@ export const authService = {
     }
 
 
-    console.log(formData);
-    
-    // 4. Post to the correct distinct endpoint
     const response = await api.post(`/employees/personal-details/${id}/${type}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
