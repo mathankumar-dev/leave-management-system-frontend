@@ -4,14 +4,11 @@ import Cookies from "js-cookie";
 import type {
   LeaveRecord,
   Employee,
-  LeaveApplication,
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
   CompOffRequest,
   LeaveBalanceResponse,
-  // ProfileResponse
-  ProfileData,
   ODResponse,
   TeamMember,
   EmployeeEntity,
@@ -25,7 +22,6 @@ import type {
 
 
 } from '../types';
-import { data } from 'react-router-dom';
 
 
 
@@ -362,15 +358,15 @@ export const dashboardService = {
     }
   },
 
-  createFlashNews: async (data: FlashNewsRequest) => {
-  try{
-    const messaage = await api.post("/flash-news/create", data);
-    return messaage.data;
-  }
-  catch(error: any){
-    throw error.response?.data?.message || "Failed to post the news"
-  }
-  },
+  // createFlashNews: async (data: FlashNewsRequest) => {
+  // try{
+  //   const messaage = await api.post("/flash-news/create", data);
+  //   return messaage.data;
+  // }
+  // catch(error: any){
+  //   throw error.response?.data?.message || "Failed to post the news"
+  // }
+  // },
 
   createFlashNews: async (data: FlashNewsRequest) => {
   try{
