@@ -1,32 +1,37 @@
+import type { UserRole } from "../../auth/types";
 
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
-export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF" ;
-export type LeaveType = "SICK" | "CASUAL" | "EARNED_LEAVES" | "COMP_OFF"; 
+export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF";
+export type LeaveType = 'SICK' | 'ANNUAL_LEAVE' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF';
 
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
+export type ODStatus = 'PENDING_TEAM_LEADER' | 'PENDING_MANAGER' | 'PENDING_HR' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+
 export interface LeaveRecord {
-  range: ReactNode;
-  type: ReactNode;
   id: number;
   employeeId: number;
-  leaveType: LeaveType;
-  halfDayType: string | null; 
-  year: number;
+  employeeName: string;
+  leaveType: string;
+  startDateHalfDayType: string | null;
+  endDateHalfDayType: string | null;
+  isAppointment: boolean | null;
   startDate: string;
-  endDate: string;   
+  endDate: string;
   days: number;
   reason: string;
-  status: LeaveStatus;
-  approvedBy: number | null;
-  approvedRole: string | null;
-  approvedAt: string | null;
+  status: string;
+  teamLeaderDecision: string | null;
+  teamLeaderDecidedAt: string | null;
+  managerDecision: string | null;
+  managerDecidedAt: string | null;
+  hrDecision: string | null;
   carryForwardUsed: number;
   compOffUsed: number;
   lossOfPayApplied: number;
+  pendingLopDays: number | null;
   createdAt: string;
-  updatedAt: string;
   escalated: boolean;
   escalatedAt: string | null;
   managerId: number;
@@ -35,11 +40,59 @@ export interface LeaveRecord {
 }
 
 
-export interface LeaveDecisionRequest{
-  leaveId : number;
-  managerId : number;
-  decision : LeaveDecision;
-  comments? : string;
+export interface ProfileData {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+
+  managerId: number | null;
+  managerName: string;
+  teamLeaderId: number;
+  teamLeaderName: string;
+
+  joiningDate: string;
+
+  contactNumber: string;
+  gender: string;
+  dateOfBirth: string;
+  bloodGroup: string;
+
+  personalEmail: string;
+  aadharNumber: string;
+
+  presentAddress: string;
+  permanentAddress: string;
+
+  emergencyContactNumber: string;
+
+  fatherName: string;
+  motherName: string;
+
+  designation: string;
+
+  skillSet: string[];
+
+  biometricStatus: string;
+  vpnStatus: string;
+
+  active: boolean;
+
+  createdAt?: string;
+  updatedAt?: string;
+
+  personalDetailsComplete: boolean;
+  personalDetailsLocked: boolean;
+
+  photo?: string;
+}
+
+
+export interface LeaveDecisionRequest {
+  leaveId: number;
+  approverId: number;
+  decision: LeaveDecision;
+  comments?: string;
 }
 
 // ==============================
@@ -47,14 +100,23 @@ export interface LeaveDecisionRequest{
 // ==============================
 
 export interface Employee {
+  department?: string;
+  id: number | null | undefined;
+  color: string;
+  initial?: string | null;
+  name: string;
+  email: string;
+  dept: string;
+  role: string;
+  status: string;
   employeeId: number;
   employeeName: string;
-  totalAllocated: number;   
+  totalAllocated: number;
   totalUsed: number;
   totalRemaining: number;
   compOffBalance: number;
   lopPercentage: number;
-  totalWorkingDays: number | null; 
+  totalWorkingDays: number | null;
 }
 
 
@@ -125,6 +187,7 @@ export interface ChartData {
 }
 
 
+
 // ==============================
 // Notification
 // ==============================
@@ -179,61 +242,19 @@ export interface AuditLog {
 // Profile
 // ==============================
 
-export interface ProfileData {
-
-  name?: string;
-  role: string;
-
-  email: string;
-
-  phone: string;
-
-  id: number;
-
-  photo: string;
-
-  department: string;
-
-  designation: string;
-
-  joiningDate: string;
-
-  workLocation: string;
-
-  managerName: string;
-  managerId? : number;
-
-  employmentType: 'Full-time' | 'Contract' | 'Intern';
-
-  dob: string;
-
-  gender: string;
-
-  bloodGroup?: string;
-
-  nationality: string;
-
-  address: string;
-
-  linkedin?: string;
-
-  github?: string;
-
-  skills: string[];
-
-}
 
 
 
-export interface LeaveApplication{
-  employeeId : number;
-  leaveType : LeaveType;
-  startDate : string;
-  endDate : string;
-  reason : string;
-  halfDayType? : HalfDayLeaveType;
-   confirmLossOfPay? : boolean;
-   
+
+export interface LeaveApplication {
+  employeeId: number;
+  leaveType: LeaveType;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  halfDayType?: HalfDayLeaveType;
+  confirmLossOfPay?: boolean;
+
 }
 
 export interface TeamMemberBalance {
@@ -251,10 +272,12 @@ export type TeamCalendarResponse = Record<string, TeamMemberBalance[]>;
 
 
 export type CompOffEntry = {
-  workedDate: string;       
+  workedDate: string;
   plannedLeaveDate?: string | null;
-  days: number;            
+  days: number;
 };
+
+
 
 export type CompOffRequest = {
   employeeId: number;
@@ -264,11 +287,277 @@ export type CompOffRequest = {
 
 
 export type CompOffResponse = {
-    compoffId :number;
-    employeeId : number;
-    employeeName : string;
-    workedDate : string;
-    status : 'PENDING' | 'REJECTED' | 'USED';
-    days : number;
-    createdAt : number;
+  compoffId: number;
+  employeeId: number;
+  employeeName: string;
+  workedDate: string;
+  status: 'PENDING' | 'REJECTED' | 'USED';
+  days: number;
+  createdAt: number;
+}
+
+export type LeaveBreakDown = {
+  leaveType: LeaveType;
+  allocatedDays: number;
+  usedDays: number;
+  remainingDays: number;
+  halfDayCount: number;
+  pendingCount?: number;
+}
+
+export interface EmployeeData {
+  employeeId: number;
+  employeeName: string;
+  currentYear: number;
+  yearlyAllocated: number;
+  yearlyUsed: number;
+  yearlyBalance: number;
+  monthlyAllocated: number;
+  monthlyUsed: number;
+  monthlyBalance: number;
+  carryForwardTotal: number;
+  carryForwardUsed: number;
+  carryForwardRemaining: number;
+  compoffBalance: number;
+  lossOfPayPercentage: number;
+  approvedCount: number;
+  rejectedCount: number;
+  pendingCount: number;
+  breakdown: LeaveBreakDown[];
+
+}
+
+export interface LeaveTypeBreakdown {
+  leaveType: LeaveType;
+  allocatedDays: number;
+  usedDays: number;
+  remainingDays: number;
+}
+
+export interface LeaveBalanceResponse {
+  employeeId: number;
+  employeeName: string;
+  year: number;
+
+  // Total leave statistics
+  totalAllocated: number;
+  totalUsed: number;
+  totalRemaining: number;
+
+  // Comp-Off stats
+  compOffBalance: number;
+  compOffEarned: number;
+  compOffUsed: number;
+
+  lopPercentage: number;
+
+  // Carry Forward
+  carriedFromLastYear: number;
+  eligibleToCarry: number;
+
+  // Monthly Stats
+  currentMonthApproved: number;
+  exceededMonthlyLimit: boolean;
+
+  // Working Days
+  totalWorkingDays: number;
+
+  // Breakdown per leave type
+  breakdown: LeaveTypeBreakdown[];
+}
+
+export type TeamPendingLeave = {
+  leaveId: number;
+  employeeId: number;
+  employeeName: string;
+  leaveType: LeaveType;
+  reason: string;
+  status: LeaveStatus;
+  startDate: string;
+  endDate: string;
+  days: number;
+  appliedAt: string;
+}
+
+export type TeamMemberOnLeave = {
+  employeeId: number;
+  employeeName: string;
+  leaveType: LeaveType;
+  startDate: string;
+  endDate: string;
+  daysRemaining: number;
+}
+
+export interface ManagerDashBoardResponse {
+  personalStats: EmployeeData;
+  teamSize: number;
+  teamPendingRequestCount: number;
+  teamOnLeaveCount: number;
+  pendingTeamRequests: TeamPendingLeave[];
+  teamOnLeaveToday: TeamMemberOnLeave[];
+}
+
+export interface AdminDashBoardResponse {
+  // Admin's Personal View (Consistency)
+  personalStats: EmployeeData;
+
+  // Metadata
+  currentYear: number;
+  lastUpdated: string; // or Date
+
+  // Compliance & Audit Metrics
+  totalEmployees: number;
+  totalManagers: number;
+  newEmployeesPendingOnboarding: number;
+  totalPendingLeaves: number;
+  totalRejectedLeaves: number;
+
+  // Organization-wide Leave Statistics
+  totalLeaveDaysUsedYTD: number;
+  totalCarryForwardBalance: number;
+  totalCompOffBalance: number;
+  averageLossOfPayPercentage: number;
+
+  // Detailed Data Lists
+  leaveTypeUsage: GlobalLeaveTypeUsage[];
+  recentRejections: RejectedLeaveAudit[];
+  complianceIssues: EmployeeCompliance[];
+  newEmployeesStatus: OnboardingStatus[];
+}
+
+export interface GlobalLeaveTypeUsage {
+  leaveType: string; // e.g., "SICK", "VACATION"
+  totalAllocated: number;
+  totalUsed: number;
+  totalBalance: number;
+  countOfApplications: number;
+  averagePerEmployee: number;
+}
+
+export interface RejectedLeaveAudit {
+  leaveId: number;
+  employeeId: number;
+  employeeName: string;
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  rejectedBy: number;
+  rejectedByName: string;
+  rejectedAt: string;
+}
+
+export interface EmployeeCompliance {
+  employeeId: number;
+  employeeName: string;
+  issue: string; // e.g., "Negative Balance Detected"
+  severity: 'LOW' | 'MEDIUM' | 'HIGH';
+  detectedDate: string;
+  recommendation: string;
+}
+
+export interface OnboardingStatus {
+  employeeId: number;
+  employeeName: string;
+  email: string;
+  joiningDate: string;
+  daysInCompany: number;
+  biometricStatus: string; // Matches your Java BiometricVpnStatus enum
+  vpnStatus: string;
+  onboardingComplete: boolean;
+  completionDate?: string;
+}
+
+
+export interface ODRequest {
+  employeeId: number;
+  employeeName?: string | null;
+  reason: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface ODResponse {
+  id: number;
+  employeeId: string;
+  employeeName?: string | null;
+  reason: string;
+  startDate: string;
+  endDate: string;
+  status: ODStatus;
+  createdAt: string;
+}
+
+
+export interface MeetingRequest {
+  title: string;
+  startTime: string;
+  endTime: string;
+  type?: string;
+  locationOrLink?: string;
+  agenda?: string;
+  priority?: string;
+}
+
+
+
+
+export interface TeamMember {
+  employeeName: string;
+  employeeId: number;
+  designation: string | null;
+  skills: string | null;
+}
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+export interface EmployeeFilters {
+  name?: string;
+  email?: string;
+  role?: string;
+  managerId?: number;
+  active?: boolean;
+  page?: number;
+  size?: number;
+}
+
+export type BiometricVpnStatus = 'PENDING' | 'PROVIDED' | 'FAILED';
+
+export interface EmployeeEntity {
+  id: number;
+  teamId: number | null;
+  teamLeaderId: number | null;
+  name: string;
+  email: string;
+  role: UserRole;
+  managerId: number | null;
+  active: boolean;
+
+  // HR Dashboard Fields
+  joiningDate: string;
+  biometricStatus: BiometricVpnStatus;
+  vpnStatus: BiometricVpnStatus;
+  onboardingCompletedAt: string | null;
+
+  // Audit Fields
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  role: UserRole;
+  teamId?: number | null;
+  teamLeaderId?: number | null;
+  managerId?: number | null;
+  joiningDate: string;
 }

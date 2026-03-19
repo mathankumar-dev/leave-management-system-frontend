@@ -22,17 +22,23 @@ interface PendingRequest {
     isCompOff?: boolean;
     halfDayType?: string;
 }
+
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
-    const isManager = user?.role?.toUpperCase() === 'MANAGER';
+    // Role Definitions
+    const userRole = user?.role?.toUpperCase();
+    const isManager = userRole === 'MANAGER';
+    const isTeamLeader = userRole === 'TEAM_LEADER';
+    const canSeeDashboardMetrics = isManager || isTeamLeader;
+
     const {
         requests,
         loading,
         handleDecision,
         handleCompOffApprove,
         handleCompOffReject
-    } = useManagerApprovals(user?.id || 0);
+    } = useManagerApprovals(user?.id || 0, user?.role);
 
     const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useDashboard();
 
@@ -40,11 +46,11 @@ const PendingApprovalsView: React.FC = () => {
     const [timeFilter, setTimeFilter] = useState("all");
 
     useEffect(() => {
-        if (user?.id && isManager) {
+        if (user?.id && canSeeDashboardMetrics) {
             fetchWeeklyLeaveSummary(user.id);
             fetchTeamOnLeave(user.id);
         }
-    }, [fetchWeeklyLeaveSummary, fetchTeamOnLeave, user?.id, isManager]);
+    }, [fetchWeeklyLeaveSummary, fetchTeamOnLeave, user?.id, canSeeDashboardMetrics]);
 
     const [dialogConfig, setDialogConfig] = useState<{
         isOpen: boolean;
@@ -91,32 +97,51 @@ const PendingApprovalsView: React.FC = () => {
         handleConfirmDecision(req, status);
     };
 
+    // const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
+    //     let result;
+    //     if (req.isCompOff) {
+    //         if (status === 'APPROVED') {
+    //             result = await handleCompOffApprove(req.id);
+    //         } else if (status === 'REJECTED') {
+    //             result = await handleCompOffReject(req.id, commentText || "");
+    //         }
+    //     } else {
+    //         const decisionPayload: LeaveDecisionRequest = {
+    //             leaveId: req.id,
+    //             approverId: Number(user?.id),
+    //             decision: status,
+    //             comments: commentText
+    //         };
+    //         result = await handleDecision(decisionPayload);
+    //     }
+
+    //     if (result?.success) {
+    //         notify.leaveAction(status, req.employeeName, !!req.isCompOff);
+    //         setDialogConfig({ isOpen: false, req: null, status: null });
+    //     } else {
+    //         notify.error("Update Failed", "Please check your connection and try again.");
+    //     }
+    // };
+
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-        let result;
-        if (req.isCompOff) {
-            if (status === 'APPROVED') {
-                result = await handleCompOffApprove(req.id);
-            } else if (status === 'REJECTED') {
-                result = await handleCompOffReject(req.id, commentText || "");
-            }
-        } else {
-            const decisionPayload: LeaveDecisionRequest = {
-                leaveId: req.id,
-                managerId: Number(user?.id),
-                decision: status,
-                comments: commentText
-            };
-            result = await handleDecision(decisionPayload);
-        }
+
+
+
+        const result = await handleDecision(
+            req.id,
+            status,
+            commentText || "",
+            req.leaveType
+        );
 
         if (result?.success) {
-            notify.leaveAction(status, req.employeeName, !!req.isCompOff);
-
+            notify.leaveAction(status, req.employeeName, !!req.isCompOff , !!req.isOD);
             setDialogConfig({ isOpen: false, req: null, status: null });
         } else {
             notify.error("Update Failed", "Please check your connection and try again.");
         }
     };
+
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -150,7 +175,7 @@ const PendingApprovalsView: React.FC = () => {
                         />
                     </div>
 
-                    {isManager && (
+                    {canSeeDashboardMetrics && (
                         <>
                             <div className="hidden md:block h-12 w-px bg-slate-300" />
                             <div className='flex justify-start md:justify-center'>
@@ -214,11 +239,13 @@ const PendingApprovalsView: React.FC = () => {
                             dateRange={formatDateRange(req.startDate, req.endDate)}
                             startDate={req.startDate}
                             endDate={req.endDate}
-                            halfDayType={req.halfDayType}
+                            startDateHalfDayType={req.startDateHalfDayType || req.halfDayType}
+                            endDateHalfDayType={req.endDateHalfDayType}
+                            days={req.days}
                             createdAt={formatTimeAgo(req.createdAt)}
                             onAccept={() => onActionTriggered(req, 'APPROVED')}
                             onReject={() => onActionTriggered(req, 'REJECTED')}
-                            onDiscuss={!req.isCompOff ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
+                            onDiscuss={(!req.isCompOff && isManager) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
                         />
                     ))
                 ) : (

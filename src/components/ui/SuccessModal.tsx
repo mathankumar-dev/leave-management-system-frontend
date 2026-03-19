@@ -1,68 +1,56 @@
-import React, { useEffect } from "react";
-import ReactDOM from "react-dom";
 import { motion } from "framer-motion";
-import { FaCheckCircle } from "react-icons/fa";
 
-interface SuccessModalProps {
-  title: string;
-  message: string;
-  buttonText?: string;
-  onClose?: () => void;
+interface LoaderProps {
+  message?: string;
+  onClick? : () => void
 }
 
-const SuccessModal: React.FC<SuccessModalProps> = ({ title, message, buttonText, onClose }) => {
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = "unset"; };
-  }, []);
+const Loader: React.FC<LoaderProps> = ({ message = "Signing you in..." , onClick }) => {
+  return (
+    <div className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm gap-8">
 
-  const modalUI = (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center p-6">
+      {/* Modern Circular Loader */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
-      />
-
-      <motion.div
-        layout
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        transition={{ type: "spring", damping: 25, stiffness: 400 }}
-        className="relative bg-white w-full max-w-sm rounded-xl p-8 shadow-2xl text-center border border-slate-100"
+        animate={{ rotate: 360 }}
+        transition={{
+          repeat: Infinity,
+          duration: 1.4,
+          ease: "linear",
+        }}
+        className="relative w-16 h-16"
       >
+        {/* faint base ring */}
+        <div className="absolute inset-0 rounded-full border-2 border-neutral-200" />
+
+        {/* animated arc */}
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-          className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-lg flex items-center justify-center text-3xl mx-auto mb-6 shadow-sm"
-        >
-          <FaCheckCircle />
-        </motion.div>
-
-        <h3 className="text-xl font-bold text-slate-900 mb-2 leading-tight">
-          {title}
-        </h3>
-        <p className="text-slate-500 text-sm font-medium mb-8 leading-relaxed">
-          {message}
-        </p>
-
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg text-sm font-bold transition-all shadow-md shadow-indigo-100 active:scale-[0.98]"
-          >
-            {buttonText || "Continue"}
-          </button>
-        )}
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{
+            repeat: Infinity,
+            duration: 1.6,
+            ease: "easeInOut",
+          }}
+          className="
+          absolute inset-0 rounded-full
+          border-2 border-transparent
+          border-t-primary-500
+          border-r-primary-400
+          shadow-[0_0_8px_rgba(99,102,241,0.5)]
+        "
+        />
       </motion.div>
+
+      {/* Message */}
+      <motion.p
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ repeat: Infinity, duration: 1.6 }}
+        className="text-sm font-medium text-neutral-600 tracking-wide"
+      >
+        {message}
+      </motion.p>
+
     </div>
   );
-
-  return ReactDOM.createPortal(modalUI, document.body);
 };
 
-export default SuccessModal;
+export default Loader;

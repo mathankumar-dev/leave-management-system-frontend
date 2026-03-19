@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
+import { useNavigate } from "react-router-dom";
+import api from "../../../api/axiosInstance";
 
 /* ---------------- ADMIN VIEWS ---------------- */
 import EmployeesView from "../views/admin/EmployeesView";
@@ -16,22 +18,30 @@ import { HRVerificationPage } from "../views/hr/pages/Hrverificationpage";
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
 import CalendarView from "../views/employee/CalendarView";
-import LeaveApplicationForm from "../views/LeaveApplicationForm";
+import LeaveApplicationForm from "../../../common/forms/LeaveApplicationForm";
 import MyLeavesView from "../views/MyLeavesView";
 import NotificationsView from "../views/NotificationsView";
 import EmployeeProfile from "../views/employee/EmployeeProfile";
 
 /* ---------------- MANAGER VIEWS ---------------- */
 import ManagerDashboardView from "../views/manager/ManagerDashboardView";
+import AdminDashboardView from "../views/admin/AdminDashboardView";
 import TeamCalendarView from "../views/manager/TeamCalendarView";
 import ManagerProfile from "../views/manager/ManagerProfile";
-import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 import TeamMembersView from "../views/manager/TeamMembersView";
 
 /* ---------------------- CFO -----------------------*/
 import { PayslipPage } from "../views/CFO/pages/PayslipPage";
 import { CFOEmployeesPage } from "../views/CFO/pages/Cfoemployeepage";
+
+/* ---------------- MODALS ---------------- */
+import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
+import OtherRequestForm from "../../../common/OtherRequestForm";
+import PayrollView from "../views/Payroll";
+import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
+import { PayslipPage } from "../views/hr/pages/PayslipPage";
+import RequestCenter from "../../../common/RequestCenter";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -40,10 +50,21 @@ const ROLES = {
   MANAGER: "MANAGER",
   EMPLOYEE: "EMPLOYEE",
   CFO: "CFO",
+  TEAMLEADER: "TEAM_LEADER"
 };
 
+/* ---------------- STAT CARD ---------------- */
+const StatCard = ({ title, value }: { title: string; value: number }) => (
+  <div className="bg-white p-4 rounded shadow">
+    <h3 className="text-sm text-gray-500">{title}</h3>
+    <p className="text-2xl font-bold">{value ?? 0}</p>
+  </div>
+);
+
 const DashboardLayout: React.FC = () => {
-  const { user, logout, mustChangePassword } = useAuth();
+
+  const { user, logout, mustChangePassword, personalDetailsComplete } = useAuth();
+
   const userRole = user?.role;
 
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -68,12 +89,20 @@ const DashboardLayout: React.FC = () => {
   }, [activeTab]);
 
   const renderView = () => {
+
     switch (activeTab) {
 
       case "Dashboard":
-        if (userRole === ROLES.MANAGER) return <ManagerDashboardView onNavigate={setActiveTab} />;
-        if (userRole === ROLES.HR) return <HRDashboard />;
-        if (userRole === ROLES.ADMIN) return <EmployeesView />;
+        if (userRole === ROLES.ADMIN)
+          return <AdminDashboardView onNavigate={setActiveTab} />;
+        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
+          return <ManagerDashboardView onNavigate={setActiveTab} />;
+
+
+
+        if (userRole === ROLES.HR)
+          return <HRDashboard />;
+
         return <DashboardView onNavigate={setActiveTab} />;
 
       case "Reports":
@@ -87,9 +116,7 @@ const DashboardLayout: React.FC = () => {
         return null;
 
       case "All Employees":
-        if (userRole === ROLES.HR) return <HREmployeesPage />;
-        return <EmployeesView />;
-
+        return userRole === ROLES.HR ? <HREmployeesPage /> : <EmployeesView />;
 
       case "LowBalance Employee":
         return <LowBalancePage />;
@@ -99,15 +126,22 @@ const DashboardLayout: React.FC = () => {
 
       case "Team Calendar":
         return <TeamCalendarView />;
+      case "Employees":
+        return <EmployeesView  />;
 
       case "Leave Config":
         return <LeaveTypesView />;
-
       case "Apply Leave":
         return <LeaveApplicationForm />;
 
+      case "Request center":
+        return <RequestCenter />;
+
       case "My Leaves":
         return <MyLeavesView />;
+
+      case "Payroll":
+        return userRole === ROLES.HR ? <PayslipPage /> : <PayrollView />;
 
       case "Pending Approvals":
         return <PendingApprovalsView />;
@@ -116,10 +150,12 @@ const DashboardLayout: React.FC = () => {
         return <NotificationsView />;
 
       case "Team Members":
-        return <TeamMembersView onNavigate={setActiveTab} />;
+        return <TeamMembersView />;
+
+
 
       case "Profile":
-        if (userRole === ROLES.MANAGER) return <ManagerProfile />;
+        if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
 
       // case "Payroll":
@@ -134,17 +170,25 @@ const DashboardLayout: React.FC = () => {
         );
         return <EmployeesView />;
 
+
+      case "Other Approvals":
+        return <OtherRequestForm />;
+
       default:
         return <DashboardView onNavigate={setActiveTab} />;
     }
   };
 
-  if (mustChangePassword) {
-    return <ChangePasswordDialog />;
-  }
+
+
+  if (mustChangePassword) return <ChangePasswordDialog />;
+
+  if (!personalDetailsComplete) return <PersonalDetailsModal />;
 
   return (
+
     <div className="flex h-screen bg-neutral-25 overflow-hidden">
+
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -153,7 +197,8 @@ const DashboardLayout: React.FC = () => {
         onLogout={logout}
       />
 
-      <div className="flex-1 flex flex-col md:ml-80 h-full min-w-0 transition-all duration-300">
+      <div className="flex-1 flex flex-col md:ml-80 h-full min-w-0">
+
         <Topbar
           activeTab={activeTab}
           onMenuClick={() => setSidebarOpen(true)}
@@ -162,14 +207,15 @@ const DashboardLayout: React.FC = () => {
         />
 
         <main
-          ref={scrollContainerRef}
           className="flex-1 overflow-y-auto overflow-x-hidden p-6"
         >
-          <div className="max-w-400 mx-auto animate-in fade-in duration-300 w-full">
+          <div className="max-w-7xl mx-auto w-full">
             {renderView()}
           </div>
         </main>
+
       </div>
+
     </div>
   );
 };

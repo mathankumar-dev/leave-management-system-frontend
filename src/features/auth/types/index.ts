@@ -1,5 +1,4 @@
-
-export type UserRole = "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN"  | "CFO";
+export type UserRole = "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN"  | "CFO" | "TEAM_LEADER";
 
 export interface LoginCredentials {
   email: string;
@@ -9,18 +8,49 @@ export interface LoginCredentials {
 export interface AuthResponse {
   token: string;
   id: number;
-  role: UserRole; 
-  forcePasswordChange : boolean;
+  role: UserRole;
+  forcePasswordChange: boolean;
 }
+
+
+export const GenderMap = {
+  MALE: "MALE",
+  FEMALE: "FEMALE",
+  OTHER: "OTHER",
+} as const;
+export type Gender = (typeof GenderMap)[keyof typeof GenderMap];
+
+export const BloodGroupMap = {
+  A_POSITIVE: "A_POSITIVE",
+  A_NEGATIVE: "A_NEGATIVE",
+  B_POSITIVE: "B_POSITIVE",
+  B_NEGATIVE: "B_NEGATIVE",
+  O_POSITIVE: "O_POSITIVE",
+  O_NEGATIVE: "O_NEGATIVE",
+  AB_POSITIVE: "AB_POSITIVE",
+  AB_NEGATIVE: "AB_NEGATIVE",
+} as const;
+export type BloodGroup = (typeof BloodGroupMap)[keyof typeof BloodGroupMap];
+
+export const MaritalStatusMap = {
+  SINGLE: "SINGLE",
+  MARRIED: "MARRIED",
+  DIVORCED: "DIVORCED",
+  WIDOWED: "WIDOWED",
+} as const;
+export type MaritalStatus = (typeof MaritalStatusMap)[keyof typeof MaritalStatusMap];
 
 export interface User {
   id: number;
   name: string;
   email: string;
-  role: UserRole; 
-  department : string | null;
+  role: UserRole;
+  department: string | null;
   managerId: number | null;
-  managerName : string;
+  teamLeaderId?: number | null;
+  teamLeaderName?: string | null; 
+  managerName: string;
+  hrname? : string | null;
   active: boolean;
   joiningDate: string;
   biometricStatus: string;
@@ -28,6 +58,68 @@ export interface User {
   onboardingCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  mustChangePassword? : boolean;
+  mustChangePassword?: boolean;
+  
+  contactNumber: string | null;
+  gender: Gender | null;
+  aadharNumber: string | null;
+  personalEmail: string | null;
+  dateOfBirth: string | null;
+  presentAddress: string | null;
+  permanentAddress: string | null;
+  bloodGroup: BloodGroup | null;
+  emergencyContactNumber: string | null;
+  fatherName: string | null;
+  motherName: string | null;
+  designation: string | null;
+  skillSet: string | null;
+  personalDetailsComplete: boolean | null;
+  personalDetailsLocked: boolean | null;
 }
 
+export interface PersonalDetailsRequest {
+  // --- Identity & Contact ---
+  fullName: string;
+  lastName: string;
+  surName: string;
+  contactNumber: string;
+  gender: Gender;
+  aadharNumber: string;
+  personalEmail: string;
+  dateOfBirth: string; 
+  presentAddress: string;
+  permanentAddress: string;
+  bloodGroup: BloodGroup;
+  maritalStatus: MaritalStatus;
+  emergencyContactNumber?: string;
+  designation: string;
+  skillSet: string;
+
+  // --- NEW: Bank Details ---
+  bankName: string;        // Added this
+  accountNumber: string;   // Added this
+
+  // --- Family Details ---
+  fatherName: string;
+  fatherDateOfBirth: string;
+  fatherOccupation: string;
+  fatherAlive: boolean;
+  motherName: string;
+  motherDateOfBirth: string;
+  motherOccupation: string;
+  motherAlive: boolean;
+
+  // --- Experienced Specific Fields ---
+  unaNumber?: string;
+  previousRole?: string;
+  oldCompanyName?: string;
+  oldCompanyFromDate?: string; // Added this
+  oldCompanyEndDate?: string;   // Added this
+
+  // --- Document Keys ---
+  aadhaarCard?: any; 
+  tc?: any;
+  offerLetter?: any;
+  experienceCertificate?: any;
+  leavingLetter?: any;
+}

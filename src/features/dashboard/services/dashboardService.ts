@@ -10,7 +10,17 @@ import type {
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
-  CompOffRequest
+  CompOffRequest,
+  LeaveBalanceResponse,
+  // ProfileResponse
+  ProfileData,
+  ODResponse,
+  TeamMember,
+  EmployeeEntity,
+  PaginatedResponse,
+  EmployeeFilters,
+  CreateUserRequest
+
 
 } from '../types';
 
@@ -27,14 +37,16 @@ const handleError = (err: unknown, context: string): never => {
 
 export const dashboardService = {
 
-  getTeamCalendar: async (managerId: number): Promise<TeamCalendarResponse> => {
+  getEmployeeCalendar: async (employeeId: number): Promise<TeamCalendarResponse> => {
+    const response = await api.get(`/dashboard/employee/calendar/${employeeId}`);
+    return response.data;
+  },
+  getTeamCalendar: async (id: number): Promise<TeamCalendarResponse> => {
     const response = await api.get<TeamCalendarResponse>(
-      `/dashboard/manager/team-calendar/${managerId}`
+      `/dashboard/team-calendar/${id}`
     );
     return response.data;
   },
-
-
 
   getEmpDashboard: async (employeeId: number) => {
 
@@ -43,6 +55,7 @@ export const dashboardService = {
     return response.data;
 
   },
+
   getManagerDashboard: async (managerId: number) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
@@ -50,6 +63,24 @@ export const dashboardService = {
     return response.data;
 
   },
+
+
+  getTeamLeaderDashboard: async (teamLeaderId: number) => {
+
+    const response = await api.get(`/dashboard/teamleader/${teamLeaderId}`);
+
+    return response.data;
+
+  },
+  getAdminDashboard: async (adminId: number) => {
+
+    const response = await api.get(`/dashboard/admin/${adminId}`);
+
+    return response.data;
+
+  },
+
+
 
   getTeamLeaveStats: async (managerId: number): Promise<Employee[]> => {
     const currentYear = new Date().getFullYear();
@@ -64,8 +95,21 @@ export const dashboardService = {
   },
 
 
-  submitLeaveRequest: async (leaveData: LeaveApplication) => {
-    const response = await api.post('/leaves/apply', leaveData);
+  // submitLeaveRequest: async (leaveData: LeaveApplication) => {
+  //   const response = await api.post('/leaves/apply', leaveData);
+  //   return response.data;
+  // },
+
+  submitLeaveRequest: async (data: FormData) => {
+    const isMultipart = data instanceof FormData;
+    for (const [key, value] of data.entries()) {
+    }
+
+    const response = await api.post('/leaves/apply', data, {
+      headers: {
+        'Content-Type': isMultipart ? 'multipart/form-data' : 'application/json',
+      },
+    });
     return response.data;
   },
 
@@ -110,14 +154,29 @@ export const dashboardService = {
   // =============================
 
   getPendingApprovals: async (managerId: number) => {
-    const response = await api.get(`/leave-approvals/pending/${managerId}`);
+    const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
     return response.data.content;
   },
 
+  getPendingApprovalsForTeamLeader: async (teamLeaderId: number) => {
+    const response = await api.get(`/leave-approvals/pending/team-leader/${teamLeaderId}`);
+    return response.data.content;
+  },
 
   getPendingCompOffs: async (managerId: number) => {
     const response = await api.get(`/compoff/pending/${managerId}/approvals`);
     return response.data.content;
+  },
+
+  getPendingODApprovalsForTeamLeader: async (teamLeaderId: number): Promise<ODResponse[]> => {
+
+    const response = await api.get(`/od/pending/teamleader/${teamLeaderId}`);
+
+    return response.data;
+  },
+  getPendingODApprovals: async (managerId: number): Promise<ODResponse[]> => {
+    const response = await api.get(`/od/pending/manager/${managerId}`);
+    return response.data;
   },
 
 
@@ -170,13 +229,11 @@ export const dashboardService = {
     const response = await api.get(`/manager/${managerId}/team-leaves/week`);
     return response.data;
   },
+
   getTeamOnLeave: async (managerId: number): Promise<TeamMemberBalance[]> => {
-    const response = await api.get(`/dashboard/manager/team-on-leave/${managerId}`);
+    const response = await api.get(`/dashboard/team-on-leave/${managerId}`);
     return response.data;
   },
-
-
-
 
   getEmployeeDashboard: async (employeeId?: number): Promise<Employee[]> => {
     const id = employeeId;
@@ -184,7 +241,6 @@ export const dashboardService = {
       console.error("Employee ID is missing! Cannot fetch dashboard.");
       return [];
     }
-
     try {
       const response = await api.get(`/dashboard/employee/${id}`);
       return [response.data];
@@ -215,6 +271,13 @@ export const dashboardService = {
 
   },
 
+  // admin
+
+  getDashboard: async (adminId: number, signal?: AbortSignal) => {
+    const res = await api.get(`/dashboard/admin/${adminId}`, { signal });
+    return res.data;
+  },
+
   submitCompOffRequest: async (payload: CompOffRequest) => {
     const response = await api.post('/compoff/request', payload);
     return response.data;
@@ -242,6 +305,83 @@ export const dashboardService = {
       return response.data;
     } catch (err) {
       throw handleError(err, 'getLowBalanceEmployees');
+    }
+  },
+
+
+  //   getProfile: async (employeeId: number): Promise<ProfileData> => {
+  //   const response = await api.get(`/employees//profile/${employeeId}`);
+  //   return response.data;
+  // },
+
+  completeProfile: async (data: any) => {
+    const response = await api.post("/employees/profile/complete", data);
+    return response.data;
+  },
+
+
+
+  getMyPayslip: async (year: number, month: number) => {
+    return api.get(`/payslip/my/${year}/${month}`);
+  },
+
+  getHistory: async (year: number) => {
+    const res = await api.get(`/summary/${year}`);
+    return res.data;
+  },
+
+  downloadPayslip: async (year: number, month: number) => {
+    const res = await api.get(`payslip/download/${year}/${month}`, {
+      responseType: "blob"
+    });
+
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `payslip-${month}-${year}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+  },
+
+
+
+
+  getLeaveBalances: async (employeeId: number, year: number = 2026): Promise<LeaveBalanceResponse> => {
+    const res = await api.get(`leaves-balance/${employeeId}`, {
+      params: { year }
+    });
+    return res.data;
+  },
+
+
+  getTeamMembers: async (id: number): Promise<TeamMember[]> => {
+    const res = await api.get(`/dashboard/team-members/${id}`);
+    return res.data;
+  },
+
+  getAllEmployees: async (filters: EmployeeFilters): Promise<PaginatedResponse<EmployeeEntity>> => {
+    const res = await api.get('/employees/all', {
+      params: filters
+    });
+    return res.data;
+  },
+
+  createUser: async (userData: CreateUserRequest): Promise<string> => {
+    try {
+      const response = await api.post('/admin/users/add', userData);
+
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || "Failed to create user";
+    }
+  },
+
+  deleteUser: async (employeeId: number): Promise<string> => {
+    try {
+      const res = await api.delete(`/employees/${employeeId}`);
+      return res.data.message || "Employee deleted successfully";
+    } catch (error: any) {
+      throw error.response?.data?.message || "Failed to delete user";
     }
   },
 

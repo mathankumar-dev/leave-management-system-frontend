@@ -1,4 +1,4 @@
-// import React from "react";
+
 import {
   FaChevronLeft,
   FaSignOutAlt,
@@ -10,11 +10,15 @@ import {
   FaUsers,
   FaCog,
   FaExclamationTriangle,
-  FaFileInvoiceDollar,
+  FaFileSignature,
+  FaDollarSign,
   FaChartBar,
 } from "react-icons/fa";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { MdVerifiedUser } from "react-icons/md";
+import NameSVG from "../../../assets/svg/NameSVG";
+
+import logoSVG from "../../../assets/logo.svg";
 
 interface SidebarProps {
   activeTab: string;
@@ -40,20 +44,26 @@ function Sidebar({
   const userName = user?.name;
 
   const tabs = [
-    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "HR"] },
-    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER","HR"] },
-    { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER"] },
-    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER"] },
-    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER" ,"HR"] },
+    { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
+    { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "TEAM_LEADER"] },
+    // { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
+    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER", "TEAM_LEADER", "EMPLOYEE", "HR", "ADMIN"] },
+    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
+    { name: "Calendar", icon: <FaCalendarAlt />, roles: ["ADMIN", "EMPLOYEE"] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "HR",] },
+    { name: "Employees", icon: <FaUsers />, roles: ["ADMIN"] },
+
+    { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
     { name: "All Employees", icon: <FaUsers />, roles: ["HR"] },
-    { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER"] },
-    // { name: "Reports", icon: <FaChartBar />, roles: ["HR"] },
+
+    { name: "Team Members", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
+    // { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
+    { name: "Reports", icon: <FaChartBar />, roles: ["HR", "ADMIN"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
     // { name: "Payroll", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
     { name: "Cfoemployees", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
     { name: "Verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
+    { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "HR"] },
 
   ];
 
@@ -76,11 +86,12 @@ function Sidebar({
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between mb-8 px-2 shrink-0">
-          <h1 className="text-white font-black text-xl italic tracking-tight uppercase">
-            Leave <span className="text-primary-500">Management</span> System
-            <span className="text-primary-500">.</span>
-          </h1>
+        <div className="flex items-center justify-between item mb-8 px-2 shrink-0 border border-gray-50/25 rounded bg-gray-50/25 ">
+          <div className="h-auto w-42 flex items-center">
+            <img src={logoSVG} alt="" width={50} height={50} />
+            <span className="text-black text-xl font-bold">Wenxt</span><span className="text-primary-500 text-xl font-bold">Technologies</span>
+            {/* <NameSVG color="#ffffff" isDotNeeded={false} /> */}
+          </div>
 
           <button
             onClick={() => setIsOpen(false)}
@@ -124,7 +135,7 @@ function Sidebar({
           <ul className="space-y-1.5">
             {visibleTabs.map((tab) => {
               return (
-                
+
                 <li
                   key={tab.name}
                   onClick={() => setActiveTab(tab.name)}

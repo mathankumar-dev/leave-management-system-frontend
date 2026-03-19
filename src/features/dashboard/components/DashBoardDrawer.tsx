@@ -31,7 +31,7 @@ const DashboardDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, subtit
           >
             <div className="p-6 border-b-2 border-slate-100 flex justify-between items-center bg-slate-50">
               <div>
-                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 italic">{title}</h3>
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-900  ">{title}</h3>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{subtitle}</p>
               </div>
               <button onClick={onClose} className="w-8 h-8 flex items-center justify-center bg-slate-900 text-white rounded-sm hover:bg-indigo-600 transition-colors">

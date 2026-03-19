@@ -53,7 +53,7 @@ const MyDatePicker: React.FC<DatePickerProps> = ({
         maxDate={maxDate}
         customInput={<CustomInput placeholder={placeholder} />}
         dateFormat="dd / MM / yyyy"
-        portalId="datepicker-portal"
+        // portalId="datepicker-portal"
         showPopperArrow={false}
         popperPlacement="bottom-start"
         fixedHeight

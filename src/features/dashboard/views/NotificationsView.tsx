@@ -64,6 +64,12 @@ const NotificationsView: React.FC = () => {
     }
   };
 
+  const handleMarkAllRead = async () => {
+    if (!user?.id) return;
+    await markAllAsRead(user.id);
+    
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className='min-h-24 py-6 w-full flex flex-col md:flex-row justify-between items-center bg-[#F1F5F9] px-6 rounded-sm border border-slate-200 gap-6 md:gap-0'>
@@ -98,7 +104,7 @@ const NotificationsView: React.FC = () => {
         </div>
         <div className="flex gap-2 w-full md:w-auto">
           <button
-            onClick={() => markAllAsRead()}
+            onClick={() => handleMarkAllRead()}
             className="p-2.5 bg-white border border-slate-200 text-slate-600 rounded-sm hover:bg-slate-50 transition-all flex-1 md:flex-none flex justify-center"
             title="Mark all as read"
           >
