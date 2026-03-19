@@ -642,3 +642,10 @@ export interface PendingOnboardingResponse {
   teamLeaderId?: number | null;
   managerId?: number | null;
 }
+
+
+export interface FlashNewsRequest{
+  message: string;
+  days: number;
+  priority? : number;
+}

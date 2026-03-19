@@ -36,6 +36,7 @@ import { PayslipPage } from "../views/hr/pages/PayslipPage";
 import RequestCenter from "../../../common/RequestCenter";
 import MyRequestsView from "../views/MyLeavesView";
 import OnboardingPendingPage from "../views/admin/OnboardingPendingPage";
+import FlashNewsForm from "../views/admin/FlashNewsCreate";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -114,6 +115,9 @@ const DashboardLayout: React.FC = () => {
 
       case "Team Members":
         return <TeamMembersView />;
+
+      case "Flash News":
+        return <FlashNewsForm />;
 
 
 

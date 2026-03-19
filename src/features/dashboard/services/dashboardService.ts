@@ -20,10 +20,12 @@ import type {
   CreateUserRequest,
   PendingLeaveApplicationApiResponse,
   PendingOnboardingResponse,
-  BiometricVpnStatus
+  BiometricVpnStatus,
+  FlashNewsRequest
 
 
 } from '../types';
+import { data } from 'react-router-dom';
 
 
 
@@ -358,6 +360,26 @@ export const dashboardService = {
     } catch (error: any) {
       throw error.response?.data?.message || "Failed to delete user";
     }
+  },
+
+  createFlashNews: async (data: FlashNewsRequest) => {
+  try{
+    const messaage = await api.post("/flash-news/create", data);
+    return messaage.data;
+  }
+  catch(error: any){
+    throw error.response?.data?.message || "Failed to post the news"
+  }
+  },
+
+  createFlashNews: async (data: FlashNewsRequest) => {
+  try{
+    const messaage = await api.post("/flash-news/create", data);
+    return messaage.data;
+  }
+  catch(error: any){
+    throw error.response?.data?.message || "Failed to post the news"
+  }
   },
 
   getOnboardingRequests: async (): Promise<PendingOnboardingResponse[]> => {
