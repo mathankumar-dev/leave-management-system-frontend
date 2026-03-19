@@ -35,6 +35,7 @@ import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
 import { PayslipPage } from "../views/hr/pages/PayslipPage";
 import RequestCenter from "../../../common/RequestCenter";
 import MyRequestsView from "../views/MyLeavesView";
+import OnboardingPendingPage from "../views/admin/OnboardingPendingPage";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -45,13 +46,7 @@ const ROLES = {
   TEAMLEADER: "TEAM_LEADER"
 };
 
-/* ---------------- STAT CARD ---------------- */
-const StatCard = ({ title, value }: { title: string; value: number }) => (
-  <div className="bg-white p-4 rounded shadow">
-    <h3 className="text-sm text-gray-500">{title}</h3>
-    <p className="text-2xl font-bold">{value ?? 0}</p>
-  </div>
-);
+
 
 const DashboardLayout: React.FC = () => {
 
@@ -94,6 +89,8 @@ const DashboardLayout: React.FC = () => {
         return <TeamCalendarView />;
       case "Employees":
         return <EmployeesView  />;
+      case "Onboarding Approvals" :
+        return <OnboardingPendingPage />;
 
       case "Leave Config":
         return <LeaveTypesView />;

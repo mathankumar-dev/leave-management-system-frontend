@@ -18,7 +18,9 @@ import type {
   PaginatedResponse,
   EmployeeFilters,
   CreateUserRequest,
-  PendingLeaveApplicationApiResponse
+  PendingLeaveApplicationApiResponse,
+  PendingOnboardingResponse,
+  BiometricVpnStatus
 
 
 } from '../types';
@@ -143,17 +145,17 @@ export const dashboardService = {
   // Pending Approvals
   // =============================
 
-  getPendingApprovals: async (managerId: number) : Promise<PendingLeaveApplicationApiResponse[]> => {
+  getPendingApprovals: async (managerId: number): Promise<PendingLeaveApplicationApiResponse[]> => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
     return response.data.content;
   },
 
-  getPendingApprovalsForTeamLeader: async (teamLeaderId: number) : Promise<PendingLeaveApplicationApiResponse[]> => {
+  getPendingApprovalsForTeamLeader: async (teamLeaderId: number): Promise<PendingLeaveApplicationApiResponse[]> => {
     const response = await api.get(`/leave-approvals/pending/team-leader/${teamLeaderId}`);
     console.log("getPendingApprovalsForTeamLeader");
-    
+
     console.log(response.data.content);
-    
+
     return response.data.content;
   },
 
@@ -217,7 +219,7 @@ export const dashboardService = {
     const response = await api.get(`/leaves/employee/${employeeId}`);
     return response.data;
   },
-  
+
   getMyODHistory: async (employeeId: number): Promise<ODResponse[]> => {
     const response = await api.get(`/od/my/${employeeId}`);
     return response.data;
@@ -358,5 +360,28 @@ export const dashboardService = {
     }
   },
 
+  getOnboardingRequests: async (): Promise<PendingOnboardingResponse[]> => {
+    const res = await api.get("/admin/onboarding/pending");
+    console.log("onboarding");
+    console.log(res.data);
+    return res.data;
+  },
+  approveOnboardingBioRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
+    console.log("calling bio");
+    
+    await api.patch(`/admin/onboarding/bio/decision/${employeeId}`, {}, {
+      params: {
+        decision
+      }
+    });
+  },
+  approveOnboardingVpnRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
+    console.log("calling vpn");
+    await api.patch(`/admin/onboarding/vpn/decision/${employeeId}`, {}, {
+      params: {
+        decision
+      }
+    });
+  },
 };
 

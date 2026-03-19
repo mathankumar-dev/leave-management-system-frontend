@@ -17,6 +17,8 @@ import type {
   PaginatedResponse,
   CreateUserRequest,
   ODResponse,
+  PendingOnboardingResponse,
+  BiometricVpnStatus,
 } from "../types";
 import { toast } from "sonner";
 
@@ -475,6 +477,50 @@ export const useDashboard = () => {
     }
   }, []);
 
+  const fetchOnboardingRequests = useCallback(async (): Promise<PendingOnboardingResponse[]> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await service.getOnboardingRequests();
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || " Onboarding request fetching failed";
+      setError(errorMessage);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleOnboardingDecision = useCallback(async (
+  employeeId: number, 
+  type: 'BIO' | 'VPN', 
+  decision: BiometricVpnStatus
+) => {
+  setLoading(true);
+  setError(null);
+  try {
+
+    console.log(employeeId , type , decision);
+    
+    if (type === 'BIO') {
+      await service.approveOnboardingBioRequests(employeeId, decision);
+    } else {
+      await service.approveOnboardingVpnRequests(employeeId, decision);
+    }
+    
+    // Refresh the list after a successful decision
+    const updatedData = await service.getOnboardingRequests();
+    return updatedData;
+  } catch (err: any) {
+    const errorMessage = err.response?.data?.message || `Failed to update ${type} status`;
+    setError(errorMessage);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
   const addUser = async (data: CreateUserRequest): Promise<void> => {
     try {
       const message = await dashboardService.createUser(data);
@@ -523,10 +569,12 @@ export const useDashboard = () => {
 
     fetchEmployeeCalendar,
     employeeCalendar,
+    fetchOnboardingRequests,
 
     payslip,
     history,
     downloadHistory,
+    handleOnboardingDecision,
     
     fetchPayslip,
     // fetchHistory,

@@ -595,7 +595,7 @@ export interface EmployeeFilters {
   size?: number;
 }
 
-export type BiometricVpnStatus = 'PENDING' | 'PROVIDED' | 'FAILED';
+export type BiometricVpnStatus = 'PENDING' | 'PROVIDED' ;
 
 export interface EmployeeEntity {
   id: number;
@@ -626,4 +626,19 @@ export interface CreateUserRequest {
   teamLeaderId?: number | null;
   managerId?: number | null;
   joiningDate: string;
+}
+
+
+export interface PendingOnboardingResponse {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  active: boolean;
+  joiningDate: string; 
+  biometricStatus: BiometricVpnStatus;
+  vpnStatus: BiometricVpnStatus;   
+  teamId?: number | null;
+  teamLeaderId?: number | null;
+  managerId?: number | null;
 }

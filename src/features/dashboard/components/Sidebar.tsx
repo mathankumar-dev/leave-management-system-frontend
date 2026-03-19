@@ -45,9 +45,10 @@ function Sidebar({
   const tabs = [
     { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
     { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "TEAM_LEADER"] },
+    { name: "Onboarding Approvals", icon: <FaCog />, roles: ["ADMIN"] },
     // { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
     { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER", "TEAM_LEADER", "EMPLOYEE", "HR", "ADMIN"] },
-    { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
+    { name: "My Requests", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: ["ADMIN", "EMPLOYEE"] },
     { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "HR",] },
     { name: "Employees", icon: <FaUsers />, roles: ["ADMIN"] },
