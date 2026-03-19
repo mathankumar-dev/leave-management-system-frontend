@@ -21,6 +21,7 @@
     "@types/react-datepicker": "^6.2.0",
     "@unovis/react": "^1.6.4",
     "@unovis/ts": "^1.6.4",
+    "aos": "^2.3.4",
     "axios": "^1.13.5",
     "class-variance-authority": "^0.7.1",
     "framer-motion": "^12.34.1",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/aos": "^3.0.7",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
