@@ -19,8 +19,10 @@ import type {
   EmployeeFilters,
   PaginatedResponse,
   CreateUserRequest,
+  FlashNewsRequest,
 } from "../types";
 import { toast } from "sonner";
+import api from "../../../api/axiosInstance";
 
 
 
@@ -483,7 +485,22 @@ export const useDashboard = () => {
     }
   };
 
-
+const createFlashNewsController = async (data: FlashNewsRequest) => {
+  setLoading(true);
+  try {
+    const responseData = await dashboardService.createFlashNews(data);
+    
+    toast.success("Flash news created successfully!"); 
+    
+    return true; 
+    
+  } catch (err: any) {
+    setError(err.message || "Failed to create flash news");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   /* ================= EXPORT ================= */
@@ -534,6 +551,7 @@ export const useDashboard = () => {
     weeklyLeaveSummary,
     fetchTeamOnLeave,
     teamOnLeave,
-    filters, updateFilter, stats
+    filters, updateFilter, stats,
+    createFlashNewsController,
   };
 };

@@ -17,10 +17,12 @@ import type {
   EmployeeEntity,
   PaginatedResponse,
   EmployeeFilters,
-  CreateUserRequest
+  CreateUserRequest,
+  FlashNewsRequest
 
 
 } from '../types';
+import { data } from 'react-router-dom';
 
 
 
@@ -347,6 +349,16 @@ export const dashboardService = {
     } catch (error: any) {
       throw error.response?.data?.message || "Failed to delete user";
     }
+  },
+
+  createFlashNews: async (data: FlashNewsRequest) => {
+  try{
+    const messaage = await api.post("/flash-news/create", data);
+    return messaage.data;
+  }
+  catch(error: any){
+    throw error.response?.data?.message || "Failed to post the news"
+  }
   },
 
 };

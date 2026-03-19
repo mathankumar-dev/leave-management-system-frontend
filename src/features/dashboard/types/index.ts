@@ -599,3 +599,9 @@ export interface CreateUserRequest {
   managerId?: number | null;
   joiningDate: string;
 }
+
+export interface FlashNewsRequest{
+  message: string;
+  days: number;
+  priority? : number;
+}
