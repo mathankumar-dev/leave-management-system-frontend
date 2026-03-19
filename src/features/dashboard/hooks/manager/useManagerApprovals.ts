@@ -1,51 +1,85 @@
-import { useEffect, useState } from "react"
-import { managerService } from "../../services/manager/managerService";
+import { useState, useEffect } from "react";
+import { dashboardService } from "../../services/dashboardService";
+import type { CompOffResponse, LeaveDecisionRequest } from "../../types";
 
-export const useManagerApprovals = (managerId : string) => {
-    const [requests ,  setRequests] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+export const useManagerApprovals = (managerId: number) => {
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const fetchRequests = async () =>{
+  const fetchRequests = async () => {
+    setLoading(true);
+    try {
+      const [leaves, compOffs] = await Promise.all([
+        dashboardService.getPendingApprovals(managerId),
+        dashboardService.getPendingCompOffs(managerId)
+      ]);
 
-        setLoading(true);
+      const formattedCompOffs = compOffs.map((co: CompOffResponse) => ({
+        ...co,
+        id : co.compoffId,
+        leaveType: 'COMP_OFF', 
+        startDate: co.workedDate,
+        endDate: co.workedDate,
+        isCompOff: true
+      }));
 
-        try{
-            const data = await managerService.getPendingApprovals(managerId);
-            setRequests(data);
-        }
-        catch(err){
-            console.error(err);
-        }
-        finally{
-            setLoading(false);
-        }
+      const combined = [...leaves, ...formattedCompOffs].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      
+      setRequests(combined);
+    } catch (err) {
+      console.error("Failed to fetch approvals:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    };
+  useEffect(() => {
+    if (managerId) fetchRequests();
+  }, [managerId]);
 
-    useEffect(() => {
-        fetchRequests();
-    },[managerId]);
+  // Shared helper to remove item from UI state
+  const removeFromState = (id: number) => {
+    setRequests((prev) => prev.filter((req) => req.id !== id));
+  };
 
+  const handleDecision = async (decisionRequest: LeaveDecisionRequest) => {
+    try {
+      await dashboardService.updateDecision(decisionRequest);
+      removeFromState(decisionRequest.leaveId);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
+    }
+  };
 
-    const handleDecision = async (leaveId : number , type : 'approve' | 'reject' | 'discuss') =>{
-        try{
-            if(type === 'approve'){
-                await managerService.approveLeave(leaveId,managerId);
-            }
-            else if(type == 'reject'){
-                await managerService.rejectLeave(leaveId,managerId);
-            }
-            else{
-                await managerService.discussLeave(leaveId , managerId)
-            }
+  const handleCompOffApprove = async (compOffId: number) => {
+    try {
+      await dashboardService.approveCompOff(compOffId);
+      removeFromState(compOffId); // Remove from UI
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
+    }
+  };
 
-            setRequests((prev) => prev.filter((req) => String(req.id) !== String(leaveId)));
-        }catch(err){
-            console.error(err);
-            alert("Failed to process decision. Please try again.");
-            
-        }
-    };
+  const handleCompOffReject = async (compOffId: number, reason: string) => {
+    try {
+      await dashboardService.rejectCompOff(compOffId, reason);
+      removeFromState(compOffId); // Remove from UI
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
+    }
+  };
 
-    return {  requests, loading , handleDecision , refresh : fetchRequests };
-}
+  return {
+    requests,
+    loading,
+    handleDecision,
+    handleCompOffApprove,
+    handleCompOffReject, 
+    refresh: fetchRequests
+  };
+};

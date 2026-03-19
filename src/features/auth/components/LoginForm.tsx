@@ -8,10 +8,11 @@ import textSVG from '../../../assets/text.svg';
 import FailureModal from "../../../components/ui/FailureModal";
 import SuccessModal from "../../../components/ui/SuccessModal";
 import { authService } from "../services/AuthService";
+import { Link } from "react-router-dom";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState<string>("emp1@company.com");
-  const [password, setPassword] = useState<string>("1234");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showError, setShowError] = useState<boolean>(false);
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
@@ -38,8 +39,6 @@ const LoginForm: React.FC = () => {
     return () => clearInterval(interval);
   }, [showSuccess]);
 
-
-  // Change e: React.SubmitEvent to e: React.FormEvent
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -48,12 +47,9 @@ const LoginForm: React.FC = () => {
     try {
       const credentials: LoginCredentials = { email, password };
 
-      // FIX 1: Use authService instead of loginUser
       const response = await authService.loginUser(credentials);
 
-      // FIX 2: Trigger success UI
       setShowSuccess(true);
-
 
       setTimeout(async () => {
         try {
@@ -74,7 +70,6 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    // <div className="bg-white p-10  rounded-xl border-2 border-white shadow-sm">  
     <div className=' flex flex-col items-center justify-center  bg-white rounded-lg filter drop-shadow-lg  w-full max-w-140 min-h-154.25 h-auto p-6  '>
       {showError && (
         <FailureModal
@@ -100,10 +95,7 @@ const LoginForm: React.FC = () => {
             Password to Proceed.</p>
         </div>
 
-
-        {/* Email Field */}
         <div className="space-y-2">
-          {/* LABELS: Shifted to neutral-700 (Darker) for high legibility */}
           <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700 ml-1">
             Company Email
           </label>
@@ -120,13 +112,9 @@ const LoginForm: React.FC = () => {
           </div>
         </div>
 
-        {/* Password Field */}
         <div className="space-y-2">
           <div className="flex justify-between items-center ml-1">
-            <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700">Password</label>
-            {/* <button type="button" className="text-[11px] font-bold text-primary-600 hover:text-primary-700 hover:underline">
-              Forgot?
-            </button> */}
+            <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700" >Password</label>
           </div>
           <div className="relative group">
             <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-primary-500 transition-colors" />
@@ -134,12 +122,17 @@ const LoginForm: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="****"
               className="w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 transition-all text-sm text-neutral-900 shadow-sm"
               required
             />
           </div>
-          <a href="#" className="text-[11px] font-bold text-primary-700 hover:text-primary-700 hover:underline flex justify-end">Forgot Password?</a>
-        </div>
+          <Link
+            to="/forgot-password"
+            className="text-[11px] font-bold text-primary-700 hover:text-primary-700 hover:underline flex justify-end"
+          >
+            Forgot Password?
+          </Link>        </div>
 
         {/* Primary Action Button */}
         <button
@@ -167,7 +160,6 @@ const LoginForm: React.FC = () => {
         </button>
 
         <footer className="mt-8 text-center border-t border-neutral-100 pt-6">
-          {/* FOOTER: Darkened text to neutral-500 to pass contrast accessibility tests */}
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500">
             Authorized Access Only
           </p>

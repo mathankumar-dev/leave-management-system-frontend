@@ -1,5 +1,4 @@
 import { Filter } from 'lucide-react';
-import { Card, CardContent } from '../ui/card';
 import {
   Select,
   SelectContent,
@@ -7,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
-import { MONTHS, DEPARTMENTS, managerTrackingData } from '../data/mockData';
+import { Card, CardContent } from '../ui/card';
 
 interface DashboardFiltersProps {
   filters: {
@@ -17,10 +16,15 @@ interface DashboardFiltersProps {
     leaveType: string;
     manager: string;
   };
-  updateFilter: (key: string, value: string) => void;
+  updateFilter: (
+  key: keyof DashboardFiltersProps["filters"],
+  value: string
+) => void;
+
 }
 
-export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProps) {
+export function DashboardFilters({ filters, updateFilter  }: DashboardFiltersProps) { 
+
   return (
     <Card className="border border-slate-200 shadow-sm bg-white">
       <CardContent className="py-3">
@@ -44,13 +48,13 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Months</SelectItem>
-              {MONTHS.map((m, i) => (
+              {/* {MONTHS.map((m, i) => (
                 <SelectItem key={m} value={String(i + 1)}>
                   {m}
                 </SelectItem>
-              ))}
+              ))} */}
             </SelectContent>
-          </Select>
+          </Select> 
 
           {/* Year Filter */}
           <Select 
@@ -66,7 +70,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
             </SelectContent>
           </Select>
 
-          {/* Department Filter */}
+          {/* Department Filter
           <Select 
             value={filters.department} 
             onValueChange={(v) => updateFilter('department', v)}
@@ -82,7 +86,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
 
           {/* Leave Type Filter */}
           <Select 
@@ -103,13 +107,13 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
           </Select>
 
           {/* Manager Filter */}
-          <Select 
+          {/* <Select 
             value={filters.manager} 
             onValueChange={(v) => updateFilter('manager', v)}
           >
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue placeholder="Manager" />
-            </SelectTrigger>
+            </SelectTrigger> 
             <SelectContent>
               <SelectItem value="all">All Managers</SelectItem>
               {managerTrackingData.map((m) => (
@@ -118,7 +122,7 @@ export function DashboardFilters({ filters, updateFilter }: DashboardFiltersProp
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
         </div>
       </CardContent>
     </Card>

@@ -1,29 +1,38 @@
-import { DepartmentChart } from "./DepartmentChart";
-import { LeaveTypeChart } from "./LeaveTypeChart";
-import { MonthlyTrendChart } from "./MonthlyTrendChart";
-import { useHRDashboard } from "../hooks/useHRDashboard";
+// import React from "react";
+// import { DepartmentChart } from "./DepartmentChart";
+// import { LeaveTypeChart } from "./LeaveTypeChart";
+// import { MonthlyTrendChart } from "./MonthlyTrendChart";
 
-export function ChartsSection() {
-  const { stats, chartData } = useHRDashboard();
+// interface ChartsSectionProps {
+//   teamStructure: any[];       // You can replace with proper type later
+//   monthlyTrendData: any[];    // Replace with proper type later
+// }
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        {/* Pass the string name for the header */}
-        <DepartmentChart topDepartment={stats.topDepartment.department} />
-      </div>
+// export const ChartsSection: React.FC<ChartsSectionProps> = ({
+//   teamStructure,
+//   monthlyTrendData,
+// }) => {
+//   return (
+//     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+//       {/* Department Chart */}
+//       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+//         <DepartmentChart teamStructure={teamStructure ?? []} />
+//       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <LeaveTypeChart />
-      </div>
+//       {/* Leave Type Chart */}
+//       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+//         <LeaveTypeChart />
+//       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        {/* Now chartData.trend will be recognized */}
-        <MonthlyTrendChart/>
-      </div>
-    </div>
-  );
-}
+//       {/* Monthly Trend Chart */}
+//       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+//         <MonthlyTrendChart data={monthlyTrendData ?? []} />
+//       </div>
+
+//     </div>
+//   );
+// };
 
 
 

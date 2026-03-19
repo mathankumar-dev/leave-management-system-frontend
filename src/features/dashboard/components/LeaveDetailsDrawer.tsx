@@ -13,7 +13,6 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, title, on
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -22,7 +21,6 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, title, on
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"
           />
 
-          {/* Drawer Panel */}
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -30,7 +28,6 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, title, on
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 overflow-y-auto"
           >
-            {/* Header */}
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div>
                 <h2 className="text-lg font-bold text-slate-800">{title} Details</h2>
@@ -47,7 +44,6 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, title, on
             {/* Content */}
             <div className="p-6 space-y-8">
               
-              {/* Quick Summary Cards */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
                   <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Total Allocated</p>
@@ -59,7 +55,6 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, title, on
                 </div>
               </div>
 
-              {/* History Section */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-slate-800">
                   <FaHistory className="text-slate-400" />
@@ -84,7 +79,6 @@ const LeaveDetailsDrawer: React.FC<LeaveDetailsDrawerProps> = ({ open, title, on
                 </div>
               </div>
 
-              {/* Policy Note */}
               <div className="p-4 bg-amber-50 rounded-lg border border-amber-100 flex gap-3">
                 <FaInfoCircle className="text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-amber-800 leading-relaxed">

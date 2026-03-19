@@ -1,42 +1,14 @@
-// import axios from 'axios';
-// import { ENV } from '../config/environment';
-
-// const api = axios.create({
-//   baseURL: ENV.API_BASE_URL,
-// });
-
-// // Automatically attach the token from localStorage to every request
-// // api.interceptors.request.use((config) => {
-// //   const user = JSON.parse(localStorage.getItem('auth_user') || '{}');
-// //   if (user?.token) {
-// //     config.headers.Authorization = `Bearer ${user.token}`;
-// //   }
-// //   return config;
-// // });
-
-// // Inside your api.ts (axios instance)
-// api.interceptors.request.use((config) => {
-//   // Use the same key used in AuthProvider
-//   const token = localStorage.getItem('lms_token'); 
-  
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return config;
-// });
-
-// export default api;
-
-
-
 import Cookies from "js-cookie";
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { ENV } from '../config/environment';
+import { toast } from "sonner"; 
 
-/**
- * 
- * Create an Axios instance with base configuration
- */
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    silent?: number[];
+  }
+}
+
 const api: AxiosInstance = axios.create({
   baseURL: ENV.API_BASE_URL,
   headers: {
@@ -44,48 +16,68 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-/**
- * REQUEST INTERCEPTOR
- * Automatically attach the Bearer token to every outgoing request.
- * We use 'lms_token' to match the key used in AuthContext.
- */
+const handleLogout = () => {
+  Cookies.remove("lms_token");
+  if (window.location.pathname !== "/login") {
+    window.location.href = "/login";
+  }
+};
+
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-     const token = Cookies.get("lms_token");
-
+    const token = Cookies.get("lms_token");
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-/**
- * RESPONSE INTERCEPTOR
- * Intercepts responses to handle global errors like 401 (Unauthorized).
- */
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      console.warn("Unauthorized request - Logging out...");
+    const status = error.response?.status;
+    const message = error.response?.data?.message || "Something went wrong";
 
-      // Remove token from cookie
-      Cookies.remove("lms_token");
-
-      // Optional: redirect to login
-      // window.location.href = "/login";
+    // Global Error Handling Logic
+    if (!error.response) {
+      // Network Error (No Internet / Server Down)
+      if (!error.config?.silent) {
+        toast.error("Network Error", {
+          description: "Please check your internet connection or try again later.",
+        });
+      }
+    } else {
+      switch (status) {
+        case 400:
+          if (!error.config?.silent?.includes(400)) toast.warning("Invalid Request", { description: message });
+          // toast.warning("Invalid Request", { description: message });
+          break;
+        case 401:
+          toast.error("Session Expired", { description: "Please log in again." });
+          handleLogout();
+          break;
+        case 403:
+          if (!error.config?.silent?.includes(403)) toast.error("Access Denied", { description: "You don't have permission for this." });
+          // toast.error("Access Denied", { description: "You don't have permission for this." });
+          break;
+        case 404:
+          if (!error.config?.silent?.includes(404)) toast.info("Not Found", { description: "The resource you're looking for doesn't exist." });
+          // toast.info("Not Found", { description: "The resource you're looking for doesn't exist." });
+          break;
+        case 500:
+          if (!error.config?.silent?.includes(500)) toast.error("Server Error", { description: "Our team has been notified. Please try later." });
+          // toast.error("Server Error", { description: "Our team has been notified. Please try later." });
+          break;
+        default:
+          if (!error.config?.silent?.includes(status)) toast.error("Error", { description: message });
+      }
     }
 
     return Promise.reject(error);
   }
 );
 
-
 export default api;
-
 
