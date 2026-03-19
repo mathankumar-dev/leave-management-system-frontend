@@ -6,10 +6,9 @@ import LoginForm from "../components/LoginForm";
 const AuthPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-primary-50 overflow-hidden flex items-center justify-center">
-      <div className="flex min-h-screen w-full">
+      <div className="flex  justify-center min-h-screen w-full">
 
-        {/* Left Side */}
-        <div className="hidden lg:flex w-1/2 bg-[#60466C] relative overflow-hidden items-center justify-center p-16">
+        {/* <div className="hidden lg:flex w-1/2 bg-primary-900 relative overflow-hidden items-center justify-center p-16">
           <motion.div initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -22,7 +21,7 @@ const AuthPage: React.FC = () => {
               Employee Management <br /> Portal
             </h1>
           </motion.div>
-        </div>
+        </div> */}
 
         {/* FORM PANEL */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-primary-50 relative">
@@ -31,7 +30,7 @@ const AuthPage: React.FC = () => {
           <motion.div initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              duration: 0.8,
+              duration: 0.5,
               ease: "easeOut",
               delay: 0.2
             }} className=' w-full max-w-md'>

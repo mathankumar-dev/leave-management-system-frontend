@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
-import type { AuthResponse, User } from "../types";// Import your API service here
+import type { AuthResponse, User } from "../types";
 import { authService } from "../services/AuthService";
 
 interface JwtPayload {
@@ -15,6 +15,11 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  mustChangePassword: boolean;
+  personalDetailsComplete : boolean;
+
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(null);
   }, []);
 
-  // Hydrate user data on refresh
+  /* ---------------- INIT AUTH ---------------- */
   useEffect(() => {
     const initAuth = async () => {
       const savedToken = Cookies.get("lms_token");
@@ -46,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             logout();
           } else {
             setToken(savedToken);
+
             const profile = await authService.getEmployeeProfile(Number(savedId));
             setUser(profile);
           }
@@ -54,27 +60,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           logout();
         }
       }
+
       setIsLoading(false);
     };
 
     initAuth();
   }, [logout]);
 
+  /* ---------------- LOGIN ---------------- */
   const login = async (data: AuthResponse) => {
     try {
       const decoded = jwtDecode<JwtPayload>(data.token);
       const expiryDate = new Date(decoded.exp * 1000);
 
-      // 1. Save to cookies
-      Cookies.set("lms_token", data.token, { expires: expiryDate, secure: true });
-      Cookies.set("lms_user_id", JSON.stringify(data.id), { expires: expiryDate });
+      Cookies.set("lms_token", data.token, {
+        expires: expiryDate,
+        secure: true,
+      });
 
-      // 2. Update state
+      Cookies.set("lms_user_id", data.id.toString(), {
+        expires: expiryDate,
+      });
+
       setToken(data.token);
 
-      // 3. Fetch profile using data.id directly from the login response
       const profile = await authService.getEmployeeProfile(data.id);
       setUser(profile);
+
     } catch (e) {
       console.error("Login failed:", e);
       throw e;
@@ -89,7 +101,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         isAuthenticated: !!user,
-        isLoading
+        isLoading,
+        mustChangePassword: user?.mustChangePassword ?? false,
+        personalDetailsComplete : user?.personalDetailsComplete ?? false,
+        setUser
       }}
     >
       {children}

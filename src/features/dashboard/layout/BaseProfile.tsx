@@ -1,8 +1,7 @@
 import React from "react";
 import {
-  FaUser, FaEnvelope, FaPhone, FaCalendarAlt, FaBuilding,
-  FaMapMarkerAlt, FaLinkedin, FaGithub, FaBriefcase, FaUserTie
-} from "react-icons/fa";
+  FaUser, FaPhone, 
+  FaMapMarkerAlt, FaBriefcase} from "react-icons/fa";
 import type { ProfileData } from "../types";
 
 
@@ -37,7 +36,6 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
   return (
     <div className="w-full space-y-10">
 
-      {/* SECTION 1: PERSONAL DETAILS (Editable) */}
       <div>
         <h3 className="text-xs font-black text-indigo-600 uppercase tracking-[0.2em]  flex items-center gap-3">
           <FaUser className="text-sm" /> Personal Details
@@ -55,7 +53,7 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
             <label className={labelClass}>Contact Number</label>
             <div className="relative mt-1">
               <FaPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input name="phone" value={profile.phone} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} />
+              {/* <input name="phone" value={profile.phone} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} /> */}
             </div>
           </div>
 
@@ -69,7 +67,6 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
         </div>
       </div>
 
-      {/* SECTION 2: WORK INFORMATION (Mostly Read-Only) */}
       <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
         <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
           <FaBriefcase className="text-sm" /> Employment Info
@@ -77,19 +74,16 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className={labelClass}>Employee ID</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.employeeId}</p>
+            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.id}</p>
           </div>
-          {/* <div>
-            <label className={labelClass}>Department</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.department}</p>
-          </div> */}
+
           <div>
             <label className={labelClass}>Manager</label>
             <p className="mt-1 font-bold text-slate-700 text-sm">{profile.managerName}</p>
           </div>
           <div>
             <label className={labelClass}>Work Location</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.workLocation}</p>
+            {/* <p className="mt-1 font-bold text-slate-700 text-sm">{profile.workLocation}</p> */}
           </div>
           <div>
             <label className={labelClass}>Joining Date</label>
@@ -97,9 +91,9 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
           </div>
           <div>
             <label className={labelClass}>Type</label>
-            <span className="inline-block mt-1 px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase">
-              {profile.employmentType}
-            </span>
+            {/* <span className="inline-block mt-1 px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase"> */}
+              {/* {profile.employmentType}
+            </span> */}
           </div>
         </div>
       </div>

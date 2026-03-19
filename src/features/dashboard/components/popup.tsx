@@ -6,7 +6,6 @@ import {
   FaClock,
   FaCheckCircle,
   FaTimesCircle,
-  FaInfoCircle
 } from "react-icons/fa";
 import type { LeaveRecord } from "../types";
 
@@ -18,11 +17,9 @@ const RecentLeavePopup: React.FC<RecentLeavePopupProps> = ({ latestLeave }) => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Session check: only show once per session
     const hasBeenShown = sessionStorage.getItem("recent_leave_shown");
 
     if (latestLeave && !hasBeenShown) {
-      // Small delay so it doesn't pop up the exact millisecond the page loads
       const timer = setTimeout(() => {
         setVisible(true);
         sessionStorage.setItem("recent_leave_shown", "true");
@@ -61,7 +58,6 @@ const RecentLeavePopup: React.FC<RecentLeavePopupProps> = ({ latestLeave }) => {
   const statusKey = latestLeave.status.toUpperCase() as keyof typeof config;
   const theme = config[statusKey] || config.PENDING;
 
-  // Using Portal to ensure it's not cut off by any "overflow-hidden" parent containers
   return ReactDOM.createPortal(
     <AnimatePresence>
       {visible && (
