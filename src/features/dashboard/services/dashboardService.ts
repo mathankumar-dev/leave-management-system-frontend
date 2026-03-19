@@ -4,21 +4,21 @@ import Cookies from "js-cookie";
 import type {
   LeaveRecord,
   Employee,
-  LeaveApplication,
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
   CompOffRequest,
   LeaveBalanceResponse,
-  // ProfileResponse
-  ProfileData,
   ODResponse,
   TeamMember,
   EmployeeEntity,
   PaginatedResponse,
   EmployeeFilters,
   CreateUserRequest,
-  PendingLeaveApplicationApiResponse
+  PendingLeaveApplicationApiResponse,
+  PendingOnboardingResponse,
+  BiometricVpnStatus,
+  FlashNewsRequest
 
 
 } from '../types';
@@ -143,17 +143,17 @@ export const dashboardService = {
   // Pending Approvals
   // =============================
 
-  getPendingApprovals: async (managerId: number) : Promise<PendingLeaveApplicationApiResponse[]> => {
+  getPendingApprovals: async (managerId: number): Promise<PendingLeaveApplicationApiResponse[]> => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
     return response.data.content;
   },
 
-  getPendingApprovalsForTeamLeader: async (teamLeaderId: number) : Promise<PendingLeaveApplicationApiResponse[]> => {
+  getPendingApprovalsForTeamLeader: async (teamLeaderId: number): Promise<PendingLeaveApplicationApiResponse[]> => {
     const response = await api.get(`/leave-approvals/pending/team-leader/${teamLeaderId}`);
     console.log("getPendingApprovalsForTeamLeader");
-    
+
     console.log(response.data.content);
-    
+
     return response.data.content;
   },
 
@@ -215,6 +215,11 @@ export const dashboardService = {
 
   getMyLeaveHistory: async (employeeId: number): Promise<LeaveRecord[]> => {
     const response = await api.get(`/leaves/employee/${employeeId}`);
+    return response.data;
+  },
+
+  getMyODHistory: async (employeeId: number): Promise<ODResponse[]> => {
+    const response = await api.get(`/od/my/${employeeId}`);
     return response.data;
   },
 
@@ -353,5 +358,48 @@ export const dashboardService = {
     }
   },
 
+  // createFlashNews: async (data: FlashNewsRequest) => {
+  // try{
+  //   const messaage = await api.post("/flash-news/create", data);
+  //   return messaage.data;
+  // }
+  // catch(error: any){
+  //   throw error.response?.data?.message || "Failed to post the news"
+  // }
+  // },
+
+  createFlashNews: async (data: FlashNewsRequest) => {
+  try{
+    const messaage = await api.post("/flash-news/create", data);
+    return messaage.data;
+  }
+  catch(error: any){
+    throw error.response?.data?.message || "Failed to post the news"
+  }
+  },
+
+  getOnboardingRequests: async (): Promise<PendingOnboardingResponse[]> => {
+    const res = await api.get("/admin/onboarding/pending");
+    console.log("onboarding");
+    console.log(res.data);
+    return res.data;
+  },
+  approveOnboardingBioRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
+    console.log("calling bio");
+    
+    await api.patch(`/admin/onboarding/bio/decision/${employeeId}`, {}, {
+      params: {
+        decision
+      }
+    });
+  },
+  approveOnboardingVpnRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
+    console.log("calling vpn");
+    await api.patch(`/admin/onboarding/vpn/decision/${employeeId}`, {}, {
+      params: {
+        decision
+      }
+    });
+  },
 };
 

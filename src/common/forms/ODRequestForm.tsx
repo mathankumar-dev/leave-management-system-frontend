@@ -67,7 +67,7 @@ const ODRequestForm = () => {
         if (role === "TEAM_LEADER") {
             approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
         }
-        if (role === "MANAGER" || role === "ADMIN" ) {
+        if (role === "MANAGER" || role === "ADMIN") {
             approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
         }
         if (totalDays > 7 && role !== "MANAGER") {
@@ -90,7 +90,7 @@ const ODRequestForm = () => {
                         setSubmitted(false);
                         setFormData({ fromDate: null, toDate: null, reason: "" });
                     }}
-                    className="mt-8 text-sm font-bold text-indigo-600 hover:text-indigo-800"
+                    className="mt-8 text-[11px] font-black uppercase tracking-[0.2em] text-indigo-600 hover:text-indigo-800 transition-all"
                 >
                     Raise another request →
                 </button>
@@ -99,15 +99,16 @@ const ODRequestForm = () => {
     }
 
     return (
-        <div className=" rounded-2xl overflow-hidden">
+        <div className="rounded-sm overflow-hidden">
             <div className="px-8 py-5 bg-slate-50/50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <HiOutlineUsers className="text-indigo-600" /> Schedule Meeting
+                    {/* Changed Icon and Text */}
+                    <HiOutlineMapPin className="text-indigo-600" /> On-Duty Application
                 </h1>
 
                 <div className="flex flex-col items-start sm:items-end">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                        Required Approvals
+                        Approval Workflow
                     </span>
                     <div className="flex flex-wrap gap-2">
                         {renderApprovers()}
@@ -116,15 +117,25 @@ const ODRequestForm = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                {/* Date Selection Info */}
+                <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl flex items-center gap-3">
+                    <div className="bg-white p-2 rounded-lg shadow-sm text-indigo-600 font-bold text-sm">
+                        {totalDays.toString().padStart(2, '0')}
+                    </div>
+                    <p className="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">
+                        Total Working Days requested for On-Duty
+                    </p>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <MyDatePicker
-                        label="From Date"
+                        label="Work Starts On"
                         selected={formData.fromDate}
                         onChange={(date) => setFormData({ ...formData, fromDate: date })}
                         required
                     />
                     <MyDatePicker
-                        label="To Date"
+                        label="Work Ends On"
                         selected={formData.toDate}
                         onChange={(date) => setFormData({ ...formData, toDate: date })}
                         minDate={formData.fromDate || new Date()}
@@ -135,12 +146,13 @@ const ODRequestForm = () => {
                 <div className="space-y-3">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 ml-1">
                         <HiOutlineChatBubbleLeftRight size={16} />
-                        Purpose of Visit / Duty
+                        Duty Details & Location
                     </label>
                     <textarea
                         rows={4}
-                        className="w-full border border-slate-200 bg-slate-50 p-4 rounded-xl text-xs font-bold uppercase outline-none focus:border-indigo-600 transition-all placeholder:text-slate-300"
-                        placeholder="e.g. Meeting at Room No. ..."
+                        className="w-full border border-slate-200 bg-slate-50 p-4 rounded-xl text-xs font-bold uppercase outline-none focus:border-indigo-600 focus:bg-white transition-all placeholder:text-slate-300"
+                        /* Updated Placeholder */
+                        placeholder="E.G. CLIENT SITE VISIT - BANGALORE OFFICE, SEMINAR AT TECH PARK, OR FIELD WORK FOR PROJECT X..."
                         value={formData.reason}
                         onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                         required
@@ -150,9 +162,9 @@ const ODRequestForm = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all disabled:opacity-50 shadow-lg shadow-indigo-100"
+                    className="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-3 transition-all disabled:opacity-50 shadow-lg"
                 >
-                    {loading ? "Processing..." : "Submit OD Request"}
+                    {loading ? "Registering Request..." : "Confirm OD Schedule"}
                     {!loading && <HiOutlinePaperAirplane size={18} className="rotate-45" />}
                 </button>
             </form>

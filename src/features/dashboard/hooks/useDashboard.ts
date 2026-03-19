@@ -5,9 +5,6 @@ import { departmentLeaveData, managerTrackingData } from "../views/hr/data/mockD
 import type {
   LeaveRecord,
   Employee,
-  Notification,
-  AuditLog,
-  LeaveApplication,
   LeaveDecisionRequest,
   TeamCalendarResponse,
   TeamMemberBalance,
@@ -19,8 +16,13 @@ import type {
   EmployeeFilters,
   PaginatedResponse,
   CreateUserRequest,
+  ODResponse,
+  PendingOnboardingResponse,
+  BiometricVpnStatus,
+  FlashNewsRequest,
 } from "../types";
 import { toast } from "sonner";
+import api from "../../../api/axiosInstance";
 
 
 
@@ -173,6 +175,20 @@ export const useDashboard = () => {
       setLoading(false);
     }
   }, []);
+
+    const fetchMyOD = useCallback(async (employeeId: number): Promise<ODResponse[]> => {
+    setLoading(true);
+    try {
+      return await service.getMyODHistory(employeeId);
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch leave history");
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
 
 
   const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<LeaveRecord[]> => {
@@ -463,6 +479,50 @@ export const useDashboard = () => {
     }
   }, []);
 
+  const fetchOnboardingRequests = useCallback(async (): Promise<PendingOnboardingResponse[]> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await service.getOnboardingRequests();
+      return result;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || " Onboarding request fetching failed";
+      setError(errorMessage);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleOnboardingDecision = useCallback(async (
+  employeeId: number, 
+  type: 'BIO' | 'VPN', 
+  decision: BiometricVpnStatus
+) => {
+  setLoading(true);
+  setError(null);
+  try {
+
+    console.log(employeeId , type , decision);
+    
+    if (type === 'BIO') {
+      await service.approveOnboardingBioRequests(employeeId, decision);
+    } else {
+      await service.approveOnboardingVpnRequests(employeeId, decision);
+    }
+    
+    // Refresh the list after a successful decision
+    const updatedData = await service.getOnboardingRequests();
+    return updatedData;
+  } catch (err: any) {
+    const errorMessage = err.response?.data?.message || `Failed to update ${type} status`;
+    setError(errorMessage);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
   const addUser = async (data: CreateUserRequest): Promise<void> => {
     try {
       const message = await dashboardService.createUser(data);
@@ -483,7 +543,22 @@ export const useDashboard = () => {
     }
   };
 
-
+const createFlashNewsController = async (data: FlashNewsRequest) => {
+  setLoading(true);
+  try {
+    const responseData = await dashboardService.createFlashNews(data);
+    
+    toast.success("Flash news created successfully!"); 
+    
+    return true; 
+    
+  } catch (err: any) {
+    setError(err.message || "Failed to create flash news");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   /* ================= EXPORT ================= */
@@ -511,10 +586,12 @@ export const useDashboard = () => {
 
     fetchEmployeeCalendar,
     employeeCalendar,
+    fetchOnboardingRequests,
 
     payslip,
     history,
     downloadHistory,
+    handleOnboardingDecision,
     
     fetchPayslip,
     // fetchHistory,
@@ -526,6 +603,7 @@ export const useDashboard = () => {
     leaveBalance,
     fetchLeaveBalance,
     fetchHistory,
+    fetchMyOD,
 
     removeLeaveType,
     cancelLeave,
@@ -536,10 +614,9 @@ export const useDashboard = () => {
     weeklyLeaveSummary,
     fetchTeamOnLeave,
     teamOnLeave,
-    filters, updateFilter, stats
+    filters, updateFilter, stats,
+    createFlashNewsController,
   };
 };
-function setLoadingHistory(arg0: boolean) {
-  throw new Error("Function not implemented.");
-}
+
 

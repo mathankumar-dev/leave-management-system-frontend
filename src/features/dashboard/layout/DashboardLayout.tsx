@@ -1,9 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import { useNavigate } from "react-router-dom";
-import api from "../../../api/axiosInstance";
 
 /* ---------------- ADMIN VIEWS ---------------- */
 import EmployeesView from "../views/admin/EmployeesView";
@@ -18,7 +16,6 @@ import LowBalancePage from "../views/hr/pages/LowBalancePage";
 import DashboardView from "../views/employee/DashboardView";
 import CalendarView from "../views/employee/CalendarView";
 import LeaveApplicationForm from "../../../common/forms/LeaveApplicationForm";
-import MyLeavesView from "../views/MyLeavesView";
 import NotificationsView from "../views/NotificationsView";
 import EmployeeProfile from "../views/employee/EmployeeProfile";
 
@@ -37,6 +34,9 @@ import PayrollView from "../views/Payroll";
 import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
 import { PayslipPage } from "../views/hr/pages/PayslipPage";
 import RequestCenter from "../../../common/RequestCenter";
+import MyRequestsView from "../views/MyLeavesView";
+import OnboardingPendingPage from "../views/admin/OnboardingPendingPage";
+import FlashNewsForm from "../views/admin/FlashNewsCreate";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
@@ -47,13 +47,7 @@ const ROLES = {
   TEAMLEADER: "TEAM_LEADER"
 };
 
-/* ---------------- STAT CARD ---------------- */
-const StatCard = ({ title, value }: { title: string; value: number }) => (
-  <div className="bg-white p-4 rounded shadow">
-    <h3 className="text-sm text-gray-500">{title}</h3>
-    <p className="text-2xl font-bold">{value ?? 0}</p>
-  </div>
-);
+
 
 const DashboardLayout: React.FC = () => {
 
@@ -96,6 +90,8 @@ const DashboardLayout: React.FC = () => {
         return <TeamCalendarView />;
       case "Employees":
         return <EmployeesView  />;
+      case "Onboarding Approvals" :
+        return <OnboardingPendingPage />;
 
       case "Leave Config":
         return <LeaveTypesView />;
@@ -105,8 +101,8 @@ const DashboardLayout: React.FC = () => {
       case "Request center":
         return <RequestCenter />;
 
-      case "My Leaves":
-        return <MyLeavesView />;
+      case "My Requests":
+        return <MyRequestsView />;
 
       case "Payroll":
         return userRole === ROLES.HR ? <PayslipPage /> : <PayrollView />;
@@ -119,6 +115,9 @@ const DashboardLayout: React.FC = () => {
 
       case "Team Members":
         return <TeamMembersView />;
+
+      case "Flash News":
+        return <FlashNewsForm />;
 
 
 
