@@ -29,7 +29,7 @@ const PersonalDetailsModal = () => {
 
     // 2. TEXT DATA STATE (Updated with NEW fields)
     const [formData, setFormData] = useState<Partial<PersonalDetailsRequest>>({
-        fullName: "",
+        firstName: "",
         lastName: "",
         surName: "",
         gender: "MALE",
@@ -68,7 +68,7 @@ const PersonalDetailsModal = () => {
     const handleSubmit = async () => {
         // Updated common required fields list
         const commonRequired: (keyof PersonalDetailsRequest)[] = [
-            'fullName', 'lastName', 'surName', 'contactNumber', 'aadharNumber',
+            'firstName', 'lastName', 'surName', 'contactNumber', 'aadharNumber',
             'personalEmail', 'dateOfBirth', 'presentAddress', 'permanentAddress',
             'designation', 'bankName', 'accountNumber'
         ];
@@ -189,8 +189,8 @@ const PersonalDetailsModal = () => {
                             {/* Full Name Fields */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <InputLabel>Full Name</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.fullName || ""} onChange={e => setFormData({ ...formData, fullName: e.target.value })} />
+                                    <InputLabel>First Name</InputLabel>
+                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.firstName || ""} onChange={e => setFormData({ ...formData, fullName: e.target.value })} />
                                 </div>
                                 <div>
                                     <InputLabel>Last Name</InputLabel>
