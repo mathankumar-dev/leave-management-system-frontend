@@ -13,62 +13,49 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     try {
       const isTeamLeader = role?.toUpperCase() === 'TEAM_LEADER';
 
-      if (isTeamLeader) {
-        // Fetch Standard and OD requests for Team Leader
-        const [tlRequests, tlODRequests] = await Promise.all([
+      // 1. Fetch data from services
+      const [leaveData, compOffs, ods] = isTeamLeader
+        ? await Promise.all([
           dashboardService.getPendingApprovalsForTeamLeader(userId),
+          null, // Team leaders might not have comp-offs in your logic
           dashboardService.getPendingODApprovalsForTeamLeader(userId)
-        ]);
-
-        const formattedODs = (tlODRequests || []).map((od: ODResponse) => ({
-          ...od,
-          leaveType: 'ON_DUTY',
-          isOD: true,
-        }));
-
-        const combined = [...(tlRequests || []), ...formattedODs].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-
-
-        setRequests(combined);
-
-      } else {
-        const [leaves, compOffs, ods] = await Promise.all([
+        ])
+        : await Promise.all([
           dashboardService.getPendingApprovals(userId),
           dashboardService.getPendingCompOffs(userId),
           dashboardService.getPendingODApprovals(userId)
         ]);
+      const formattedLeaves = (leaveData || []).map((item: any) => ({
+        ...item.leaveApplication, // This spreads id, employeeName, startDate, etc.
+        attachments: item.attachments,
+        attachmentCount: item.attachmentCount,
+        isLeave: true // Helper flag for conditional rendering
+      }));
 
-        const formattedCompOffs = (compOffs || []).map((co: CompOffResponse) => ({
-          ...co,
-          id: co.compoffId,
-          leaveType: 'COMP_OFF',
-          startDate: co.workedDate,
-          endDate: co.workedDate,
-          isCompOff: true
-        }));
+      // 3. Format CompOffs (Note: compOffs comes as a direct array usually)
+      const formattedCompOffs = (compOffs || []).map((co: CompOffResponse) => ({
+        ...co,
+        id: co.compoffId,
+        leaveType: 'COMP_OFF',
+        startDate: co.workedDate,
+        endDate: co.workedDate,
+        isCompOff: true,
+        createdAt: co.createdAt || new Date().toISOString()
+      }));
 
-        const formattedODs = (ods || []).map((od: ODResponse) => ({
-          ...od,
-          id: od.id ,
-          employeeName : od.employeeName,
-          leaveType: 'ON_DUTY',
-          isOD: true,
-          startDate: od.startDate,
-          endDate: od.endDate,
-          createdAt: od.createdAt 
-        }));
+      // 4. Format ODs
+      const formattedODs = (ods || []).map((od: ODResponse) => ({
+        ...od,
+        leaveType: 'ON_DUTY',
+        isOD: true,
+      }));
 
-        console.log(formattedODs);
-        
+      // 5. Combine and Sort
+      const combined = [...formattedLeaves, ...formattedCompOffs, ...formattedODs].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
 
-        const combined = [...leaves, ...formattedCompOffs, ...formattedODs].sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-
-        setRequests(combined);
-      }
+      setRequests(combined);
     } catch (err) {
       console.error("Failed to fetch approvals:", err);
     } finally {

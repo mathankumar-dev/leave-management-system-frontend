@@ -4,12 +4,13 @@ import RequestTile from '../../components/tiles/RequestTile';
 import { useManagerApprovals } from '../../hooks/manager/useManagerApprovals';
 import CustomLoader from '../../../../components/ui/CustomLoader';
 import { useAuth } from '../../../auth/hooks/useAuth';
-import { FaCheckDouble, FaChevronDown, FaSearch } from 'react-icons/fa';
+import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSearch, FaTimes } from 'react-icons/fa';
 import type { LeaveDecision, LeaveDecisionRequest } from '../../types';
 import { notify } from '../../../../utils/notifications';
 import CommentDialog from '../../../../components/ui/CommentDialog';
 import { formatTimeAgo } from '../../../../utils/formatTimeAgo';
 import { useDashboard } from '../../hooks/useDashboard';
+import api from '../../../../api/axiosInstance';
 
 interface PendingRequest {
     id: number;
@@ -32,12 +33,11 @@ const PendingApprovalsView: React.FC = () => {
     const isTeamLeader = userRole === 'TEAM_LEADER';
     const canSeeDashboardMetrics = isManager || isTeamLeader;
 
+
     const {
         requests,
         loading,
         handleDecision,
-        handleCompOffApprove,
-        handleCompOffReject
     } = useManagerApprovals(user?.id || 0, user?.role);
 
     const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useDashboard();
@@ -57,6 +57,8 @@ const PendingApprovalsView: React.FC = () => {
         req: any;
         status: LeaveDecision | null;
     }>({ isOpen: false, req: null, status: null });
+
+    const [selectedAttachment, setSelectedAttachment] = useState<any | null>(null);
 
     const formatDateRange = (start: string, end: string) => {
         const options: Intl.DateTimeFormatOptions = { month: 'short', day: '2-digit' };
@@ -135,7 +137,7 @@ const PendingApprovalsView: React.FC = () => {
         );
 
         if (result?.success) {
-            notify.leaveAction(status, req.employeeName, !!req.isCompOff , !!req.isOD);
+            notify.leaveAction(status, req.employeeName, !!req.isCompOff, !!req.isOD);
             setDialogConfig({ isOpen: false, req: null, status: null });
         } else {
             notify.error("Update Failed", "Please check your connection and try again.");
@@ -148,6 +150,10 @@ const PendingApprovalsView: React.FC = () => {
             <CustomLoader label="Loading pending approvals" />
         </div>
     );
+
+    function handleDownload(selectedAttachment: any): void {
+        throw new Error('Function not implemented.');
+    }
 
     return (
         <div className='flex flex-col gap-4 w-full max-w-full overflow-x-hidden'>
@@ -245,7 +251,9 @@ const PendingApprovalsView: React.FC = () => {
                             createdAt={formatTimeAgo(req.createdAt)}
                             onAccept={() => onActionTriggered(req, 'APPROVED')}
                             onReject={() => onActionTriggered(req, 'REJECTED')}
-                            onDiscuss={(!req.isCompOff && isManager) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
+                            onDiscuss={((isManager || isTeamLeader) && !req.isCompOff) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
+                            attachments={req.attachments}
+                            onViewAttachment={(attachment) => setSelectedAttachment(attachment)}
                         />
                     ))
                 ) : (
@@ -257,8 +265,127 @@ const PendingApprovalsView: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {selectedAttachment && (
+                <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 transition-all animate-in fade-in duration-300">
+                    {/* Animated Glass Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+                        onClick={() => setSelectedAttachment(null)}
+                    />
+
+                    <div className="relative max-w-5xl w-full bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-white/20 transform transition-all scale-100">
+                        {/* Header */}
+                        <div className="flex justify-between items-center p-5 border-b border-slate-200 bg-white/50">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                                    <FaFileImage size={18} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-slate-800 leading-none">{selectedAttachment.fileName}</h3>
+                                    <p className="text-xs text-slate-500 mt-1">Leave Application Attachment</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => handleDownload(selectedAttachment)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-semibold rounded-xl hover:bg-slate-700 transition-all shadow-md active:scale-95"
+                                >
+                                    <FaDownload size={14} />
+                                    Download
+                                </button>
+                                <button
+                                    onClick={() => setSelectedAttachment(null)}
+                                    className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full transition-all"
+                                >
+                                    <FaTimes size={20} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Content Area */}
+                        <div className="p-8 flex justify-center items-center bg-gradient-to-b from-slate-50 to-slate-100 min-h-[400px] max-h-[80vh] overflow-auto">
+                            {selectedAttachment.fileType.includes('image') ? (
+                                <div className="relative group">
+                                    <AuthenticatedImage
+                                        fileUrl={selectedAttachment.fileUrl}
+                                        className="max-h-[65vh] w-auto object-contain rounded-xl shadow-2xl border-4 border-white transition-transform duration-500 group-hover:scale-[1.01]"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="text-center p-12 bg-white rounded-3xl shadow-xl border border-slate-100 max-w-sm">
+                                    <div className="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <FaFileAlt size={40} />
+                                    </div>
+                                    <h4 className="text-xl font-bold text-slate-800 mb-2">Document Preview</h4>
+                                    <p className="text-slate-500 text-sm mb-6">We can't preview this file type directly, but you can download it to view.</p>
+                                    <button
+                                        onClick={() => handleDownload(selectedAttachment)}
+                                        className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all"
+                                    >
+                                        Download File
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+
+
+
     );
+
+
 }
 
 export default PendingApprovalsView;
+
+
+// Your Axios instance
+
+interface AuthenticatedImageProps {
+    fileUrl: string;
+    className?: string;
+}
+
+const AuthenticatedImage: React.FC<AuthenticatedImageProps> = ({ fileUrl, className }) => {
+    const [imgSrc, setImgSrc] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        const fetchImage = async () => {
+            try {
+                setLoading(true);
+                // Use your API instance to handle the 403/Auth headers automatically
+                const response = await api.get(`/files/download/${encodeURIComponent(fileUrl)}`, {
+                    responseType: "blob",
+                });
+
+                // Convert the raw data into a local URL the browser can display
+                const url = URL.createObjectURL(response.data);
+                setImgSrc(url);
+            } catch (error) {
+                console.error("Error fetching image:", error);
+                setImgSrc("https://via.placeholder.com/300?text=Error+Loading+Image");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (fileUrl) fetchImage();
+
+        // Cleanup the URL when component unmounts to save memory
+        return () => {
+            if (imgSrc) URL.revokeObjectURL(imgSrc);
+        };
+    }, [fileUrl]);
+
+    if (loading) return <div className="p-10 animate-pulse bg-slate-200 rounded-lg">Loading secure image...</div>;
+
+    return <img src={imgSrc} alt="Attachment" className={className} />;
+};
+
+// export default AuthenticatedImage;

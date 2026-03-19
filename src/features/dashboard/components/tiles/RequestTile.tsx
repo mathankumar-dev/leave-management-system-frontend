@@ -2,21 +2,25 @@ import React from 'react'
 import Divider from '../../../../components/ui/Divider'
 import { HiDotsCircleHorizontal } from 'react-icons/hi'
 import CTAButton from '../../../../components/ui/CTAButton'
+import type { LeaveType } from '../../types';
+import { FaFileImage } from 'react-icons/fa';
 
 export interface RequestTileProps {
     employeeName: string;
-    leaveType: string;
+    leaveType: LeaveType;
     dateRange: string;
     startDate: string;
     endDate: string;
     startDateHalfDayType?: "FIRST_HALF" | "SECOND_HALF" | string | null;
     endDateHalfDayType?: "FIRST_HALF" | "SECOND_HALF" | string | null;
     reasonMessage: string;
-    days: number; 
+    days: number;
     createdAt: string;
     onAccept: () => void;
     onReject: () => void;
     onDiscuss?: () => void;
+    attachments?: any[];
+    onViewAttachment?: (attachment: any) => void;
 }
 
 const RequestTile: React.FC<RequestTileProps> = ({
@@ -33,6 +37,8 @@ const RequestTile: React.FC<RequestTileProps> = ({
     onAccept,
     onReject,
     onDiscuss,
+    attachments,
+    onViewAttachment,
 }) => {
 
     const getHalfDayLabel = (type?: string | null) => {
@@ -77,7 +83,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
                         <span className='text-indigo-600 font-bold text-[10px] uppercase tracking-tighter'>
                             {leaveType.replace('_', ' ')}
                         </span>
-                        
+
                         {/* MOBILE VIEW: Only show count if NOT On Duty */}
                         {!isOnDuty && (
                             <span className='md:hidden text-amber-500 text-[10px] font-bold'>
@@ -93,13 +99,12 @@ const RequestTile: React.FC<RequestTileProps> = ({
             {/* 2. Desktop Date & Days Section */}
             <div className='hidden md:flex flex-col items-center min-w-35 px-2 text-center'>
                 <span className='text-[11px] font-bold text-slate-600'>{dateRange}</span>
-                
+
                 {/* DESKTOP: Only show count and session if NOT On Duty */}
                 {!isOnDuty ? (
                     <div className='flex flex-col items-center mt-0.5'>
-                        <span className={`text-[9px] font-black uppercase tracking-widest ${
-                            days % 1 !== 0 ? 'text-amber-500' : 'text-indigo-400'
-                        }`}>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${days % 1 !== 0 ? 'text-amber-500' : 'text-indigo-400'
+                            }`}>
                             {duration.count}
                         </span>
                         {duration.session && (
@@ -174,6 +179,19 @@ const RequestTile: React.FC<RequestTileProps> = ({
                     />
                 )}
             </div>
+            {/* ATTACHMENT PILL */}
+            {attachments && attachments.length > 0 && (
+                <button
+                    onClick={() => onViewAttachment?.(attachments[0])}
+                    className="group flex items-center gap-1.5 px-2 py-1 bg-slate-100 hover:bg-indigo-600 text-slate-600 hover:text-white rounded-md transition-all border border-slate-200"
+                    title="View Attachments"
+                >
+                    <FaFileImage size={14} className="opacity-70 group-hover:opacity-100" />
+                    <span className="text-[10px] font-bold">
+                        {attachments.length > 1 ? `FILES (${attachments.length})` : 'FILE'}
+                    </span>
+                </button>
+            )}
 
             {/* 5. Timestamp Footer */}
             <div className='flex justify-between items-center md:flex-col md:justify-center border-t border-slate-50 md:border-none pt-2 md:pt-0'>
@@ -187,3 +205,4 @@ const RequestTile: React.FC<RequestTileProps> = ({
 }
 
 export default RequestTile;
+

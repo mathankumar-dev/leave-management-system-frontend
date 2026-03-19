@@ -17,7 +17,8 @@ import type {
   EmployeeEntity,
   PaginatedResponse,
   EmployeeFilters,
-  CreateUserRequest
+  CreateUserRequest,
+  PendingLeaveApplicationApiResponse
 
 
 } from '../types';
@@ -142,13 +143,17 @@ export const dashboardService = {
   // Pending Approvals
   // =============================
 
-  getPendingApprovals: async (managerId: number) => {
+  getPendingApprovals: async (managerId: number) : Promise<PendingLeaveApplicationApiResponse[]> => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
     return response.data.content;
   },
 
-  getPendingApprovalsForTeamLeader: async (teamLeaderId: number) => {
+  getPendingApprovalsForTeamLeader: async (teamLeaderId: number) : Promise<PendingLeaveApplicationApiResponse[]> => {
     const response = await api.get(`/leave-approvals/pending/team-leader/${teamLeaderId}`);
+    console.log("getPendingApprovalsForTeamLeader");
+    
+    console.log(response.data.content);
+    
     return response.data.content;
   },
 

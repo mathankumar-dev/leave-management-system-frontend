@@ -3,7 +3,7 @@ import type { UserRole } from "../../auth/types";
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF";
-export type LeaveType = 'SICK' | 'ANNUAL_LEAVE' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF';
+export type LeaveType = 'SICK' | 'ANNUAL_LEAVE' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF' | 'ON_DUTY';
 
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
@@ -246,15 +246,80 @@ export interface AuditLog {
 
 
 
-export interface LeaveApplication {
+export interface PendingLeaveApplication {
+  id: number;
+
   employeeId: number;
+  employeeName: string;
+
   leaveType: LeaveType;
+
+  halfDayType?: HalfDayLeaveType | null;
+  startDateHalfDayType?: HalfDayLeaveType | null;
+  endDateHalfDayType?: HalfDayLeaveType | null;
+
+  isAppointment: boolean;
+  appointment: boolean;
+
+  year: number;
+
   startDate: string;
   endDate: string;
-  reason: string;
-  halfDayType?: HalfDayLeaveType;
-  confirmLossOfPay?: boolean;
+  days: number;
 
+  reason: string;
+  status: string;
+
+  currentApprovalLevel: string;
+  requiredApprovalLevels: number;
+
+  teamLeaderId?: number;
+  teamLeaderDecision?: string | null;
+  teamLeaderDecidedAt?: string | null;
+
+  managerId?: number;
+  managerDecision?: string | null;
+  managerDecidedAt?: string | null;
+
+  hrId?: number;
+  hrDecision?: string | null;
+  hrDecidedAt?: string | null;
+  hrDecidedBy?: number | null;
+
+  approvedBy?: number | null;
+  approvedRole?: string | null;
+  approvedAt?: string | null;
+
+  carryForwardUsed: number;
+  compOffUsed: number;
+  lossOfPayApplied: number;
+  pendingLopDays?: number | null;
+
+  createdAt: string;
+  updatedAt: string;
+
+  escalated: boolean;
+  escalatedAt?: string | null;
+
+  version: number;
+
+  confirmLossOfPay?: boolean; 
+}
+
+
+export interface Attachment {
+  id : number;
+  leaveApplicationId : number;
+  fileName : number;
+  fileUrl : number;
+  fileType : number;
+  fileSize : number;
+  uploadedAt : number;
+}
+
+export interface PendingLeaveApplicationApiResponse {
+  leaveApplication: PendingLeaveApplication;
+  attachments? : Attachment[];
 }
 
 export interface TeamMemberBalance {

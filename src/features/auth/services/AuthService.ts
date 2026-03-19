@@ -1,5 +1,5 @@
 import api from "../../../api/axiosInstance";
-import type { LoginCredentials, AuthResponse, User, PersonalDetailsRequest } from "../types";
+import type { LoginCredentials, AuthResponse, User } from "../types";
 
 export const authService = {
 
@@ -14,6 +14,7 @@ export const authService = {
     const response = await api.get<User>(`/employees/profile/${id}`);
     return response.data;
   },
+  
   // updatePersonalDetails: async (id: number, data: PersonalDetailsRequest): Promise<any> => {
 
   //     const response = await api.post(`/employees/personal-details/${id}`, data);

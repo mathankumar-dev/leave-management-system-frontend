@@ -160,7 +160,7 @@ const LeaveApplicationForm = () => {
 
     return days;
   };
-
+  
 
   const HalfDaySelector = ({ label, value, onChange }: { label: string, value: HalfDayType, onChange: (v: HalfDayType) => void }) => (
     <div className="flex flex-col gap-2">
