@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { dashboardService } from "../../services/dashboardService";
 import { requestService } from "../../services/requests/requestService";
-import type { AccessResponse, CompOffResponse, LeaveDecision, LeaveDecisionRequest, ODResponse } from "../../types";
+import type { AccessResponse, CompOffResponse, LeaveDecision, LeaveDecisionRequest, LeaveType, ManagerAccessDecision, ODResponse } from "../../types";
 
 export const useManagerApprovals = (userId: number, role?: string) => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -14,7 +14,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       const isTeamLeader = role?.toUpperCase() === 'TEAM_LEADER';
 
       // 1. Fetch data from services
-      const [leaveData, compOffs, ods , accessReqs] = isTeamLeader
+      const [leaveData, compOffs, ods, accessReqs] = isTeamLeader
         ? await Promise.all([
           dashboardService.getPendingApprovalsForTeamLeader(userId),
           null, // Team leaders might not have comp-offs in your logic
@@ -55,20 +55,20 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       }));
 
 
-console.log(accessReqs);
+      console.log(accessReqs);
 
 
-      const formatedAccessReqs = (accessReqs || []).map((areq : AccessResponse) => ({
-       
-        
+      const formatedAccessReqs = (accessReqs || []).map((areq: AccessResponse) => ({
+
+
         ...areq,
-        leaveType : areq.accessType,
+        leaveType: areq.accessType,
 
 
       }));
 
       // 5. Combine and Sort
-      const combined = [...formattedLeaves, ...formattedCompOffs, ...formattedODs , ...formatedAccessReqs].sort(
+      const combined = [...formattedLeaves, ...formattedCompOffs, ...formattedODs, ...formatedAccessReqs].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
@@ -81,7 +81,7 @@ console.log(accessReqs);
   };
 
   // console.log(requests);
-  
+
 
   useEffect(() => {
     fetchRequests();
@@ -95,7 +95,8 @@ console.log(accessReqs);
     requestId: number,
     status: LeaveDecision,
     reason: string = "",
-    type?: string
+    type?: LeaveType,
+    decision?: ManagerAccessDecision
   ) => {
     try {
       setLoading(true);
@@ -113,12 +114,17 @@ console.log(accessReqs);
           await dashboardService.rejectCompOff(requestId, reason);
         }
       }
-      else if (type === 'MEETING') {
-        if (status === 'APPROVED') {
-          await requestService.approveMeeting(requestId, userId);
-        } else {
-          await requestService.rejectMeeting(requestId, userId);
-        }
+      // else if (type === 'MEETING') {
+      //   if (status === 'APPROVED') {
+      //     await requestService.approveMeeting(requestId, userId);
+      //   } else {
+      //     await requestService.rejectMeeting(requestId, userId);
+      //   }
+      // }
+      else if (type === 'VPN' || type === 'BIOMETRIC') {
+
+        await requestService.approveAccessManager(requestId, decision!);
+
       }
       else {
         const decisionRequest: LeaveDecisionRequest = {
@@ -162,9 +168,6 @@ console.log(accessReqs);
       return { success: false, error: err };
     }
   };
-
-
-
 
   return {
     requests,

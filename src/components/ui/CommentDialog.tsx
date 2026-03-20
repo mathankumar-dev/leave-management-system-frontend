@@ -62,7 +62,7 @@ const CommentDialog: React.FC<CommentDialogProps> = ({
 
               <textarea
                 autoFocus
-                className="w-full min-h-[120px] p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-[#0061ff] outline-none transition-all text-sm font-medium text-slate-700 resize-none"
+                className="w-full min-h-30 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-[#0061ff] outline-none transition-all text-sm font-medium text-slate-700 resize-none"
                 placeholder={placeholder}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}

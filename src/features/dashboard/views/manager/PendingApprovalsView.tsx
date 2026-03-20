@@ -5,7 +5,7 @@ import { useManagerApprovals } from '../../hooks/manager/useManagerApprovals';
 import CustomLoader from '../../../../components/ui/CustomLoader';
 import { useAuth } from '../../../auth/hooks/useAuth';
 import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSearch, FaTimes } from 'react-icons/fa';
-import type { LeaveDecision, LeaveDecisionRequest } from '../../types';
+import type { LeaveDecision, LeaveDecisionRequest, ManagerAccessDecision } from '../../types';
 import { notify } from '../../../../utils/notifications';
 import CommentDialog from '../../../../components/ui/CommentDialog';
 import { formatTimeAgo } from '../../../../utils/formatTimeAgo';
@@ -90,7 +90,9 @@ const PendingApprovalsView: React.FC = () => {
     }, [requests, searchQuery, timeFilter]);
 
     const onActionTriggered = (req: PendingRequest, status: LeaveDecision) => {
-        if (status === 'REJECTED' || status === 'MEETING_REQUIRED') {
+        const isAccessRequest = req.leaveType === 'VPN' || req.leaveType === 'BIOMETRIC';
+
+        if (status === 'REJECTED' || status === 'MEETING_REQUIRED' || (isAccessRequest && status === 'APPROVED')) {
             setDialogConfig({ isOpen: true, req, status });
             return;
         }
@@ -125,13 +127,23 @@ const PendingApprovalsView: React.FC = () => {
 
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
 
+        let accessDecisionBody: ManagerAccessDecision | undefined = undefined;
 
+        if (req.leaveType === 'VPN' || req.leaveType === 'BIOMETRIC') {
+            accessDecisionBody = {
+                decision: status,
+                remarks: commentText || "Approved",
+                managerId: Number(user?.id)
+            };
+        }
 
+        // 2. Pass it as the 5th argument
         const result = await handleDecision(
             req.id,
             status,
             commentText || "",
-            req.leaveType
+            req.leaveType,
+            accessDecisionBody // Pass the object here
         );
 
         if (result?.success) {
@@ -149,7 +161,7 @@ const PendingApprovalsView: React.FC = () => {
         </div>
     );
 
-    function handleDownload(selectedAttachment: any): void {
+    function handleDownload(_selectedAttachment: any): void {
         throw new Error('Function not implemented.');
     }
 
@@ -249,7 +261,7 @@ const PendingApprovalsView: React.FC = () => {
                             createdAt={formatTimeAgo(req.createdAt)}
                             onAccept={() => onActionTriggered(req, 'APPROVED')}
                             onReject={() => onActionTriggered(req, 'REJECTED')}
-                            onDiscuss={((isManager || isTeamLeader) && !req.isCompOff  && !req.isOD) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
+                            onDiscuss={((isManager || isTeamLeader) && !req.isCompOff && !req.isOD) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
                             attachments={req.attachments}
                             onViewAttachment={(attachment) => setSelectedAttachment(attachment)}
                         />

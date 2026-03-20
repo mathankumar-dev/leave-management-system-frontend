@@ -682,3 +682,10 @@ export interface AccessRequest {
   accessType : LeaveType;
   reason : string;
 }
+
+
+export interface ManagerAccessDecision{
+  decision : LeaveDecision,
+  remarks : string;
+  managerId : number;
+}
