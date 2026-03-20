@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { dashboardService } from "../../services/dashboardService";
 import { requestService } from "../../services/requests/requestService";
 import type { CompOffResponse, LeaveDecision, LeaveDecisionRequest, ODResponse } from "../../types";
+import api from "../../../../api/axiosInstance";
 
 export const useManagerApprovals = (userId: number, role?: string) => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -12,9 +13,34 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     setLoading(true);
     try {
       const isTeamLeader = role?.toUpperCase() === 'TEAM_LEADER';
+      const isHR = role?.toUpperCase() === 'HR';
 
+      // ─── HR role → HR pending leaves endpoint ─────────────────
+      if (isHR) {
+        const res = await api.get('/leave-approvals/pending/hr');
+        const hrLeaves = (res.data?.content || []).map((item: any) => ({
+          ...item.leaveApplication,
+          id: item.leaveApplication.id,
+          employeeName: item.leaveApplication.employeeName,
+          leaveType: item.leaveApplication.leaveType,
+          startDate: item.leaveApplication.startDate,
+          endDate: item.leaveApplication.endDate,
+          reason: item.leaveApplication.reason,
+          days: item.leaveApplication.days,
+          createdAt: item.leaveApplication.createdAt,
+          halfDayType: item.leaveApplication.halfDayType,
+          startDateHalfDayType: item.leaveApplication.startDateHalfDayType,
+          endDateHalfDayType: item.leaveApplication.endDateHalfDayType,
+          attachments: item.attachments || [],
+          attachmentCount: item.attachmentCount || 0,
+          isHRLeave: true,
+        }));
+        setRequests(hrLeaves);
+        return;
+      }
+
+      // ─── Team Leader ───────────────────────────────────────────
       if (isTeamLeader) {
-        // Fetch Standard and OD requests for Team Leader
         const [tlRequests, tlODRequests] = await Promise.all([
           dashboardService.getPendingApprovalsForTeamLeader(userId),
           dashboardService.getPendingODApprovalsForTeamLeader(userId)
@@ -30,10 +56,10 @@ export const useManagerApprovals = (userId: number, role?: string) => {
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
 
-
         setRequests(combined);
 
       } else {
+        // ─── Manager ─────────────────────────────────────────────
         const [leaves, compOffs, ods] = await Promise.all([
           dashboardService.getPendingApprovals(userId),
           dashboardService.getPendingCompOffs(userId),
@@ -51,17 +77,16 @@ export const useManagerApprovals = (userId: number, role?: string) => {
 
         const formattedODs = (ods || []).map((od: ODResponse) => ({
           ...od,
-          id: od.id ,
-          employeeName : od.employeeName,
+          id: od.id,
+          employeeName: od.employeeName,
           leaveType: 'ON_DUTY',
           isOD: true,
           startDate: od.startDate,
           endDate: od.endDate,
-          createdAt: od.createdAt 
+          createdAt: od.createdAt
         }));
 
         console.log(formattedODs);
-        
 
         const combined = [...leaves, ...formattedCompOffs, ...formattedODs].sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -75,7 +100,6 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchRequests();
@@ -93,7 +117,19 @@ export const useManagerApprovals = (userId: number, role?: string) => {
   ) => {
     try {
       setLoading(true);
-      if (type === 'ON_DUTY') {
+      const isHR = role?.toUpperCase() === 'HR';
+
+      // ─── HR leave decision ────────────────────────────────────
+      if (isHR) {
+        if (status === 'APPROVED') {
+          await api.patch(`/leave-approvals/${requestId}/approve`);
+        } else {
+          await api.patch(`/leave-approvals/${requestId}/reject`, {
+            comments: reason
+          });
+        }
+      }
+      else if (type === 'ON_DUTY') {
         if (status === 'APPROVED') {
           await requestService.approveOD(requestId, userId);
         } else {
@@ -121,11 +157,9 @@ export const useManagerApprovals = (userId: number, role?: string) => {
           decision: status,
           comments: reason
         };
-
         await dashboardService.updateDecision(decisionRequest);
       }
 
-      // Refresh UI by removing the item
       removeFromState(requestId);
       return { success: true };
 
@@ -156,9 +190,6 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       return { success: false, error: err };
     }
   };
-
-
-
 
   return {
     requests,

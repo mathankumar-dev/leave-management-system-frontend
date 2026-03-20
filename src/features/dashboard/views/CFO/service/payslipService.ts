@@ -39,5 +39,9 @@ export const PayslipService = {
   // GET /api/payslip/export/{year}/{month} → CSV blob
   exportPayrollCSV: async (year: number, month: number): Promise<string> =>
     (await api.get<string>(`/payslip/export/${year}/${month}`)).data,
+
+  // GET /api/payslip/prefill?employeeId=&year=&month=
+  getPrefill: async (employeeId: number, year: number, month: number): Promise<Payslip> =>
+  (await api.get<Payslip>(`/payslip/prefill?employeeId=${employeeId}&year=${year}&month=${month}`)).data,
   
 };

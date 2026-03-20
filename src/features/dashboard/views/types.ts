@@ -181,6 +181,7 @@ export interface PayslipCreateRequest {
   lop: number;
   lopDays : number;
   variablePay : number;
+  status: string;
 }
 
 export interface PayslipUpdateRequest extends PayslipCreateRequest {}

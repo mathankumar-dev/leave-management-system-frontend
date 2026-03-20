@@ -40,7 +40,6 @@ import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialo
 import OtherRequestForm from "../../../common/OtherRequestForm";
 import PayrollView from "../views/Payroll";
 import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
-import { PayslipPage } from "../views/hr/pages/PayslipPage";
 import RequestCenter from "../../../common/RequestCenter";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
@@ -53,13 +52,6 @@ const ROLES = {
   TEAMLEADER: "TEAM_LEADER"
 };
 
-/* ---------------- STAT CARD ---------------- */
-const StatCard = ({ title, value }: { title: string; value: number }) => (
-  <div className="bg-white p-4 rounded shadow">
-    <h3 className="text-sm text-gray-500">{title}</h3>
-    <p className="text-2xl font-bold">{value ?? 0}</p>
-  </div>
-);
 
 const DashboardLayout: React.FC = () => {
 
@@ -97,9 +89,6 @@ const DashboardLayout: React.FC = () => {
           return <AdminDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
-
-
-
         if (userRole === ROLES.HR)
           return <HRDashboard />;
 
@@ -127,7 +116,7 @@ const DashboardLayout: React.FC = () => {
       case "Team Calendar":
         return <TeamCalendarView />;
       case "Employees":
-        return <EmployeesView  />;
+        return <EmployeesView />;
 
       case "Leave Config":
         return <LeaveTypesView />;
@@ -140,8 +129,8 @@ const DashboardLayout: React.FC = () => {
       case "My Leaves":
         return <MyLeavesView />;
 
-      case "Payroll":
-        return userRole === ROLES.HR ? <PayslipPage /> : <PayrollView />;
+      // case "Payslip":
+      //   return userRole === ROLES.HR ? <PayslipPage /> : <PayrollView />;
 
       case "Pending Approvals":
         return <PendingApprovalsView />;
@@ -157,12 +146,6 @@ const DashboardLayout: React.FC = () => {
       case "Profile":
         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
-
-      // case "Payroll":
-      //   if (userRole === ROLES.CFO) return (
-      //     <PayslipPage />
-      //   );
-      //   return null;
 
       case "Cfoemployees":
         if (userRole === ROLES.CFO) return (

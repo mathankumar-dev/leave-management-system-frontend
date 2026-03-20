@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   FaSearch, FaFileInvoiceDollar, FaCalendarAlt, FaChartBar,
-  FaTimes, FaUserCheck, FaUserTimes, FaToggleOn, FaToggleOff, FaCheck, FaSyncAlt, FaTrash, FaEdit
+  FaTimes, FaUserCheck, FaUserTimes, FaToggleOn, FaToggleOff, FaCheck, FaSyncAlt, FaTrash
 } from 'react-icons/fa';
 import { employeeService, type Employee } from '../../hr/service/employeeService';
 import { PayslipService } from '../service/payslipService';
@@ -123,9 +123,7 @@ const LeaveModal: React.FC<{ employee: Employee; onClose: () => void }> = ({ emp
                         <span className="text-xs font-bold text-slate-700">
                           {b.usedDays} used · {b.remainingDays} remaining
                         </span>
-                        <span className="text-[10px] text-slate-400 block">
-                          of {b.allocatedDays} days
-                        </span>
+                        <span className="text-[10px] text-slate-400 block">of {b.allocatedDays} days</span>
                       </div>
                     </div>
                     <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -160,7 +158,6 @@ const AnnualPayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
     const fetch = async () => {
       try {
         setLoading(true);
-        // Single API call — all months at once
         const res = await api.get(`/payslip/employee/${employee.id}/${year}`, { silent: [404, 500] });
         setPayslips(res.data || []);
       } catch {
@@ -261,6 +258,29 @@ const AnnualPayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
   );
 };
 
+// ─── Helper: fill form from data ──────────────────────────────────
+const fillFormFromData = (data: any, employeeId: number, month: number, year: number): PayslipCreateRequest => ({
+  employeeId,
+  month,
+  year,
+  status: data.status || 'PAID',
+  basicSalary: data.basicSalary || 0,
+  hra: data.hra || 0,
+  conveyance: data.conveyance || 0,
+  medical: data.medical || 0,
+  otherAllowance: data.otherAllowance || 0,
+  bonus: data.bonus || 0,
+  incentive: data.incentive || 0,
+  stipend: data.stipend || 0,
+  pf: data.pf || 0,
+  esi: data.esi || 0,
+  professionalTax: data.professionalTax || 0,
+  tds: data.tds || 0,
+  lop: data.lop || 0,
+  lopDays: data.lopDays || 0,
+  variablePay: data.variablePay || 0,
+});
+
 // ─── Create/Edit Payslip Modal ────────────────────────────────────
 const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> = ({ employee, onClose }) => {
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -268,62 +288,60 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
   const [fetchLoading, setFetchLoading] = useState(false);
   const [existingPayslip, setExistingPayslip] = useState<Payslip | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [prefillBadge, setPrefillBadge] = useState(false);
 
   const [form, setForm] = useState<PayslipCreateRequest>({
     employeeId: employee.id,
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
+    status: 'PAID',
     basicSalary: 0, hra: 0, conveyance: 0, medical: 0, otherAllowance: 0,
     bonus: 0, incentive: 0, stipend: 0,
     pf: 0, esi: 0, professionalTax: 0, tds: 0, lop: 0, lopDays: 0, variablePay: 0,
   });
 
-  // Fetch existing payslip when month/year changes
+  // Month/Year change → first check existing, then prefill
   useEffect(() => {
-    const fetchExisting = async () => {
+    const fetchData = async () => {
       try {
         setFetchLoading(true);
-        const res = await api.get(
-          `/payslip/employee/${employee.id}/${form.year}/${form.month}`,
-          { silent: [404, 500] }
-        );
-        const data = res.data;
-        setExistingPayslip(data);
-        // Pre-fill form with existing data
-        setForm({
-          employeeId: employee.id,
-          month: form.month,
-          year: form.year,
-          basicSalary: data.basicSalary || 0,
-          hra: data.hra || 0,
-          conveyance: data.conveyance || 0,
-          medical: data.medical || 0,
-          otherAllowance: data.otherAllowance || 0,
-          bonus: data.bonus || 0,
-          incentive: data.incentive || 0,
-          stipend: data.stipend || 0,
-          pf: data.pf || 0,
-          esi: data.esi || 0,
-          professionalTax: data.professionalTax || 0,
-          tds: data.tds || 0,
-          lop: data.lop || 0,
-          lopDays: data.lopDays || 0,
-          variablePay: data.variablePay || 0,
-        });
-      } catch {
-        // No existing payslip — reset form
-        setExistingPayslip(null);
-        setForm(prev => ({
-          ...prev,
-          basicSalary: 0, hra: 0, conveyance: 0, medical: 0, otherAllowance: 0,
-          bonus: 0, incentive: 0, stipend: 0,
-          pf: 0, esi: 0, professionalTax: 0, tds: 0, lop: 0, lopDays: 0, variablePay: 0,
-        }));
+        setPrefillBadge(false);
+
+        // Step 1: Check existing payslip
+        try {
+          const res = await api.get(
+            `/payslip/employee/${employee.id}/${form.year}/${form.month}`,
+            { silent: [404, 500] }
+          );
+          setExistingPayslip(res.data);
+          setForm(fillFormFromData(res.data, employee.id, form.month, form.year));
+          return; // existing iruku → stop here
+        } catch {
+          setExistingPayslip(null);
+        }
+
+        // Step 2: No existing → prefill from previous month
+        try {
+          const res = await api.get(
+            `/payslip/prefill?employeeId=${employee.id}&year=${form.year}&month=${form.month}`,
+            { silent: [404, 500] }
+          );
+          setForm(fillFormFromData(res.data, employee.id, form.month, form.year));
+          setPrefillBadge(true); // prefill aaguthu badge kaanum
+        } catch {
+          // No prefill either → empty form
+          setForm(prev => ({
+            ...prev,
+            basicSalary: 0, hra: 0, conveyance: 0, medical: 0, otherAllowance: 0,
+            bonus: 0, incentive: 0, stipend: 0,
+            pf: 0, esi: 0, professionalTax: 0, tds: 0, lop: 0, lopDays: 0, variablePay: 0,
+          }));
+        }
       } finally {
         setFetchLoading(false);
       }
     };
-    fetchExisting();
+    fetchData();
   }, [form.month, form.year, employee.id]);
 
   const update = (field: keyof PayslipCreateRequest, val: number) =>
@@ -404,19 +422,18 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
                     {existingPayslip ? 'Edit Payslip' : 'Create Payslip'}
                   </h3>
                   {existingPayslip && (
-                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-lg text-[10px] font-black">
-                      EXISTS
-                    </span>
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-lg text-[10px] font-black">EXISTS</span>
+                  )}
+                  {!existingPayslip && prefillBadge && (
+                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-black">PREFILLED</span>
                   )}
                 </div>
                 <p className="text-xs text-indigo-500 font-semibold">#{employee.id} · {employee.name}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {/* Delete button — only if exists */}
               {existingPayslip && (
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
+                <button onClick={() => setShowDeleteConfirm(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition-colors"
                 >
                   <FaTrash className="text-xs" /> Delete
@@ -429,7 +446,6 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
           </div>
 
           <div className="p-6 space-y-6">
-
             {/* Month + Year */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
@@ -451,9 +467,8 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
               </div>
             </div>
 
-            {/* Loading existing */}
             {fetchLoading ? (
-              <div className="flex justify-center py-4"><CustomLoader label="Fetching existing payslip..." /></div>
+              <div className="flex justify-center py-4"><CustomLoader label="Fetching payslip data..." /></div>
             ) : (
               <>
                 {/* Earnings */}
@@ -522,7 +537,6 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
               {existingPayslip ? 'Update Payslip' : 'Create Payslip'}
             </button>
           </div>
-
         </div>
       </div>
 
@@ -556,82 +570,6 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
   );
 };
 
-
-// ─── Delete Payslip Modal ────────────────────────────────────────
-const DeletePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> = ({ employee, onClose }) => {
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const [loading, setLoading] = useState(false);
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [confirmed, setConfirmed] = useState(false);
-
-  const handleDelete = async () => {
-    try {
-      setLoading(true);
-      await PayslipService.deletePayslip(employee.id, year, month);
-      notify.success('Payslip deleted');
-      onClose();
-    } catch {
-      notify.error('Failed', 'Could not delete payslip');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-rose-50 rounded-xl flex items-center justify-center shrink-0">
-            <FaTrash className="text-rose-500 text-sm" />
-          </div>
-          <div>
-            <p className="font-bold text-slate-800">Delete Payslip</p>
-            <p className="text-xs text-slate-400">#{employee.id} · {employee.name}</p>
-          </div>
-        </div>
-
-        {/* Month + Year */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Month</label>
-            <select value={month} onChange={e => { setMonth(parseInt(e.target.value)); setConfirmed(false); }}
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none"
-            >
-              {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Year</label>
-            <select value={year} onChange={e => { setYear(parseInt(e.target.value)); setConfirmed(false); }}
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none"
-            >
-              <option value={2026}>2026</option>
-              <option value={2025}>2025</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="bg-rose-50 rounded-xl p-3 text-xs text-rose-600 font-semibold text-center">
-          Delete payslip for {MONTHS[month - 1]} {year}?
-        </div>
-
-        <div className="flex gap-3">
-          <button onClick={onClose}
-            className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
-          >Cancel</button>
-          <button onClick={handleDelete} disabled={loading}
-            className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {loading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FaTrash className="text-xs" />}
-            Yes, Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // ─── Main CFO Employees Page ──────────────────────────────────────
 export const CFOEmployeesPage: React.FC = () => {
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -640,13 +578,9 @@ export const CFOEmployeesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [taxRegimes, setTaxRegimes] = useState<Record<number, 'OLD' | 'NEW'>>({});
-
-  // Payroll state
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [payrollLoading, setPayrollLoading] = useState(false);
-
-  // Modal states
   const [leaveModal, setLeaveModal] = useState<Employee | null>(null);
   const [annualModal, setAnnualModal] = useState<Employee | null>(null);
   const [createPayslipModal, setCreatePayslipModal] = useState<Employee | null>(null);
@@ -708,7 +642,6 @@ export const CFOEmployeesPage: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -716,32 +649,27 @@ export const CFOEmployeesPage: React.FC = () => {
           <p className="text-xs text-slate-400 mt-0.5">CFO — Employee financial overview</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Month selector */}
           <select value={month} onChange={e => setMonth(parseInt(e.target.value))}
             className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none shadow-sm"
           >
             {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
           </select>
-          {/* Year selector */}
           <select value={year} onChange={e => setYear(parseInt(e.target.value))}
             className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none shadow-sm"
           >
             <option value={2026}>2026</option>
             <option value={2025}>2025</option>
           </select>
-          {/* Prepare Payroll */}
           <button onClick={handlePreparePayroll} disabled={payrollLoading}
             className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl text-xs font-bold text-amber-600 transition-colors disabled:opacity-50"
           >
             <FaSyncAlt className="text-xs" /> Prepare Payroll
           </button>
-          {/* Generate Payroll */}
           <button onClick={handleGeneratePayroll} disabled={payrollLoading}
             className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-50"
           >
             <FaFileInvoiceDollar className="text-xs" /> Generate Payroll
           </button>
-          {/* Employee count */}
           <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm">
             <p className="text-xs text-slate-500">{filtered.length} employees</p>
           </div>
@@ -768,7 +696,7 @@ export const CFOEmployeesPage: React.FC = () => {
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">
-                  {['Employee', 'Designation', 'Manager ID', 'Joined', 'Status', 'Tax Regime', 'Actions'].map(h => (
+                  {['Employee', 'Role', 'Manager ID', 'Joined', 'Status', 'Tax Regime', 'Actions'].map(h => (
                     <th key={h} className={`py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest ${h === 'Employee' ? 'text-left' : 'text-center'}`}>
                       {h}
                     </th>
@@ -785,7 +713,7 @@ export const CFOEmployeesPage: React.FC = () => {
                         </div>
                         <div>
                           <p className="font-semibold text-slate-700">{emp.name}</p>
-                          <p className="text-[10px] text-slate-400">#{emp.id} · {emp.role}</p>
+                          <p className="text-[10px] text-slate-400">#{emp.id}</p>
                         </div>
                       </div>
                     </td>
@@ -834,7 +762,6 @@ export const CFOEmployeesPage: React.FC = () => {
                         </button>
                       </div>
                     </td>
-
                   </tr>
                 ))}
               </tbody>
@@ -847,7 +774,6 @@ export const CFOEmployeesPage: React.FC = () => {
       {leaveModal && <LeaveModal employee={leaveModal} onClose={() => setLeaveModal(null)} />}
       {annualModal && <AnnualPayslipModal employee={annualModal} onClose={() => setAnnualModal(null)} />}
       {createPayslipModal && <CreatePayslipModal employee={createPayslipModal} onClose={() => setCreatePayslipModal(null)} />}
-
     </div>
   );
 };

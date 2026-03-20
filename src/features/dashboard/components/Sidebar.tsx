@@ -3,7 +3,6 @@ import {
   FaChevronLeft,
   FaSignOutAlt,
   FaThLarge,
-  FaPlus,
   FaListUl,
   FaCalendarAlt,
   FaBell,
@@ -13,6 +12,7 @@ import {
   FaFileSignature,
   FaDollarSign,
   FaChartBar,
+  FaFileInvoiceDollar,
 } from "react-icons/fa";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { MdVerifiedUser } from "react-icons/md";
@@ -47,10 +47,10 @@ function Sidebar({
     { name: "Dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
     { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "TEAM_LEADER"] },
     // { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
-    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER", "TEAM_LEADER", "EMPLOYEE", "HR", "ADMIN"] },
+    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER", "TEAM_LEADER", "EMPLOYEE", "ADMIN"] },
     { name: "My Leaves", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: ["ADMIN", "EMPLOYEE"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "HR",] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Employees", icon: <FaUsers />, roles: ["ADMIN"] },
 
     { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
@@ -63,7 +63,7 @@ function Sidebar({
     // { name: "Payroll", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
     { name: "Cfoemployees", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
     { name: "Verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
-    { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "HR"] },
+    { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
 
   ];
 
