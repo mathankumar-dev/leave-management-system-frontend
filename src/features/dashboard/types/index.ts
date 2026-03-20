@@ -39,7 +39,6 @@ export interface LeaveRecord {
   attachments: string[];
 }
 
-
 export interface ProfileData {
   id: number;
   name: string;
@@ -50,11 +49,13 @@ export interface ProfileData {
   managerName: string;
   teamLeaderId: number;
   teamLeaderName: string;
+  hrname: string;
 
   joiningDate: string;
 
   contactNumber: string;
   gender: string;
+  maritalStatus: string;
   dateOfBirth: string;
   bloodGroup: string;
 
@@ -70,13 +71,13 @@ export interface ProfileData {
   motherName: string;
 
   designation: string;
-
-  skillSet: string[];
+  skillSet: string[] ;
 
   biometricStatus: string;
   vpnStatus: string;
 
   active: boolean;
+  mustChangePassword: boolean;
 
   createdAt?: string;
   updatedAt?: string;
@@ -84,7 +85,19 @@ export interface ProfileData {
   personalDetailsComplete: boolean;
   personalDetailsLocked: boolean;
 
-  photo?: string;
+  verificationStatus: string;
+  hrRemarks?: string;
+
+  employeeType: string;
+
+  fullName: string;
+  lastName?: string;
+  surName?: string;
+
+  accountNumber?: string;
+  bankName?: string;
+  pfNumber?: string;
+  unaNumber?: string;
 }
 
 
@@ -561,3 +574,22 @@ export interface CreateUserRequest {
   managerId?: number | null;
   joiningDate: string;
 }
+
+export interface YearlySummary  {
+  year: number;
+  totalBasic: number;
+  totalHra: number;
+  totalConveyance: number;
+  totalMedical: number;
+  totalOtherAllowance: number;
+  totalBonus: number;
+  totalIncentive: number;
+  totalStipend: number;
+  totalPf: number;
+  totalEsi: number;
+  totalProfessionalTax: number;
+  totalTds: number;
+  totalLop: number;
+  totalGrossSalary: number;
+  totalNetSalary: number;
+};

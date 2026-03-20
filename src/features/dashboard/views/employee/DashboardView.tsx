@@ -121,103 +121,115 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <h2 className="text-2xl font-semibold">
             Welcome back, {user?.name}
           </h2>
-          <p className="text-sm text-gray-500">Leave summary for 2026</p>
+          <p className="text-sm text-gray-500">
+            Leave insights overview
+          </p>
         </div>
 
         <button
           onClick={() => onNavigate?.("Apply Leave")}
-          className="flex items-center gap-2 bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
         >
           <FaPlus /> Apply Leave
         </button>
       </div>
 
-      {/* 🔥 APPROVED / REJECTED CARDS */}
+      {/* STATUS CARDS */}
       <div className="grid grid-cols-2 gap-4">
         <motion.div
           whileHover={{ scale: 1.03 }}
-          className="bg-green-50 border border-green-200 p-5 rounded-xl shadow-sm"
+          className="bg-gradient-to-br from-green-50 to-white border p-5 rounded-xl shadow-sm"
         >
-          <p className="text-sm text-green-600 font-medium">
-            Approved Leaves
-          </p>
-          <h3 className="text-3xl font-bold text-green-700">
+          <p className="text-sm text-gray-500">Approved Leaves</p>
+          <h3 className="text-3xl font-bold text-green-600">
             {approved}
           </h3>
         </motion.div>
 
         <motion.div
           whileHover={{ scale: 1.03 }}
-          className="bg-red-50 border border-red-200 p-5 rounded-xl shadow-sm"
+          className="bg-gradient-to-br from-red-50 to-white border p-5 rounded-xl shadow-sm"
         >
-          <p className="text-sm text-red-600 font-medium">
-            Rejected Leaves
-          </p>
-          <h3 className="text-3xl font-bold text-red-700">
+          <p className="text-sm text-gray-500">Rejected Leaves</p>
+          <h3 className="text-3xl font-bold text-red-600">
             {rejected}
           </h3>
         </motion.div>
       </div>
 
-      {/* TABLE */}
-      <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-gray-900 text-white">
-            <tr>
-              <th className="px-6 py-4 text-xs">Category</th>
-              <th className="px-6 py-4 text-center text-xs">Allocated</th>
-              <th className="px-6 py-4 text-center text-xs">Used</th>
-              <th className="px-6 py-4 text-center text-xs">Progress</th>
-              <th className="px-6 py-4 text-center text-xs">Pending</th>
-            </tr>
-          </thead>
+      <div className="bg-white border rounded-2xl shadow-md overflow-hidden">
+  <table className="w-full text-sm">
+    
+    {/* HEADER */}
+    <thead className="bg-gradient-to-r from-gray-900 to-gray-800 text-white text-xs uppercase tracking-wider">
+      <tr>
+        <th className="px-6 py-4 text-left">Category</th>
+        <th className="px-6 py-4 text-center">Allocated</th>
+        <th className="px-6 py-4 text-center">Used</th>
+        <th className="px-6 py-4 text-center">Pending</th>
+      </tr>
+    </thead>
 
-          <tbody>
-            {stats.map((stat, index) => {
-              const percent = stat.total
-                ? (stat.used / stat.total) * 100
-                : 0;
+    {/* BODY */}
+    <tbody className="divide-y divide-gray-200">
+      {stats.map((stat, index) => {
+        const percent = stat.total
+          ? Math.min((stat.used / stat.total) * 100, 100)
+          : 0;
 
-              return (
-                <tr
-                  key={index}
-                  onClick={() => setSelectedCard(stat)}
-                  className="hover:bg-gray-50 cursor-pointer transition"
-                >
-                  <td className="px-6 py-4 font-semibold">
-                    {stat.title}
-                  </td>
+        return (
+          <tr
+            key={index}
+            onClick={() => setSelectedCard(stat)}
+            className="hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+          >
+            {/* CATEGORY */}
+            <td className="px-6 py-4 font-medium text-gray-800">
+              {stat.title}
+            </td>
 
-                  <td className="px-6 py-4 text-center">
-                    {stat.total ?? stat.used}
-                  </td>
+            {/* ALLOCATED */}
+            <td className="px-6 py-4 text-center text-gray-600">
+              {stat.total ?? "-"}
+            </td>
 
-                  <td className="px-6 py-4 text-center font-bold">
-                    {stat.used}
-                  </td>
+            {/* USED */}
+            <td className="px-6 py-4 text-center">
+              <span className="font-semibold text-indigo-600">
+                {stat.used}
+              </span>
 
-                  {/* 🔥 PROGRESS BAR */}
-                  <td className="px-6 py-4">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-indigo-500 h-2 rounded-full"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                  </td>
+              
 
-                  <td className="px-6 py-4 text-center">
-                    {stat.pendingCount ?? "-"}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              
+            </td>
+
+            {/* PENDING */}
+            <td className="px-6 py-4 text-center">
+              {stat.pendingCount !== undefined ? (
+                <span className="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 font-medium">
+                  {stat.pendingCount}
+                </span>
+              ) : (
+                "-"
+              )}
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+</div>
+
+      
 
       {/* DRAWER */}
-      <LeaveDetailsDrawer open={!!selectedCard} stat={selectedCard} onClose={() => setSelectedCard(null)} onClick={() => onNavigate?.("Apply Leave")} />
+      <LeaveDetailsDrawer
+        open={!!selectedCard}
+        stat={selectedCard}
+        onClose={() => setSelectedCard(null)}
+        onClick={() => onNavigate?.("Apply Leave")}
+      />
 
       {/* FAB */}
       {user?.role !== "EMPLOYEE" && (

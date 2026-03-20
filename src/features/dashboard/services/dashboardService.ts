@@ -290,7 +290,7 @@ export const dashboardService = {
   },
 
   getHistory: async (year: number) => {
-    const res = await api.get(`/summary/${year}`);
+    const res = await api.get(`payslip/summary/${year}`);
     return res.data;
   },
 

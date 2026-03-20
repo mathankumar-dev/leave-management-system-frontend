@@ -107,17 +107,7 @@ export const useDashboard = () => {
     }
   };
 
-  const fetchHistory = async (year: number) => {
-    try {
-      setLoading(true);
-      const data = await dashboardService.getHistory(year);
-      setHistory(data);
-    } catch (e) {
-      setHistory([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const downloadHistory = async (year: number, month: number) => {
     await dashboardService.downloadPayslip(year, month);
@@ -525,7 +515,7 @@ export const useDashboard = () => {
 
     leaveBalance,
     fetchLeaveBalance,
-    fetchHistory,
+    
 
     removeLeaveType,
     cancelLeave,
