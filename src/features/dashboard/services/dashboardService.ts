@@ -20,7 +20,8 @@ import type {
   BiometricVpnStatus,
   FlashNewsRequest,
   FlashNews,
-  AccessResponse
+  AccessResponse,
+  AdminAccessDecision
 
 
 } from '../types';
@@ -392,6 +393,11 @@ export const dashboardService = {
     console.log(res.data);
     return res.data;
   },
+  approveAccessAdmin : async(requestId : number, decision : AdminAccessDecision ) => {
+    await api.patch(`/access-requests/${requestId}/admin-decision`,decision,);
+  },
+
+
   approveOnboardingBioRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
     console.log("calling bio");
     

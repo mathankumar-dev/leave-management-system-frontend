@@ -1,5 +1,5 @@
 import api from "../../../../api/axiosInstance";
-import type { AccessRequest, LeaveType, ManagerAccessDecision, MeetingRequest, ODRequest } from "../../types";
+import type { AccessRequest, AdminAccessDecision, LeaveType, ManagerAccessDecision, MeetingRequest, ODRequest } from "../../types";
 
 
 export const requestService = {
@@ -28,6 +28,7 @@ export const requestService = {
     await api.patch(`/access-requests/${requestId}/manager-decision`,decision,);
   },
   
+ 
 
 
   approveOD: async (odId: number, approverId: number): Promise<void> => {

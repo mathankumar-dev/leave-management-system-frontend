@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDashboard } from '../../hooks/useDashboard';
-import type { PendingOnboardingResponse } from '../../types';
+import type { AdminAccessDecision, PendingOnboardingResponse } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaEllipsisV, FaUserCheck, FaUserSlash, FaCheck } from 'react-icons/fa';
 import EmptyStateSVG from '../../../../assets/svg/EmpthyStateSVG';
 
 const OnboardingPendingPage: React.FC = () => {
-    const { fetchOnboardingRequests, handleOnboardingDecision, loading, error } = useDashboard();
+    const { fetchOnboardingRequests, handleAccessDecision, loading, error } = useDashboard();
     const [requests, setRequests] = useState<PendingOnboardingResponse[]>([]);
     const [activeMenu, setActiveMenu] = useState<number | null>(null);
+
 
     // State for the Decision Modal
     const [decisionModal, setDecisionModal] = useState<{
@@ -27,23 +28,29 @@ const OnboardingPendingPage: React.FC = () => {
     }, [fetchOnboardingRequests]);
 
     const submitDecision = async () => {
-        if (!decisionModal.employeeId) return;
+        if (!selectedRequest) return;
 
-        const promises = [];
-        if (decisionModal.bio) {
-            promises.push(handleOnboardingDecision(decisionModal.employeeId, 'BIO', 'PROVIDED'));
-        }
-        if (decisionModal.vpn) {
-            promises.push(handleOnboardingDecision(decisionModal.employeeId, 'VPN', 'PROVIDED'));
-        }
+        const decisionBody: AdminAccessDecision = {
+            decision: 'APPROVED',
+            remarks: `Admin approved ${selectedRequest.accessType}`
+        };
 
-        await Promise.all(promises);
+        // Pass the specific accessType from the object we found
+        await handleAccessDecision(
+            selectedRequest.id,
+            selectedRequest.accessType,
+            decisionBody
+        );
 
-        // Refresh local state
+        // Close and refresh
+        setDecisionModal({ isOpen: false, employeeId: null, bio: false, vpn: false });
         const data = await fetchOnboardingRequests();
         setRequests(data || []);
-        setDecisionModal({ isOpen: false, employeeId: null, bio: false, vpn: false });
     };
+
+    const selectedRequest = useMemo(() => {
+        return requests.find(r => r.id === decisionModal.employeeId);
+    }, [decisionModal.employeeId, requests]);
 
     if (error) return <div className="p-6 text-red-500 text-center font-black text-[10px] uppercase tracking-widest">Error: {error}</div>;
 
@@ -64,8 +71,8 @@ const OnboardingPendingPage: React.FC = () => {
                         <thead className="bg-neutral-800 text-white">
                             <tr>
                                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Member Identity</th>
-                                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Role</th>
                                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Onboarding Status</th>
+                                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Remarks</th>
                                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Options</th>
                             </tr>
                         </thead>
@@ -79,26 +86,27 @@ const OnboardingPendingPage: React.FC = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-9 w-9 rounded-sm flex items-center justify-center text-[11px] font-black border transition-all bg-slate-100 text-slate-500 border-slate-200 group-hover:bg-slate-900 group-hover:text-white">
-                                                    {req.name?.charAt(0) || "?"}
+                                                    {req.employeeName?.charAt(0) || "?"}
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-bold text-slate-900 uppercase tracking-tight">{req.name}</p>
-                                                    <p className="text-[10px] font-medium text-slate-400 lowercase">{req.email}</p>
+                                                    <p className="text-xs font-bold text-slate-900 uppercase tracking-tight">{req.employeeName}</p>
+                                                    <p className="text-[10px] font-medium text-slate-400 lowercase">{req.employeeEmail}</p>
                                                 </div>
                                             </div>
                                         </td>
 
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-sm text-[10px] font-black uppercase tracking-tighter">
-                                                {req.role.replace(/_/g, " ")}
-                                            </span>
-                                        </td>
+
 
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex flex-col items-center gap-1.5">
-                                                <StatusRow label="Bio" status={req.biometricStatus} />
-                                                <StatusRow label="VPN" status={req.vpnStatus} />
+                                                <StatusRow label={''} status={req.status} />
+                                                {/* <StatusRow label="VPN" status={req.vpnStatus} /> */}
                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-sm text-[10px] font-black uppercase tracking-tighter">
+                                                {req.managerRemarks.replace(/_/g, " ")}
+                                            </span>
                                         </td>
 
                                         <td className="px-6 py-4 text-right relative">
@@ -131,42 +139,98 @@ const OnboardingPendingPage: React.FC = () => {
 
                 {/* Action Modal Overlay */}
                 <AnimatePresence>
-                    {decisionModal.isOpen && (
-                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="bg-white border border-slate-200 rounded-sm shadow-2xl w-full max-w-[320px] overflow-hidden">
-                                <div className="bg-slate-900 px-4 py-3">
-                                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Authorization Control</h3>
+                    {decisionModal.isOpen && selectedRequest && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                                className="bg-white border border-slate-200 rounded-lg shadow-2xl w-full max-w-[360px] overflow-hidden"
+                            >
+                                {/* Header: Cyber-Security Style */}
+                                <div className="bg-slate-900 px-5 py-4 flex justify-between items-center border-b border-white/10">
+                                    <div className="flex flex-col">
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400">
+                                            Security Protocol
+                                        </h3>
+                                        <span className="text-[14px] font-bold text-white tracking-tight">
+                                            Access Authorization
+                                        </span>
+                                    </div>
+                                    <div className="h-8 w-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    </div>
                                 </div>
-                                <div className="p-6 space-y-4">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Select access modules to approve:</p>
 
-                                    <SelectionCard
-                                        label="Biometric System"
-                                        active={decisionModal.bio}
-                                        onClick={() => setDecisionModal(prev => ({ ...prev, bio: !prev.bio }))}
-                                    />
-                                    <SelectionCard
-                                        label="VPN Network Access"
-                                        active={decisionModal.vpn}
-                                        onClick={() => setDecisionModal(prev => ({ ...prev, vpn: !prev.vpn }))}
-                                    />
+                                {/* Employee Profile: Minimalist Header */}
+                                <div className="px-6 py-5 bg-gradient-to-b from-slate-50 to-white flex items-center gap-4">
+                                    <div className="relative">
+                                        <div className="h-14 w-14 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-slate-900/20">
+                                            {selectedRequest.employeeName?.charAt(0)}
+                                        </div>
+                                        <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                            <FaUserCheck className="text-emerald-500" size={10} />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-black text-slate-900 uppercase tracking-tight leading-none mb-1">
+                                            {selectedRequest.employeeName}
+                                        </p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                            {selectedRequest.employeeDesignation}
+                                        </p>
+                                    </div>
+                                </div>
 
-                                    <div className="flex gap-2 pt-4">
+                                {/* Content Body */}
+                                <div className="p-6 pt-2 space-y-6">
+                                    {/* Action Card */}
+                                    <div className="bg-slate-50 border border-slate-200 rounded-md p-4 space-y-3">
+                                        <div>
+                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                                                Module Granting
+                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <span className="px-2.5 py-1 bg-indigo-600 text-white text-[11px] font-black uppercase rounded-sm tracking-tighter">
+                                                    {selectedRequest.accessType.replace('_', ' ')}
+                                                </span>
+                                                <span className="text-slate-300">/</span>
+                                                <span className="text-[11px] font-bold text-slate-600 uppercase">
+                                                    Full Access
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-2 border-t border-slate-200">
+                                            <div className="flex items-start gap-2">
+                                                <div className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                                                <p className="text-[10px] text-slate-500 font-medium leading-normal italic">
+                                                    Granting this access will permit the user to bypass standard directory restrictions.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex flex-col gap-2">
+                                        <button
+                                            onClick={submitDecision}
+                                            className="w-full py-3.5 bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-900/20 active:scale-[0.98] rounded-md flex items-center justify-center gap-2"
+                                        >
+                                            <FaCheck size={10} /> Confirm & Grant Access
+                                        </button>
+
                                         <button
                                             onClick={() => setDecisionModal({ isOpen: false, employeeId: null, bio: false, vpn: false })}
-                                            className="flex-1 px-3 py-3 border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50"
+                                            className="w-full py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors"
                                         >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            disabled={!decisionModal.bio && !decisionModal.vpn}
-                                            onClick={submitDecision}
-                                            className="flex-1 px-3 py-3 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 disabled:opacity-50"
-                                        >
-                                            Confirm
+                                            Terminate Session
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* Footer Accent */}
+                                <div className="h-1 bg-linear-to-r from-emerald-500 via-indigo-500 to-slate-900" />
                             </motion.div>
                         </div>
                     )}
@@ -202,9 +266,9 @@ const SelectionCard = ({ label, active, onClick }: { label: string, active: bool
 
 const StatusRow = ({ label, status }: { label: string, status: string }) => (
     <div className="flex items-center gap-2">
-        <span className="text-[9px] font-bold text-slate-400 uppercase w-12 text-right">{label}:</span>
-        <div className={`h-1.5 w-1.5 rounded-full ${status === 'COMPLETED' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : status === 'PENDING' ? "bg-amber-400" : "bg-red-400"}`} />
-        <span className={`text-[9px] font-black uppercase ${status === 'COMPLETED' ? "text-slate-600" : status === 'PENDING' ? "text-amber-600" : "text-red-400"}`}>
+        <span className="text-[9px] font-bold text-slate-400 uppercase w-12 text-right">{label}</span>
+        {/* <div className={`h-1.5 w-1.5 rounded-full ${status === 'COMPLETED' ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : status === 'PENDING' ? "bg-amber-400" : "bg-red-400"}`} /> */}
+        <span className={`text-[9px] font-black uppercase text-green-600`}>
             {status}
         </span>
     </div>

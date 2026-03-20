@@ -631,18 +631,20 @@ export interface CreateUserRequest {
 
 export interface PendingOnboardingResponse {
   id: number;
-  name: string;
-  email: string;
-  role: UserRole;
-  active: boolean;
-  joiningDate: string;
-  biometricStatus: BiometricVpnStatus;
-  vpnStatus: BiometricVpnStatus;
-  teamId?: number | null;
-  teamLeaderId?: number | null;
-  managerId?: number | null;
-}
+  employeeId : number;
+  employeeName: string;
+  employeeEmail: string;
+  employeeDesignation : string;
+  accessType : LeaveType ;
+  status :  string;
+  reason : string;
+  createdAt : string;
+  managerDecision : LeaveDecision;
+  managerRemarks : string;
+  managerDecisionAt : string;
+  managerName : string;
 
+}
 
 export interface FlashNewsRequest {
   message: string;
@@ -688,4 +690,8 @@ export interface ManagerAccessDecision{
   decision : LeaveDecision,
   remarks : string;
   managerId : number;
+}
+export interface AdminAccessDecision {
+  decision : LeaveDecision,
+  remarks? : string;
 }

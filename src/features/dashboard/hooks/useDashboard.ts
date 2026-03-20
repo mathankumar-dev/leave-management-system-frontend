@@ -21,6 +21,9 @@ import type {
   BiometricVpnStatus,
   FlashNewsRequest,
   FlashNews,
+  LeaveType,
+  LeaveDecision,
+  AdminAccessDecision,
 } from "../types";
 import { toast } from "sonner";
 import api from "../../../api/axiosInstance";
@@ -154,7 +157,7 @@ export const useDashboard = () => {
     setLoading(true);
     try {
       const response = await service.getEmpDashboard(employeeId);
-      return response; 
+      return response;
     } catch (err: any) {
       console.error("API ERROR DETAILS:", err.response?.data || err.message);
       setError(err.message);
@@ -177,7 +180,7 @@ export const useDashboard = () => {
     }
   }, []);
 
-    const fetchMyOD = useCallback(async (employeeId: number): Promise<ODResponse[]> => {
+  const fetchMyOD = useCallback(async (employeeId: number): Promise<ODResponse[]> => {
     setLoading(true);
     try {
       return await service.getMyODHistory(employeeId);
@@ -495,34 +498,31 @@ export const useDashboard = () => {
     }
   }, []);
 
-  const handleOnboardingDecision = useCallback(async (
-  employeeId: number, 
-  type: 'BIO' | 'VPN', 
-  decision: BiometricVpnStatus
-) => {
-  setLoading(true);
-  setError(null);
-  try {
 
-    console.log(employeeId , type , decision);
-    
-    if (type === 'BIO') {
-      await service.approveOnboardingBioRequests(employeeId, decision);
-    } else {
-      await service.approveOnboardingVpnRequests(employeeId, decision);
+
+
+  const handleAccessDecision = useCallback(async (
+    requestId: number,
+    type: LeaveType,
+    decision: AdminAccessDecision
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+
+      console.log(requestId, type, decision);
+      await service.approveAccessAdmin(requestId, decision);
+      // Refresh the list after a successful decision
+      const updatedData = await service.getOnboardingRequests();
+      return updatedData;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || `Failed to update ${type} status`;
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
     }
-    
-    // Refresh the list after a successful decision
-    const updatedData = await service.getOnboardingRequests();
-    return updatedData;
-  } catch (err: any) {
-    const errorMessage = err.response?.data?.message || `Failed to update ${type} status`;
-    setError(errorMessage);
-    return null;
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  }, []);
 
   const addUser = async (data: CreateUserRequest): Promise<void> => {
     try {
@@ -534,7 +534,7 @@ export const useDashboard = () => {
     }
   };
 
-  const deleteUser = async (employeeId : number): Promise<void> => {
+  const deleteUser = async (employeeId: number): Promise<void> => {
     try {
       const message = await dashboardService.deleteUser(employeeId);
       toast.success(message);
@@ -544,39 +544,39 @@ export const useDashboard = () => {
     }
   };
 
-const createFlashNewsController = async (data: FlashNewsRequest) => {
-  setLoading(true);
-  try {
-    const responseData = await dashboardService.createFlashNews(data);
-    
-    toast.success("Flash news created successfully!"); 
-    
-    return true; 
-    
-  } catch (err: any) {
-    setError(err.message || "Failed to create flash news");
-    return false;
-  } finally {
-    setLoading(false);
-  }
-};
+  const createFlashNewsController = async (data: FlashNewsRequest) => {
+    setLoading(true);
+    try {
+      const responseData = await dashboardService.createFlashNews(data);
+
+      toast.success("Flash news created successfully!");
+
+      return true;
+
+    } catch (err: any) {
+      setError(err.message || "Failed to create flash news");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
-const fetchFlashNews = useCallback(async() : Promise<FlashNews[]> =>{
-  setLoading(true);
-  setError(null);
-  try{
-    const res = await dashboardService.getFlashNews();
-    return res;
-  }catch(e :  any){
-    const errorMsg = "Failed to fetch FlashNews";
-    setError(errorMsg);
-    return [] ;
-  }
-  finally{
-    setLoading(false);
-  }
-},[]);
+  const fetchFlashNews = useCallback(async (): Promise<FlashNews[]> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await dashboardService.getFlashNews();
+      return res;
+    } catch (e: any) {
+      const errorMsg = "Failed to fetch FlashNews";
+      setError(errorMsg);
+      return [];
+    }
+    finally {
+      setLoading(false);
+    }
+  }, []);
 
 
   /* ================= EXPORT ================= */
@@ -608,11 +608,11 @@ const fetchFlashNews = useCallback(async() : Promise<FlashNews[]> =>{
     payslip,
     history,
     downloadHistory,
-    handleOnboardingDecision,
-    
+    handleAccessDecision,
+
     fetchPayslip,
     // fetchHistory,
-   
+
 
     applyLeave,
     getTeamMembers,
