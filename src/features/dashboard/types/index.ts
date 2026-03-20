@@ -649,3 +649,11 @@ export interface FlashNewsRequest{
   days: number;
   priority? : number;
 }
+
+export interface FlashNews{
+  id : number;
+  priority : number;
+  message : string;
+  active : boolean;
+  createdAt : string;
+}

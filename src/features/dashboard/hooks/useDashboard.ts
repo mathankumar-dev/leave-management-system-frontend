@@ -20,6 +20,7 @@ import type {
   PendingOnboardingResponse,
   BiometricVpnStatus,
   FlashNewsRequest,
+  FlashNews,
 } from "../types";
 import { toast } from "sonner";
 import api from "../../../api/axiosInstance";
@@ -561,6 +562,23 @@ const createFlashNewsController = async (data: FlashNewsRequest) => {
 };
 
 
+const fetchFlashNews = useCallback(async() : Promise<FlashNews[]> =>{
+  setLoading(true);
+  setError(null);
+  try{
+    const res = await dashboardService.getFlashNews();
+    return res;
+  }catch(e :  any){
+    const errorMsg = "Failed to fetch FlashNews";
+    setError(errorMsg);
+    return [] ;
+  }
+  finally{
+    setLoading(false);
+  }
+},[]);
+
+
   /* ================= EXPORT ================= */
 
 
@@ -570,6 +588,7 @@ const createFlashNewsController = async (data: FlashNewsRequest) => {
     loading,
     error,
     setError,
+    fetchFlashNews,
     fetchDashboard,
     fetchManagerDashboard,
     fetchTeamLeaderDashboard,
@@ -583,11 +602,9 @@ const createFlashNewsController = async (data: FlashNewsRequest) => {
     fetchAllEmployees,
     addUser,
     deleteUser,
-
     fetchEmployeeCalendar,
     employeeCalendar,
     fetchOnboardingRequests,
-
     payslip,
     history,
     downloadHistory,

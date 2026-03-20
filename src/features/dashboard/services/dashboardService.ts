@@ -18,7 +18,8 @@ import type {
   PendingLeaveApplicationApiResponse,
   PendingOnboardingResponse,
   BiometricVpnStatus,
-  FlashNewsRequest
+  FlashNewsRequest,
+  FlashNews
 
 
 } from '../types';
@@ -376,6 +377,12 @@ export const dashboardService = {
   catch(error: any){
     throw error.response?.data?.message || "Failed to post the news"
   }
+  },
+
+
+  getFlashNews : async () : Promise<FlashNews[]> => {
+    const response = await api.get('/flash-news');
+    return response.data;
   },
 
   getOnboardingRequests: async (): Promise<PendingOnboardingResponse[]> => {
