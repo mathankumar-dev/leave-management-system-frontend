@@ -121,9 +121,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           <h2 className="text-2xl font-semibold">
             Welcome back, {user?.name}
           </h2>
-          <p className="text-sm text-gray-500">
-            Leave insights overview
-          </p>
+          
         </div>
 
         <button

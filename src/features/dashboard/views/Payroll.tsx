@@ -8,6 +8,7 @@ import api from "../../../api/axiosInstance";
 import html2canvas from "html2canvas";
 import { dashboardService } from "../services/dashboardService";
 import { toPng } from "html-to-image";
+import logo from "../../../assets/bg-rm-logo-HRES.png"; // adjust path
 
 const PayrollView: React.FC = () => {
   const { payslip, fetchPayslip, error } = useDashboard();
@@ -215,17 +216,60 @@ const PayrollView: React.FC = () => {
       {((viewMode === "monthly" && payslip && profile) ||
         (viewMode === "yearly" && summary)) && (
         <div id="payslip-container" className="border-2 border-black p-6 text-sm">
+          <div className="flex items-center justify-between border-b pb-4 mb-4">
+
+  {/* LOGO */}
+  <img
+    src={logo} // OR use {logo} if imported
+    alt="Company Logo"
+    className="w-16 h-16 object-contain"
+  />
+
+  {/* COMPANY DETAILS */}
+  <div className="text-center flex-1">
+    <h2 className="font-bold text-lg">
+      WENXT TECHNOLOGIES PRIVATE LIMITED
+    </h2>
+    <h3 className="text-xs mt-1">
+      Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
+      Thiruvanmiyur, Chennai- 600041
+    </h3>
+    <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
+  </div>
+
+  {/* EMPTY SPACE (for balance) */}
+  <div className="w-16" />
+</div>
 
           
 
           {/* EMPLOYEE DETAILS */}
           {viewMode === "monthly" && payslip && profile && (
         <div  className="border-2 border-black p-6 text-sm">
-          <div className="text-center border-b pb-2 mb-4">
-            <h2 className="font-bold text-lg">WENXT TECHNOLOGIES PRIVATE LIMITED</h2>
-            <h3 className="p-4">Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate, Thiruvanmiyur, Chennai- 600041</h3>
-            <p className="text-xs">MONTHLY SALARY PAYSLIP</p>
-          </div>
+          <div className="flex items-center justify-between border-b pb-4 mb-4">
+
+  {/* LOGO */}
+  <img
+    src={logo} // OR use {logo} if imported
+    alt="Company Logo"
+    className="w-16 h-16 object-contain"
+  />
+
+  {/* COMPANY DETAILS */}
+  <div className="text-center flex-1">
+    <h2 className="font-bold text-lg">
+      WENXT TECHNOLOGIES PRIVATE LIMITED
+    </h2>
+    <h3 className="text-xs mt-1">
+      Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
+      Thiruvanmiyur, Chennai- 600041
+    </h3>
+    <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
+  </div>
+
+  {/* EMPTY SPACE (for balance) */}
+  <div className="w-16" />
+</div>
           <table className="w-full border border-black mb-4 text-sm">
             <tbody>
               <tr>
@@ -259,6 +303,7 @@ const PayrollView: React.FC = () => {
 
           {/* SALARY TABLE */}
           <table className="w-full border mt-3.5 border-black">
+            
             <thead>
               <tr className="bg-gray-200">
                 <th className="border p-2">Income</th>
