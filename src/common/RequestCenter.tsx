@@ -1,16 +1,17 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   HiOutlineClock, HiOutlineHome, HiOutlineBriefcase,
-  HiOutlineUserGroup, HiOutlineMoon, HiOutlineChevronRight,
+  HiOutlineMoon, 
   HiChevronDoubleLeft, HiChevronDoubleRight
 } from "react-icons/hi2";
+import { TbAccessPoint } from "react-icons/tb";
 
 import LeaveApplicationForm from "./forms/LeaveApplicationForm";
 import ODRequestForm from "./forms/ODRequestForm";
-import MeetingRequestForm from "./forms/MeetingRequestForm";
+import AccessRequestForm from "./forms/AccessRequestForm";
 
-type RequestType = "LEAVE" | "OD" | "WFH" | "MEETING" | "OVERTIME";
+type RequestType = "LEAVE" | "OD" | "WFH" | "MEETING" | "OVERTIME" | "ACCESS";
 
 const RequestCenter = () => {
   const [activeTab, setActiveTab] = useState<RequestType>("LEAVE");
@@ -19,6 +20,7 @@ const RequestCenter = () => {
   const menuItems = [
     { id: "LEAVE", label: "Leave Form", icon: <HiOutlineClock size={20} />, description: "Annual, Sick, Comp-off" },
     { id: "OD", label: "OD Form", icon: <HiOutlineBriefcase size={20} />, description: "On-Duty / Field Work" },
+    { id: "ACCESS", label: "Access Form", icon: <TbAccessPoint size={20} />, description: "VPN / Bio Metric Access" },
     // { id: "MEETING", label: "Meeting", icon: <HiOutlineUserGroup size={20} />, description: "Conference Room" },
     { id: "WFH", label: "WFH Request", icon: <HiOutlineHome size={20} />, description: "Work from Home" },
     { id: "OVERTIME", label: "Overtime", icon: <HiOutlineMoon size={20} />, description: "Extra Hours Credit" },
@@ -114,15 +116,15 @@ const RequestCenter = () => {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.25, ease: "circOut" }}
             >
-              <div className="bg-white border border-slate-200 rounded-3xl shadow-sm min-h-[600px] overflow-hidden">
+              <div className="bg-white border border-slate-200 rounded-3xl shadow-sm min-h-150 overflow-hidden">
                 {/* Internal form routing */}
                 {activeTab === "LEAVE" && <LeaveApplicationForm />}
                 {activeTab === "OD" && <ODRequestForm />}
-                {/* {activeTab === "MEETING" && <MeetingRequestForm />} */}
+                {activeTab === "ACCESS" && <AccessRequestForm />}
 
                 {/* Placeholders for new forms */}
                 {(activeTab === "WFH" || activeTab === "OVERTIME") && (
-                  <div className="flex flex-col items-center justify-center h-[600px] text-slate-400">
+                  <div className="flex flex-col items-center justify-center h-150 text-slate-400">
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                       <HiOutlineMoon size={32} className="opacity-20" />
                     </div>

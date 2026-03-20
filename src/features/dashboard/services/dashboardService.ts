@@ -19,7 +19,8 @@ import type {
   PendingOnboardingResponse,
   BiometricVpnStatus,
   FlashNewsRequest,
-  FlashNews
+  FlashNews,
+  AccessResponse
 
 
 } from '../types';
@@ -386,7 +387,7 @@ export const dashboardService = {
   },
 
   getOnboardingRequests: async (): Promise<PendingOnboardingResponse[]> => {
-    const res = await api.get("/admin/onboarding/pending");
+    const res = await api.get("/access-requests/admin/pending-approvals");
     console.log("onboarding");
     console.log(res.data);
     return res.data;
@@ -408,5 +409,17 @@ export const dashboardService = {
       }
     });
   },
+
+  // get all access requests
+  
+  getPendingAccessRequests : async(id : number) : Promise<AccessResponse[]> => {
+      const res = await api.get(`/access-requests/manager/pending/${id}`);
+      return res.data;
+  },
 };
+
+
+
+
+
 

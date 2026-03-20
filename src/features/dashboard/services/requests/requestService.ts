@@ -1,5 +1,5 @@
 import api from "../../../../api/axiosInstance";
-import type { MeetingRequest, ODRequest } from "../../types";
+import type { AccessRequest, LeaveType, MeetingRequest, ODRequest } from "../../types";
 
 
 export const requestService = {
@@ -17,6 +17,10 @@ export const requestService = {
         attendeeIds: attendeeIds?.join(',')
       }
     });
+    return response.data;
+  },
+  createAccessRequest: async (request : AccessRequest, employeeId: number) => {
+    const response = await api.post(`/access-requests/apply/${employeeId}`, request,);
     return response.data;
   },
 

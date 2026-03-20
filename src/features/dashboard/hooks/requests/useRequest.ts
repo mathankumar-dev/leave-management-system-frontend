@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { MeetingRequest, ODRequest } from "../../types";
+import type { AccessRequest, LeaveType, MeetingRequest, ODRequest } from "../../types";
 import { requestService } from "../../services/requests/requestService";
 
 export const useRequest = () => {
@@ -34,11 +34,26 @@ export const useRequest = () => {
             setLoading(false);
         }
     }, []);
+        const createAccessRequest = useCallback(async (request : AccessRequest, employeeId: number) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await requestService.createAccessRequest(request,employeeId);
+            return data;
+        } catch (err: any) {
+            const errorMessage = err.response?.data?.message || "Failed to schedule meeting";
+            setError(errorMessage);
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
     return {
         createOD,
         createMeeting,
         loading,
         error,
-        setError
+        setError,
+        createAccessRequest
     };
 };

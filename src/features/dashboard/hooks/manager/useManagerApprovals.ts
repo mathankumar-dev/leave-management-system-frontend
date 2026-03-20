@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { dashboardService } from "../../services/dashboardService";
 import { requestService } from "../../services/requests/requestService";
-import type { CompOffResponse, LeaveDecision, LeaveDecisionRequest, ODResponse } from "../../types";
+import type { AccessResponse, CompOffResponse, LeaveDecision, LeaveDecisionRequest, ODResponse } from "../../types";
 
 export const useManagerApprovals = (userId: number, role?: string) => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -14,16 +14,18 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       const isTeamLeader = role?.toUpperCase() === 'TEAM_LEADER';
 
       // 1. Fetch data from services
-      const [leaveData, compOffs, ods] = isTeamLeader
+      const [leaveData, compOffs, ods , accessReqs] = isTeamLeader
         ? await Promise.all([
           dashboardService.getPendingApprovalsForTeamLeader(userId),
           null, // Team leaders might not have comp-offs in your logic
-          dashboardService.getPendingODApprovalsForTeamLeader(userId)
+          dashboardService.getPendingODApprovalsForTeamLeader(userId),
+          null
         ])
         : await Promise.all([
           dashboardService.getPendingApprovals(userId),
           dashboardService.getPendingCompOffs(userId),
-          dashboardService.getPendingODApprovals(userId)
+          dashboardService.getPendingODApprovals(userId),
+          dashboardService.getPendingAccessRequests(userId)
         ]);
       const formattedLeaves = (leaveData || []).map((item: any) => ({
         ...item.leaveApplication, // This spreads id, employeeName, startDate, etc.
@@ -43,6 +45,8 @@ export const useManagerApprovals = (userId: number, role?: string) => {
         createdAt: co.createdAt || new Date().toISOString()
       }));
 
+
+
       // 4. Format ODs
       const formattedODs = (ods || []).map((od: ODResponse) => ({
         ...od,
@@ -50,8 +54,21 @@ export const useManagerApprovals = (userId: number, role?: string) => {
         isOD: true,
       }));
 
+
+console.log(accessReqs);
+
+
+      const formatedAccessReqs = (accessReqs || []).map((areq : AccessResponse) => ({
+       
+        
+        ...areq,
+        leaveType : areq.accessType,
+
+
+      }));
+
       // 5. Combine and Sort
-      const combined = [...formattedLeaves, ...formattedCompOffs, ...formattedODs].sort(
+      const combined = [...formattedLeaves, ...formattedCompOffs, ...formattedODs , ...formatedAccessReqs].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
@@ -63,6 +80,8 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     }
   };
 
+  // console.log(requests);
+  
 
   useEffect(() => {
     fetchRequests();

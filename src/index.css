@@ -80,7 +80,9 @@
 .animate-in {
   animation: fadeIn 0.7s ease-out forwards;
 }
-
+textarea{
+  resize: none;
+}
 html,
 body {
   margin: 0;

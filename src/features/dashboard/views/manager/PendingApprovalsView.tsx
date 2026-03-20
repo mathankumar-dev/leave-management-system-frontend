@@ -27,12 +27,10 @@ interface PendingRequest {
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
-    // Role Definitions
     const userRole = user?.role?.toUpperCase();
     const isManager = userRole === 'MANAGER';
     const isTeamLeader = userRole === 'TEAM_LEADER';
     const canSeeDashboardMetrics = isManager || isTeamLeader;
-
 
     const {
         requests,
