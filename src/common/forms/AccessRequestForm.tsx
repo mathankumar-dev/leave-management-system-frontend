@@ -41,7 +41,7 @@ const AccessRequestForm = () => {
     const renderApprovers = () => {
         return (
             <>
-                <Badge label={`Manager: ${user?.managerName }`} active={true} />
+                <Badge label={`Manager: ${user?.managerName}`} active={true} />
                 {/* <Badge label={`Security: Automated`} active={true} /> */}
             </>
         );
@@ -113,7 +113,7 @@ const AccessRequestForm = () => {
                         Justification / Reason
                     </label>
                     <textarea
-                     
+
                         rows={4}
                         className="w-full border resize-none border-slate-200 bg-slate-50 p-4 rounded-xl text-sm font-medium outline-none focus:border-indigo-600 focus:bg-white transition-all placeholder:text-slate-300"
                         placeholder="eg ., I need VPN Access..."
