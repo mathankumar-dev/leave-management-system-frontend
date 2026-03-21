@@ -10,6 +10,7 @@ import PrivacyPolicy from "../components/pages/PrivacyPolicy";
 import TermsOfService from "../components/pages/TermsOfService";
 import LandingPage from "../features/landing/LandingPage";
 import LaunchPage from "../features/lauchpage/LaunchPage";
+import LeavePolicies from "../components/pages/LeavePolicy";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -24,24 +25,22 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      {/* 2. Hero Page as the Landing Site */}
       <Route path="/portal" element={<LaunchPage />} />
 
 
       <Route
         path="/"
         element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />
+          isAuthenticated ? <Navigate to="/portal" replace /> : <LandingPage />
         }
       />
-
       <Route
         path="/login"
         element={
           !isAuthenticated ? (
             <AuthPage />
           ) : (
-            <Navigate to="/dashboard" replace />
+            <Navigate to="/portal" replace />
           )
         }
       />
@@ -53,6 +52,7 @@ const AppRoutes: React.FC = () => {
 
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/leave-policy" element={<LeavePolicies />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

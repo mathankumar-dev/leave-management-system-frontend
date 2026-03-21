@@ -3,7 +3,7 @@ import type { UserRole } from "../../auth/types";
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF";
-export type LeaveType = 'SICK' | 'ANNUAL_LEAVE' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF' | 'ON_DUTY';
+export type LeaveType = 'SICK' | 'ANNUAL_LEAVE' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF' | 'ON_DUTY' | 'VPN' | 'BIOMETRIC';
 
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
@@ -316,23 +316,23 @@ export interface PendingLeaveApplication {
 
   version: number;
 
-  confirmLossOfPay?: boolean; 
+  confirmLossOfPay?: boolean;
 }
 
 
 export interface Attachment {
-  id : number;
-  leaveApplicationId : number;
-  fileName : number;
-  fileUrl : number;
-  fileType : number;
-  fileSize : number;
-  uploadedAt : number;
+  id: number;
+  leaveApplicationId: number;
+  fileName: number;
+  fileUrl: number;
+  fileType: number;
+  fileSize: number;
+  uploadedAt: number;
 }
 
 export interface PendingLeaveApplicationApiResponse {
   leaveApplication: PendingLeaveApplication;
-  attachments? : Attachment[];
+  attachments?: Attachment[];
 }
 
 export interface TeamMemberBalance {
@@ -562,7 +562,7 @@ export interface ODResponse {
   reason: string;
   startDate: string;
   endDate: string;
-  leaveType : LeaveType;
+  leaveType: LeaveType;
   status: ODStatus;
   createdAt: string;
 }
@@ -608,7 +608,7 @@ export interface EmployeeFilters {
   size?: number;
 }
 
-export type BiometricVpnStatus = 'PENDING' | 'PROVIDED' ;
+export type BiometricVpnStatus = 'PENDING' | 'PROVIDED';
 
 export interface EmployeeEntity {
   id: number;
@@ -644,25 +644,70 @@ export interface CreateUserRequest {
 
 export interface PendingOnboardingResponse {
   id: number;
-  name: string;
-  email: string;
-  role: UserRole;
-  active: boolean;
-  joiningDate: string; 
-  biometricStatus: BiometricVpnStatus;
-  vpnStatus: BiometricVpnStatus;   
-  teamId?: number | null;
-  teamLeaderId?: number | null;
-  managerId?: number | null;
+  employeeId : number;
+  employeeName: string;
+  employeeEmail: string;
+  employeeDesignation : string;
+  accessType : LeaveType ;
+  status :  string;
+  reason : string;
+  createdAt : string;
+  managerDecision : LeaveDecision;
+  managerRemarks : string;
+  managerDecisionAt : string;
+  managerName : string;
+
 }
 
-
-export interface FlashNewsRequest{
+export interface FlashNewsRequest {
   message: string;
   days: number;
-  priority? : number;
+  priority?: number;
 }
 
+export interface FlashNews {
+  id: number;
+  priority: number;
+  message: string;
+  active: boolean;
+  createdAt: string;
+}
+
+
+export type accessManagerDecision = 'APPROVED' | 'REJECTED';
+export interface AccessResponse {
+  id: number;
+  employeeId: number;
+  employeeName: string;
+  employeeEmail: string;
+  employeeDesignation: string;
+  accessType: LeaveType;
+  status: string;
+  reason: string;
+  submittedAt: string;
+  createdAt: string;
+  managerDecision?: accessManagerDecision;
+  managerRemarks?: string;
+  managerDecisionAt?: string;
+  managerName?: string;
+
+}
+
+export interface AccessRequest {
+  accessType : LeaveType;
+  reason : string;
+}
+
+
+export interface ManagerAccessDecision{
+  decision : LeaveDecision,
+  remarks : string;
+  managerId : number;
+}
+export interface AdminAccessDecision {
+  decision : LeaveDecision,
+  remarks? : string;
+}
 
 export interface YearlySummary  {
   year: number;

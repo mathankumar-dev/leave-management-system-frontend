@@ -18,7 +18,10 @@ import type {
   PendingLeaveApplicationApiResponse,
   PendingOnboardingResponse,
   BiometricVpnStatus,
-  FlashNewsRequest
+  FlashNewsRequest,
+  FlashNews,
+  AccessResponse,
+  AdminAccessDecision
 
 
 } from '../types';
@@ -378,12 +381,23 @@ export const dashboardService = {
   }
   },
 
+
+  getFlashNews : async () : Promise<FlashNews[]> => {
+    const response = await api.get('/flash-news');
+    return response.data;
+  },
+
   getOnboardingRequests: async (): Promise<PendingOnboardingResponse[]> => {
-    const res = await api.get("/admin/onboarding/pending");
+    const res = await api.get("/access-requests/admin/pending-approvals");
     console.log("onboarding");
     console.log(res.data);
     return res.data;
   },
+  approveAccessAdmin : async(requestId : number, decision : AdminAccessDecision ) => {
+    await api.patch(`/access-requests/${requestId}/admin-decision`,decision,);
+  },
+
+
   approveOnboardingBioRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
     console.log("calling bio");
     
@@ -401,5 +415,17 @@ export const dashboardService = {
       }
     });
   },
+
+  // get all access requests
+  
+  getPendingAccessRequests : async(id : number) : Promise<AccessResponse[]> => {
+      const res = await api.get(`/access-requests/manager/pending/${id}`);
+      return res.data;
+  },
 };
+
+
+
+
+
 

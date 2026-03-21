@@ -6,8 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import type { LoginCredentials } from "../types";
 import logoSVG from "../../../assets/logo.svg";
 
-import FailureModal from "../../../components/ui/FailureModal";
-import Loader from "../../../components/ui/Loader"; 
+import Loader from "../../../components/ui/Loader";
 import { authService } from "../services/AuthService";
 
 const LoginForm: React.FC = () => {
@@ -20,55 +19,38 @@ const LoginForm: React.FC = () => {
     finished: false,
   });
 
-  const [showError, setShowError] = useState(false);
-  const [loginResponse, setLoginResponse] = useState<any>(null); 
+  const [loginResponse, setLoginResponse] = useState<any>(null);
   const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Show the circular loader immediately
     setLoaderState({ active: true, finished: false });
-    setShowError(false);
 
     try {
       const credentials: LoginCredentials = { email, password };
       const response = await authService.loginUser(credentials);
-      
+
       setLoginResponse(response);
 
-      // 2. Mark as finished to trigger the 'Success' text and exit animation
       setLoaderState({ active: true, finished: true });
 
     } catch (error) {
       console.error("Login failed:", error);
-      // 3. Hide loader and show error
       setLoaderState({ active: false, finished: false });
-      setShowError(true);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white rounded-lg drop-shadow-lg w-full max-w-[560px] min-h-[600px] p-8">
+    <div className="flex flex-col items-center justify-center bg-white rounded-lg drop-shadow-lg w-full max-w-140 min-h-150 p-8">
 
-      {/* FULL-SCREEN CIRCULAR LOADER */}
       {loaderState.active && (
-        <Loader 
-          message="Authenticating..." 
+        <Loader
+          message="Authenticating..."
           isFinished={loaderState.finished}
-          onFinished={() => login(loginResponse)} 
+          onFinished={() => login(loginResponse)}
         />
       )}
-
-      {/* ERROR MODAL */}
-      {showError && (
-        <FailureModal
-          title="Login Failed"
-          message="Invalid credentials. Please check your email and password."
-          onClose={() => setShowError(false)}
-        />
-      )}
-
       {/* LOGO */}
       <img src={logoSVG} alt="Company logo" className="w-20 h-20 mb-4" />
 

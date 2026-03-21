@@ -174,8 +174,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
       {/* HEADER */}
       <div className="flex justify-between items-center border-b border-slate-200 pb-2 gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 uppercase">ADMIN CONSOLE</h2>
-          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">Global Oversight: {user?.name}</p>
+          <p className="text-[20px] font-medium text-black  ">Welcome , <span className="font-bold">{user?.name}</span></p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => onNavigate?.("Employees")} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none">

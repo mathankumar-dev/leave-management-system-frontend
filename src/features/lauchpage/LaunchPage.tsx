@@ -1,306 +1,216 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import logo from "../../assets/logo.svg";
-import { useState, useEffect } from "react";
-interface User {
-  name: string;
-  role: string;
-  designation: string;
-  status: "Active" | "Inactive";
-  email: string;
-  avatar: string;
+import CalendarSVG from "../../assets/svg/calendar-svg.svg";
+import moneySVG from "../../assets/svg/money-svg.svg";
+import { useAuth } from "../auth/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { formatTimeAgo } from "../../utils/formatTimeAgo";
+import { useDashboard } from "../dashboard/hooks/useDashboard";
+// Import your service and interface here
+// import { dashboardService } from "../../services/dashboardService"; 
+
+export interface FlashNews {
+  id: number;
+  priority: number;
+  message: string;
+  active: boolean;
+  createdAt: string;
 }
 
-
-const users: User[] = [
-  {
-    name: "Robert Vance",
-    role: "CFO",
-    designation: "Chief Financial Officer",
-    status: "Active",
-    email: "rvance@wenxt.tech",
-    avatar: "https://i.pravatar.cc/100?u=1",
-  },
-  {
-    name: "Elena Rodriguez",
-    role: "Manager",
-    designation: "AI Manager",
-    status: "Active",
-    email: "erod@wenxt.tech",
-    avatar: "https://i.pravatar.cc/100?u=2",
-  },
-  {
-    name: "Marcus Wei",
-    role: "Team Leader",
-    designation: "Frontend Lead",
-    status: "Inactive",
-    email: "mwei@wenxt.tech",
-    avatar: "https://i.pravatar.cc/100?u=3",
-  },
-  {
-    name: "Sarah Jenkins",
-    role: "HR",
-    designation: "People & Culture",
-    status: "Active",
-    email: "sjenks@wenxt.tech",
-    avatar: "https://i.pravatar.cc/100?u=4",
-  },
-  {
-    name: "David Miller",
-    role: "Admin",
-    designation: "System Administrator",
-    status: "Active",
-    email: "dmiller@wenxt.tech",
-    avatar: "https://i.pravatar.cc/100?u=5",
-  },
-  {
-    name: "Priya Sharma",
-    role: "Employee",
-    designation: "Software Developer",
-    status: "Active",
-    email: "priya@wenxt.tech",
-    avatar: "https://i.pravatar.cc/100?u=6",
-  },
-  {
-    name: "Arun Kumar",
-    role: "Employee",
-    designation: "Backend Developer",
-    status: "Inactive",
-    email: "arun@wenxt.tech",
-    avatar: "https://i.pravatar.cc/100?u=7",
-  },
-  {
-    name: "Meena Raj",
-    role: "Admin",
-    designation: "HR Administrator",
-    status: "Active",
-    email: "meena@wenxt.tech",
-    avatar: "https://i.pravatar.cc/100?u=8",
-  }
-];
-
 const LaunchPage: React.FC = () => {
-  const [selectedRole, setSelectedRole] = useState("All Staff");
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const handleLogin = (user: User) => {
-    setCurrentUser(user);
-  };
-  useEffect(() => {
-    // Auto login first Admin user for demo/testing
-    const adminUser = users.find(u => u.role === "ADMIN");
-    if (adminUser) {
-      setCurrentUser(adminUser);
-    }
-  }, []);
-  const filteredUsers = users
-    .filter(user =>
-      selectedRole === "All Staff"
-        ? true
-        : user.role.toLowerCase() === selectedRole.toLowerCase()
-    )
-    .filter(user =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
+  // State for Flash News
+  const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
+  const [isLoading, setLoading] = useState(false);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const { fetchFlashNews } = useDashboard();
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchFlashNews();
+        const sortedData = (data || []).sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setFlashNews(sortedData);
+      } catch (err) {
+        console.error("News fetch failed", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [fetchFlashNews]);
+
+  useEffect(() => {
+    if (flashNews.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % flashNews.length);
+    }, 5000); // 5 seconds interval
+
+    return () => clearInterval(timer);
+  }, [flashNews]);
+  const systems = [
+    {
+      title: "Leave System",
+      desc: "Apply for leaves, view balances, and track approvals.",
+      icon: CalendarSVG,
+      color: "bg-indigo-500",
+      path: "/dashboard",
+    },
+    {
+      title: "Payroll System",
+      desc: "View payslips, tax documents, and payment history.",
+      icon: moneySVG,
+      color: "bg-indigo-500",
+      path: "/dashboard",
+    },
+  ];
+
+  const policies = [
+    { title: "Leave Policy 2026", link: "/leave-policy" },
+    { title: "Privacy Policy", link: "/privacy-policy" },
+    { title: "Terms of Service", link: "/terms-of-service" },
+  ];
+
+  return (
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
       {/* HEADER */}
       <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6">
-
-          <div className="py-3 flex items-center justify-between">
-
-            <div className="flex items-center space-x-3">
-              <div className=" rounded-lg p-1">
-                <img
-                  src={logo}
-                  alt="logoicon"
-                  className="h-10 w-10"
-                />
-              </div>
-              <span className="text-2xl font-black">
-                Wenxt <span className="text-indigo-600">Technologies</span>
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <div className="text-right hidden sm:block">
-                <p className="text-[10px] font-bold text-slate-400 uppercase">
-                  Current User
-                </p>
-                <p className="text-sm font-bold">
-                  {currentUser ? `${currentUser.name} (${currentUser.role})` : "Guest"}
-                </p>
-              </div>
-              <img
-                src={currentUser?.avatar || "https://i.pravatar.cc/150?u=guest"}
-                className="w-10 h-10 rounded-full"
-              />
-
-            </div>
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/")}>
+            <img src={logo} alt="logo" className="h-10 w-10" />
+            <span className="text-2xl font-black text-slate-800">
+              Wenxt <span className="text-indigo-600">Technologies</span>
+            </span>
           </div>
 
-          <nav className="flex space-x-8 mt-1">
-            {["Dashboard", "Leave Request", "Payroll", "Reports", "Settings"].map(
-              (item) => (
-                <a
-                  key={item}
-                  href="#"
-                  className="text-sm font-bold text-slate-500 hover:text-indigo-600 border-b-2 border-transparent hover:border-indigo-600 pb-2"
-                >
-                  {item}
-                </a>
-              )
-            )}
-          </nav>
+          <div className="flex items-center space-x-4">
+            <div className="text-right hidden sm:block">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current User</p>
+              <p className="text-sm font-bold text-slate-700">
+                {`${user?.name} (${user?.role})`}
+              </p>
+            </div>
+            <div className="w-10 h-10 bg-indigo-600 text-white flex items-center justify-center rounded-full font-bold text-sm border-2 border-white shadow-sm">
+              {user?.name.charAt(0) || "U"}
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* MAIN */}
       <div className="flex flex-1 max-w-7xl mx-auto w-full p-6 gap-8">
-
-        {/* SIDEBAR */}
-        <aside className="w-80 hidden lg:block space-y-6">
-          <div className="bg-indigo-700 p-6 rounded-3xl text-white 
-            hover:-translate-y-1.25 hover:scale-102 transition-transform duration-300">
-            <p className="text-xs uppercase mb-2">Thought of the Day</p>
-            <p className=" ">
+        {/* LEFT SIDEBAR */}
+        <aside className="w-80 hidden lg:flex flex-col gap-6">
+          <div className="bg-indigo-500 p-6 rounded-xl text-white shadow-lg shadow-indigo-100">
+            <p className="text-xs uppercase font-bold opacity-80 mb-2 tracking-widest">Thought of the Day</p>
+            <p className="italic text-lg font-medium leading-tight">
               "Insurtech isn't just about code; it's about engineering trust."
             </p>
           </div>
-          <div className="bg-white p-6 rounded-3xl border shadow-sm 
-            hover:-translate-y-1.25 hover:scale-102 transition-transform duration-300">
-            <h3 className="font-bold mb-4">📢Announcements</h3>
 
-            <div className="space-y-3 text-sm">
-              <div className="border-l-4 border-amber-400 pl-3">
-                <p className="font-bold">Q4 Compliance Audit</p>
-                <p className="text-xs text-slate-500">
-                  Finalize logs by Friday
-                </p>
-              </div>
-
-              <div className="border-l-4 border-indigo-400 pl-3">
-                <p className="font-bold">Performance Modules</p>
-                <p className="text-xs text-slate-500">
-                  New templates live
-                </p>
-              </div>
-            </div>
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-800 uppercase text-xs tracking-widest">
+              ⚖️ Policy Center
+            </h3>
+            <ul className="space-y-2">
+              {policies.map((policy, i) => (
+                <li key={i}>
+                  <button
+                    onClick={() => navigate(policy.link)}
+                    className="w-full flex items-center justify-between p-2 rounded-sm text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
+                  >
+                    <span>{policy.title}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="flash-card w-full">
-            <div className="flash-header">
-              <span className="icon">⚡</span>
-              <h3>Flash News</h3>
+          {/* ONE NEWS AT A TIME - SLIDING/FADING */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-[160px] flex flex-col justify-between overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold flex items-center gap-2 text-slate-800 uppercase text-xs tracking-widest">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                Live Updates
+              </h3>
+              {/* Progress Dots */}
+              <div className="flex gap-1">
+                {flashNews.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1 w-3 rounded-full transition-all duration-500 ${i === currentIndex ? 'bg-indigo-500 w-5' : 'bg-slate-200'}`}
+                  />
+                ))}
+              </div>
             </div>
 
-            <div className="flash-item">
-              <p className="tag">MARKET WIN</p>
-              <p className="text">
-                Wenxt secured the 'Global Claims Platform' contract! 🚀
-              </p>
-            </div>
-
-            <div className="divider"></div>
-
-            <div className="flash-item">
-              <p className="tag">PRODUCT LAUNCH</p>
-              <p className="text">
-                'InsureAI v2.1' is now live for internal testing.
-              </p>
+            <div className="relative flex-1">
+              {isLoading ? (
+                <div className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+              ) : flashNews.length > 0 ? (
+                <div
+                  key={currentIndex}
+                  className="animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out"                >
+                  <div className={`p-4 rounded-xl border-l-4 ${flashNews[currentIndex].priority == 1
+                      ? 'bg-amber-50 border-amber-400'
+                      : 'bg-slate-50 border-indigo-400'
+                    }`}>
+                    <p className="text-sm text-slate-800 font-semibold leading-relaxed">
+                      {flashNews[currentIndex].message}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-3 font-bold uppercase tracking-wider">
+                      {formatTimeAgo(flashNews[currentIndex].createdAt)}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500 italic text-center py-4">No updates today.</p>
+              )}
             </div>
           </div>
 
         </aside>
 
-        {/* CONTENT */}
-        <main className="flex-1 space-y-6">
-
-          <div className="bg-white p-8 rounded-3xl border shadow-sm">
-
-            <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
-              <div>
-                <h1 className="text-3xl font-bold">Welcome</h1>
-                <p className="text-sm text-slate-500">
-                  Access Wenxt Technologies global talent pool
-                </p>
-              </div>
-
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-4 py-2 border rounded-xl w-72 h-10 mt-8"
-              />
-            </div>
-
-            <div className="flex flex-wrap gap-2 mb-6">
-              {["All Staff", "Employee", "Manager", "HR", "Team Leader", "Admin", "CFO"].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setSelectedRole(item)}
-                  className={`px-4 py-2 rounded-xl text-xs transition ${selectedRole === item
-                      ? "bg-indigo-500 text-white"
-                      : "bg-slate-100 hover:bg-indigo-500 hover:text-white"
-                    }`}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="text-xs text-slate-400 border-b">
-                    <th className="pb-3">Profile</th>
-                    <th className="pb-3 text-center">Role</th>
-                    <th className="pb-3">Designation</th>
-                    <th className="pb-3 text-right">Status</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredUsers.map((user, i) => (
-                    <tr key={i} className="hover:bg-slate-50">
-
-                      <td className="py-4 flex items-center space-x-3">
-                        <img
-                          src={user.avatar}
-                          className="w-10 h-10 rounded-full"
-                        />
-                        <div>
-                          <p className="font-semibold">{user.name}</p>
-                          <p className="text-xs text-slate-400">
-                            {user.email}
-                          </p>
-                        </div>
-                      </td>
-
-                      <td className="text-center">{user.role}</td>
-
-                      <td>{user.designation}</td>
-
-                      <td className="text-right">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold ${user.status === "Active"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                            }`}
-                        >
-                          {user.status}
-                        </span>
-                      </td>
-
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
+        {/* CENTER CONTENT */}
+        <main className="flex-1 space-y-8">
+          <div>
+            <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">
+              Welcome back, {user?.name.split(' ')[0]}!
+            </h1>
+            <p className="text-slate-500 mt-1">Access your employee management tools below.</p>
           </div>
+
+          {/* SYSTEM GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {systems.map((sys, idx) => (
+              <div
+                key={idx}
+                onClick={() => navigate(sys.path)}
+                className="group bg-white p-8 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer"
+              >
+                <div className={`${sys.color} w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-inner`}>
+                  <img src={sys.icon} className="w-10 h-10" alt={sys.title} />
+                </div>
+                <h3 className="text-2xl font-bold mb-2 group-hover:text-indigo-600 transition-colors text-slate-800">
+                  {sys.title}
+                </h3>
+                <p className="text-slate-500 leading-relaxed">{sys.desc}</p>
+                <div className="mt-8 flex items-center text-indigo-600 font-bold text-sm uppercase tracking-wider">
+                  Launch System <span className="ml-2 group-hover:translate-x-2 transition-transform">→</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
 
         </main>
       </div>

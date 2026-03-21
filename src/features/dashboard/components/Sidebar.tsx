@@ -14,8 +14,9 @@ import {
   FaDollarSign,
   FaChartBar,
 } from "react-icons/fa";
+import { AiFillThunderbolt } from "react-icons/ai";
+
 import { useAuth } from "../../auth/hooks/useAuth";
-import NameSVG from "../../../assets/svg/NameSVG";
 
 import logoSVG from "../../../assets/logo.svg";
 
@@ -61,7 +62,7 @@ function Sidebar({
     { name: "Reports", icon: <FaChartBar />, roles: ["HR", "ADMIN"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
     { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "HR"] },
-    { name: "Flash News", icon: <FaDollarSign />, roles: ["ADMIN"] },
+    { name: "Flash News", icon: <AiFillThunderbolt />, roles: ["ADMIN"] },
 
   ];
 

@@ -4,7 +4,7 @@ interface OnboardingStatsProps {
   newEmployeesCount: number;
   pendingBiometricCount: number;
   pendingVPNCount: number;
-  onboardingList? : {employeeId: number ; employeeName:String ; daysInOnboarding : number}[];
+  onboardingList? : {employeeId: number ; employeeName:string ; daysInOnboarding : number}[];
 }
 
 const OnboardingStats: React.FC<OnboardingStatsProps> = ({
