@@ -3,7 +3,6 @@ import {
   FaChevronLeft,
   FaSignOutAlt,
   FaThLarge,
-  FaPlus,
   FaListUl,
   FaCalendarAlt,
   FaBell,
@@ -13,10 +12,13 @@ import {
   FaFileSignature,
   FaDollarSign,
   FaChartBar,
+  FaFileInvoiceDollar,
 } from "react-icons/fa";
 import { AiFillThunderbolt } from "react-icons/ai";
 
 import { useAuth } from "../../auth/hooks/useAuth";
+import { MdVerifiedUser } from "react-icons/md";
+import NameSVG from "../../../assets/svg/NameSVG";
 
 import logoSVG from "../../../assets/logo.svg";
 
@@ -48,10 +50,10 @@ function Sidebar({
     { name: "Pending Approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "TEAM_LEADER"] },
     { name: "Onboarding Approvals", icon: <FaCog />, roles: ["ADMIN"] },
     // { name: "Apply Leave", icon: <FaPlus />, roles: ["EMPLOYEE", "MANAGER","TEAM_LEADER","ADMIN"] },
-    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER", "TEAM_LEADER", "EMPLOYEE", "HR", "ADMIN"] },
+    { name: "Request center", icon: <FaFileSignature />, roles: ["MANAGER", "TEAM_LEADER", "EMPLOYEE", "ADMIN"] },
     { name: "My Requests", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
     { name: "Calendar", icon: <FaCalendarAlt />, roles: ["ADMIN", "EMPLOYEE"] },
-    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "HR",] },
+    { name: "Team Calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Employees", icon: <FaUsers />, roles: ["ADMIN"] },
 
     { name: "Notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
@@ -61,7 +63,10 @@ function Sidebar({
     // { name: "Leave Config", icon: <FaCog />, roles: ["HR",] },
     { name: "Reports", icon: <FaChartBar />, roles: ["HR", "ADMIN"] },
     { name: "LowBalance Employee", icon: <FaExclamationTriangle />, roles: ["HR"] },
-    { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "HR"] },
+    // { name: "Payroll", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
+    { name: "Cfoemployees", icon: <FaFileInvoiceDollar />, roles: ["CFO"] },
+    { name: "Verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
+    { name: "Payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
     { name: "Flash News", icon: <AiFillThunderbolt />, roles: ["ADMIN"] },
 
   ];

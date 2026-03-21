@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
 } from 'recharts';
-import type { DepartmentStat } from '../hooks/useHRDashboard';
+import type { DepartmentStat } from '../../../hooks/hr/useHRDashboard';
 
 interface DepartmentChartProps {
   data:           DepartmentStat[];

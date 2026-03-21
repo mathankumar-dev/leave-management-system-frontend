@@ -11,6 +11,7 @@ import LeaveTypesView from "../views/admin/LeaveTypesView";
 import { HRDashboard } from "../views/hr/pages/HRDashboard";
 import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
 import LowBalancePage from "../views/hr/pages/LowBalancePage";
+import { HRVerificationPage } from "../views/hr/pages/Hrverificationpage";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
 import DashboardView from "../views/employee/DashboardView";
@@ -27,12 +28,15 @@ import ManagerProfile from "../views/manager/ManagerProfile";
 import PendingApprovalsView from "../views/manager/PendingApprovalsView";
 import TeamMembersView from "../views/manager/TeamMembersView";
 
+/* ---------------------- CFO -----------------------*/
+import { PayslipPage } from "../views/CFO/pages/PayslipPage";
+import { CFOEmployeesPage } from "../views/CFO/pages/Cfoemployeepage";
+
 /* ---------------- MODALS ---------------- */
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import OtherRequestForm from "../../../common/OtherRequestForm";
 import PayrollView from "../views/Payroll";
 import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
-import { PayslipPage } from "../views/hr/pages/PayslipPage";
 import RequestCenter from "../../../common/RequestCenter";
 import MyRequestsView from "../views/MyLeavesView";
 import OnboardingPendingPage from "../views/admin/OnboardingPendingPage";
@@ -44,10 +48,17 @@ const ROLES = {
   HR: "HR",
   MANAGER: "MANAGER",
   EMPLOYEE: "EMPLOYEE",
+  CFO: "CFO",
   TEAMLEADER: "TEAM_LEADER"
 };
 
-
+/* ---------------- STAT CARD ---------------- */
+const StatCard = ({ title, value }: { title: string; value: number }) => (
+  <div className="bg-white p-4 rounded shadow">
+    <h3 className="text-sm text-gray-500">{title}</h3>
+    <p className="text-2xl font-bold">{value ?? 0}</p>
+  </div>
+);
 
 const DashboardLayout: React.FC = () => {
 
@@ -57,9 +68,25 @@ const DashboardLayout: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cfoSelectedEmpId, setCfoSelectedEmpId] = useState<number | null>(null);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  /* ---------------- VIEW RENDERER ---------------- */
+  useEffect(() => {
+    if (userRole === ROLES.ADMIN && activeTab === "Dashboard") {
+      setActiveTab("Employees");
+    }
+    if (userRole === ROLES.CFO && activeTab === "Dashboard") {
+      setActiveTab("Cfoemployees");
+    }
+  }, [userRole, activeTab]);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "auto" });
+    }
+  }, [activeTab]);
+
   const renderView = () => {
 
     switch (activeTab) {
@@ -69,13 +96,20 @@ const DashboardLayout: React.FC = () => {
           return <AdminDashboardView onNavigate={setActiveTab} />;
         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER)
           return <ManagerDashboardView onNavigate={setActiveTab} />;
-
-
-
         if (userRole === ROLES.HR)
           return <HRDashboard />;
 
         return <DashboardView onNavigate={setActiveTab} />;
+
+      case "Reports":
+        if (userRole === ROLES.MANAGER) return <ManagerDashboardView onNavigate={setActiveTab} />;
+        if (userRole === ROLES.HR) return <HRDashboard />;
+        return null;
+
+
+      case "Verifications":
+        if (userRole === ROLES.HR) return <HRVerificationPage />;
+        return null;
 
       case "All Employees":
         return userRole === ROLES.HR ? <HREmployeesPage /> : <EmployeesView />;
@@ -89,7 +123,7 @@ const DashboardLayout: React.FC = () => {
       case "Team Calendar":
         return <TeamCalendarView />;
       case "Employees":
-        return <EmployeesView  />;
+        return <EmployeesView />;
       case "Onboarding Approvals" :
         return <OnboardingPendingPage />;
 
@@ -104,8 +138,8 @@ const DashboardLayout: React.FC = () => {
       case "My Requests":
         return <MyRequestsView />;
 
-      case "Payroll":
-        return userRole === ROLES.HR ? <PayslipPage /> : <PayrollView />;
+      // case "Payslip":
+      //   return userRole === ROLES.HR ? <PayslipPage /> : <PayrollView />;
 
       case "Pending Approvals":
         return <PendingApprovalsView />;
@@ -124,6 +158,12 @@ const DashboardLayout: React.FC = () => {
       case "Profile":
         if (userRole === ROLES.MANAGER || userRole === ROLES.TEAMLEADER) return <ManagerProfile />;
         return <EmployeeProfile />;
+
+      case "Cfoemployees":
+        if (userRole === ROLES.CFO) return (
+          <CFOEmployeesPage />
+        );
+        return <EmployeesView />;
 
 
       case "Other Approvals":

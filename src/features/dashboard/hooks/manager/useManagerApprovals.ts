@@ -12,6 +12,35 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     setLoading(true);
     try {
       const isTeamLeader = role?.toUpperCase() === 'TEAM_LEADER';
+      const isHR = role?.toUpperCase() === 'HR';
+
+      // ─── HR role → HR pending leaves endpoint ─────────────────
+      if (isHR) {
+        const res = await api.get('/leave-approvals/pending/hr');
+        const hrLeaves = (res.data?.content || []).map((item: any) => ({
+          ...item.leaveApplication,
+          id: item.leaveApplication.id,
+          employeeName: item.leaveApplication.employeeName,
+          leaveType: item.leaveApplication.leaveType,
+          startDate: item.leaveApplication.startDate,
+          endDate: item.leaveApplication.endDate,
+          reason: item.leaveApplication.reason,
+          days: item.leaveApplication.days,
+          createdAt: item.leaveApplication.createdAt,
+          halfDayType: item.leaveApplication.halfDayType,
+          startDateHalfDayType: item.leaveApplication.startDateHalfDayType,
+          endDateHalfDayType: item.leaveApplication.endDateHalfDayType,
+          attachments: item.attachments || [],
+          attachmentCount: item.attachmentCount || 0,
+          isHRLeave: true,
+        }));
+        setRequests(hrLeaves);
+        return;
+      }
+
+      // ─── Team Leader ───────────────────────────────────────────
+      if (isTeamLeader) {
+        const [tlRequests, tlODRequests] = await Promise.all([
 
       // 1. Fetch data from services
       const [leaveData, compOffs, ods, accessReqs] = isTeamLeader
@@ -80,8 +109,6 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     }
   };
 
-  // console.log(requests);
-
 
   useEffect(() => {
     fetchRequests();
@@ -100,7 +127,19 @@ export const useManagerApprovals = (userId: number, role?: string) => {
   ) => {
     try {
       setLoading(true);
-      if (type === 'ON_DUTY') {
+      const isHR = role?.toUpperCase() === 'HR';
+
+      // ─── HR leave decision ────────────────────────────────────
+      if (isHR) {
+        if (status === 'APPROVED') {
+          await api.patch(`/leave-approvals/${requestId}/approve`);
+        } else {
+          await api.patch(`/leave-approvals/${requestId}/reject`, {
+            comments: reason
+          });
+        }
+      }
+      else if (type === 'ON_DUTY') {
         if (status === 'APPROVED') {
           await requestService.approveOD(requestId, userId);
         } else {
@@ -133,11 +172,9 @@ export const useManagerApprovals = (userId: number, role?: string) => {
           decision: status,
           comments: reason
         };
-
         await dashboardService.updateDecision(decisionRequest);
       }
 
-      // Refresh UI by removing the item
       removeFromState(requestId);
       return { success: true };
 

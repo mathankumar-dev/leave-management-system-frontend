@@ -1,5 +1,7 @@
 import api from '../../../api/axiosInstance';
 import Cookies from "js-cookie";
+import { AxiosError } from 'axios';
+import type { DashboardResponse, LowBalanceEmployee } from '../views/types';
 
 import type {
   LeaveRecord,
@@ -25,6 +27,15 @@ import type {
 
 
 } from '../types';
+
+const handleError = (err: unknown, context: string): never => {
+  if (err instanceof AxiosError) {
+    throw new Error(
+      `${context}: ${err.response?.status ?? 'Network Error'} ${err.response?.statusText ?? ''}`.trim()
+    );
+  }
+  throw new Error(`${context}: Unexpected error`);
+};
 
 
 
@@ -284,6 +295,32 @@ export const dashboardService = {
     const response = await api.post('/compoff/request', payload);
     return response.data;
   },
+
+
+  //============================
+  //       HR dashboard 
+  //============================
+
+   // GET /dashboard/hr — main dashboard data
+  getDashboardData: async (signal?: AbortSignal): Promise<DashboardResponse> => {
+    try {
+      const response = await api.get<DashboardResponse>('/dashboard/hr', { signal });
+      return response.data;
+    } catch (err) {
+      throw handleError(err, 'getDashboardData');
+    }
+  },
+
+  // GET /dashboard/hr/low-balance — employee leave balance
+  getLowBalanceEmployees: async (signal?: AbortSignal): Promise<LowBalanceEmployee[]> => {
+    try {
+      const response = await api.get<LowBalanceEmployee[]>('/dashboard/hr/low-balance?year=2026', { signal });
+      return response.data;
+    } catch (err) {
+      throw handleError(err, 'getLowBalanceEmployees');
+    }
+  },
+
 
   //   getProfile: async (employeeId: number): Promise<ProfileData> => {
   //   const response = await api.get(`/employees//profile/${employeeId}`);
