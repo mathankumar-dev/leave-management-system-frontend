@@ -20,21 +20,15 @@ interface LeaveTypeBreakdown {
   allocatedDays: number;
   usedDays: number;
   remainingDays: number;
-  pendingCount? : number ;
+  pendingCount?: number;
 }
 
 interface StatItem {
   title: string;
   used: number;
   total?: number;
-  color: string;
-  pendingCount? : number;
+  pendingCount?: number;
 }
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-};
 
 const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   const { fetchDashboard, setError } = useDashboard();
@@ -42,6 +36,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   const employeeId = user?.id;
 
   const [stats, setStats] = useState<StatItem[]>([]);
+  const [approved, setApproved] = useState(0);
+  const [rejected, setRejected] = useState(0);
   const [fetching, setFetching] = useState(true);
   const [selectedCard, setSelectedCard] = useState<StatItem | null>(null);
 
@@ -59,7 +55,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       );
 
       const annualLeave = breakdown.find((b) =>
-        b.leaveType?.toUpperCase().includes("ANNUAL_LEAVE")
+        b.leaveType?.toUpperCase().includes("ANNUAL")
       );
 
       const newStats: StatItem[] = [
@@ -67,27 +63,23 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           title: "Sick Leave",
           used: sickLeave?.usedDays ?? 0,
           total: sickLeave?.allocatedDays ?? 0,
-          color: "cyan",
-          pendingCount : sickLeave?.pendingCount ?? 0,
+          pendingCount: sickLeave?.pendingCount ?? 0,
         },
         {
           title: "Annual Leave",
           used: annualLeave?.usedDays ?? 0,
           total: annualLeave?.allocatedDays ?? 0,
-          color: "cyan",
-          pendingCount : annualLeave?.pendingCount ?? 0,
+          pendingCount: annualLeave?.pendingCount ?? 0,
         },
         {
           title: "Yearly Balance",
           used: data.yearlyUsed || 0,
           total: data.yearlyAllocated || 0,
-          color: "cyan",
         },
         {
           title: "Monthly Balance",
           used: data.monthlyUsed || 0,
           total: data.monthlyAllocated || 0,
-          color: "cyan",
         },
         {
           title: "Carry Forward",
@@ -95,38 +87,19 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             (data.carryForwardTotal || 0) -
             (data.carryForwardRemaining || 0),
           total: data.carryForwardTotal || 0,
-          color: "cyan",
         },
         {
           title: "Comp Off Balance",
           used: data.compoffBalance || 0,
           total: data.compoffBalance || 0,
-          color: "cyan",
-          pendingCount : 0,
-        },
-        {
-          title: "Approved Leaves",
-          used: data.approvedCount || 0,
-          total: data.approvedCount || 0,
-          color: "emerald",
-        },
-        {
-          title: "Pending Leaves",
-          used: data.pendingCount || 0,
-          total: data.pendingCount || 0,
-          color: "amber",
-        },
-        {
-          title: "Rejected Leaves",
-          used: data.rejectedCount || 0,
-          total: data.rejectedCount || 0,
-          color: "rose",
+          pendingCount: 0,
         },
       ];
 
       setStats(newStats);
+      setApproved(data.approvedCount || 0);
+      setRejected(data.rejectedCount || 0);
     } catch (err: any) {
-      console.error("Dashboard API Error:", err);
       setError(err?.message || "Failed to load dashboard data");
     } finally {
       setFetching(false);
@@ -137,95 +110,116 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  if (fetching) {
-    return <CustomLoader label="Loading dashboard..." />;
-  }
+  if (fetching) return <CustomLoader label="Loading dashboard..." />;
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="max-w-7xl mx-auto px-6 py-6 space-y-6 bg-gradient-to-b from-slate-50 to-white min-h-screen"
-    >
+    <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+
       {/* HEADER */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-semibold text-slate-800">
+          <h2 className="text-2xl font-semibold">
             Welcome back, {user?.name}
           </h2>
-          <p className="text-sm text-slate-500">Leave summary for 2026</p>
+          
         </div>
 
         <button
           onClick={() => onNavigate?.("Apply Leave")}
-          className="flex items-center gap-2 bg-indigo-500 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition"
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
         >
           <FaPlus /> Apply Leave
         </button>
       </div>
 
-      {/* TABLE */}
-      <div className="w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-neutral-800 text-white">
-            <tr>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Leave Category</th>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Allocated</th>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Used</th>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Balance</th>
-              <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Pending Requests</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {stats.map((stat, index) => {
-              const remaining = (stat.total ?? 0) - (stat.used ?? 0);
+      {/* STATUS CARDS */}
+      <div className="grid grid-cols-2 gap-4">
+        <motion.div
+          whileHover={{ scale: 1.03 }}
+          className="bg-gradient-to-br from-green-50 to-white border p-5 rounded-xl shadow-sm"
+        >
+          <p className="text-sm text-gray-500">Approved Leaves</p>
+          <h3 className="text-3xl font-bold text-green-600">
+            {approved}
+          </h3>
+        </motion.div>
 
-              // Conditional styling for the "Monthly" or special rows if you want to highlight them
-              const isMonthly = stat.title.toLowerCase().includes("monthly");
-
-              return (
-                <tr
-                  key={index}
-                  onClick={() => setSelectedCard(stat)}
-                  className={`group cursor-pointer transition-colors ${isMonthly ? 'bg-indigo-50/30 hover:bg-indigo-50/50' : 'hover:bg-slate-50/50'
-                    }`}
-                >
-                  <td className="px-6 py-4">
-                    <span className={`text-xs font-bold uppercase tracking-tight ${isMonthly ? 'text-indigo-600' : 'text-slate-900'
-                      }`}>
-                      {stat.title}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-medium text-slate-400">
-                      {stat.total ?? stat.used} Days
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-bold text-slate-700">
-                      {stat.used} Days
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className={`px-3 py-1 rounded-md text-xs font-black ${remaining > 0
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'bg-slate-100 text-slate-500'
-                      }`}>
-                      {remaining} Left
-                    </span>
-                  </td>
-                                    <td className="px-6 py-4 text-center">
-                    <span className="text-sm font-bold text-slate-700">
-                      {stat.pendingCount} 
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <motion.div
+          whileHover={{ scale: 1.03 }}
+          className="bg-gradient-to-br from-red-50 to-white border p-5 rounded-xl shadow-sm"
+        >
+          <p className="text-sm text-gray-500">Rejected Leaves</p>
+          <h3 className="text-3xl font-bold text-red-600">
+            {rejected}
+          </h3>
+        </motion.div>
       </div>
+
+      <div className="bg-white border rounded-2xl shadow-md overflow-hidden">
+  <table className="w-full text-sm">
+    
+    {/* HEADER */}
+    <thead className="bg-gradient-to-r from-gray-900 to-gray-800 text-white text-xs uppercase tracking-wider">
+      <tr>
+        <th className="px-6 py-4 text-left">Category</th>
+        <th className="px-6 py-4 text-center">Allocated</th>
+        <th className="px-6 py-4 text-center">Used</th>
+        <th className="px-6 py-4 text-center">Pending</th>
+      </tr>
+    </thead>
+
+    {/* BODY */}
+    <tbody className="divide-y divide-gray-200">
+      {stats.map((stat, index) => {
+        const percent = stat.total
+          ? Math.min((stat.used / stat.total) * 100, 100)
+          : 0;
+
+        return (
+          <tr
+            key={index}
+            onClick={() => setSelectedCard(stat)}
+            className="hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+          >
+            {/* CATEGORY */}
+            <td className="px-6 py-4 font-medium text-gray-800">
+              {stat.title}
+            </td>
+
+            {/* ALLOCATED */}
+            <td className="px-6 py-4 text-center text-gray-600">
+              {stat.total ?? "-"}
+            </td>
+
+            {/* USED */}
+            <td className="px-6 py-4 text-center">
+              <span className="font-semibold text-indigo-600">
+                {stat.used}
+              </span>
+
+              
+
+              
+            </td>
+
+            {/* PENDING */}
+            <td className="px-6 py-4 text-center">
+              {stat.pendingCount !== undefined ? (
+                <span className="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 font-medium">
+                  {stat.pendingCount}
+                </span>
+              ) : (
+                "-"
+              )}
+            </td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+</div>
+
+      
 
       {/* DRAWER */}
       <LeaveDetailsDrawer
@@ -244,7 +238,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           tooltipLabel="Apply Leave"
         />
       )}
-    </motion.div>
+    </div>
   );
 };
 

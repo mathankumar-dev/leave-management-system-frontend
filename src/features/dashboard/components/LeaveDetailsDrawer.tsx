@@ -6,7 +6,7 @@ interface StatItem {
   title: string;
   used: number;
   total?: number;
-  color: string;
+  
    breakdown?: LeaveTypeBreakdown[];
 }
 
@@ -22,7 +22,7 @@ interface StatItem {
   title: string;
   used: number;
   total?: number;
-  color: string;
+  
   breakdown?: LeaveTypeBreakdown[];
 }
 

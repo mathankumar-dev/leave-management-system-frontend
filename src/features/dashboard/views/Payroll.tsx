@@ -2,222 +2,441 @@ import React, { useEffect, useState } from "react";
 import { useDashboard } from "../hooks/useDashboard";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import type { ProfileData, YearlySummary } from "../types";
+import { useAuth } from "../../auth/hooks/useAuth";
+import api from "../../../api/axiosInstance";
+import html2canvas from "html2canvas";
+import { dashboardService } from "../services/dashboardService";
+import { toPng } from "html-to-image";
+import logo from "../../../assets/bg-rm-logo-HRES.png"; // adjust path
 
 const PayrollView: React.FC = () => {
-  const { payslip, fetchPayslip, loading, error } = useDashboard();
+  const { payslip, fetchPayslip, error } = useDashboard();
+  const { user } = useAuth();
+
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [summary, setSummary] = useState<YearlySummary | null>(null);
+  const [viewMode, setViewMode] = useState<"monthly" | "yearly">("monthly");
+
+  const [loading, setLoading] = useState(false);
+  const [loadingPDF, setLoadingPDF] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
-  const [loadingPDF, setLoadingPDF] = useState(false);
 
+  // ================= FETCH =================
   useEffect(() => {
-    fetchPayslip(year, month);
-  }, [year, month]);
+    if (viewMode === "monthly") {
+      fetchPayslip(year, month);
+      fetchProfile();
+    }
+  }, [year, month, viewMode]);
 
-  const search = () => fetchPayslip(year, month);
+  const fetchProfile = async () => {
+    setLoadingProfile(true);
+    try {
+      const res = await api.get(`/employees/profile/${user?.id!}`);
+      setProfile(res.data);
+    } catch (err) {
+      console.error("Profile fetch failed", err);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  const fetchYearlySummary = async (year: number) => {
+    try {
+      setLoading(true);
+      const data: YearlySummary = await dashboardService.getHistory(year);
+      setSummary(data);
+    } catch (e) {
+      console.error("Yearly summary failed", e);
+      setSummary(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const search = () => {
+    if (viewMode === "monthly") {
+      fetchPayslip(year, month);
+      fetchProfile();
+    } else {
+      fetchYearlySummary(year);
+    }
+  };
+
+  const numberToWords = (num: number): string => {
+  const a = [
+    "", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX",
+    "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE",
+    "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN",
+    "SEVENTEEN", "EIGHTEEN", "NINETEEN"
+  ];
+  const b = ["", "", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY"];
+
+  if (num === 0) return "ZERO";
+
+  const inWords = (n: number): string => {
+    if (n < 20) return a[n];
+    if (n < 100) return b[Math.floor(n / 10)] + " " + a[n % 10];
+    if (n < 1000)
+      return a[Math.floor(n / 100)] + " HUNDRED " + inWords(n % 100);
+    if (n < 100000)
+      return inWords(Math.floor(n / 1000)) + " THOUSAND " + inWords(n % 1000);
+    if (n < 10000000)
+      return inWords(Math.floor(n / 100000)) + " LAKH " + inWords(n % 100000);
+    return inWords(Math.floor(n / 10000000)) + " CRORE " + inWords(n % 10000000);
+  };
+
+  return inWords(num).trim();
+};
 
   const formatCurrency = (val: any) =>
-    val ? `₹ ${Number(val).toLocaleString("en-IN")}` : "₹ 0";
+    `₹ ${Number(val || 0).toLocaleString("en-IN")}`;
 
- const downloadPDF = () => {
-  if (!payslip) return;
+  
+ const downloadPDF = async () => {
+  const element = document.getElementById("payslip-container");
+  if (!element) return;
+
   setLoadingPDF(true);
 
   try {
-    const pdf = new jsPDF();
-
-    // Header
-    pdf.setFontSize(16);
-    pdf.text("WENXT TECHNOLOGIES PRIVATE LIMITED", 105, 15, { align: "center" });
-    pdf.setFontSize(10);
-    pdf.text("Monthly Salary Payslip", 105, 22, { align: "center" });
-
-    // Employee Details
-    const details: [string, any][] = [
-      ["Employee ID", payslip.employeeId],
-      ["Month / Year", `${payslip.month}/${payslip.year}`],
-      ["LOP Days", payslip.lopDays],
-      ["Employee Name", payslip.employeeName ?? "--"],
-      ["Designation", payslip.designation ?? "--"],
-      ["UAN No", payslip.uan ?? "--"],
-      ["PF Number", payslip.pf ?? "--"],
-      ["Bank", payslip.bank ?? "--"],
-      ["Account No", payslip.accountNumber ?? "--"],
-    ];
-
-    let startY = 30;
-    details.forEach(([label, value]) => {
-      pdf.text(`${label}: ${value}`, 14, startY);
-      startY += 7;
-    });
-    startY += 5;
-
-    // Salary Table
-    autoTable(pdf, {
-      startY,
-      head: [["Income", "Amount", "Deductions", "Amount"]],
-      body: [
-        ["Basic Salary", formatCurrency(payslip.basicSalary), "PF", formatCurrency(payslip.pf)],
-        ["HRA", formatCurrency(payslip.hra), "ESI", formatCurrency(payslip.esi)],
-        ["Conveyance", formatCurrency(payslip.conveyance), "Professional Tax", formatCurrency(payslip.professionalTax)],
-        ["Medical", formatCurrency(payslip.medical), "TDS", formatCurrency(payslip.tds)],
-        ["Other Allowance", formatCurrency(payslip.otherAllowance), "LOP", formatCurrency(payslip.lop)],
-        ["Variable Pay", formatCurrency(payslip.variablePay), "", ""],
-        ["Bonus", formatCurrency(payslip.bonus), "", ""],
-        ["Incentive", formatCurrency(payslip.incentive), "", ""],
-        ["Stipend", formatCurrency(payslip.stipend), "", ""],
-      ],
-      foot: [
-        [
-          "Gross Salary",
-          formatCurrency(payslip.grossSalary),
-          "Total Deduction",
-          formatCurrency(Number(payslip.grossSalary || 0) - Number(payslip.netSalary || 0)),
-        ],
-      ],
-      theme: "grid",
-      headStyles: { fillColor: [220, 220, 220] },
+    const dataUrl = await toPng(element, {
+      cacheBust: true,
+      pixelRatio: 3,
+      backgroundColor: "#ffffff",
     });
 
-    const finalY = (pdf as any).lastAutoTable?.finalY || startY + 20;
+    const pdf = new jsPDF("p", "mm", "a4");
 
-    pdf.setFontSize(12);
-    pdf.text(`Net Salary: ${formatCurrency(payslip.netSalary)}`, 150, finalY + 10);
-    pdf.setFontSize(10);
-    pdf.text(`Salary in Words: ${payslip.salaryInWords ?? "--"}`, 14, finalY + 20);
+    const img = new Image();
+    img.src = dataUrl;
 
-    pdf.text("Employee Signature", 14, finalY + 35);
-    pdf.text("Authorized Signatory", 150, finalY + 35);
+    img.onload = () => {
+      const pageWidth = 210;
+      const pageHeight = 297;
 
-    // --- NEW: Open in new tab instead of file:/// ---
-    const blob = pdf.output("blob");
-    const url = URL.createObjectURL(blob);
-    window.open(url, "_blank");
+      const imgWidth = pageWidth;
+      const imgHeight = (img.height * imgWidth) / img.width;
 
-    // Optional: also download
-    pdf.save(`Payslip-${month}-${year}.pdf`);
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // First page
+      pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Remaining pages
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Payslip-${month}-${year}.pdf`);
+    };
   } catch (err) {
-    console.error("Failed to generate PDF", err);
+    console.error(err);
   } finally {
     setLoadingPDF(false);
   }
 };
 
-  // Rows for UI Table
   const salaryRows = [
-    ["Basic Salary", payslip?.basicSalary, "PF", payslip?.pf],
-    ["HRA", payslip?.hra, "ESI", payslip?.esi],
+    ["Basic Salary", payslip?.basicSalary, "PF", profile?.pfNumber],
+    ["HRA", payslip?.hra, "TDS", payslip?.tds],
     ["Conveyance", payslip?.conveyance, "Professional Tax", payslip?.professionalTax],
-    ["Medical", payslip?.medical, "TDS", payslip?.tds],
+    ["Medical", payslip?.medical, "ESI", payslip?.esi],
     ["Other Allowance", payslip?.otherAllowance, "LOP", payslip?.lop],
-    ["Variable Pay", payslip?.variablePay, "", ""],
     ["Bonus", payslip?.bonus, "", ""],
-    ["Incentive", payslip?.incentive, "", ""],
-    ["Stipend", payslip?.stipend, "", ""],
   ];
 
   return (
     <div className="max-w-5xl mx-auto bg-white border shadow p-8">
-      <h1 className="text-xl font-bold text-center mb-6">Employee Payslip</h1>
+      <h1 className="text-xl font-bold text-center mb-6">
+        Employee Payslip
+      </h1>
 
-      {error && <div className="text-red-500 text-center mb-4">{error}</div>}
-
-      <div className="flex gap-4 mb-6">
+      {/* CONTROLS */}
+      <div className="flex gap-4 mb-6 flex-wrap">
         <input
           type="number"
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
           className="border p-2"
-          placeholder="Year"
         />
-        <input
-          type="number"
-          value={month}
-          onChange={(e) => setMonth(Number(e.target.value))}
-          className="border p-2"
-          placeholder="Month"
-        />
-        <button onClick={search} className="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+
+        {viewMode === "monthly" && (
+          <input
+            type="number"
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+            className="border p-2"
+          />
+        )}
+
+        <button
+          onClick={search}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Search
+        </button>
+
         <button
           onClick={downloadPDF}
-          disabled={loadingPDF || !payslip}
           className="bg-green-600 text-white px-4 py-2 rounded"
         >
           {loadingPDF ? "Downloading..." : "Download PDF"}
         </button>
+
+        <button
+          onClick={() => {
+            setViewMode("yearly");
+            fetchYearlySummary(year);
+          }}
+          className="bg-purple-600 text-white px-4 py-2 rounded"
+        >
+          Yearly View
+        </button>
+
+        <button
+          onClick={() => setViewMode("monthly")}
+          className="bg-gray-600 text-white px-4 py-2 rounded"
+        >
+          Monthly View
+        </button>
       </div>
 
-      {!payslip && <div className="text-center text-gray-500">No Payslip Found</div>}
+      {/* UNIFIED UI */}
+      {((viewMode === "monthly" && payslip && profile) ||
+        (viewMode === "yearly" && summary)) && (
+        <div id="payslip-container" className="border-2 border-black p-6 text-sm">
+          <div className="flex items-center justify-between border-b pb-4 mb-4">
 
-      {payslip && (
-        <>
-          <div className="bg-white border shadow-lg p-8 mb-6">
-            <div className="text-center border-b pb-4 mb-6">
-              <h2 className="text-lg font-bold">WENXT TECHNOLOGIES PRIVATE LIMITED</h2>
-              <p className="text-xs text-gray-500">Monthly Salary Payslip</p>
-            </div>
+  {/* LOGO */}
+  <img
+    src={logo} // OR use {logo} if imported
+    alt="Company Logo"
+    className="w-16 h-16 object-contain"
+  />
 
-            <div className="grid grid-cols-4 gap-4 text-sm mb-6">
-              <Info label="Employee ID" value={payslip.employeeId} />
-              <Info label="Month / Year" value={`${payslip.month}/${payslip.year}`} />
-              <Info label="LOP Days" value={payslip.lopDays} />
-              <Info label="Employee Name" value={payslip.employeeName ?? "--"} />
-              <Info label="Designation" value={payslip.designation ?? "--"} />
-              <Info label="UAN No" value={payslip.uan ?? "--"} />
-              <Info label="PF Number" value={payslip.pf ?? "--"} />
-              <Info label="Bank" value={payslip.bank ?? "--"} />
-              <Info label="Account No" value={payslip.accountNumber ?? "--"} />
-            </div>
+  {/* COMPANY DETAILS */}
+  <div className="text-center flex-1">
+    <h2 className="font-bold text-lg">
+      WENXT TECHNOLOGIES PRIVATE LIMITED
+    </h2>
+    <h3 className="text-xs mt-1">
+      Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
+      Thiruvanmiyur, Chennai- 600041
+    </h3>
+    <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
+  </div>
 
-            {/* Salary Table */}
-            <table className="w-full border-collapse border text-sm">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="border px-2 py-1">Income</th>
-                  <th className="border px-2 py-1">Amount</th>
-                  <th className="border px-2 py-1">Deductions</th>
-                  <th className="border px-2 py-1">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salaryRows.map(([left, leftVal, right, rightVal], i) => (
-                  <Row key={i} left={left} leftVal={leftVal} right={right} rightVal={rightVal} />
-                ))}
-                <tr className="font-bold">
-                  <td className="border px-2 py-1">Gross Salary</td>
-                  <td className="border px-2 py-1">{formatCurrency(payslip.grossSalary)}</td>
-                  <td className="border px-2 py-1">Total Deduction</td>
-                  <td className="border px-2 py-1">{formatCurrency(Number(payslip.grossSalary || 0) - Number(payslip.netSalary || 0))}</td>
-                </tr>
-                <tr className="font-bold">
-                  <td className="border px-2 py-1">Net Salary</td>
-                  <td className="border px-2 py-1" colSpan={3}>{formatCurrency(payslip.netSalary)}</td>
-                </tr>
-              </tbody>
-            </table>
+  {/* EMPTY SPACE (for balance) */}
+  <div className="w-16" />
+</div>
+
+          
+
+          {/* EMPLOYEE DETAILS */}
+          {viewMode === "monthly" && payslip && profile && (
+        <div  className="border-2 border-black p-6 text-sm">
+          <div className="flex items-center justify-between border-b pb-4 mb-4">
+
+  {/* LOGO */}
+  <img
+    src={logo} // OR use {logo} if imported
+    alt="Company Logo"
+    className="w-16 h-16 object-contain"
+  />
+
+  {/* COMPANY DETAILS */}
+  <div className="text-center flex-1">
+    <h2 className="font-bold text-lg">
+      WENXT TECHNOLOGIES PRIVATE LIMITED
+    </h2>
+    <h3 className="text-xs mt-1">
+      Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
+      Thiruvanmiyur, Chennai- 600041
+    </h3>
+    <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
+  </div>
+
+  {/* EMPTY SPACE (for balance) */}
+  <div className="w-16" />
+</div>
+          <table className="w-full border border-black mb-4 text-sm">
+            <tbody>
+              <tr>
+                <td className="border p-2 font-medium">Employee ID</td>
+                <td className="border p-2">{payslip.employeeId}</td>
+                <td className="border p-2 font-medium">UAN No</td>
+                <td className="border p-2">{profile.unaNumber ?? "--"}</td>
+              </tr>
+              <tr>
+                <td className="border p-2 font-medium">Employee Name</td>
+                <td className="border p-2">{profile.name ?? "--"}</td>
+                <td className="border p-2 font-medium">PF Number</td>
+                <td className="border p-2">{profile.pfNumber ?? "--"}</td>
+              </tr>
+              <tr>
+                <td className="border p-2 font-medium">Designation</td>
+                <td className="border p-2">{profile.designation ?? "--"}</td>
+                <td className="border p-2 font-medium">Bank</td>
+                <td className="border p-2">{profile.bankName ?? "--"}</td>
+              </tr>
+              <tr>
+                <td className="border p-2 font-medium">Month / Year</td>
+                <td className="border p-2">{payslip.month}/{payslip.year}</td>
+                <td className="border p-2 font-medium">Account No</td>
+                <td className="border p-2">{profile.accountNumber ?? "--"}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+
+          {/* SALARY TABLE */}
+          <table className="w-full border mt-3.5 border-black">
+            
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border p-2">Income</th>
+                <th className="border p-2">Amount</th>
+                <th className="border p-2">Deductions</th>
+                <th className="border p-2">Amount</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {viewMode === "monthly" ? (
+                salaryRows.map(([l, lv, r, rv], i) => (
+                  <tr key={i}>
+                    <td className="border p-2">{l}</td>
+                    <td className="border p-2">{formatCurrency(lv)}</td>
+                    <td className="border p-2">{r}</td>
+                    <td className="border p-2">{formatCurrency(rv)}</td>
+                  </tr>
+                ))
+              ) : (
+                <>
+  <tr>
+    <td className="border p-2">Basic</td>
+    <td className="border p-2">{formatCurrency(summary?.totalBasic)}</td>
+    <td className="border p-2">PF</td>
+    <td className="border p-2">{formatCurrency(summary?.totalPf)}</td>
+  </tr>
+
+  <tr>
+    <td className="border p-2">HRA</td>
+    <td className="border p-2">{formatCurrency(summary?.totalHra)}</td>
+    <td className="border p-2">TDS</td>
+    <td className="border p-2">{formatCurrency(summary?.totalTds)}</td>
+  </tr>
+
+  <tr>
+    <td className="border p-2">Conveyance</td>
+    <td className="border p-2">{formatCurrency(summary?.totalConveyance)}</td>
+    <td className="border p-2">Professional Tax</td>
+    <td className="border p-2">{formatCurrency(summary?.totalProfessionalTax)}</td>
+  </tr>
+
+  <tr>
+    <td className="border p-2">Medical</td>
+    <td className="border p-2">{formatCurrency(summary?.totalMedical)}</td>
+    <td className="border p-2">ESI</td>
+    <td className="border p-2">{formatCurrency(summary?.totalEsi)}</td>
+  </tr>
+
+  <tr>
+    <td className="border p-2">Other Allowance</td>
+    <td className="border p-2">{formatCurrency(summary?.totalOtherAllowance)}</td>
+    <td className="border p-2">LOP</td>
+    <td className="border p-2">{formatCurrency(summary?.totalLop)}</td>
+  </tr>
+
+  <tr>
+    <td className="border p-2">Bonus</td>
+    <td className="border p-2">{formatCurrency(summary?.totalBonus)}</td>
+    <td className="border p-2"></td>
+    <td className="border p-2"></td>
+  </tr>
+
+  <tr>
+    <td className="border p-2">Incentive</td>
+    <td className="border p-2">{formatCurrency(summary?.totalIncentive)}</td>
+    <td className="border p-2"></td>
+    <td className="border p-2"></td>
+  </tr>
+
+  <tr>
+    <td className="border p-2">Stipend</td>
+    <td className="border p-2">{formatCurrency(summary?.totalStipend)}</td>
+    <td className="border p-2"></td>
+    <td className="border p-2"></td>
+  </tr>
+</>
+              )}
+
+              <tr className="font-bold">
+                <td className="border p-2">Total</td>
+                <td className="border p-2">
+                  {formatCurrency(
+                    viewMode === "monthly"
+                      ? payslip?.grossSalary
+                      : summary?.totalGrossSalary
+                  )}
+                </td>
+
+                <td className="border p-2">Total Deduction</td>
+                <td className="border p-2">
+                  {formatCurrency(
+                    viewMode === "monthly"
+                      ? Number(payslip?.grossSalary) - Number(payslip?.netSalary)
+                      : Number(summary?.totalGrossSalary) - Number(summary?.totalNetSalary)
+                  )}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* NET */}
+          <div className="mt-4 font-bold">
+            Net Salary:{" "}
+            {formatCurrency(
+              viewMode === "monthly"
+                ? payslip?.netSalary
+                : summary?.totalNetSalary
+            )}
           </div>
-        </>
+
+                <div className="mt-2 text-sm italic">
+        In Words:{" "}
+        {numberToWords(
+          viewMode === "monthly"
+            ? Number(payslip?.netSalary || 0)
+            : Number(summary?.totalNetSalary || 0)
+        )}{" "}
+        ONLY
+      </div>
+
+          <div className="flex justify-between mt-8 text-xl">
+          <div>Employee Signature: ______________________</div>
+          <div>This payslip is computer generated</div>
+        </div>
+        </div>
+      )}
+
+      {viewMode === "yearly" && loading && (
+        <div className="text-center mt-4">Loading summary...</div>
       )}
     </div>
   );
 };
-
-// Row component
-const Row: React.FC<{ left: string; leftVal: any; right: string; rightVal: any }> = ({ left, leftVal, right, rightVal }) => (
-  <tr>
-    <td className="border px-2 py-1">{left}</td>
-    <td className="border px-2 py-1">{leftVal ?? "₹ 0"}</td>
-    <td className="border px-2 py-1">{right}</td>
-    <td className="border px-2 py-1">{rightVal ?? "₹ 0"}</td>
-  </tr>
-);
-
-// Info component
-const Info: React.FC<{ label: string; value: any }> = ({ label, value }) => (
-  <div>
-    <p className="text-gray-500">{label}</p>
-    <p className="font-medium">{value ?? "-"}</p>
-  </div>
-);
 
 export default PayrollView;

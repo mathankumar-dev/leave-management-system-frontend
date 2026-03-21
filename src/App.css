@@ -18,3 +18,9 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #4f46e5; 
 } */
+
+#payslip-container {
+  width: 900px;   /* 🔥 important for proper scaling */
+  margin: auto;
+  background: white;
+}
