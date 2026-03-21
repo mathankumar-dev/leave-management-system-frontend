@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { dashboardService } from "../../services/dashboardService";
 import { requestService } from "../../services/requests/requestService";
 import type { AccessResponse, CompOffResponse, LeaveDecision, LeaveDecisionRequest, LeaveType, ManagerAccessDecision, ODResponse } from "../../types";
+import api from "../../../../api/axiosInstance";
 
 export const useManagerApprovals = (userId: number, role?: string) => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -40,12 +41,11 @@ export const useManagerApprovals = (userId: number, role?: string) => {
 
       // ─── Team Leader ───────────────────────────────────────────
       if (isTeamLeader) {
-        const [tlRequests, tlODRequests] = await Promise.all([
-
+        // const [tlRequests, tlODRequests] = await Promise.all([]);
+      }
       // 1. Fetch data from services
       const [leaveData, compOffs, ods, accessReqs] = isTeamLeader
-        ? await Promise.all([
-          dashboardService.getPendingApprovalsForTeamLeader(userId),
+        ? await Promise.all([ dashboardService.getPendingApprovalsForTeamLeader(userId),
           null, // Team leaders might not have comp-offs in your logic
           dashboardService.getPendingODApprovalsForTeamLeader(userId),
           null
@@ -88,12 +88,8 @@ export const useManagerApprovals = (userId: number, role?: string) => {
 
 
       const formatedAccessReqs = (accessReqs || []).map((areq: AccessResponse) => ({
-
-
         ...areq,
         leaveType: areq.accessType,
-
-
       }));
 
       // 5. Combine and Sort
@@ -214,4 +210,4 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     handleCompOffReject,
     refresh: fetchRequests
   };
-};
+}

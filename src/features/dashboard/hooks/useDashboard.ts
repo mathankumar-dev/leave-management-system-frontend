@@ -615,7 +615,7 @@ export const useDashboard = () => {
 
     leaveBalance,
     fetchLeaveBalance,
-    fetchHistory,
+    // fetchHistory,
     fetchMyOD,
 
     removeLeaveType,

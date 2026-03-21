@@ -68,25 +68,7 @@ const DashboardLayout: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [cfoSelectedEmpId, setCfoSelectedEmpId] = useState<number | null>(null);
-
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (userRole === ROLES.ADMIN && activeTab === "Dashboard") {
-      setActiveTab("Employees");
-    }
-    if (userRole === ROLES.CFO && activeTab === "Dashboard") {
-      setActiveTab("Cfoemployees");
-    }
-  }, [userRole, activeTab]);
-
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({ top: 0, behavior: "auto" });
-    }
-  }, [activeTab]);
-
+  
   const renderView = () => {
 
     switch (activeTab) {

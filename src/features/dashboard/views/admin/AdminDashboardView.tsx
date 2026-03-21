@@ -212,7 +212,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
                   <td className="px-6 py-4 text-sm font-bold text-slate-700">{leave.usedDays}d</td>
                   <td className="px-6 py-4 text-right">
                     <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-black">
-                      {leave.remainingDays} Left
+                      {leave.remainingDays}
                     </span>
                   </td>
                 </tr>
