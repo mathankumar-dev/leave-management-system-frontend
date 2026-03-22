@@ -41,21 +41,26 @@ const LandingPage: React.FC = () => {
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.70), rgba(0, 0, 0, 0.45)), url('https://images.unsplash.com/photo-1551434678-e076c223a692')`
         }}
       >
-        <div >
-          <img src={logo} className="w-80 drop-shadow-2xl drop-shadow-black " alt="logo" />
-        </div>
-        <div className="max-w-2xl flex flex-col items-center gap-5">
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-            Driving Growth through Insurance Technology
-          </h1>
-          <p className="text-lg opacity-90">
-            Providing digital tools with the right strategy and architecture.
-          </p>
-          <button onClick={() => navigate('/login')} className="mt-2.5 px-7 py-3 bg-[#12b9b3] text-white font-semibold rounded-full transition-transform hover:-translate-y-1 hover:scale-105 hover:bg-white hover:text-[#12b9b3]">
-            Get Started
-          </button>
+        <div>
+          <img src={logo} className="w-80 drop-shadow-2xl drop-shadow-black" alt="logo" />
         </div>
 
+        <div className="max-w-2xl flex flex-col items-center gap-5">
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+            Simplifying Leave & Workforce Management
+          </h1>
+
+          <p className="text-lg opacity-90">
+            Manage employee leaves, track attendance, and streamline HR operations — all in one place.
+          </p>
+
+          <button
+            onClick={() => navigate('/login')}
+            className="mt-2.5 px-7 py-3 bg-[#12b9b3] text-white font-semibold rounded-full transition-transform hover:-translate-y-1 hover:scale-105 hover:bg-white hover:text-[#12b9b3]"
+          >
+            Access Dashboard
+          </button>
+        </div>
       </section>
 
       {/* STATS */}

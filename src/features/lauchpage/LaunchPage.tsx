@@ -87,7 +87,7 @@ const LaunchPage: React.FC = () => {
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/")}>
             <img src={logo} alt="logo" className="h-10 w-10" />
             <span className="text-2xl font-black text-slate-800">
-              Wenxt <span className="text-indigo-600">Technologies</span>
+              WeNxt <span className="text-indigo-600">Technologies</span>
             </span>
           </div>
 

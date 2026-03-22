@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
-  FaCalendarAlt, FaUserShield, FaChartPie, FaPlus,
-  FaUsers, FaUserCheck, FaExclamationTriangle, FaHistory
+  FaUserShield, FaChartPie, FaPlus,
+  FaUsers, FaHistory
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
 import { useAuth } from "../../../auth/hooks/useAuth";

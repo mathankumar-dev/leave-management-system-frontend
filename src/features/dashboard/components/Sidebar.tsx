@@ -18,7 +18,6 @@ import { AiFillThunderbolt } from "react-icons/ai";
 
 import { useAuth } from "../../auth/hooks/useAuth";
 import { MdVerifiedUser } from "react-icons/md";
-import NameSVG from "../../../assets/svg/NameSVG";
 
 import logoSVG from "../../../assets/logo.svg";
 
@@ -93,7 +92,7 @@ function Sidebar({
         <div className="flex items-center justify-between item mb-8 px-2 shrink-0 border border-gray-50/25 rounded bg-gray-50/25 ">
           <div className="h-auto w-42 flex items-center">
             <img src={logoSVG} alt="" width={50} height={50} />
-            <span className="text-black text-xl font-bold">Wenxt</span><span className="text-primary-500 text-xl font-bold">Technologies</span>
+            <span className="text-black text-xl font-bold">WeNxt</span><span className="text-primary-500 text-xl font-bold">Technologies</span>
             {/* <NameSVG color="#ffffff" isDotNeeded={false} /> */}
           </div>
 
