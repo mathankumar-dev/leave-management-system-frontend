@@ -8,9 +8,9 @@ import {
 } from "react-icons/hi2";
 import MyDatePicker from "../../../shared/components/datepicker/MyDatePicker";
 import { useAuth } from "../../../shared/auth/useAuth";
-import { useRequest } from "../../dashboard/hooks/requests/useRequest";
+import { useRequest } from "../hooks/useRequest";
 import type { ODRequest } from "../../dashboard/types";
-import Badge from "../../../shared/components/Badge";
+import Badge from "../../../shared/components/NameBadge";
 
 const ODRequestForm = () => {
     const { user } = useAuth();

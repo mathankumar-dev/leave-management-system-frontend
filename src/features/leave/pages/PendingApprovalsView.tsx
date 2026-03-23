@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import MetricTile from '../../dashboard/components/tiles/MetricTile';
-import RequestTile from '../../dashboard/components/tiles/RequestTile';
-import { useManagerApprovals } from '../../dashboard/hooks/manager/useManagerApprovals';
+import MetricTile from '../../../shared/components/MetricTile';
+import RequestTile from '../components/RequestTile';
+import { useManagerApprovals } from '../hooks/useManagerApprovals';
 import CustomLoader from '../../../shared/components/CustomLoader';
 import { useAuth } from '../../../shared/auth/useAuth';
 import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSearch, FaTimes } from 'react-icons/fa';

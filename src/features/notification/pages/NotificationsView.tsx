@@ -2,13 +2,13 @@ import React, { useState, useMemo } from "react"; // Added useMemo
 import { FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { RiCheckDoubleFill } from "react-icons/ri";
 
-import { useNotifications } from "../../dashboard/hooks/useNotification";
+import { useNotifications } from "../hooks/useNotification";
 import { useAuth } from "../../../shared/auth/useAuth";
-import MetricTile from "../../dashboard/components/tiles/MetricTile";
-import NotificationTile from "../../dashboard/components/tiles/NotificationTile";
+import MetricTile from "../../../shared/components/MetricTile";
+import NotificationTile from "../components/NotificationTile";
 import { formatTimeAgo } from "../../../shared/utils/formatTimeAgo";
 import CustomLoader from "../../../shared/components/CustomLoader";
-import NotificationDetailDrawer from "../../dashboard/components/NotificationDetailDrawer";
+import NotificationDetailDrawer from "../components/NotificationDetailDrawer";
 import type { NotificationResponse } from "../../dashboard/services/notification/types";
 
 const NotificationsView: React.FC = () => {

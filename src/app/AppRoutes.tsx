@@ -7,7 +7,7 @@ import AuthPage from "@/features/auth/pages/AuthPage";
 import ForgotPassword from "@/features/auth/pages/ForgotPassword";
 import DashboardLayout from "@/features/dashboard/layout/DashboardLayout";
 import LandingPage from "@/features/landing/pages/LandingPage";
-import LaunchPage from "@/features/lauchpage/LaunchPage";
+import LaunchPage from "@/features/launchpage/LaunchPage";
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";

@@ -8,8 +8,8 @@ import {
     HiOutlineLockClosed
 } from "react-icons/hi2";
 import { useAuth } from "../../../shared/auth/useAuth";
-import { useRequest } from "../../dashboard/hooks/requests/useRequest";
-import Badge from "../../../shared/components/Badge";
+import { useRequest } from "../../leave/hooks/useRequest";
+import Badge from "../../../shared/components/NameBadge";
 import type { AccessRequest, LeaveType } from "../../dashboard/types";
 
 const AccessRequestForm = () => {

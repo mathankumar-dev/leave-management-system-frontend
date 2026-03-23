@@ -5,7 +5,7 @@ import { useDashboard } from "../../dashboard/hooks/useDashboard";
 import { useAuth } from "../../../shared/auth/useAuth";
 import type { LeaveRecord, ODResponse } from "../../dashboard/types";
 import CustomLoader from "../../../shared/components/CustomLoader";
-import EditLeaveModal from "../../dashboard/components/EditLeaveModal";
+import EditLeaveModal from "../components/EditLeaveModal";
 import { formatTimeAgo } from "../../../shared/utils/formatTimeAgo";
 
 const MyRequestsView: React.FC = () => {

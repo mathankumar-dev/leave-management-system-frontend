@@ -10,8 +10,8 @@ import {
 import MyDatePicker from "../../../shared/components/datepicker/MyDatePicker";
 import MyTimePicker from "../../../shared/components/MyTimePicker";
 import { useAuth } from "../../../shared/auth/useAuth";
-import { useRequest } from "../../dashboard/hooks/requests/useRequest";
-import Badge from "../../../shared/components/Badge";
+import { useRequest } from "../hooks/useRequest";
+import Badge from "../../../shared/components/NameBadge";
 const MeetingRequestForm = () => {
     const { user } = useAuth();
     const { createMeeting, loading, setError } = useRequest();

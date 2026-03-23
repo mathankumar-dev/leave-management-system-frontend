@@ -1,46 +1,46 @@
 import React, { useState } from "react";
 import { useAuth } from "../../../shared/auth/useAuth";
-import Sidebar from "../components/Sidebar";
-import Topbar from "../components/Topbar";
+import Sidebar from "../../../shared/components/Sidebar";
+import Topbar from "../../../shared/components/Topbar";
 
 /* ---------------- ADMIN VIEWS ---------------- */
-import EmployeesView from "../views/admin/EmployeesView";
+import EmployeesView from "../../employee/pages/EmployeesView";
 import LeaveTypesView from "../views/admin/LeaveTypesView";
 
 /* ---------------- HR VIEWS ---------------- */
-import { HRDashboard } from "../views/hr/pages/HRDashboard";
-import { HREmployeesPage } from "../views/hr/pages/HREmployeesPage";
-import LowBalancePage from "../views/hr/pages/LowBalancePage";
-import { HRVerificationPage } from "../views/hr/pages/Hrverificationpage";
+import { HRDashboard } from "../pages/HRDashboard";
+import { HREmployeesPage } from "../../employee/pages/HREmployeesPage";
+import LowBalancePage from "../../leave/pages/LowBalancePage";
+import { HRVerificationPage } from "../../employee/pages/Hrverificationpage";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
-import DashboardView from "../../employee/pages/DashboardView";
+import DashboardView from "../../employee/pages/self/DashboardView";
 import CalendarView from "../../employee/pages/CalendarView";
 import LeaveApplicationForm from "../../leave/components/LeaveApplicationForm";
 import NotificationsView from "../../notification/pages/NotificationsView";
 import EmployeeProfile from "../../employee/pages/EmployeeProfile";
 
 /* ---------------- MANAGER VIEWS ---------------- */
-import ManagerDashboardView from "../views/manager/ManagerDashboardView";
-import AdminDashboardView from "../views/admin/AdminDashboardView";
-import TeamCalendarView from "../views/manager/TeamCalendarView";
+import ManagerDashboardView from "../pages/ManagerDashboardView";
+import AdminDashboardView from "../pages/AdminDashboardView";
+import TeamCalendarView from "../../attendace/pages/TeamCalendarView";
 import ManagerProfile from "../views/manager/ManagerProfile";
 import PendingApprovalsView from "../../leave/pages/PendingApprovalsView";
 import TeamMembersView from "../../employee/pages/TeamMembersView";
 
 /* ---------------------- CFO -----------------------*/
-import { PayslipPage } from "../views/CFO/pages/PayslipPage";
-import { CFOEmployeesPage } from "../views/CFO/pages/Cfoemployeepage";
+import { PayslipPage } from "../../payroll/pages/PayslipPage";
+import { CFOEmployeesPage } from "../../payroll/pages/Cfoemployeepage";
 
 /* ---------------- MODALS ---------------- */
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import OtherRequestForm from "../../../common/OtherRequestForm";
-import PayrollView from "../views/Payroll";
+import PayrollView from "../../payroll/pages/PayrollPage";
 import PersonalDetailsModal from "../../employee/components/PersonalDetailsModal";
 import RequestCenter from "../../employee/components/RequestCenter";
 import MyRequestsView from "../../leave/pages/MyLeavesView";
-import OnboardingPendingPage from "../views/admin/OnboardingPendingPage";
-import FlashNewsForm from "../views/admin/FlashNewsCreate";
+import OnboardingPendingPage from "../../leave/pages/AccessApprovalsPage";
+import FlashNewsForm from "../../notification/pages/FlashNewsCreate";
 
 /* ---------------- ROLE CONSTANTS ---------------- */
 const ROLES = {
