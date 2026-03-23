@@ -1,23 +1,21 @@
 import {
+  FaBell,
+  FaCalendarAlt,
   FaChevronLeft,
+  FaCog,
+  FaDollarSign,
+  FaExclamationTriangle,
+  FaFileInvoiceDollar,
+  FaFileSignature,
   FaSignOutAlt,
   FaThLarge,
-  FaListUl,
-  FaCalendarAlt,
-  FaBell,
   FaUsers,
-  FaCog,
-  FaExclamationTriangle,
-  FaFileSignature,
-  FaDollarSign,
-  FaFileInvoiceDollar,
 } from "react-icons/fa";
-import { AiFillThunderbolt } from "react-icons/ai";
 import { MdVerifiedUser } from "react-icons/md";
 
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import logoSVG from "../../../assets/logo.svg";
+import logoSVG from "@/assets/svg/logo.svg";
 import { useAuth } from "@/shared/auth/useAuth";
 
 interface SidebarProps {
@@ -34,35 +32,37 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
   const userRole = user?.role?.toUpperCase();
   const userName = user?.name;
 
+  const basePathMap = {
+    EMPLOYEE: "/employee",
+    MANAGER: "/manager",
+    TEAM_LEADER: "/manager",
+    HR: "/hr",
+    ADMIN: "/admin",
+    CFO: "/admin",
+  };
+
+  const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
+
   const tabs = [
-    // DASHBOARDS
-    { name: "Dashboard", path: "/dashboard/employee/dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE"] },
-    { name: "Dashboard", path: "/dashboard/manager/dashboard", icon: <FaThLarge />, roles: ["MANAGER", "TEAM_LEADER"] },
-    { name: "Dashboard", path: "/dashboard/hr/dashboard", icon: <FaThLarge />, roles: ["HR"] },
-    { name: "Dashboard", path: "/dashboard/admin/dashboard", icon: <FaThLarge />, roles: ["ADMIN"] },
+    { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
 
-    // MANAGER
-    { name: "Pending Approvals", path: "/dashboard/manager/approvals", icon: <FaCog />, roles: ["MANAGER", "TEAM_LEADER"] },
-    { name: "Team Calendar", path: "/dashboard/manager/calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER"] },
-    { name: "Team Members", path: "/dashboard/manager/team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
+    { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "TEAM_LEADER"] },
+    { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER"] },
+    { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
 
-    // ADMIN
-    { name: "Onboarding Approvals", path: "/dashboard/admin/onboarding", icon: <FaCog />, roles: ["ADMIN"] },
-    { name: "Employees", path: "/dashboard/admin/employees", icon: <FaUsers />, roles: ["ADMIN"] },
-    { name: "Flash News", path: "/dashboard/admin/flash-news", icon: <AiFillThunderbolt />, roles: ["ADMIN"] },
+    { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
+    { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR"] },
 
-    // HR
-    { name: "All Employees", path: "/dashboard/hr/employees", icon: <FaUsers />, roles: ["HR"] },
-    { name: "Low Balance", path: "/dashboard/hr/low-balance", icon: <FaExclamationTriangle />, roles: ["HR"] },
-    { name: "Verifications", path: "/dashboard/hr/verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
+    { name: "Low Balance", path: "low-balance", icon: <FaExclamationTriangle />, roles: ["HR"] },
+    { name: "Verifications", path: "verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
 
-    // COMMON
-    { name: "Request Center", path: "/dashboard/requests", icon: <FaFileSignature />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
-    { name: "My Requests", path: "/dashboard/employee/requests", icon: <FaListUl />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER"] },
-    { name: "Calendar", path: "/dashboard/employee/calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE"] },
-    { name: "Notifications", path: "/dashboard/notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
-    { name: "Payroll", path: "/dashboard/payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
-    { name: "Payslip", path: "/dashboard/payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
+    { name: "Requests", path: "requests", icon: <FaFileSignature />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
+    { name: "Request Center", path: "request-center", icon: <FaFileSignature />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
+
+    { name: "Notifications", path: "notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
+
+    { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
+    { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
   ];
 
   const visibleTabs = tabs.filter((tab) =>
@@ -70,7 +70,7 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
   );
 
   const handleNavigate = (path: string) => {
-    navigate(path);
+    navigate(`${basePath}/${path}`);
     if (window.innerWidth < 768) setIsOpen(false);
   };
 
@@ -107,7 +107,7 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
 
         {/* PROFILE */}
         <div
-          onClick={() => handleNavigate("/dashboard/employee/profile")}
+          onClick={() => handleNavigate(`${basePath}/profile`)}
           className="bg-neutral-800 rounded-lg p-4 mb-8 border border-neutral-700/30 flex items-center gap-3 cursor-pointer"
         >
           <div className="w-10 h-10 rounded-lg bg-primary-500 flex items-center justify-center text-white font-bold">
@@ -128,7 +128,7 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
 
           <ul className="space-y-1.5">
             {visibleTabs.map((tab) => {
-              const isActive = location.pathname === tab.path;
+              const isActive = location.pathname === `${basePath}/${tab.path}`;
 
               return (
                 <li

@@ -27,7 +27,7 @@ export interface LeaveRecord {
   id: number;
   employeeId: number;
   employeeName: string;
-  leaveType: string;
+  leaveType: LeaveType;
   startDateHalfDayType: string | null;
   endDateHalfDayType: string | null;
   isAppointment: boolean | null;

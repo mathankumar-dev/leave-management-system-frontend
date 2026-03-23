@@ -3,7 +3,7 @@ import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../../../shared/auth/useAuth";
-import logoSVG from "../../../assets/logo.svg";
+import logoSVG from "@/assets/svg/logo.svg";
 
 import Loader from "../../../shared/components/Loader";
 import { authService } from "../api/authApi";

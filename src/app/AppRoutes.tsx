@@ -26,53 +26,51 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
+
       <Route path="/portal" element={<LaunchPage />} />
+
       <Route
         path="/"
         element={
           isAuthenticated ? <Navigate to="/portal" replace /> : <LandingPage />
         }
       />
+
       <Route
         path="/login"
         element={
-          !isAuthenticated ? (
-            <AuthPage />
-          ) : (
-            <Navigate to="/portal" replace />
-          )
+          !isAuthenticated ? <AuthPage /> : <Navigate to="/portal" replace />
         }
       />
 
-      <Route path="/dashboard" element={<ProtectedRoute />}>
-
-        {/* Employee */}
-        <Route element={<ProtectedRoute allowedRoles={["EMPLOYEE"]} />}>
-          <Route path="employee/*" element={<DashboardLayout />} />
-        </Route>
-
-        {/* Manager */}
-        <Route element={<ProtectedRoute allowedRoles={["MANAGER", "TEAM_LEADER"]} />}>
-          <Route path="manager/*" element={<DashboardLayout />} />
-        </Route>
-
-        {/* HR */}
-        <Route element={<ProtectedRoute allowedRoles={["HR"]} />}>
-          <Route path="hr/*" element={<DashboardLayout />} />
-        </Route>
-
-        {/* Admin */}
-        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-          <Route path="admin/*" element={<DashboardLayout />} />
-        </Route>
-
+      {/* EMPLOYEE */}
+      <Route element={<ProtectedRoute allowedRoles={["EMPLOYEE"]} />}>
+        <Route path="/employee/*" element={<DashboardLayout />} />
       </Route>
 
+      {/* MANAGER */}
+      <Route element={<ProtectedRoute allowedRoles={["MANAGER", "TEAM_LEADER"]} />}>
+        <Route path="/manager/*" element={<DashboardLayout />} />
+      </Route>
+
+      {/* HR */}
+      <Route element={<ProtectedRoute allowedRoles={["HR"]} />}>
+        <Route path="/hr/*" element={<DashboardLayout />} />
+      </Route>
+
+      {/* ADMIN */}
+      <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+        <Route path="/admin/*" element={<DashboardLayout />} />
+      </Route>
+
+      {/* COMMON */}
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/leave-policy" element={<LeavePolicies />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
+
       <Route path="*" element={<NotFoundPage />} />
+
     </Routes>
   );
 };

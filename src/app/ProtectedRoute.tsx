@@ -6,15 +6,15 @@ import { Navigate, Outlet } from "react-router-dom";
 interface ProtectedRouteProps {
   allowedRoles?: string[];
 }
-  const roleRedirectMap : Record<UserRole, string> = {
-    EMPLOYEE: "/dashboard/employee/dashboard",
-    MANAGER: "/dashboard/manager/dashboard",
-    TEAM_LEADER: "/dashboard/manager/dashboard",
-    HR: "/dashboard/hr/dashboard",
-    ADMIN: "/dashboard/admin/dashboard",
-    CFO: "",
-    CEO: ""
-  };
+const roleRedirectMap: Record<UserRole, string> = {
+  EMPLOYEE: "/employee/dashboard",
+  MANAGER: "/manager/dashboard",
+  TEAM_LEADER: "/manager/dashboard",
+  HR: "/hr/dashboard",
+  ADMIN: "/admin/dashboard",
+  CFO: "/admin/dashboard",
+  CEO: "/admin/dashboard"
+};
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
 
 
@@ -29,6 +29,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
 
     if (!hasAccess) {
       return <Navigate to={roleRedirectMap[user.role]} replace />;
+
+    }
+
+    if (!hasAccess) {
+      return (
+        <div className="flex h-screen items-center justify-center">
+          🚫 You don't have permission to view this page
+        </div>
+      );
     }
   }
 

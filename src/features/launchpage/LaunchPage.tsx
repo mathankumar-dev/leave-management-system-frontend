@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import logo from "../../assets/logo.svg";
+
+import logo from "@/assets/svg/logo.svg";
 import CalendarSVG from "@/assets/svg/calendar-svg.svg";
 import moneySVG from "@/assets/svg/money-svg.svg";
 import { useAuth } from "@/shared/auth/useAuth";
@@ -16,11 +17,20 @@ export interface FlashNews {
   createdAt: string;
 }
 
+const roleBasePath : Record<string,string> = {
+  EMPLOYEE: "/employee",
+  MANAGER: "/manager",
+  TEAM_LEADER: "/manager",
+  HR: "/hr",
+  ADMIN: "/admin",
+  CFO: "/admin",
+};
+
 const LaunchPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const basePath = roleBasePath[user?.role || "EMPLOYEE"];
 
-  // State for Flash News
   const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
   const [isLoading, setLoading] = useState(false);
 
@@ -51,7 +61,7 @@ const LaunchPage: React.FC = () => {
 
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % flashNews.length);
-    }, 5000); // 5 seconds interval
+    }, 5000); 
 
     return () => clearInterval(timer);
   }, [flashNews]);
@@ -61,14 +71,14 @@ const LaunchPage: React.FC = () => {
       desc: "Apply for leaves, view balances, and track approvals.",
       icon: CalendarSVG,
       color: "bg-indigo-500",
-      path: "/dashboard",
+      path: `${basePath}/dashboard`,
     },
     {
       title: "Payroll System",
       desc: "View payslips, tax documents, and payment history.",
       icon: moneySVG,
       color: "bg-indigo-500",
-      path: "/dashboard",
+      path: `${basePath}/dashboard`,
     },
   ];
 

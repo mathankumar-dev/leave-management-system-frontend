@@ -1,17 +1,17 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
-import { FaCalendarAlt, FaEllipsisV, FaEdit, FaTimes, FaInfoCircle } from "react-icons/fa";
-import { useAuth } from "@/shared/auth/useAuth";
-import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
-import { useLeave } from "@/features/leave/hooks/useLeave";
-import type { LeaveRecord, ODResponse } from "@/features/leave/types";
-import { CustomLoader } from "@/shared/components";
 import EditLeaveModal from "@/features/leave/components/EditLeaveModal";
+import { useLeave } from "@/features/leave/hooks/useLeave";
+import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
+import type { LeaveRecord, ODResponse } from "@/features/leave/types";
+import { useAuth } from "@/shared/auth/useAuth";
+import { CustomLoader } from "@/shared/components";
 import { formatTimeAgo } from "@/shared/utils/formatTimeAgo";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
+import React, { useEffect, useMemo, useState } from "react";
+import { FaCalendarAlt, FaEdit, FaEllipsisV, FaInfoCircle, FaTimes } from "react-icons/fa";
 
 const MyRequestsView: React.FC = () => {
-  const {fetchMyLeaves, fetchMyOD} = useLeave();
-  const {  cancelLeave, editLeave, loading } = useLeaveAction();
+  const { fetchMyLeaves, fetchMyOD } = useLeave();
+  const { cancelLeave, editLeave, loading } = useLeaveAction();
   const { user } = useAuth();
   const [history, setHistory] = useState<(LeaveRecord | ODResponse)[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -89,7 +89,7 @@ const MyRequestsView: React.FC = () => {
       return {
         ...item,
         days: calculatedDays,
-        displayType: item.leaveType.replace(/_/g, " "),
+        displayType: item.leaveType ? item.leaveType.replace(/_/g, " ") : "N/A",
         displayRange,
       };
     });

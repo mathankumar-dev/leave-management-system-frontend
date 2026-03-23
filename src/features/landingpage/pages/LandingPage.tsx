@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import logo from "../../assets/bg-rm-logo.png";
+import logo from "@/assets/images/bg-rm-logo-HRES.png";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useNavigate } from "react-router-dom";

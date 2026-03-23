@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import { toPng } from "html-to-image";
-import logo from "../../../assets/bg-rm-logo-HRES.png"; // adjust path
+import logo from "@/assets/images/bg-rm-logo-HRES.png";
 import { usePayroll } from "@/features/payroll/hooks/usePayroll";
 import { useAuth } from "@/shared/auth/useAuth";
 import type { ProfileData } from "@/features/employee/types";
