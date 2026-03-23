@@ -5,12 +5,12 @@ import {
   FaPlus, FaUserShield, FaChartPie, FaCheckDouble
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
-import { useAuth } from "../../../auth/hooks/useAuth";
-import CustomLoader from "../../../../components/ui/CustomLoader";
+import { useAuth } from "../../../../shared/auth/useAuth";
+import CustomLoader from "../../../../shared/components/CustomLoader";
 import type { LeaveDecision, ManagerDashBoardResponse } from "../../types";
-import { notify } from "../../../../utils/notifications";
-import CommentDialog from "../../../../components/ui/CommentDialog";
-import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
+import { notify } from "../../../notification/utils/notifications";
+import CommentDialog from "../../../../shared/components/CommentDialog";
+import MyFloatingActionButton from "../../../../shared/components/MyFloatingActionButton";
 import ManagerStatCard from "../../components/ManagerStatCard";
 import DashboardDrawer from "../../components/DashBoardDrawer";
 import EmptyStateSVG from "../../../../assets/svg/EmpthyStateSVG";
@@ -85,7 +85,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
     }
   };
   console.log(dashboardData);
-  
+
 
   if (dashboardLoading || authLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">

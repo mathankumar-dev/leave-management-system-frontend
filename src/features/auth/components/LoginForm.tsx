@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../../shared/auth/useAuth";
 import type { LoginCredentials } from "../types";
 import logoSVG from "../../../assets/logo.svg";
 
-import Loader from "../../../components/ui/Loader";
-import { authService } from "../services/AuthService";
+import Loader from "../../../shared/components/Loader";
+import { authService } from "../api/authApi";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");

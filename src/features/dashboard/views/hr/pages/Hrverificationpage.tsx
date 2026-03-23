@@ -4,9 +4,9 @@ import {
   FaFilter, FaCheckCircle, FaTimesCircle, FaClock,
   FaDownload, FaFileAlt
 } from 'react-icons/fa';
-import api from '../../../../../api/axiosInstance';
-import { notify } from '../../../../../utils/notifications';
-import CustomLoader from '../../../../../components/ui/CustomLoader';
+import api from '../../../../../services/apiClient';
+import { notify } from '../../../../notification/utils/notifications';
+import CustomLoader from '../../../../../shared/components/CustomLoader';
 
 
 
@@ -145,11 +145,10 @@ const DetailModal: React.FC<{
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-slate-800">{employeeName}</h3>
-                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${
-                  verification.verificationStatus === 'PENDING' ? 'bg-amber-100 text-amber-600' :
+                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black ${verification.verificationStatus === 'PENDING' ? 'bg-amber-100 text-amber-600' :
                   verification.verificationStatus === 'VERIFIED' ? 'bg-emerald-100 text-emerald-600' :
-                  'bg-rose-100 text-rose-600'
-                }`}>
+                    'bg-rose-100 text-rose-600'
+                  }`}>
                   {verification.verificationStatus}
                 </span>
               </div>
@@ -415,9 +414,8 @@ export const HRVerificationPage: React.FC = () => {
           {[{ key: 'pending', label: 'Pending' }, { key: 'all', label: 'All' }].map(tab => (
             <button key={tab.key}
               onClick={() => setActiveTab(tab.key as 'pending' | 'all')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                activeTab === tab.key ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-              }`}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === tab.key ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                }`}
             >
               {tab.label}
             </button>

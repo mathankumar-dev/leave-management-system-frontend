@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../../auth/hooks/useAuth";
+import { useAuth } from "../../../shared/auth/useAuth";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
@@ -14,19 +14,19 @@ import LowBalancePage from "../views/hr/pages/LowBalancePage";
 import { HRVerificationPage } from "../views/hr/pages/Hrverificationpage";
 
 /* ---------------- EMPLOYEE VIEWS ---------------- */
-import DashboardView from "../views/employee/DashboardView";
-import CalendarView from "../views/employee/CalendarView";
-import LeaveApplicationForm from "../../../common/forms/LeaveApplicationForm";
-import NotificationsView from "../views/NotificationsView";
-import EmployeeProfile from "../views/employee/EmployeeProfile";
+import DashboardView from "../../employee/pages/DashboardView";
+import CalendarView from "../../employee/pages/CalendarView";
+import LeaveApplicationForm from "../../leave/components/LeaveApplicationForm";
+import NotificationsView from "../../notification/pages/NotificationsView";
+import EmployeeProfile from "../../employee/pages/EmployeeProfile";
 
 /* ---------------- MANAGER VIEWS ---------------- */
 import ManagerDashboardView from "../views/manager/ManagerDashboardView";
 import AdminDashboardView from "../views/admin/AdminDashboardView";
 import TeamCalendarView from "../views/manager/TeamCalendarView";
 import ManagerProfile from "../views/manager/ManagerProfile";
-import PendingApprovalsView from "../views/manager/PendingApprovalsView";
-import TeamMembersView from "../views/manager/TeamMembersView";
+import PendingApprovalsView from "../../leave/pages/PendingApprovalsView";
+import TeamMembersView from "../../employee/pages/TeamMembersView";
 
 /* ---------------------- CFO -----------------------*/
 import { PayslipPage } from "../views/CFO/pages/PayslipPage";
@@ -36,9 +36,9 @@ import { CFOEmployeesPage } from "../views/CFO/pages/Cfoemployeepage";
 import ChangePasswordDialog from "../../../components/modals/ChangePasswordDialog";
 import OtherRequestForm from "../../../common/OtherRequestForm";
 import PayrollView from "../views/Payroll";
-import PersonalDetailsModal from "../../../common/PersonalDetailsModal";
-import RequestCenter from "../../../common/RequestCenter";
-import MyRequestsView from "../views/MyLeavesView";
+import PersonalDetailsModal from "../../employee/components/PersonalDetailsModal";
+import RequestCenter from "../../employee/components/RequestCenter";
+import MyRequestsView from "../../leave/pages/MyLeavesView";
 import OnboardingPendingPage from "../views/admin/OnboardingPendingPage";
 import FlashNewsForm from "../views/admin/FlashNewsCreate";
 
@@ -68,7 +68,7 @@ const DashboardLayout: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
+
   const renderView = () => {
 
     switch (activeTab) {
@@ -106,7 +106,7 @@ const DashboardLayout: React.FC = () => {
         return <TeamCalendarView />;
       case "Employees":
         return <EmployeesView />;
-      case "Onboarding Approvals" :
+      case "Onboarding Approvals":
         return <OnboardingPendingPage />;
 
       case "Leave Config":

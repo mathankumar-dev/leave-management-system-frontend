@@ -9,7 +9,7 @@ import {
   FaCircle,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../../auth/hooks/useAuth";
+import { useAuth } from "../../../shared/auth/useAuth";
 import { useNotifications } from "../hooks/useNotification";
 
 interface TopbarProps {

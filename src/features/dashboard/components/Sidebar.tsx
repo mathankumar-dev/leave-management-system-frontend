@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import { AiFillThunderbolt } from "react-icons/ai";
 
-import { useAuth } from "../../auth/hooks/useAuth";
+import { useAuth } from "../../../shared/auth/useAuth";
 import { MdVerifiedUser } from "react-icons/md";
 
 import logoSVG from "../../../assets/logo.svg";

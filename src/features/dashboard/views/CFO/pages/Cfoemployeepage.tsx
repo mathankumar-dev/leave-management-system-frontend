@@ -5,10 +5,10 @@ import {
 } from 'react-icons/fa';
 import { employeeService, type Employee } from '../../hr/service/employeeService';
 import { PayslipService } from '../service/payslipService';
-import { notify } from '../../../../../utils/notifications';
-import CustomLoader from '../../../../../components/ui/CustomLoader';
+import { notify } from '../../../../notification/utils/notifications';
+import CustomLoader from '../../../../../shared/components/CustomLoader';
 import type { Payslip, PayslipCreateRequest } from '../../types';
-import api from '../../../../../api/axiosInstance';
+import api from '../../../../../services/apiClient';
 
 // ─── Types ────────────────────────────────────────────────────────
 interface LeaveBreakdown {
@@ -152,7 +152,7 @@ const AnnualPayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
   const [year, setYear] = useState(new Date().getFullYear());
   const [payslips, setPayslips] = useState<Payslip[]>([]);
   const [loading, setLoading] = useState(false);
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   useEffect(() => {
     const fetch = async () => {
@@ -283,7 +283,7 @@ const fillFormFromData = (data: any, employeeId: number, month: number, year: nu
 
 // ─── Create/Edit Payslip Modal ────────────────────────────────────
 const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> = ({ employee, onClose }) => {
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(false);
   const [existingPayslip, setExistingPayslip] = useState<Payslip | null>(null);
@@ -572,7 +572,7 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
 
 // ─── Main CFO Employees Page ──────────────────────────────────────
 export const CFOEmployeesPage: React.FC = () => {
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -735,9 +735,8 @@ export const CFOEmployeesPage: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-center">
                       <button onClick={() => toggleTaxRegime(emp.id)}
-                        className={`flex items-center gap-1.5 mx-auto px-3 py-1.5 rounded-xl text-[10px] font-black transition-all ${
-                          taxRegimes[emp.id] === 'NEW' ? 'bg-violet-100 text-violet-600' : 'bg-amber-100 text-amber-600'
-                        }`}
+                        className={`flex items-center gap-1.5 mx-auto px-3 py-1.5 rounded-xl text-[10px] font-black transition-all ${taxRegimes[emp.id] === 'NEW' ? 'bg-violet-100 text-violet-600' : 'bg-amber-100 text-amber-600'
+                          }`}
                       >
                         {taxRegimes[emp.id] === 'NEW' ? <FaToggleOn className="text-sm" /> : <FaToggleOff className="text-sm" />}
                         {taxRegimes[emp.id] || 'OLD'} Regime

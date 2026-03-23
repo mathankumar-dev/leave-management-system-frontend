@@ -12,7 +12,7 @@ import {
 } from "react-icons/fa";
 import { HiOutlineShieldCheck } from "react-icons/hi2";
 
-import { useAuth } from "../../../auth/hooks/useAuth";
+import { useAuth } from "../../../../shared/auth/useAuth";
 import type { ProfileData } from "../../types";
 
 const ManagerProfile: React.FC = () => {

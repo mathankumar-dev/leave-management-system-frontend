@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import logo from "../../assets/logo.svg";
 import CalendarSVG from "../../assets/svg/calendar-svg.svg";
 import moneySVG from "../../assets/svg/money-svg.svg";
-import { useAuth } from "../auth/hooks/useAuth";
+import { useAuth } from "../../shared/auth/useAuth";
 import { useNavigate } from "react-router-dom";
-import { formatTimeAgo } from "../../utils/formatTimeAgo";
+import { formatTimeAgo } from "../../shared/utils/formatTimeAgo";
 import { useDashboard } from "../dashboard/hooks/useDashboard";
 // Import your service and interface here
 // import { dashboardService } from "../../services/dashboardService"; 
@@ -161,8 +161,8 @@ const LaunchPage: React.FC = () => {
                   key={currentIndex}
                   className="animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out"                >
                   <div className={`p-4 rounded-xl border-l-4 ${flashNews[currentIndex].priority == 1
-                      ? 'bg-amber-50 border-amber-400'
-                      : 'bg-slate-50 border-indigo-400'
+                    ? 'bg-amber-50 border-amber-400'
+                    : 'bg-slate-50 border-indigo-400'
                     }`}>
                     <p className="text-sm text-slate-800 font-semibold leading-relaxed">
                       {flashNews[currentIndex].message}

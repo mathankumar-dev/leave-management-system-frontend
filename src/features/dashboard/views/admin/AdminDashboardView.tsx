@@ -5,10 +5,10 @@ import {
   FaUsers, FaHistory
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
-import { useAuth } from "../../../auth/hooks/useAuth";
-import CustomLoader from "../../../../components/ui/CustomLoader";
-import { notify } from "../../../../utils/notifications";
-import MyFloatingActionButton from "../../../../components/ui/MyFloatingActionButton";
+import { useAuth } from "../../../../shared/auth/useAuth";
+import CustomLoader from "../../../../shared/components/CustomLoader";
+import { notify } from "../../../notification/utils/notifications";
+import MyFloatingActionButton from "../../../../shared/components/MyFloatingActionButton";
 import ManagerStatCardTeam from "../../components/ManagerStatCardTeam";
 import DashboardDrawer from "../../components/DashBoardDrawer";
 import type { AdminDashBoardResponse } from "../../types";

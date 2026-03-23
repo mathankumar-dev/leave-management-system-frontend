@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { authService } from "../services/AuthService";
-import SuccessModal from "../../../components/ui/SuccessModal";
-import FailureModal from "../../../components/ui/FailureModal";
+import { authService } from "../api/authApi";
+import SuccessModal from "../../../shared/components/SuccessModal";
+import FailureModal from "../../../shared/components/FailureModal";
 
 const ForgotPassword: React.FC = () => {
     const [email, setEmail] = useState("");

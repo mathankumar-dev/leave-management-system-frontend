@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
-import { 
-  FaSearch, FaFileExport, 
-  FaHistory, FaShieldAlt, FaUserEdit, 
-  FaCalendarCheck, FaTimesCircle 
+import {
+  FaSearch, FaFileExport,
+  FaHistory, FaShieldAlt, FaUserEdit,
+  FaCalendarCheck, FaTimesCircle
 } from "react-icons/fa";
 
 import { useDashboard } from "../../hooks/useDashboard";
-import SuccessModal from "../../../../components/ui/SuccessModal";
+import SuccessModal from "../../../../shared/components/SuccessModal";
 import type { AuditLog } from "../../types";
 
 const AuditLogView: React.FC = () => {
@@ -50,8 +50,8 @@ const AuditLogView: React.FC = () => {
     }
   };
 
-  const filteredLogs = logs.filter(log => 
-    log.actor.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredLogs = logs.filter(log =>
+    log.actor.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.action.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -67,14 +67,14 @@ const AuditLogView: React.FC = () => {
             System-wide activity tracking and compliance monitoring.
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={handleExport}
             disabled={isExporting}
             className="flex items-center gap-2 bg-white border-2 border-slate-100 px-5 py-3 rounded-2xl text-[10px] font-black text-slate-700 hover:border-indigo-200 transition-all shadow-sm active:scale-95 disabled:opacity-50"
           >
-            <FaFileExport className={`${isExporting ? "animate-bounce" : "text-indigo-600"}`} /> 
+            <FaFileExport className={`${isExporting ? "animate-bounce" : "text-indigo-600"}`} />
             {isExporting ? "GENERATING..." : "EXPORT CSV"}
           </button>
         </div>
@@ -83,11 +83,11 @@ const AuditLogView: React.FC = () => {
       <div className="bg-white border-2 border-slate-50 rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4">
         <div className="relative flex-1 min-w-[240px]">
           <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by actor or action..." 
+            placeholder="Search by actor or action..."
             className="w-full pl-11 pr-4 py-2.5 bg-slate-50/50 border border-slate-100 rounded-xl text-sm focus:ring-4 focus:ring-indigo-50 transition-all outline-none font-medium text-slate-600"
           />
         </div>
@@ -153,7 +153,7 @@ const AuditLogView: React.FC = () => {
 
       <AnimatePresence>
         {showModal && (
-          <SuccessModal 
+          <SuccessModal
             title="Log Exported!"
             message="The system audit log has been successfully converted to CSV and is ready for download."
             buttonText="CONTINUE MONITORING"

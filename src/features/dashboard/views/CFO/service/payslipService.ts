@@ -1,4 +1,4 @@
-import api from '../../../../../api/axiosInstance';
+import api from '../../../../../services/apiClient';
 import type { Payslip, PayslipCreateRequest, PayslipUpdateRequest } from '../../types';
 // import type { CFOPayslip, CFOPayslipCreateRequest, CFOPayslipUpdateRequest } from '../types';
 
@@ -42,6 +42,6 @@ export const PayslipService = {
 
   // GET /api/payslip/prefill?employeeId=&year=&month=
   getPrefill: async (employeeId: number, year: number, month: number): Promise<Payslip> =>
-  (await api.get<Payslip>(`/payslip/prefill?employeeId=${employeeId}&year=${year}&month=${month}`)).data,
-  
+    (await api.get<Payslip>(`/payslip/prefill?employeeId=${employeeId}&year=${year}&month=${month}`)).data,
+
 };

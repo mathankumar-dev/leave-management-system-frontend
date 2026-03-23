@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import api from "../../../../api/axiosInstance";
+import api from "../../../../services/apiClient";
 
 export const usePayroll = () => {
   const [loading, setLoading] = useState(false);

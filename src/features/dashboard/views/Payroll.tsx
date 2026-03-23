@@ -3,8 +3,8 @@ import { useDashboard } from "../hooks/useDashboard";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { ProfileData, YearlySummary } from "../types";
-import { useAuth } from "../../auth/hooks/useAuth";
-import api from "../../../api/axiosInstance";
+import { useAuth } from "../../../shared/auth/useAuth";
+import api from "../../../services/apiClient";
 import html2canvas from "html2canvas";
 import { dashboardService } from "../services/dashboardService";
 import { toPng } from "html-to-image";
@@ -69,83 +69,83 @@ const PayrollView: React.FC = () => {
   };
 
   const numberToWords = (num: number): string => {
-  const a = [
-    "", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX",
-    "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE",
-    "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN",
-    "SEVENTEEN", "EIGHTEEN", "NINETEEN"
-  ];
-  const b = ["", "", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY"];
+    const a = [
+      "", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX",
+      "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE",
+      "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN",
+      "SEVENTEEN", "EIGHTEEN", "NINETEEN"
+    ];
+    const b = ["", "", "TWENTY", "THIRTY", "FORTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY"];
 
-  if (num === 0) return "ZERO";
+    if (num === 0) return "ZERO";
 
-  const inWords = (n: number): string => {
-    if (n < 20) return a[n];
-    if (n < 100) return b[Math.floor(n / 10)] + " " + a[n % 10];
-    if (n < 1000)
-      return a[Math.floor(n / 100)] + " HUNDRED " + inWords(n % 100);
-    if (n < 100000)
-      return inWords(Math.floor(n / 1000)) + " THOUSAND " + inWords(n % 1000);
-    if (n < 10000000)
-      return inWords(Math.floor(n / 100000)) + " LAKH " + inWords(n % 100000);
-    return inWords(Math.floor(n / 10000000)) + " CRORE " + inWords(n % 10000000);
+    const inWords = (n: number): string => {
+      if (n < 20) return a[n];
+      if (n < 100) return b[Math.floor(n / 10)] + " " + a[n % 10];
+      if (n < 1000)
+        return a[Math.floor(n / 100)] + " HUNDRED " + inWords(n % 100);
+      if (n < 100000)
+        return inWords(Math.floor(n / 1000)) + " THOUSAND " + inWords(n % 1000);
+      if (n < 10000000)
+        return inWords(Math.floor(n / 100000)) + " LAKH " + inWords(n % 100000);
+      return inWords(Math.floor(n / 10000000)) + " CRORE " + inWords(n % 10000000);
+    };
+
+    return inWords(num).trim();
   };
-
-  return inWords(num).trim();
-};
 
   const formatCurrency = (val: any) =>
     `₹ ${Number(val || 0).toLocaleString("en-IN")}`;
 
-  
- const downloadPDF = async () => {
-  const element = document.getElementById("payslip-container");
-  if (!element) return;
 
-  setLoadingPDF(true);
+  const downloadPDF = async () => {
+    const element = document.getElementById("payslip-container");
+    if (!element) return;
 
-  try {
-    const dataUrl = await toPng(element, {
-      cacheBust: true,
-      pixelRatio: 3,
-      backgroundColor: "#ffffff",
-    });
+    setLoadingPDF(true);
 
-    const pdf = new jsPDF("p", "mm", "a4");
+    try {
+      const dataUrl = await toPng(element, {
+        cacheBust: true,
+        pixelRatio: 3,
+        backgroundColor: "#ffffff",
+      });
 
-    const img = new Image();
-    img.src = dataUrl;
+      const pdf = new jsPDF("p", "mm", "a4");
 
-    img.onload = () => {
-      const pageWidth = 210;
-      const pageHeight = 297;
+      const img = new Image();
+      img.src = dataUrl;
 
-      const imgWidth = pageWidth;
-      const imgHeight = (img.height * imgWidth) / img.width;
+      img.onload = () => {
+        const pageWidth = 210;
+        const pageHeight = 297;
 
-      let heightLeft = imgHeight;
-      let position = 0;
+        const imgWidth = pageWidth;
+        const imgHeight = (img.height * imgWidth) / img.width;
 
-      // First page
-      pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+        let heightLeft = imgHeight;
+        let position = 0;
 
-      // Remaining pages
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
+        // First page
         pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
-      }
 
-      pdf.save(`Payslip-${month}-${year}.pdf`);
-    };
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoadingPDF(false);
-  }
-};
+        // Remaining pages
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        pdf.save(`Payslip-${month}-${year}.pdf`);
+      };
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingPDF(false);
+    }
+  };
 
   const salaryRows = [
     ["Basic Salary", payslip?.basicSalary, "PF", profile?.pfNumber],
@@ -215,222 +215,222 @@ const PayrollView: React.FC = () => {
       {/* UNIFIED UI */}
       {((viewMode === "monthly" && payslip && profile) ||
         (viewMode === "yearly" && summary)) && (
-        <div id="payslip-container" className="border-2 border-black p-6 text-sm">
-          <div className="flex items-center justify-between border-b pb-4 mb-4">
+          <div id="payslip-container" className="border-2 border-black p-6 text-sm">
+            <div className="flex items-center justify-between border-b pb-4 mb-4">
 
-  {/* LOGO */}
-  <img
-    src={logo} // OR use {logo} if imported
-    alt="Company Logo"
-    className="w-16 h-16 object-contain"
-  />
+              {/* LOGO */}
+              <img
+                src={logo} // OR use {logo} if imported
+                alt="Company Logo"
+                className="w-16 h-16 object-contain"
+              />
 
-  {/* COMPANY DETAILS */}
-  <div className="text-center flex-1">
-    <h2 className="font-bold text-lg">
-      WENXT TECHNOLOGIES PRIVATE LIMITED
-    </h2>
-    <h3 className="text-xs mt-1">
-      Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
-      Thiruvanmiyur, Chennai- 600041
-    </h3>
-    <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
-  </div>
+              {/* COMPANY DETAILS */}
+              <div className="text-center flex-1">
+                <h2 className="font-bold text-lg">
+                  WENXT TECHNOLOGIES PRIVATE LIMITED
+                </h2>
+                <h3 className="text-xs mt-1">
+                  Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
+                  Thiruvanmiyur, Chennai- 600041
+                </h3>
+                <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
+              </div>
 
-  {/* EMPTY SPACE (for balance) */}
-  <div className="w-16" />
-</div>
+              {/* EMPTY SPACE (for balance) */}
+              <div className="w-16" />
+            </div>
 
-          
 
-          {/* EMPLOYEE DETAILS */}
-          {viewMode === "monthly" && payslip && profile && (
-        <div  className="border-2 border-black p-6 text-sm">
-          <div className="flex items-center justify-between border-b pb-4 mb-4">
 
-  {/* LOGO */}
-  <img
-    src={logo} // OR use {logo} if imported
-    alt="Company Logo"
-    className="w-16 h-16 object-contain"
-  />
+            {/* EMPLOYEE DETAILS */}
+            {viewMode === "monthly" && payslip && profile && (
+              <div className="border-2 border-black p-6 text-sm">
+                <div className="flex items-center justify-between border-b pb-4 mb-4">
 
-  {/* COMPANY DETAILS */}
-  <div className="text-center flex-1">
-    <h2 className="font-bold text-lg">
-      WENXT TECHNOLOGIES PRIVATE LIMITED
-    </h2>
-    <h3 className="text-xs mt-1">
-      Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
-      Thiruvanmiyur, Chennai- 600041
-    </h3>
-    <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
-  </div>
+                  {/* LOGO */}
+                  <img
+                    src={logo} // OR use {logo} if imported
+                    alt="Company Logo"
+                    className="w-16 h-16 object-contain"
+                  />
 
-  {/* EMPTY SPACE (for balance) */}
-  <div className="w-16" />
-</div>
-          <table className="w-full border border-black mb-4 text-sm">
-            <tbody>
-              <tr>
-                <td className="border p-2 font-medium">Employee ID</td>
-                <td className="border p-2">{payslip.employeeId}</td>
-                <td className="border p-2 font-medium">UAN No</td>
-                <td className="border p-2">{profile.unaNumber ?? "--"}</td>
-              </tr>
-              <tr>
-                <td className="border p-2 font-medium">Employee Name</td>
-                <td className="border p-2">{profile.name ?? "--"}</td>
-                <td className="border p-2 font-medium">PF Number</td>
-                <td className="border p-2">{profile.pfNumber ?? "--"}</td>
-              </tr>
-              <tr>
-                <td className="border p-2 font-medium">Designation</td>
-                <td className="border p-2">{profile.designation ?? "--"}</td>
-                <td className="border p-2 font-medium">Bank</td>
-                <td className="border p-2">{profile.bankName ?? "--"}</td>
-              </tr>
-              <tr>
-                <td className="border p-2 font-medium">Month / Year</td>
-                <td className="border p-2">{payslip.month}/{payslip.year}</td>
-                <td className="border p-2 font-medium">Account No</td>
-                <td className="border p-2">{profile.accountNumber ?? "--"}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
+                  {/* COMPANY DETAILS */}
+                  <div className="text-center flex-1">
+                    <h2 className="font-bold text-lg">
+                      WENXT TECHNOLOGIES PRIVATE LIMITED
+                    </h2>
+                    <h3 className="text-xs mt-1">
+                      Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
+                      Thiruvanmiyur, Chennai- 600041
+                    </h3>
+                    <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
+                  </div>
 
-          {/* SALARY TABLE */}
-          <table className="w-full border mt-3.5 border-black">
-            
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border p-2">Income</th>
-                <th className="border p-2">Amount</th>
-                <th className="border p-2">Deductions</th>
-                <th className="border p-2">Amount</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {viewMode === "monthly" ? (
-                salaryRows.map(([l, lv, r, rv], i) => (
-                  <tr key={i}>
-                    <td className="border p-2">{l}</td>
-                    <td className="border p-2">{formatCurrency(lv)}</td>
-                    <td className="border p-2">{r}</td>
-                    <td className="border p-2">{formatCurrency(rv)}</td>
-                  </tr>
-                ))
-              ) : (
-                <>
-  <tr>
-    <td className="border p-2">Basic</td>
-    <td className="border p-2">{formatCurrency(summary?.totalBasic)}</td>
-    <td className="border p-2">PF</td>
-    <td className="border p-2">{formatCurrency(summary?.totalPf)}</td>
-  </tr>
-
-  <tr>
-    <td className="border p-2">HRA</td>
-    <td className="border p-2">{formatCurrency(summary?.totalHra)}</td>
-    <td className="border p-2">TDS</td>
-    <td className="border p-2">{formatCurrency(summary?.totalTds)}</td>
-  </tr>
-
-  <tr>
-    <td className="border p-2">Conveyance</td>
-    <td className="border p-2">{formatCurrency(summary?.totalConveyance)}</td>
-    <td className="border p-2">Professional Tax</td>
-    <td className="border p-2">{formatCurrency(summary?.totalProfessionalTax)}</td>
-  </tr>
-
-  <tr>
-    <td className="border p-2">Medical</td>
-    <td className="border p-2">{formatCurrency(summary?.totalMedical)}</td>
-    <td className="border p-2">ESI</td>
-    <td className="border p-2">{formatCurrency(summary?.totalEsi)}</td>
-  </tr>
-
-  <tr>
-    <td className="border p-2">Other Allowance</td>
-    <td className="border p-2">{formatCurrency(summary?.totalOtherAllowance)}</td>
-    <td className="border p-2">LOP</td>
-    <td className="border p-2">{formatCurrency(summary?.totalLop)}</td>
-  </tr>
-
-  <tr>
-    <td className="border p-2">Bonus</td>
-    <td className="border p-2">{formatCurrency(summary?.totalBonus)}</td>
-    <td className="border p-2"></td>
-    <td className="border p-2"></td>
-  </tr>
-
-  <tr>
-    <td className="border p-2">Incentive</td>
-    <td className="border p-2">{formatCurrency(summary?.totalIncentive)}</td>
-    <td className="border p-2"></td>
-    <td className="border p-2"></td>
-  </tr>
-
-  <tr>
-    <td className="border p-2">Stipend</td>
-    <td className="border p-2">{formatCurrency(summary?.totalStipend)}</td>
-    <td className="border p-2"></td>
-    <td className="border p-2"></td>
-  </tr>
-</>
-              )}
-
-              <tr className="font-bold">
-                <td className="border p-2">Total</td>
-                <td className="border p-2">
-                  {formatCurrency(
-                    viewMode === "monthly"
-                      ? payslip?.grossSalary
-                      : summary?.totalGrossSalary
-                  )}
-                </td>
-
-                <td className="border p-2">Total Deduction</td>
-                <td className="border p-2">
-                  {formatCurrency(
-                    viewMode === "monthly"
-                      ? Number(payslip?.grossSalary) - Number(payslip?.netSalary)
-                      : Number(summary?.totalGrossSalary) - Number(summary?.totalNetSalary)
-                  )}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          {/* NET */}
-          <div className="mt-4 font-bold">
-            Net Salary:{" "}
-            {formatCurrency(
-              viewMode === "monthly"
-                ? payslip?.netSalary
-                : summary?.totalNetSalary
+                  {/* EMPTY SPACE (for balance) */}
+                  <div className="w-16" />
+                </div>
+                <table className="w-full border border-black mb-4 text-sm">
+                  <tbody>
+                    <tr>
+                      <td className="border p-2 font-medium">Employee ID</td>
+                      <td className="border p-2">{payslip.employeeId}</td>
+                      <td className="border p-2 font-medium">UAN No</td>
+                      <td className="border p-2">{profile.unaNumber ?? "--"}</td>
+                    </tr>
+                    <tr>
+                      <td className="border p-2 font-medium">Employee Name</td>
+                      <td className="border p-2">{profile.name ?? "--"}</td>
+                      <td className="border p-2 font-medium">PF Number</td>
+                      <td className="border p-2">{profile.pfNumber ?? "--"}</td>
+                    </tr>
+                    <tr>
+                      <td className="border p-2 font-medium">Designation</td>
+                      <td className="border p-2">{profile.designation ?? "--"}</td>
+                      <td className="border p-2 font-medium">Bank</td>
+                      <td className="border p-2">{profile.bankName ?? "--"}</td>
+                    </tr>
+                    <tr>
+                      <td className="border p-2 font-medium">Month / Year</td>
+                      <td className="border p-2">{payslip.month}/{payslip.year}</td>
+                      <td className="border p-2 font-medium">Account No</td>
+                      <td className="border p-2">{profile.accountNumber ?? "--"}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             )}
+
+            {/* SALARY TABLE */}
+            <table className="w-full border mt-3.5 border-black">
+
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border p-2">Income</th>
+                  <th className="border p-2">Amount</th>
+                  <th className="border p-2">Deductions</th>
+                  <th className="border p-2">Amount</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {viewMode === "monthly" ? (
+                  salaryRows.map(([l, lv, r, rv], i) => (
+                    <tr key={i}>
+                      <td className="border p-2">{l}</td>
+                      <td className="border p-2">{formatCurrency(lv)}</td>
+                      <td className="border p-2">{r}</td>
+                      <td className="border p-2">{formatCurrency(rv)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <>
+                    <tr>
+                      <td className="border p-2">Basic</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalBasic)}</td>
+                      <td className="border p-2">PF</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalPf)}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="border p-2">HRA</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalHra)}</td>
+                      <td className="border p-2">TDS</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalTds)}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="border p-2">Conveyance</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalConveyance)}</td>
+                      <td className="border p-2">Professional Tax</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalProfessionalTax)}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="border p-2">Medical</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalMedical)}</td>
+                      <td className="border p-2">ESI</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalEsi)}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="border p-2">Other Allowance</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalOtherAllowance)}</td>
+                      <td className="border p-2">LOP</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalLop)}</td>
+                    </tr>
+
+                    <tr>
+                      <td className="border p-2">Bonus</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalBonus)}</td>
+                      <td className="border p-2"></td>
+                      <td className="border p-2"></td>
+                    </tr>
+
+                    <tr>
+                      <td className="border p-2">Incentive</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalIncentive)}</td>
+                      <td className="border p-2"></td>
+                      <td className="border p-2"></td>
+                    </tr>
+
+                    <tr>
+                      <td className="border p-2">Stipend</td>
+                      <td className="border p-2">{formatCurrency(summary?.totalStipend)}</td>
+                      <td className="border p-2"></td>
+                      <td className="border p-2"></td>
+                    </tr>
+                  </>
+                )}
+
+                <tr className="font-bold">
+                  <td className="border p-2">Total</td>
+                  <td className="border p-2">
+                    {formatCurrency(
+                      viewMode === "monthly"
+                        ? payslip?.grossSalary
+                        : summary?.totalGrossSalary
+                    )}
+                  </td>
+
+                  <td className="border p-2">Total Deduction</td>
+                  <td className="border p-2">
+                    {formatCurrency(
+                      viewMode === "monthly"
+                        ? Number(payslip?.grossSalary) - Number(payslip?.netSalary)
+                        : Number(summary?.totalGrossSalary) - Number(summary?.totalNetSalary)
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* NET */}
+            <div className="mt-4 font-bold">
+              Net Salary:{" "}
+              {formatCurrency(
+                viewMode === "monthly"
+                  ? payslip?.netSalary
+                  : summary?.totalNetSalary
+              )}
+            </div>
+
+            <div className="mt-2 text-sm italic">
+              In Words:{" "}
+              {numberToWords(
+                viewMode === "monthly"
+                  ? Number(payslip?.netSalary || 0)
+                  : Number(summary?.totalNetSalary || 0)
+              )}{" "}
+              ONLY
+            </div>
+
+            <div className="flex justify-between mt-8 text-xl">
+              <div>Employee Signature: ______________________</div>
+              <div>This payslip is computer generated</div>
+            </div>
           </div>
-
-                <div className="mt-2 text-sm italic">
-        In Words:{" "}
-        {numberToWords(
-          viewMode === "monthly"
-            ? Number(payslip?.netSalary || 0)
-            : Number(summary?.totalNetSalary || 0)
-        )}{" "}
-        ONLY
-      </div>
-
-          <div className="flex justify-between mt-8 text-xl">
-          <div>Employee Signature: ______________________</div>
-          <div>This payslip is computer generated</div>
-        </div>
-        </div>
-      )}
+        )}
 
       {viewMode === "yearly" && loading && (
         <div className="text-center mt-4">Loading summary...</div>

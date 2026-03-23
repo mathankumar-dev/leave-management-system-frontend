@@ -25,7 +25,7 @@ import type {
   AdminAccessDecision,
 } from "../types";
 import { toast } from "sonner";
-import api from "../../../api/axiosInstance";
+import api from "../../../services/apiClient";
 
 
 
@@ -112,7 +112,7 @@ export const useDashboard = () => {
     }
   };
 
-  
+
 
   const downloadHistory = async (year: number, month: number) => {
     await dashboardService.downloadPayslip(year, month);
@@ -441,10 +441,10 @@ export const useDashboard = () => {
 
 
   const stats = useMemo(() => ({
-  topDepartment: null,
-  topApprover: null,
-  topPending: null,
-}), []);
+    topDepartment: null,
+    topApprover: null,
+    topPending: null,
+  }), []);
 
 
 

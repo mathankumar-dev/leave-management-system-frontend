@@ -8,8 +8,8 @@ import {
   FaUserAlt,
 } from "react-icons/fa";
 import { useDashboard } from "../../hooks/useDashboard";
-import { useAuth } from "../../../auth/hooks/useAuth";
-import { PUBLIC_HOLIDAYS_2026 } from "../../../../constants/holidays";
+import { useAuth } from "../../../../shared/auth/useAuth";
+import { PUBLIC_HOLIDAYS_2026 } from "../../../../shared/constants/holidays";
 
 const TeamCalendarView: React.FC = () => {
   const { user } = useAuth();

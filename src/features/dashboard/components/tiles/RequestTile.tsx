@@ -1,7 +1,7 @@
 import React from 'react'
-import Divider from '../../../../components/ui/Divider'
+import Divider from '../../../../shared/components/Divider'
 import { HiDotsCircleHorizontal } from 'react-icons/hi'
-import CTAButton from '../../../../components/ui/CTAButton'
+import CTAButton from '../../../../shared/components/CTAButton'
 import type { LeaveType } from '../../types';
 import { FaFileImage } from 'react-icons/fa';
 

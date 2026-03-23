@@ -1,4 +1,4 @@
-import api from '../../../api/axiosInstance';
+import api from '../../../services/apiClient';
 import Cookies from "js-cookie";
 import { AxiosError } from 'axios';
 import type { DashboardResponse, LowBalanceEmployee } from '../views/types';
@@ -301,7 +301,7 @@ export const dashboardService = {
   //       HR dashboard 
   //============================
 
-   // GET /dashboard/hr — main dashboard data
+  // GET /dashboard/hr — main dashboard data
   getDashboardData: async (signal?: AbortSignal): Promise<DashboardResponse> => {
     try {
       const response = await api.get<DashboardResponse>('/dashboard/hr', { signal });
@@ -409,17 +409,17 @@ export const dashboardService = {
   // },
 
   createFlashNews: async (data: FlashNewsRequest) => {
-  try{
-    const messaage = await api.post("/flash-news/create", data);
-    return messaage.data;
-  }
-  catch(error: any){
-    throw error.response?.data?.message || "Failed to post the news"
-  }
+    try {
+      const messaage = await api.post("/flash-news/create", data);
+      return messaage.data;
+    }
+    catch (error: any) {
+      throw error.response?.data?.message || "Failed to post the news"
+    }
   },
 
 
-  getFlashNews : async () : Promise<FlashNews[]> => {
+  getFlashNews: async (): Promise<FlashNews[]> => {
     const response = await api.get('/flash-news');
     return response.data;
   },
@@ -430,14 +430,14 @@ export const dashboardService = {
     console.log(res.data);
     return res.data;
   },
-  approveAccessAdmin : async(requestId : number, decision : AdminAccessDecision ) => {
-    await api.patch(`/access-requests/${requestId}/admin-decision`,decision,);
+  approveAccessAdmin: async (requestId: number, decision: AdminAccessDecision) => {
+    await api.patch(`/access-requests/${requestId}/admin-decision`, decision,);
   },
 
 
   approveOnboardingBioRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
     console.log("calling bio");
-    
+
     await api.patch(`/admin/onboarding/bio/decision/${employeeId}`, {}, {
       params: {
         decision
@@ -454,10 +454,10 @@ export const dashboardService = {
   },
 
   // get all access requests
-  
-  getPendingAccessRequests : async(id : number) : Promise<AccessResponse[]> => {
-      const res = await api.get(`/access-requests/manager/pending/${id}`);
-      return res.data;
+
+  getPendingAccessRequests: async (id: number): Promise<AccessResponse[]> => {
+    const res = await api.get(`/access-requests/manager/pending/${id}`);
+    return res.data;
   },
 };
 

@@ -5,8 +5,8 @@ import {
 } from 'react-icons/fa';
 import { employeeService, type Employee } from '../../hr/service/employeeService';
 import { usePayslip } from '../hooks/usePayslip';
-import { notify } from '../../../../../utils/notifications';
-import CustomLoader from '../../../../../components/ui/CustomLoader';
+import { notify } from '../../../../notification/utils/notifications';
+import CustomLoader from '../../../../../shared/components/CustomLoader';
 import type { Payslip, PayslipCreateRequest } from '../../types';
 
 // ─── Confirm Modal ────────────────────────────────────────────────
@@ -141,7 +141,7 @@ const PayslipFormModal: React.FC<{
               <select value={form.month} onChange={e => update('month', parseInt(e.target.value))}
                 className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               >
-                {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => (
+                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
                   <option key={m} value={i + 1}>{m}</option>
                 ))}
               </select>
@@ -242,7 +242,7 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
     fetchPayrollData, exportCSV,
   } = usePayslip();
 
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -527,7 +527,7 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
       {/* Confirm Delete Modal */}
       {deleteTarget && (
         <ConfirmModal
-          message={`Delete payslip for Emp #${deleteTarget.employeeId} — ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][deleteTarget.month - 1]} ${deleteTarget.year}?`}
+          message={`Delete payslip for Emp #${deleteTarget.employeeId} — ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][deleteTarget.month - 1]} ${deleteTarget.year}?`}
           onConfirm={confirmDelete}
           onCancel={() => setDeleteTarget(null)}
         />

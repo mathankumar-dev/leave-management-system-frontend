@@ -1,32 +1,32 @@
 import { AxiosError } from 'axios';
-import api from '../../../../../api/axiosInstance';
+import api from '../../../../../services/apiClient';
 
 export interface Employee {
   designation: string;
   employeeId(employeeId: any, year: number, month: number): unknown;
   employeeName: any;
-  id:                    number;
-  name:                  string;
-  email:                 string;
-  role:                  string;
-  managerId:             number | null;
-  active:                boolean;
-  joiningDate:           string;
-  biometricStatus:       string;
-  vpnStatus:             string;
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  managerId: number | null;
+  active: boolean;
+  joiningDate: string;
+  biometricStatus: string;
+  vpnStatus: string;
   onboardingCompletedAt: string | null;
-  createdAt:             string;
-  updatedAt:             string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface EmployeePageResponse {
-  content:          Employee[];
-  totalElements:    number;
-  totalPages:       number;
-  number:           number;
-  size:             number;
-  first:            boolean;
-  last:             boolean;
+  content: Employee[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
   numberOfElements: number;
 }
 

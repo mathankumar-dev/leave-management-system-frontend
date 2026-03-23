@@ -4,10 +4,10 @@ import {
   FaUserPlus, FaSearch, FaEllipsisV, FaChevronLeft,
   FaChevronRight, FaRegAddressCard, FaFilter, FaUserCheck, FaUserSlash
 } from "react-icons/fa";
-import { useAuth } from "../../../auth/hooks/useAuth";
+import { useAuth } from "../../../../shared/auth/useAuth";
 import { useDashboard } from "../../hooks/useDashboard";
 import type { EmployeeEntity } from "../../types";
-import AddEmployeePopup from "../../../../common/forms/AddEmployeeForm";
+import AddEmployeePopup from "../../../employee/components/AddEmployeeForm";
 
 const EmployeesView = () => {
   const { fetchAllEmployees, loading, addUser, deleteUser } = useDashboard();
@@ -54,7 +54,7 @@ const EmployeesView = () => {
   const handleAction = async () => {
     if (confirmState.empId) {
       // Note: Assuming deleteUser toggles status or handles deactivation
-      await deleteUser(confirmState.empId); 
+      await deleteUser(confirmState.empId);
       setConfirmState({ ...confirmState, isOpen: false });
       loadEmployeeData();
     }
@@ -152,7 +152,7 @@ const EmployeesView = () => {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-slate-900 uppercase">
-                            {emp.name} 
+                            {emp.name}
                             {!emp.active && <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-black rounded-sm">INACTIVE</span>}
                           </p>
                           <p className="text-[10px] font-medium text-slate-400">{emp.email}</p>
@@ -260,8 +260,8 @@ const EmployeesView = () => {
       <ConfirmDialog
         isOpen={confirmState.isOpen}
         title={confirmState.mode === 'DEACTIVATE' ? "Security Protocol" : "Restore Access"}
-        message={confirmState.mode === 'DEACTIVATE' 
-          ? "Revoke system access for this member immediately?" 
+        message={confirmState.mode === 'DEACTIVATE'
+          ? "Revoke system access for this member immediately?"
           : "Re-enable system access for this member?"}
         confirmText={confirmState.mode === 'DEACTIVATE' ? "Confirm Deactivation" : "Confirm Reactivation"}
         isDanger={confirmState.mode === 'DEACTIVATE'}
