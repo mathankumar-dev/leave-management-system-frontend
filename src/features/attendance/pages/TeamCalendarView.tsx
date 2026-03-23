@@ -7,9 +7,9 @@ import {
   FaUserCheck,
   FaUserAlt,
 } from "react-icons/fa";
-import { useDashboard } from "../../dashboard/hooks/useDashboard";
 import { useAuth } from "../../../shared/auth/useAuth";
 import { PUBLIC_HOLIDAYS_2026 } from "../../../shared/constants/holidays";
+import { useCalendar } from "@/features/attendance/hooks/useCalendar";
 
 const TeamCalendarView: React.FC = () => {
   const { user } = useAuth();
@@ -20,7 +20,7 @@ const TeamCalendarView: React.FC = () => {
     loading,
     fetchEmployeeCalendar,
     employeeCalendar
-  } = useDashboard();
+  } = useCalendar();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());

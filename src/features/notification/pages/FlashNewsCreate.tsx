@@ -1,6 +1,6 @@
+import { useFlashNews } from "@/features/notification/hooks/useFlashNews";
+import type { FlashNewsRequest } from "@/features/notification/types";
 import React, { useState } from "react";
-import type { FlashNewsRequest } from "../../dashboard/types";
-import { useDashboard } from "../../dashboard/hooks/useDashboard";
 
 // interface Props {
 //   onSubmit?: (data: FlashNewsRequest) => Promise<boolean>;
@@ -9,7 +9,7 @@ import { useDashboard } from "../../dashboard/hooks/useDashboard";
 const FlashNewsForm = () => {
 
 
-  const { createFlashNewsController } = useDashboard();
+  const { createFlashNewsController } = useFlashNews();
   const [formData, setFormData] = useState<FlashNewsRequest>({
     message: "",
     days: 1,

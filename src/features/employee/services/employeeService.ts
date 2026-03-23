@@ -77,6 +77,7 @@ export const employeeService = {
     const res = await api.get(`/dashboard/team-members/${id}`);
     return res.data;
   },
+  
   getAllEmployees: async (filters: EmployeeFilters): Promise<PaginatedResponse<EmployeeEntity>> => {
     const res = await api.get('/employees/all', {
       params: filters

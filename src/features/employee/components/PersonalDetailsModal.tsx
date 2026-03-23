@@ -1,3 +1,9 @@
+import { authService } from "@/features/auth/api/authApi";
+import type { PersonalDetailsRequest } from "@/features/employee/types";
+import { useAuth } from "@/shared/auth/useAuth";
+import { FailureModal, Loader } from "@/shared/components";
+import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
+import { BloodGroupMap, GenderMap, MaritalStatusMap } from "@/shared/types";
 import React, { useState } from "react";
 import {
     HiOutlineUserCircle,
@@ -8,17 +14,7 @@ import {
     HiCheckCircle,
     HiOutlineBuildingLibrary
 } from "react-icons/hi2";
-import {
-    GenderMap,
-    BloodGroupMap,
-    MaritalStatusMap,
-    type PersonalDetailsRequest
-} from "../features/auth/types";
-import FailureModal from "../../../shared/components/FailureModal";
-import Loader from "../../../shared/components/Loader";
-import MyDatePicker from "../../../shared/components/datepicker/MyDatePicker";
-import { useAuth } from "../../../shared/auth/useAuth";
-import { authService } from "../../auth/api/authApi";
+
 
 const PersonalDetailsModal = () => {
     const { user, setUser } = useAuth();
@@ -149,7 +145,7 @@ const PersonalDetailsModal = () => {
                 <Loader message="Uploading documents..." isFinished={loaderState.finished} onFinished={handleFinalize} />
             )}
 
-            <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="fixed inset-0 z-9998 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
                 <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]">
 
                     {/* HEADER */}
@@ -190,7 +186,7 @@ const PersonalDetailsModal = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <InputLabel>First Name</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.firstName || ""} onChange={e => setFormData({ ...formData, fullName: e.target.value })} />
+                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.firstName || ""} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
                                 </div>
                                 <div>
                                     <InputLabel>Last Name</InputLabel>

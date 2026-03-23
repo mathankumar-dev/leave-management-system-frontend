@@ -3,8 +3,8 @@ import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import { authService } from "@/features/auth/api/authApi";
 
-import type { User } from "@/features/employee/types";
 import type { AuthResponse } from "./authTypes";
+import type { User } from "@/features/employee/types";
 
 interface JwtPayload {
   exp: number;

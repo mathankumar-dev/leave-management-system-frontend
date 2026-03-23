@@ -1,9 +1,8 @@
 import React from 'react'
-import Divider from '../../../shared/components/Divider'
 import { HiDotsCircleHorizontal } from 'react-icons/hi'
-import CTAButton from '../../../shared/components/CTAButton'
-import type { LeaveType } from '../../dashboard/types';
 import { FaFileImage } from 'react-icons/fa';
+import type { LeaveType } from '@/features/leave/types';
+import { CTAButton, Divider } from '@/shared/components';
 
 export interface RequestTileProps {
     employeeName: string;
@@ -27,8 +26,6 @@ const RequestTile: React.FC<RequestTileProps> = ({
     employeeName,
     leaveType,
     dateRange,
-    startDate,
-    endDate,
     startDateHalfDayType,
     endDateHalfDayType,
     reasonMessage,
@@ -163,7 +160,6 @@ const RequestTile: React.FC<RequestTileProps> = ({
                     />
                     <CTAButton
                         label='Reject'
-                        labelColor='text-red-500'
                         isOutlineOnly
                         className='flex-1 md:px-5 border-red-200! hover:bg-red-50 text-[10px] uppercase font-bold h-9 rounded-sm'
                         onClick={onReject}

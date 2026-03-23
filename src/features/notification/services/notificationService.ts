@@ -1,5 +1,6 @@
 import type { FlashNews, FlashNewsRequest, NotificationResponse, PageResponse } from "@/features/notification/types";
-import api from "../../../services/apiClient";
+import api from "@/services/apiClient";
+
 
 export const notificationService = {
   getNotifications: async (employeeId: number, page = 0, size = 10): Promise<PageResponse<NotificationResponse>> => {

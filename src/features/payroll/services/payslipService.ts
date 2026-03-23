@@ -1,5 +1,6 @@
 import type { Payslip, PayslipCreateRequest, PayslipUpdateRequest } from '@/features/payroll/payrollTypes';
-import api from '../../../services/apiClient';
+import api from '@/services/apiClient';
+
 
 export const PayslipService = {
 

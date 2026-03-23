@@ -1,3 +1,8 @@
+import { employeeService, type Employee } from '@/features/employee/services/employeeService';
+import { notify } from '@/features/notification/utils/notifications';
+import { usePayslip } from '@/features/payroll/hooks/usePayslip';
+import type { Payslip, PayslipCreateRequest } from '@/features/payroll/payrollTypes';
+import { CustomLoader } from '@/shared/components';
 import React, { useEffect, useState } from 'react';
 import {
   FaCheck,
@@ -9,11 +14,6 @@ import {
   FaSyncAlt, FaTimes,
   FaTrash
 } from 'react-icons/fa';
-import CustomLoader from '../../../shared/components/CustomLoader';
-import type { Payslip, PayslipCreateRequest } from '../../dashboard/views/types';
-import { employeeService, type Employee } from '../../employee/services/employeeService';
-import { notify } from '../../notification/utils/notifications';
-import { usePayslip } from '../hooks/usePayslip';
 
 // ─── Confirm Modal ────────────────────────────────────────────────
 const ConfirmModal: React.FC<{
@@ -74,6 +74,7 @@ const PayslipFormModal: React.FC<{
     lop: initial?.lop || 0,
     lopDays: initial?.lopDays || 0,
     variablePay: initial?.variablePay || 0,
+    status: ''
   };
 
   const [form, setForm] = useState<PayslipCreateRequest>(EMPTY);
@@ -263,7 +264,8 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await employeeService.getAllEmployees(0, 1000);
+        // !!!TODO change the structure
+        const res = await employeeService.getAllEmployees();
         setEmployees(res.content);
       } catch {
         console.warn('Employee list unavailable — names will show as Emp #id');

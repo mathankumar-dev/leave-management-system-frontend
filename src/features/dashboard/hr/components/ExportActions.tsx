@@ -1,6 +1,8 @@
+
+import { Button } from '@/shared/components';
+import { Card, CardContent } from '@/shared/components/Card';
 import { Download, FileText, BarChart3, ChevronRight } from 'lucide-react';
-import { Card, CardContent } from '../../../../shared/components/Card';
-import { Button } from '../../../../shared/components/Button';
+
 import { Link } from 'react-router-dom';
 
 export default function ExportActions() {

@@ -1,17 +1,17 @@
-import LeavePolicies from "@/features/leave/pages/LeavePolicy";
 import NotFoundPage from "@/app/NotFoundPage";
-import PrivacyPolicy from "@/features/landing/pages/PrivacyPolicy";
-import TermsOfService from "@/features/landing/pages/TermsOfService";
-import { useAuth } from "@/shared/auth/useAuth";
 import AuthPage from "@/features/auth/pages/AuthPage";
 import ForgotPassword from "@/features/auth/pages/ForgotPassword";
 import DashboardLayout from "@/features/dashboard/layout/DashboardLayout";
-import LandingPage from "@/features/landing/pages/LandingPage";
+import LandingPage from "@/features/landingpage/pages/LandingPage";
+import PrivacyPolicy from "@/features/landingpage/pages/PrivacyPolicy";
+import TermsOfService from "@/features/landingpage/pages/TermsOfService";
 import LaunchPage from "@/features/launchpage/LaunchPage";
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import ProtectedRoute from "./ProtectedRoute";
+import LeavePolicies from "@/features/leave/pages/LeavePolicy";
+import { useAuth } from "@/shared/auth/useAuth";
 import Loader from "@/shared/components/Loader";
+import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 
 
 
@@ -44,9 +44,28 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* 3. Protected Dashboard Routes */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard/*" element={<DashboardLayout />} />
+      <Route path="/dashboard" element={<ProtectedRoute />}>
+
+        {/* Employee */}
+        <Route element={<ProtectedRoute allowedRoles={["EMPLOYEE"]} />}>
+          <Route path="employee/*" element={<DashboardLayout />} />
+        </Route>
+
+        {/* Manager */}
+        <Route element={<ProtectedRoute allowedRoles={["MANAGER", "TEAM_LEADER"]} />}>
+          <Route path="manager/*" element={<DashboardLayout />} />
+        </Route>
+
+        {/* HR */}
+        <Route element={<ProtectedRoute allowedRoles={["HR"]} />}>
+          <Route path="hr/*" element={<DashboardLayout />} />
+        </Route>
+
+        {/* Admin */}
+        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="admin/*" element={<DashboardLayout />} />
+        </Route>
+
       </Route>
 
       <Route path="/forgot-password" element={<ForgotPassword />} />

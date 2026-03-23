@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import type { ProfileData } from "../../dashboard/types";
 import api from "../../../services/apiClient";
+import type { ProfileData } from "@/features/employee/types";
 
 
 

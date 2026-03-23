@@ -1,3 +1,9 @@
+import { employeeService, type Employee } from '@/features/employee/services/employeeService';
+import { notify } from '@/features/notification/utils/notifications';
+import type { Payslip, PayslipCreateRequest } from '@/features/payroll/payrollTypes';
+import { PayslipService } from '@/features/payroll/services/payslipService';
+import api from '@/services/apiClient';
+import { CustomLoader } from '@/shared/components';
 import React, { useEffect, useState } from 'react';
 import {
   FaCalendarAlt, FaChartBar,
@@ -11,12 +17,6 @@ import {
   FaTrash,
   FaUserCheck, FaUserTimes
 } from 'react-icons/fa';
-import api from '../../../services/apiClient';
-import CustomLoader from '../../../shared/components/CustomLoader';
-import type { Payslip, PayslipCreateRequest } from '../../dashboard/views/types';
-import { employeeService, type Employee } from '../../employee/services/employeeService';
-import { notify } from '../../notification/utils/notifications';
-import { PayslipService } from '../services/payslipService';
 
 // ─── Types ────────────────────────────────────────────────────────
 interface LeaveBreakdown {
@@ -71,7 +71,7 @@ const LeaveModal: React.FC<{ employee: Employee; onClose: () => void }> = ({ emp
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
           <div className="flex items-center gap-3">
@@ -166,7 +166,7 @@ const AnnualPayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
     const fetch = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`/payslip/employee/${employee.id}/${year}`, { silent: [404, 500] });
+        const res = await api.get(`/payslip/employee/${employee.id}/${year}`);
         setPayslips(res.data || []);
       } catch {
         setPayslips([]);
@@ -181,7 +181,7 @@ const AnnualPayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
   const totalGross = payslips.reduce((sum, p) => sum + (p.grossSalary || 0), 0);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
           <div className="flex items-center gap-3">
@@ -319,7 +319,7 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
         try {
           const res = await api.get(
             `/payslip/employee/${employee.id}/${form.year}/${form.month}`,
-            { silent: [404, 500] }
+        
           );
           setExistingPayslip(res.data);
           setForm(fillFormFromData(res.data, employee.id, form.month, form.year));
@@ -332,13 +332,13 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
         try {
           const res = await api.get(
             `/payslip/prefill?employeeId=${employee.id}&year=${form.year}&month=${form.month}`,
-            { silent: [404, 500] }
+           
           );
           setForm(fillFormFromData(res.data, employee.id, form.month, form.year));
-          setPrefillBadge(true); // prefill aaguthu badge kaanum
+          setPrefillBadge(true); 
         } catch {
           // No prefill either → empty form
-          setForm(prev => ({
+          setForm((prev: any) => ({
             ...prev,
             basicSalary: 0, hra: 0, conveyance: 0, medical: 0, otherAllowance: 0,
             bonus: 0, incentive: 0, stipend: 0,
@@ -596,7 +596,8 @@ export const CFOEmployeesPage: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await employeeService.getAllEmployees(0, 1000);
+        // !!!TODO CHANGE THIS TO CURRENT STRUCTURE
+        const res = await employeeService.getAllEmployees();
         setEmployees(res.content);
         const defaults: Record<number, 'OLD' | 'NEW'> = {};
         res.content.forEach((e: Employee) => { defaults[e.id] = 'OLD'; });

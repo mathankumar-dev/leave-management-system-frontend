@@ -1,9 +1,7 @@
-import { useEffect as useEff, useState as useSt, useRef, type SetStateAction, } from "react";
-import { dashboardService } from "../../dashboard/services/dashboardService";
-import type { LowBalanceEmployee } from "../../dashboard/views/types";
-import { LowBalanceTable } from "../../dashboard/hr/components/Lowbalancetable";
-
-// import { set } from "react-datepicker/dist/dist/date_utils.js";
+import LowBalanceTable from "@/features/dashboard/hr/components/LowBalanceTable";
+import { dashboardService } from "@/features/dashboard/services/dashboardService";
+import type { LowBalanceEmployee } from "@/features/leave/types";
+import { useEffect as useEff, useRef, useState as useSt, type SetStateAction, } from "react";
 
 function LowBalancePage() {
   const [data, setData] = useSt<LowBalanceEmployee[]>([]);
@@ -14,10 +12,10 @@ function LowBalancePage() {
   useEff(() => {
     isMounted.current = true;
 
-    const timer = setTimeout(() => {        // ← 100ms delay
+    const timer = setTimeout(() => {       
       if (!isMounted.current) return;
 
-      dashboardService.getLowBalanceEmployees()  // signal illama
+      dashboardService.getHRLowBalance()  
         .then((res: SetStateAction<LowBalanceEmployee[]>) => {
           if (isMounted.current) { setData(res); setLoading(false); }
         })

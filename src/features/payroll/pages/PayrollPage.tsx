@@ -1,17 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useDashboard } from "../../dashboard/hooks/useDashboard";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import type { ProfileData, YearlySummary } from "../../dashboard/types";
-import { useAuth } from "../../../shared/auth/useAuth";
-import api from "../../../services/apiClient";
-import html2canvas from "html2canvas";
-import { dashboardService } from "../../dashboard/services/dashboardService";
 import { toPng } from "html-to-image";
 import logo from "../../../assets/bg-rm-logo-HRES.png"; // adjust path
+import { usePayroll } from "@/features/payroll/hooks/usePayroll";
+import { useAuth } from "@/shared/auth/useAuth";
+import type { ProfileData } from "@/features/employee/types";
+import type { YearlySummary } from "@/features/payroll/payrollTypes";
+import { dashboardService } from "@/features/dashboard/services/dashboardService";
 
 const PayrollView: React.FC = () => {
-  const { payslip, fetchPayslip, error } = useDashboard();
+  const { payslip, fetchPayslip } = usePayroll();
   const { user } = useAuth();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);

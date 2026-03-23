@@ -1,15 +1,17 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { FaCalendarAlt, FaEllipsisV, FaEdit, FaTimes, FaInfoCircle } from "react-icons/fa";
-import { useDashboard } from "../../dashboard/hooks/useDashboard";
-import { useAuth } from "../../../shared/auth/useAuth";
-import type { LeaveRecord, ODResponse } from "../../dashboard/types";
-import CustomLoader from "../../../shared/components/CustomLoader";
-import EditLeaveModal from "../components/EditLeaveModal";
-import { formatTimeAgo } from "../../../shared/utils/formatTimeAgo";
+import { useAuth } from "@/shared/auth/useAuth";
+import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
+import { useLeave } from "@/features/leave/hooks/useLeave";
+import type { LeaveRecord, ODResponse } from "@/features/leave/types";
+import { CustomLoader } from "@/shared/components";
+import EditLeaveModal from "@/features/leave/components/EditLeaveModal";
+import { formatTimeAgo } from "@/shared/utils/formatTimeAgo";
 
 const MyRequestsView: React.FC = () => {
-  const { fetchMyLeaves, fetchMyOD, cancelLeave, editLeave, loading } = useDashboard();
+  const {fetchMyLeaves, fetchMyOD} = useLeave();
+  const {  cancelLeave, editLeave, loading } = useLeaveAction();
   const { user } = useAuth();
   const [history, setHistory] = useState<(LeaveRecord | ODResponse)[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -73,8 +75,7 @@ const MyRequestsView: React.FC = () => {
       const end = new Date(item.endDate);
       const isSameDay = item.startDate === item.endDate;
 
-      // LOGIC: Calculate days if missing (especially for OD)
-      let calculatedDays = item.days;
+      let calculatedDays = 0;
       if (!calculatedDays || calculatedDays === 0) {
         const diffTime = Math.abs(end.getTime() - start.getTime());
         calculatedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;

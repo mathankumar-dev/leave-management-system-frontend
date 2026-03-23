@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { FaPlus } from "react-icons/fa";
+import { useAuth } from "@/shared/auth/useAuth";
+import { useEmployeeDashboard } from "@/features/dashboard/hooks";
+import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
+import LeaveDetailsDrawer from "@/features/leave/components/LeaveDetailsDrawer";
 
-import LeaveDetailsDrawer from "../../../leave/components/LeaveDetailsDrawer";
-import { useDashboard } from "../../../dashboard/hooks/useDashboard";
-import MyFloatingActionButton from "../../../../shared/components/MyFloatingActionButton";
-import { useAuth } from "../../../../shared/auth/useAuth";
-import CustomLoader from "../../../../shared/components/CustomLoader";
 
 export type DashboardScope = "SELF" | "TEAM" | "ALL";
 
@@ -31,7 +30,7 @@ interface StatItem {
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
-  const { fetchDashboard, setError } = useDashboard();
+  const { fetchDashboard, setError } = useEmployeeDashboard();
   const { user } = useAuth();
   const employeeId = user?.id;
 

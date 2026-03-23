@@ -1,40 +1,41 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useAuth } from "../../../shared/auth/useAuth";
-import { useDashboard } from "../../dashboard/hooks/useDashboard";
-import type { LeaveType } from "../../dashboard/types";
-import MyDatePicker from "../../../shared/components/datepicker/MyDatePicker";
+import React, { useEffect, useRef, useState } from "react";
 
+import { useLeave } from "@/features/leave/hooks/useLeave";
+import { useAuth } from "@/shared/auth/useAuth";
 import {
-  HiOutlineClock,
   HiOutlineChatBubbleLeftRight,
-  HiOutlinePaperAirplane,
   HiOutlineCheckCircle,
-  HiOutlineShieldCheck,
+  HiOutlineClock,
   HiOutlineExclamationTriangle,
+  HiOutlinePaperAirplane,
   HiOutlinePaperClip,
-  HiOutlineXMark,
+  HiOutlineShieldCheck,
 } from "react-icons/hi2";
 import { toLocalISOString } from "../../../shared/utils/dateUtils";
+import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
+import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
+import type { LeaveType } from "@/features/leave/types";
 
 type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
   const {
-    applyLeave,
-    bankCompOff,
+
     loading,
     error,
     setError,
     leaveBalance,
     fetchLeaveBalance
-  } = useDashboard();
+  } = useLeave();
+
+  const { applyLeave, bankCompOff } = useLeaveAction();
 
   const [submitted, setSubmitted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    category: "CASUAL" as LeaveType | "COMP_OFF",
+    category: "ANNUAL_LEAVE" as LeaveType | "COMP_OFF",
     startDate: null as Date | null,
     endDate: null as Date | null,
     compOffPlannedDate: null as Date | null,

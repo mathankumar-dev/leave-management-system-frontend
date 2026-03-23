@@ -1,6 +1,6 @@
+import { Badge, Card } from '@/shared/components';
+import { CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { AlertTriangle, CalendarClock } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../shared/components/Card';
-import { Badge } from '../../../../shared/components/Badge';
 
 interface OnboardingEmployee {
   employeeId: number;

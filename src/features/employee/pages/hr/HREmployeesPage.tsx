@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Users, Search, ChevronLeft, ChevronRight, RefreshCw, X } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../shared/components/Card';
-import { Badge } from '../../../shared/components/Badge';
-import { employeeService, type Employee, type EmployeePageResponse } from '../api/employeeService';
+import { Badge } from '@/shared/components/Badge';
+import { employeeService, type Employee, type EmployeePageResponse } from '@/features/employee/services/employeeService';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/Card';
 
 // ─── Role Badge ───────────────────────────────────────────────────
 function RoleBadge({ role }: { role: string }) {

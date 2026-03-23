@@ -22,7 +22,7 @@ const ChartSkeleton = () => (
       <Pulse className="h-4 w-4 rounded" />
       <Pulse className="h-4 w-36" />
     </div>
-    <Pulse className="h-[250px] w-full rounded-xl" />
+    <Pulse className="h-62.5 w-full rounded-xl" />
   </div>
 );
 

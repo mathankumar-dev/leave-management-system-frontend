@@ -1,6 +1,6 @@
+import { cn } from "@/shared/utils/helpers";
 import * as React from "react";
 
-import { cn } from "../../../../../utils/utils";
 
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)} {...props} />
@@ -40,4 +40,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardFooter.displayName = "CardFooter";
 
-export default { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+export  { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };

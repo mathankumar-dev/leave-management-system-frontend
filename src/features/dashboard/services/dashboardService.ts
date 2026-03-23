@@ -1,7 +1,6 @@
-import type { TeamMemberBalance } from '@/features/attendance/types';
 import type { DashboardResponse } from '@/features/dashboard/types';
 import type { Employee } from '@/features/employee/types';
-import type { LeaveRecord, LowBalanceEmployee } from '@/features/leave/types';
+import type { LowBalanceEmployee } from '@/features/leave/types';
 import { handleError } from '@/shared/services/apiError';
 import api from '../../../services/apiClient';
 

@@ -1,8 +1,10 @@
+
+import { leaveService } from "@/features/leave/services/leaveService";
+import { requestService } from "@/features/leave/services/requestService";
+import type { AccessResponse, CompOffResponse, LeaveDecision, LeaveDecisionRequest, LeaveType, ManagerAccessDecision, ODResponse } from "@/features/leave/types";
+import { onboardingServices } from "@/features/onboarding/services/onboardingService";
+import api from "@/services/apiClient";
 import { useEffect, useState } from "react";
-import api from "../../../services/apiClient";
-import { dashboardService } from "../../dashboard/services/dashboardService";
-import type { AccessResponse, CompOffResponse, LeaveDecision, LeaveDecisionRequest, LeaveType, ManagerAccessDecision, ODResponse } from "../../dashboard/types";
-import { requestService } from "../services/requestService";
 
 export const useManagerApprovals = (userId: number, role?: string) => {
   const [requests, setRequests] = useState<any[]>([]);
@@ -45,16 +47,16 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       }
       // 1. Fetch data from services
       const [leaveData, compOffs, ods, accessReqs] = isTeamLeader
-        ? await Promise.all([dashboardService.getPendingApprovalsForTeamLeader(userId),
+        ? await Promise.all([leaveService.getPendingApprovalsForTeamLeader(userId),
           null, // Team leaders might not have comp-offs in your logic
-        dashboardService.getPendingODApprovalsForTeamLeader(userId),
+        leaveService.getPendingODApprovalsForTeamLeader(userId),
           null
         ])
         : await Promise.all([
-          dashboardService.getPendingApprovals(userId),
-          dashboardService.getPendingCompOffs(userId),
-          dashboardService.getPendingODApprovals(userId),
-          dashboardService.getPendingAccessRequests(userId)
+          leaveService.getPendingApprovals(userId),
+          leaveService.getPendingCompOffs(userId),
+          leaveService.getPendingODApprovals(userId),
+          onboardingServices.getPendingAccessRequests(userId)
         ]);
       const formattedLeaves = (leaveData || []).map((item: any) => ({
         ...item.leaveApplication, // This spreads id, employeeName, startDate, etc.
@@ -144,9 +146,9 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       }
       else if (type === 'COMP_OFF') {
         if (status === 'APPROVED') {
-          await dashboardService.approveCompOff(requestId);
+          await leaveService.approveCompOff(requestId);
         } else {
-          await dashboardService.rejectCompOff(requestId, reason);
+          await leaveService.rejectCompOff(requestId, reason);
         }
       }
       // else if (type === 'MEETING') {
@@ -168,7 +170,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
           decision: status,
           comments: reason
         };
-        await dashboardService.updateDecision(decisionRequest);
+        await leaveService.updateDecision(decisionRequest);
       }
 
       removeFromState(requestId);
@@ -184,7 +186,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
 
   const handleCompOffApprove = async (compOffId: number) => {
     try {
-      await dashboardService.approveCompOff(compOffId);
+      await leaveService.approveCompOff(compOffId);
       removeFromState(compOffId);
       return { success: true };
     } catch (err) {
@@ -194,7 +196,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
 
   const handleCompOffReject = async (compOffId: number, reason: string) => {
     try {
-      await dashboardService.rejectCompOff(compOffId, reason);
+      await leaveService.rejectCompOff(compOffId, reason);
       removeFromState(compOffId);
       return { success: true };
     } catch (err) {

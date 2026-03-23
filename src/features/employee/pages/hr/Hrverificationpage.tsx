@@ -1,12 +1,12 @@
+import { notify } from '@/features/notification/utils/notifications';
+import api from '@/services/apiClient';
+import { CustomLoader } from '@/shared/components';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   FaSearch, FaCheck, FaTimes, FaEye, FaUser,
   FaFilter, FaCheckCircle, FaTimesCircle, FaClock,
   FaDownload, FaFileAlt
 } from 'react-icons/fa';
-import api from '../../../services/apiClient';
-import { notify } from '../../notification/utils/notifications';
-import CustomLoader from '../../../shared/components/CustomLoader';
 
 
 

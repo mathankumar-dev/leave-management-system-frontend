@@ -1,16 +1,16 @@
+import RequestTile from '@/features/leave/components/RequestTile';
+import { useLeave } from '@/features/leave/hooks/useLeave';
+import { useManagerApprovals } from '@/features/leave/hooks/useManagerApprovals';
+import type { LeaveDecision, ManagerAccessDecision } from '@/features/leave/types';
+import { notify } from '@/features/notification/utils/notifications';
+import api from '@/services/apiClient';
+import { useAuth } from '@/shared/auth/useAuth';
+import { CustomLoader, CommentDialog, MetricTile } from '@/shared/components';
+import { formatTimeAgo } from '@/shared/utils/formatTimeAgo';
 import React, { useState, useMemo, useEffect } from 'react';
-import MetricTile from '../../../shared/components/MetricTile';
-import RequestTile from '../components/RequestTile';
-import { useManagerApprovals } from '../hooks/useManagerApprovals';
-import CustomLoader from '../../../shared/components/CustomLoader';
-import { useAuth } from '../../../shared/auth/useAuth';
 import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSearch, FaTimes } from 'react-icons/fa';
-import type { LeaveDecision, LeaveDecisionRequest, ManagerAccessDecision } from '../../dashboard/types';
-import { notify } from '../../notification/utils/notifications';
-import CommentDialog from '../../../shared/components/CommentDialog';
-import { formatTimeAgo } from '../../../shared/utils/formatTimeAgo';
-import { useDashboard } from '../../dashboard/hooks/useDashboard';
-import api from '../../../services/apiClient';
+
+
 
 interface PendingRequest {
     id: number;
@@ -38,7 +38,7 @@ const PendingApprovalsView: React.FC = () => {
         handleDecision,
     } = useManagerApprovals(user?.id || 0, user?.role);
 
-    const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useDashboard();
+    const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useLeave();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");

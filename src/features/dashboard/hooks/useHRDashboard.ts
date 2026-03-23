@@ -1,6 +1,6 @@
+import type { DashboardResponse } from '@/features/dashboard/types';
+import type { LowBalanceEmployee } from '@/features/leave/types';
 import { useCallback, useEffect, useState } from 'react';
-import { dashboardService } from "../services/dashboardService";
-import type { DashboardResponse, LowBalanceEmployee } from '../../views/types';
 
 export interface DepartmentStat {
   department: string;
@@ -33,7 +33,7 @@ export function useHRDashboard() {
 
     try {
       // Main dashboard — must succeed
-      const data = await dashboardService.getDashboardData();
+      const data = await dashboardService.getHrDashboard();
 
       const departmentStats: DepartmentStat[] = data.teamStructure.map((team) => ({
         department: team.managerName,
@@ -45,7 +45,7 @@ export function useHRDashboard() {
       let lowBalanceError: string | null = null;
 
       try {
-        lowBalanceData = await dashboardService.getLowBalanceEmployees(signal);
+        lowBalanceData = await dashboardService.getHRLowBalance(signal);
       } catch (err) {
         // Backend 500 — show empty table with error message, don't crash dashboard
         lowBalanceError = 'Low balance data unavailable — backend error';

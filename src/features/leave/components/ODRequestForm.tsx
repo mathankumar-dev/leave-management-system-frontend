@@ -1,20 +1,18 @@
+import { useRequest } from "@/features/leave/hooks/useRequest";
+import type { ODRequest } from "@/features/leave/types";
+import { useAuth } from "@/shared/auth/useAuth";
+import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
+import Badge from "@/shared/components/NameBadge";
 import React, { useState } from "react";
 import {
     HiOutlineMapPin,
     HiOutlineChatBubbleLeftRight,
     HiOutlinePaperAirplane,
-    HiOutlineCheckCircle,
-    HiOutlineUsers
-} from "react-icons/hi2";
-import MyDatePicker from "../../../shared/components/datepicker/MyDatePicker";
-import { useAuth } from "../../../shared/auth/useAuth";
-import { useRequest } from "../hooks/useRequest";
-import type { ODRequest } from "../../dashboard/types";
-import Badge from "../../../shared/components/NameBadge";
+    HiOutlineCheckCircle} from "react-icons/hi2";
 
 const ODRequestForm = () => {
     const { user } = useAuth();
-    const { createOD, loading, error, setError } = useRequest();
+    const { createOD, loading, setError } = useRequest();
     const [submitted, setSubmitted] = useState(false);
 
     const [formData, setFormData] = useState({

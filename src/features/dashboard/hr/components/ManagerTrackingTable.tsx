@@ -1,5 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../../shared/components/Card';
-import { Badge } from '../../../../shared/components/Badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle,} from "@/shared/components/Card";
+import { Badge } from "lucide-react";
+
 
 interface ManagerApprovalStat {
   rejectedCount: number;

@@ -5,7 +5,7 @@ import "@fontsource/inter";
 import "@fontsource/inter/700.css";
 import '@/app/index.css';
 import App from '@/app/App.tsx';
-import { AuthProvider } from '@/shared/auth/useAuth';
+import { AuthProvider } from '@/shared/auth/AuthContext';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

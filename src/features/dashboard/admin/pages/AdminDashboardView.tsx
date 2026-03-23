@@ -4,18 +4,17 @@ import {
   FaUserShield, FaChartPie, FaPlus,
   FaUsers, FaHistory
 } from "react-icons/fa";
-import { useDashboard } from "../hooks/useDashboard";
-import { useAuth } from "../../../shared/auth/useAuth";
-import CustomLoader from "../../../shared/components/CustomLoader";
-import { notify } from "../../notification/utils/notifications";
-import MyFloatingActionButton from "../../../shared/components/MyFloatingActionButton";
-import ManagerStatCardTeam from "../manager/components/ManagerStatCardTeam";
-import DashboardDrawer from "../components/DashBoardDrawer";
-import type { AdminDashBoardResponse } from "../types";
+import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
+import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
+import type { AdminDashBoardResponse } from "@/features/dashboard/types";
+import { notify } from "@/features/notification/utils/notifications";
+import { useAuth } from "@/shared/auth/useAuth";
+import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
+import { useAdminDashboard } from "@/features/dashboard/hooks";
 
 const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
-  const { fetchAdminDashboard, loading: dashboardLoading } = useDashboard();
+  const { fetchAdminDashboard, loading: dashboardLoading } = useAdminDashboard();
 
   const [dashboardData, setDashboardData] = useState<AdminDashBoardResponse>();
   const [drawerConfig, setDrawerConfig] = useState<{

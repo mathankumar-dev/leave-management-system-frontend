@@ -1,9 +1,8 @@
+import { authService } from "@/features/auth/api/authApi";
+import { useAuth } from "@/shared/auth/useAuth";
+import { FailureModal, Loader } from "@/shared/components";
 import React, { useState } from "react";
 import { FaShieldAlt } from "react-icons/fa";
-import { useAuth } from "../../shared/auth/useAuth";
-import { authService } from "../../features/auth/api/authApi";
-import Loader from "../../shared/components/Loader"; // Updated circular loader
-import FailureModal from "../../shared/components/FailureModal";
 
 
 const ChangePasswordDialog: React.FC = () => {
@@ -78,7 +77,7 @@ const ChangePasswordDialog: React.FC = () => {
 
       {/* Password Dialog - Only visible if not loading */}
       {!loaderState.active && (
-        <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-9998 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
             <div className="p-8 text-center">
               <div className="mx-auto w-16 h-16 bg-red-50 rounded-lg flex items-center justify-center mb-4 text-2xl text-red-600">

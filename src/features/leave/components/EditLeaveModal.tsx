@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
-import type { LeaveRecord } from "../../dashboard/types";
+import type { LeaveRecord } from "@/features/leave/types";
 
 interface EditLeaveModalProps {
   isOpen: boolean;

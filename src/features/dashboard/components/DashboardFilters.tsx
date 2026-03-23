@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../shared/components/Select';
-import { Card, CardContent } from '../../../shared/components/Card';
+import { Card, CardContent } from '@/shared/components/Card';
 
 interface DashboardFiltersProps {
   filters: {

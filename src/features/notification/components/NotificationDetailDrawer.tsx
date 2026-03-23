@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaRegClock, FaInfoCircle } from 'react-icons/fa';
-import type { NotificationResponse } from '../../dashboard/services/notification/types';
+import type { NotificationResponse } from '@/features/notification/types';
 
 interface DrawerProps {
   notification: NotificationResponse | null;

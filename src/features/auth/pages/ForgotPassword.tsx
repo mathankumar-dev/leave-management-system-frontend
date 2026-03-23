@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { authService } from "../api/authApi";
 import SuccessModal from "../../../shared/components/SuccessModal";
 import FailureModal from "../../../shared/components/FailureModal";
+import { Loader } from "lucide-react";
 
 const ForgotPassword: React.FC = () => {
     const [email, setEmail] = useState("");
@@ -31,10 +32,7 @@ const ForgotPassword: React.FC = () => {
         <div className="flex items-center justify-center min-h-screen">
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
                 {showSuccess && (
-                    <SuccessModal
-                        title="Email Sent"
-                        message="If an account exists, a reset link has been sent. Redirecting to login..."
-                    />
+                        <Loader / >
                 )}
 
                 {showError && (

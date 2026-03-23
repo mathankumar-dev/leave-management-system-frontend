@@ -1,6 +1,6 @@
+import { requestService } from "@/features/leave/services/requestService";
+import type { AccessRequest, MeetingRequest, ODRequest } from "@/features/leave/types";
 import { useCallback, useState } from "react";
-import type { AccessRequest, MeetingRequest, ODRequest } from "../../dashboard/types";
-import { requestService } from "../services/requestService";
 
 export const useRequest = () => {
     const [loading, setLoading] = useState(false);

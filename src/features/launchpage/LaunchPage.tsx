@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "../../assets/logo.svg";
-import CalendarSVG from "../../assets/svg/calendar-svg.svg";
-import moneySVG from "../../assets/svg/money-svg.svg";
-import { useAuth } from "../../shared/auth/useAuth";
+import CalendarSVG from "@/assets/svg/calendar-svg.svg";
+import moneySVG from "@/assets/svg/money-svg.svg";
+import { useAuth } from "@/shared/auth/useAuth";
 import { useNavigate } from "react-router-dom";
-import { formatTimeAgo } from "../../shared/utils/formatTimeAgo";
-import { useDashboard } from "../dashboard/hooks/useDashboard";
-// Import your service and interface here
-// import { dashboardService } from "../../services/dashboardService"; 
+import { useFlashNews } from "@/features/notification/hooks/useFlashNews";
+import { formatTimeAgo } from "@/shared/utils/formatTimeAgo";
+
 
 export interface FlashNews {
   id: number;
@@ -27,7 +26,7 @@ const LaunchPage: React.FC = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const { fetchFlashNews } = useDashboard();
+  const { fetchFlashNews } = useFlashNews();
 
   useEffect(() => {
     const loadData = async () => {

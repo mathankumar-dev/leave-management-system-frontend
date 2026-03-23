@@ -1,5 +1,6 @@
+import type { User } from "@/features/employee/types";
+import type { LoginCredentials, AuthResponse } from "@/shared/auth/authTypes";
 import api from "../../../services/apiClient";
-import type { LoginCredentials, AuthResponse, User } from "../types";
 
 export const authService = {
 

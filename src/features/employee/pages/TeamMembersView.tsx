@@ -2,19 +2,18 @@ import React, { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     FaSearch,
-    FaChartPie,
     FaCalendarCheck,
     FaUser,
 } from "react-icons/fa";
-import { useDashboard } from "../../dashboard/hooks/useDashboard";
-import { useAuth } from "../../../shared/auth/useAuth";
-import type { TeamMember, TeamMemberBalance } from "../../dashboard/types";
-import CustomLoader from "../../../shared/components/CustomLoader";
+import type { TeamMember } from "@/features/employee/types";
+import { useAuth } from "@/shared/auth/useAuth";
+import { CustomLoader } from "@/shared/components";
+import { useEmployee } from "@/features/employee/hooks/useEmployee";
 interface TeamMembersViewProps {
     onNavigate?: (tab: string) => void;
 }
 const TeamMembersView: React.FC<TeamMembersViewProps> = ({ onNavigate }) => {
-    const { fetchTeamMembers, loading } = useDashboard();
+    const { fetchTeamMembers, loading } = useEmployee();
     const { user } = useAuth();
 
     const [members, setMembers] = useState<TeamMember[]>([]);

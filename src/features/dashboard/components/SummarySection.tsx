@@ -5,9 +5,8 @@
     CalendarClock,
     Clock,
   } from 'lucide-react';
-
-  import { StatsCard } from '../components/StatsCard';
   import type { StatsCardVariant } from '../components/StatsCard';
+import StatsCard from '../components/StatsCard';
 
   interface SummarySectionProps {
     totalEmployees: number;

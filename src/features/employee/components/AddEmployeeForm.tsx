@@ -6,9 +6,9 @@ import {
 } from "react-icons/fa";
 import { toast } from "sonner";
 import MyDatePicker from "../../../shared/components/datepicker/MyDatePicker";
-import type { CreateUserRequest } from "../../dashboard/types";
 import Loader from "../../../shared/components/Loader";
 import type { UserRole } from "@/shared/auth/authTypes";
+import type { CreateUserRequest } from "@/features/employee/types";
 
 
 interface Props {

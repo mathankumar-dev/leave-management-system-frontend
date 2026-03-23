@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import type { Payslip, PayslipCreateRequest, PayslipUpdateRequest } from '../../dashboard/views/types';
 import { PayslipService } from '../services/payslipService';
+import type { Payslip, PayslipCreateRequest, PayslipUpdateRequest } from '@/features/payroll/payrollTypes';
 
 export function usePayslip() {
 
@@ -8,7 +8,6 @@ export function usePayslip() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ─── Create Payslip ───────────────────────────────
   const createPayslip = useCallback(async (data: PayslipCreateRequest) => {
     try {
       setLoading(true);

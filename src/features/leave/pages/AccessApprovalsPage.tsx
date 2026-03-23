@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useDashboard } from '../../dashboard/hooks/useDashboard';
-import type { AdminAccessDecision, PendingOnboardingResponse } from '../../dashboard/types';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaEllipsisV, FaUserCheck, FaUserSlash, FaCheck } from 'react-icons/fa';
+import { FaUserCheck, FaCheck } from 'react-icons/fa';
 import EmptyStateSVG from '../../../assets/svg/EmpthyStateSVG';
+import type { AdminAccessDecision, PendingOnboardingResponse } from '@/features/leave/types';
+import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 
 const OnboardingPendingPage: React.FC = () => {
-    const { fetchOnboardingRequests, handleAccessDecision, loading, error } = useDashboard();
+    const { fetchOnboardingRequests, handleAccessDecision, loading, error } = useOnboarding();
     const [requests, setRequests] = useState<PendingOnboardingResponse[]>([]);
     const [activeMenu, setActiveMenu] = useState<number | null>(null);
 

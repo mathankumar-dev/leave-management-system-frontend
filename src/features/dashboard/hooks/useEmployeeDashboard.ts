@@ -17,5 +17,5 @@ export const useEmployeeDashboard = () => {
     }
   }, []);
 
-  return { loading, error, fetchDashboard };
+  return { loading, error,setError, fetchDashboard };
 };

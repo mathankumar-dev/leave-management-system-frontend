@@ -2,23 +2,25 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaCalendarAlt, FaCommentDots, FaArrowRight,
-  FaPlus, FaUserShield, FaChartPie, FaCheckDouble
-} from "react-icons/fa";
-import { useDashboard } from "../hooks/useDashboard";
-import { useAuth } from "../../../shared/auth/useAuth";
-import CustomLoader from "../../../shared/components/CustomLoader";
-import type { LeaveDecision, ManagerDashBoardResponse } from "../types";
-import { notify } from "../../notification/utils/notifications";
-import CommentDialog from "../../../shared/components/CommentDialog";
-import MyFloatingActionButton from "../../../shared/components/MyFloatingActionButton";
-import ManagerStatCard from "../manager/components/ManagerStatCard";
-import DashboardDrawer from "../components/DashBoardDrawer";
-import EmptyStateSVG from "../../../assets/svg/EmpthyStateSVG";
-import ManagerStatCardTeam from "../manager/components/ManagerStatCardTeam";
+  FaPlus, FaUserShield, FaChartPie} from "react-icons/fa";
+import { useAuth } from "@/shared/auth/useAuth";
+import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
+import { useManagerDashboard, useTeamLeaderDashboard } from "@/features/dashboard/hooks";
+import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
+import type { LeaveDecision } from "@/features/leave/types";
+import { notify } from "@/features/notification/utils/notifications";
+import { CommentDialog, CustomLoader, MyFloatingActionButton } from "@/shared/components";
+import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
+import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
+import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
 
 const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
-  const { fetchManagerDashboard, fetchTeamLeaderDashboard, processApproval, loading: dashboardLoading } = useDashboard();
+  const { fetchManagerDashboard, loading: dashboardLoading } = useManagerDashboard();
+  const {  fetchTeamLeaderDashboard} = useTeamLeaderDashboard();
+
+  const { processApproval} = useLeaveAction();
+
 
   const [dashboardData, setDashboardData] = useState<ManagerDashBoardResponse>();
   const [approvals, setApprovals] = useState<any[]>([]);

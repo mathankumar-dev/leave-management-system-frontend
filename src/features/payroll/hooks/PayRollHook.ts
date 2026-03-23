@@ -1,12 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
-import api from "../../../services/apiClient";
+import api from "@/services/apiClient";
 
 export const usePayroll = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch current payslip (backend uses JWT, no employeeId in path)
   const fetchPayroll = async (year: number, month: number) => {
     setLoading(true);
     setError(null);
@@ -22,7 +21,6 @@ export const usePayroll = () => {
     }
   };
 
-  // Fetch payslip history (backend uses JWT)
   const fetchHistory = async () => {
     setLoading(true);
     setError(null);

@@ -1,3 +1,7 @@
+import { useRequest } from "@/features/leave/hooks/useRequest";
+import type { AccessRequest, LeaveType } from "@/features/leave/types";
+import { useAuth } from "@/shared/auth/useAuth";
+import Badge from "@/shared/components/NameBadge";
 import React, { useState } from "react";
 import {
     HiOutlineShieldCheck,
@@ -7,10 +11,6 @@ import {
     HiOutlineFingerPrint,
     HiOutlineLockClosed
 } from "react-icons/hi2";
-import { useAuth } from "../../../shared/auth/useAuth";
-import { useRequest } from "../../leave/hooks/useRequest";
-import Badge from "../../../shared/components/NameBadge";
-import type { AccessRequest, LeaveType } from "../../dashboard/types";
 
 const AccessRequestForm = () => {
     const { user } = useAuth();

@@ -1,14 +1,9 @@
-import { useCallback, useRef, useState } from 'react';
-import { useHRDashboard } from '../hooks/useHRDashboard';
-import { DashboardSkeleton } from '../hr/components'/Dashboardskeleton';
-import { DashboardFilters } from '../components/DashboardFilters';
-import { SummarySection } from '../components/SummarySection';
-import { DepartmentChart } from '../hr/components'/DepartmentChart';
-import { ManagerTrackingTable } from '../hr/components/ManagerTrackingTable';
-import { MonitoringSection } from '../hr/components/MonitoringSection';
-import { ExportActions } from '../hr/components'/ExportActions';
-import OnboardingStats from '../hr/components/OnboardingStats';
-import { LowBalanceTable } from '../hr/components'/Lowbalancetable';
+import { DashboardFilters, DepartmentChart, SummarySection } from '@/features/dashboard/components';
+import DashboardSkeleton from '@/features/dashboard/components/Dashboardskeleton';
+import { useHRDashboard } from '@/features/dashboard/hooks';
+import { ExportActions, ManagerTrackingTable, MonitoringSection, OnboardingStats } from '@/features/dashboard/hr/components';
+import LowBalanceTable from '@/features/dashboard/hr/components/LowBalanceTable';
+import { useCallback, useState } from 'react';
 
 interface HRDashboardProps {
   userName?: string;
@@ -26,7 +21,6 @@ export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
     // reload,
   } = useHRDashboard();
 
-  const testRef = useRef<HTMLDivElement>(null);
 
 
   const [filters, setFilters] = useState({

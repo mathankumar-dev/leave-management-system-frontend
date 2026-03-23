@@ -1,17 +1,16 @@
+import AddEmployeePopup from "@/features/employee/components/AddEmployeeForm";
+import { useEmployee } from "@/features/employee/hooks/useEmployee";
+import type { EmployeeEntity } from "@/features/employee/types";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useCallback, useEffect } from "react";
 import {
   FaUserPlus, FaSearch, FaEllipsisV, FaChevronLeft,
   FaChevronRight, FaRegAddressCard, FaFilter, FaUserCheck, FaUserSlash
 } from "react-icons/fa";
-import { useAuth } from "../../../shared/auth/useAuth";
-import { useDashboard } from "../../dashboard/hooks/useDashboard";
-import type { EmployeeEntity } from "../../dashboard/types";
-import AddEmployeePopup from "../components/AddEmployeeForm";
 
 const EmployeesView = () => {
-  const { fetchAllEmployees, loading, addUser, deleteUser } = useDashboard();
-  const { user } = useAuth();
+  const { fetchAllEmployees, loading, addUser, deleteUser } = useEmployee();
+
 
   const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
   const [pagination, setPagination] = useState({ totalElements: 0, totalPages: 0 });
@@ -61,7 +60,7 @@ const EmployeesView = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
+    <div className="space-y-6 max-w-400 mx-auto pb-10">
       {/* Header Section */}
       <div className="flex flex-col xl:flex-row justify-between items-end xl:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
         <div className="flex items-center gap-4">
@@ -78,7 +77,7 @@ const EmployeesView = () => {
 
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
           {/* Search */}
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-50">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
             <input
               type="text"

@@ -6,10 +6,10 @@ import {
   HiChevronDoubleLeft, HiChevronDoubleRight
 } from "react-icons/hi2";
 import { TbAccessPoint } from "react-icons/tb";
+import AccessRequestForm from "@/features/employee/components/AccessRequestForm";
+import LeaveApplicationForm from "@/features/leave/components/LeaveApplicationForm";
+import ODRequestForm from "@/features/leave/components/ODRequestForm";
 
-import LeaveApplicationForm from "../../leave/components/LeaveApplicationForm";
-import ODRequestForm from "../../leave/components/ODRequestForm";
-import AccessRequestForm from "./AccessRequestForm";
 
 type RequestType = "LEAVE" | "OD" | "WFH" | "MEETING" | "OVERTIME" | "ACCESS";
 

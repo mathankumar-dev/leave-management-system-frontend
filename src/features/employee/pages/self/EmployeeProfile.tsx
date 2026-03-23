@@ -7,12 +7,11 @@ import {
   FaPhone,
   FaUserTie
 } from "react-icons/fa";
+import { useEmployeeProfile } from "@/features/employee/pages/UseEmployeeProfile";
+import type { ProfileData } from "@/features/employee/types";
+import { useAuth } from "@/shared/auth/useAuth";
+import { CustomLoader } from "@/shared/components";
 
-import { useAuth } from "../../../shared/auth/useAuth";
-import { useEmployeeProfile } from "./UseEmployeeProfile";
-import CustomLoader from "../../../shared/components/CustomLoader";
-
-import type { ProfileData } from "../../dashboard/types";
 
 const EmployeeProfile: React.FC = () => {
   const { user } = useAuth();

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.svg";
-import { PUBLIC_HOLIDAYS_2026 } from "../../../shared/constants/holidays";
+import { PUBLIC_HOLIDAYS_2026 } from "@/shared/constants/holidays";
 
 
 

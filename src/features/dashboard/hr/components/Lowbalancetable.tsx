@@ -1,5 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../shared/components/Card';
-import { Badge } from '../../../../shared/components/Badge';
+
+import { Badge } from '@/shared/components/Badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { AlertTriangle } from 'lucide-react';
 
 export interface LowBalanceEmployee {

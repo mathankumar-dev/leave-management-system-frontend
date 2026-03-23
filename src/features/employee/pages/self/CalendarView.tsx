@@ -1,3 +1,6 @@
+import { useCalendar } from "@/features/attendance/hooks/useCalendar";
+import { useAuth } from "@/shared/auth/useAuth";
+import { PUBLIC_HOLIDAYS_2026 } from "@/shared/constants/holidays";
 import React, { useState, useEffect, useMemo } from "react";
 
 import {
@@ -7,15 +10,12 @@ import {
 
 } from "react-icons/fa";
 
-import { useDashboard } from "../../dashboard/hooks/useDashboard";
-import { useAuth } from "../../../shared/auth/useAuth";
-import { PUBLIC_HOLIDAYS_2026 } from "../../../shared/constants/holidays";
 
 const TeamCalendarView: React.FC = () => {
   const { user } = useAuth();
   const employeeId = user?.id;
 
-  const { fetchEmployeeCalendar, employeeCalendar, loading } = useDashboard();
+  const { fetchEmployeeCalendar, employeeCalendar, loading } = useCalendar();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
