@@ -5,7 +5,7 @@ export const getToken = () => Cookies.get("lms_token");
 export const setToken = (token: string) =>
   Cookies.set("lms_token", token, {
     secure: true,
-    sameSite: "strict",
+    // sameSite: "",
   });
 
 export const clearToken = () => Cookies.remove("lms_token");

@@ -49,7 +49,7 @@ export interface ProfileData {
 
   employeeType: string;
 
-  fullName: string;
+  firstName: string;
   lastName?: string;
   surName?: string;
 

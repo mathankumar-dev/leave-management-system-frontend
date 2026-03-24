@@ -13,8 +13,6 @@ export const useEmployeeProfile = (employeeId?: number) => {
     const fetchProfile = async () => {
       try {
         const res = await api.get(`/employees/profile/${employeeId}`);
-
-
         setProfile(res.data);
       } catch (err) {
         console.error("Profile fetch failed", err);

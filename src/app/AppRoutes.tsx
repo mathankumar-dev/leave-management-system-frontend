@@ -12,6 +12,7 @@ import Loader from "@/shared/components/Loader";
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
+import EmployeeProfile from "@/features/employee/pages/self/EmployeeProfile";
 
 
 
@@ -68,6 +69,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/leave-policy" element={<LeavePolicies />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/profile" element={<EmployeeProfile />} />
 
       <Route path="*" element={<NotFoundPage />} />
 
