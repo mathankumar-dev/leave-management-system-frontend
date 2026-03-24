@@ -29,7 +29,7 @@ export const authService = {
 
     // 1. Define common fields (Identity, Bank, Family, etc.)
     const commonFields = [
-      'fullName', 'lastName', 'surName', 'contactNumber', 'gender',
+      'firstName', 'lastName', 'surName', 'contactNumber', 'gender',
       'aadharNumber', 'personalEmail', 'dateOfBirth', 'presentAddress',
       'permanentAddress', 'bloodGroup', 'maritalStatus', 'designation',
       'skillSet', 'bankName', 'accountNumber',

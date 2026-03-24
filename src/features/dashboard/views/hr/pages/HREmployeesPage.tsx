@@ -3,6 +3,7 @@ import { Users, Search, ChevronLeft, ChevronRight, RefreshCw, X } from 'lucide-r
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { employeeService, type Employee, type EmployeePageResponse } from '../service/employeeService';
+import { notify } from '../../../../../utils/notifications';
 
 // ─── Role Badge ───────────────────────────────────────────────────
 function RoleBadge({ role }: { role: string }) {
@@ -43,7 +44,12 @@ const SkeletonRow = () => (
 );
 
 // ─── Employee Row ─────────────────────────────────────────────────
-function EmployeeRow({ emp }: { emp: Employee }) {
+function EmployeeRow({ emp, allEmployees }: { emp: Employee; allEmployees: Employee[] }) {
+  const getManagerName = (managerId: number | null) => {
+    if (!managerId) return '—';
+    const manager = allEmployees.find(e => e.id === managerId);
+    return manager?.name || `#${managerId}`;
+  };
   return (
     <tr className="hover:bg-slate-50/80 transition-colors">
       <td className="py-3 px-3 text-xs text-slate-400 font-medium">#{emp.id}</td>
@@ -57,8 +63,15 @@ function EmployeeRow({ emp }: { emp: Employee }) {
         </div>
       </td>
       <td className="py-3 px-3 text-center"><RoleBadge role={emp.role} /></td>
-      <td className="py-3 px-3 text-center text-slate-500 font-medium">
-        {emp.managerId != null ? `#${emp.managerId}` : '—'}
+      <td className="py-3 px-3 text-center">
+        {emp.managerId != null ? (
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-xs font-semibold text-slate-700">{getManagerName(emp.managerId)}</span>
+            <span className="text-[10px] text-slate-400">#{emp.managerId}</span>
+          </div>
+        ) : (
+          <span className="text-slate-400">—</span>
+        )}
       </td>
       <td className="py-3 px-3 text-center">
         <Badge className={`font-bold px-3 border-none ${
@@ -99,6 +112,9 @@ export function HREmployeesPage() {
   const [statusFilter, setStatusFilter] = useState('all');
 
   const isMounted = useRef(false);
+
+  // All employees for manager name lookup
+  const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
 
   // ─── Load paginated data ────────────────────────────────────────
   const loadEmployees = useCallback(async (page: number) => {
@@ -146,6 +162,19 @@ export function HREmployeesPage() {
       if (isMounted.current) setLoading(false);
     }
   }, [loadEmployees]);
+
+  // ─── Fetch all employees for manager name lookup ───────────────
+  useEffect(() => {
+    const loadAll = async () => {
+      try {
+        const data = await employeeService.getAllEmployees(0, 1000);
+        setAllEmployees(data.content);
+      } catch {
+        notify.error("error load all employee, manager name");
+      }
+    };
+    loadAll();
+  }, []);
 
   // ─── Initial load ───────────────────────────────────────────────
   useEffect(() => {
@@ -317,7 +346,7 @@ export function HREmployeesPage() {
                   <th className="text-left py-3 px-3">ID</th>
                   <th className="text-left py-3 px-3">Name</th>
                   <th className="text-center py-3 px-3">Role</th>
-                  <th className="text-center py-3 px-3">Manager ID</th>
+                  <th className="text-center py-3 px-3">Manager</th>
                   <th className="text-center py-3 px-3">Status</th>
                   <th className="text-center py-3 px-3">Joining Date</th>
                   <th className="text-center py-3 px-3">Biometric</th>
@@ -334,7 +363,7 @@ export function HREmployeesPage() {
                     </td>
                   </tr>
                 ) : (
-                  displayRows.map((emp) => <EmployeeRow key={emp.id} emp={emp} />)
+                  displayRows.map((emp) => <EmployeeRow key={emp.id} emp={emp} allEmployees={allEmployees} />)
                 )}
               </tbody>
             </table>

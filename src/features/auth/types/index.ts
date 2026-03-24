@@ -12,7 +12,6 @@ export interface AuthResponse {
   forcePasswordChange: boolean;
 }
 
-
 export const GenderMap = {
   MALE: "MALE",
   FEMALE: "FEMALE",
@@ -79,7 +78,7 @@ export interface User {
 
 export interface PersonalDetailsRequest {
   // --- Identity & Contact ---
-  fullName: string;
+  firstName: string;
   lastName: string;
   surName: string;
   contactNumber: string;

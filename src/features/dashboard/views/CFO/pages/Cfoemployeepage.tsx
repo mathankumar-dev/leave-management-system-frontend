@@ -602,6 +602,13 @@ export const CFOEmployeesPage: React.FC = () => {
     load();
   }, []);
 
+  // Manager name → employees array-la find pannuvom
+  const getManagerName = (managerId: number | null) => {
+    if (!managerId) return '—';
+    const manager = employees.find(e => e.id === managerId);
+    return manager?.name || `#${managerId}`;
+  };
+
   const filtered = employees.filter(e =>
     e.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     e.id?.toString().includes(searchQuery) ||
@@ -696,7 +703,7 @@ export const CFOEmployeesPage: React.FC = () => {
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/50">
-                  {['Employee', 'Role', 'Manager ID', 'Joined', 'Status', 'Tax Regime', 'Actions'].map(h => (
+                  {['Employee', 'Role', 'Manager', 'Joined', 'Status', 'Tax Regime', 'Actions'].map(h => (
                     <th key={h} className={`py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest ${h === 'Employee' ? 'text-left' : 'text-center'}`}>
                       {h}
                     </th>
@@ -718,7 +725,16 @@ export const CFOEmployeesPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="py-3 px-4 text-center text-slate-500">{emp.role || '—'}</td>
-                    <td className="py-3 px-4 text-center text-slate-500">{emp.managerId ? `#${emp.managerId}` : '—'}</td>
+                    <td className="py-3 px-4 text-center">
+                      {emp.managerId ? (
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="text-xs font-semibold text-slate-700">{getManagerName(emp.managerId)}</span>
+                          <span className="text-[10px] text-slate-400">#{emp.managerId}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
                     <td className="py-3 px-4 text-center text-slate-500">
                       {emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                     </td>

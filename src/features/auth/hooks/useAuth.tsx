@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import type { AuthResponse, User } from "../types";
 import { authService } from "../services/AuthService";
+import api from "../../../api/axiosInstance";
 
 interface JwtPayload {
   exp: number;
@@ -16,10 +17,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   mustChangePassword: boolean;
-  personalDetailsComplete : boolean;
-
+  personalDetailsComplete: boolean;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,14 +28,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const logout = useCallback(() => {
-    Cookies.remove("lms_token");
-    Cookies.remove("lms_user_id");
-    setUser(null);
-    setToken(null);
+  // ─── Logout ───────────────────────────────────────────────────
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // fail aana also clear pannuvom
+    } finally {
+      Cookies.remove("lms_token");
+      Cookies.remove("lms_user_id");
+      delete api.defaults.headers.common['Authorization'];
+      setUser(null);
+      setToken(null);
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
   }, []);
 
-  /* ---------------- INIT AUTH ---------------- */
+  // ─── Init Auth (page refresh) ─────────────────────────────────
   useEffect(() => {
     const initAuth = async () => {
       const savedToken = Cookies.get("lms_token");
@@ -47,17 +57,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const decoded = jwtDecode<JwtPayload>(savedToken);
           const isExpired = decoded.exp * 1000 < Date.now();
 
-          if (isExpired) {
-            logout();
-          } else {
-            setToken(savedToken);
+          // Expired or not → set header → interceptor handles refresh
+          api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
 
-            const profile = await authService.getEmployeeProfile(Number(savedId));
-            setUser(profile);
+          if (!isExpired) {
+            setToken(savedToken);
           }
+
+          const profile = await authService.getEmployeeProfile(Number(savedId));
+          setUser(profile);
+
         } catch (error) {
           console.error("Auth initialization failed:", error);
-          logout();
+          Cookies.remove("lms_token");
+          Cookies.remove("lms_user_id");
+          delete api.defaults.headers.common['Authorization'];
+          setUser(null);
+          setToken(null);
         }
       }
 
@@ -65,23 +81,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     initAuth();
-  }, [logout]);
+  }, []);
 
-  /* ---------------- LOGIN ---------------- */
+  // ─── Login ────────────────────────────────────────────────────
   const login = async (data: AuthResponse) => {
     try {
       const decoded = jwtDecode<JwtPayload>(data.token);
       const expiryDate = new Date(decoded.exp * 1000);
 
+      // Cookie-la store pannuvom
       Cookies.set("lms_token", data.token, {
         expires: expiryDate,
         secure: true,
+        sameSite: 'strict',
       });
-
       Cookies.set("lms_user_id", data.id.toString(), {
         expires: expiryDate,
       });
 
+      // Axios header set pannuvom
+      api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       setToken(data.token);
 
       const profile = await authService.getEmployeeProfile(data.id);
@@ -103,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         mustChangePassword: user?.mustChangePassword ?? false,
-        personalDetailsComplete : user?.personalDetailsComplete ?? false,
+        personalDetailsComplete: user?.personalDetailsComplete ?? false,
         setUser
       }}
     >
