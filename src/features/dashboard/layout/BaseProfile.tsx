@@ -1,8 +1,8 @@
+import type { ProfileData } from "@/features/employee/types";
 import React from "react";
 import {
   FaUser, FaPhone, 
   FaMapMarkerAlt, FaBriefcase} from "react-icons/fa";
-import type { ProfileData } from "../types";
 
 
 export interface BaseProfileProps {
@@ -21,11 +21,7 @@ export interface BaseProfileProps {
 const BaseProfile: React.FC<BaseProfileProps> = ({
   profile,
   isEditing,
-  canEdit,
   onChange,
-  onStartEdit,
-  onSave,
-  onCancel,
 }) => {
 
   const inputClass = (disabled: boolean) => `w-full mt-1 pl-10 pr-4 py-2 border border-slate-200 rounded-xl transition-all outline-none text-sm ${disabled ? "bg-slate-50 text-slate-500 cursor-not-allowed" : "bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
