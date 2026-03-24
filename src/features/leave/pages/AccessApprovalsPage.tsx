@@ -10,7 +10,8 @@ const OnboardingPendingPage: React.FC = () => {
     const [requests, setRequests] = useState<PendingOnboardingResponse[]>([]);
     const [activeMenu, setActiveMenu] = useState<number | null>(null);
 
-
+    console.log(activeMenu);
+    
     // State for the Decision Modal
     const [decisionModal, setDecisionModal] = useState<{
         isOpen: boolean;
@@ -252,17 +253,17 @@ const OnboardingPendingPage: React.FC = () => {
 
 // --- Sub-Components ---
 
-const SelectionCard = ({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) => (
-    <div
-        onClick={onClick}
-        className={`p-3 border flex items-center justify-between cursor-pointer transition-all ${active ? 'border-slate-900 bg-slate-50' : 'border-slate-100 opacity-60'}`}
-    >
-        <span className="text-[10px] font-black uppercase tracking-tight text-slate-900">{label}</span>
-        <div className={`h-4 w-4 rounded-sm border flex items-center justify-center transition-all ${active ? 'bg-slate-900 border-slate-900' : 'border-slate-200'}`}>
-            {active && <FaCheck size={8} className="text-white" />}
-        </div>
-    </div>
-);
+// const SelectionCard = ({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) => (
+//     <div
+//         onClick={onClick}
+//         className={`p-3 border flex items-center justify-between cursor-pointer transition-all ${active ? 'border-slate-900 bg-slate-50' : 'border-slate-100 opacity-60'}`}
+//     >
+//         <span className="text-[10px] font-black uppercase tracking-tight text-slate-900">{label}</span>
+//         <div className={`h-4 w-4 rounded-sm border flex items-center justify-center transition-all ${active ? 'bg-slate-900 border-slate-900' : 'border-slate-200'}`}>
+//             {active && <FaCheck size={8} className="text-white" />}
+//         </div>
+//     </div>
+// );
 
 const StatusRow = ({ label, status }: { label: string, status: string }) => (
     <div className="flex items-center gap-2">

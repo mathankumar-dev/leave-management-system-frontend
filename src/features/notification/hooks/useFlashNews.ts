@@ -11,7 +11,7 @@ export const useFlashNews = () => {
     const createFlashNewsController = async (data: FlashNewsRequest) => {
         setLoading(true);
         try {
-            const responseData = await notificationService.createFlashNews(data);
+            await notificationService.createFlashNews(data);
 
             toast.success("Flash news created successfully!");
 

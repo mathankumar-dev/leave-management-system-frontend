@@ -48,7 +48,6 @@ const TeamCalendarView: React.FC = () => {
   const nextMonth = () => setCurrentDate(new Date(year, month + 1));
   const prevMonth = () => setCurrentDate(new Date(year, month - 1));
 
-  const selectedDateKey = getFormattedDateKey(selectedDay);
 
   console.log(employeeCalendar);
 

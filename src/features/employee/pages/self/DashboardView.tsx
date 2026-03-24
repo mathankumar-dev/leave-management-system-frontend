@@ -170,9 +170,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           {/* BODY */}
           <tbody className="divide-y divide-gray-200">
             {stats.map((stat, index) => {
-              const percent = stat.total
-                ? Math.min((stat.used / stat.total) * 100, 100)
-                : 0;
+
 
               return (
                 <tr

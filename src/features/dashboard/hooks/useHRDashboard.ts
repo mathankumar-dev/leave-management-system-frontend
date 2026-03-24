@@ -1,3 +1,4 @@
+import { dashboardService } from '@/features/dashboard/services/dashboardService';
 import type { DashboardResponse } from '@/features/dashboard/types';
 import type { LowBalanceEmployee } from '@/features/leave/types';
 import { useCallback, useEffect, useState } from 'react';

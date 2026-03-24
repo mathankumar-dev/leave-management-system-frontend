@@ -1,18 +1,21 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-    FaSearch,
-    FaCalendarCheck,
-    FaUser,
-} from "react-icons/fa";
+import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import type { TeamMember } from "@/features/employee/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CustomLoader } from "@/shared/components";
-import { useEmployee } from "@/features/employee/hooks/useEmployee";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+    FaCalendarCheck,
+    FaSearch,
+    FaUser,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 interface TeamMembersViewProps {
     onNavigate?: (tab: string) => void;
 }
 const TeamMembersView: React.FC<TeamMembersViewProps> = ({ onNavigate }) => {
+
+    const navigate = useNavigate();
     const { fetchTeamMembers, loading } = useEmployee();
     const { user } = useAuth();
 
@@ -50,7 +53,7 @@ const TeamMembersView: React.FC<TeamMembersViewProps> = ({ onNavigate }) => {
                         </p>
                     </div>
                     {onNavigate && (
-                        <button onClick={() => onNavigate("Team Calendar")} className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-sm text-xs font-black uppercase shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+                        <button onClick={() => navigate("manager/team-calendar")} className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-sm text-xs font-black uppercase shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
                             <FaCalendarCheck size={14} /> Team Calendar
                         </button>)}
                 </div>

@@ -42,7 +42,7 @@ function getRemainingBadge(remaining: number) {
   );
 }
 
-export default function LowBalanceTable({ data, loading, error }: LowBalanceTableProps) {
+export default function LowBalanceTable({ data, loading }: LowBalanceTableProps) {
   const renderBody = () => {
 
 

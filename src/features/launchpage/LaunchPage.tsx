@@ -142,7 +142,7 @@ const LaunchPage: React.FC = () => {
             </ul>
           </div>
           {/* ONE NEWS AT A TIME - SLIDING/FADING */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-[160px] flex flex-col justify-between overflow-hidden">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-40 flex flex-col justify-between overflow-hidden">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold flex items-center gap-2 text-slate-800 uppercase text-xs tracking-widest">
                 <span className="relative flex h-2 w-2">

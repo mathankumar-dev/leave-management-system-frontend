@@ -10,7 +10,7 @@ import AdminDashboardView from "@/features/dashboard/admin/pages/AdminDashboardV
 import { HRDashboard } from "@/features/dashboard/hr/pages/HRDashboard";
 import ManagerDashboardView from "@/features/dashboard/manager/pages/ManagerDashboardView";
 import RequestCenter from "@/features/employee/components/RequestCenter";
-import { HREmployeesPage } from "@/features/employee/pages/hr/HREmployeesPage";
+// import { HREmployeesPage } from "@/features/employee/pages/hr/HREmployeesPage";
 import { HRVerificationPage } from "@/features/employee/pages/hr/Hrverificationpage";
 import CalendarView from "@/features/employee/pages/self/CalendarView";
 import DashboardView from "@/features/employee/pages/self/DashboardView";
@@ -61,7 +61,7 @@ const DashboardRoutes = () => {
       <Route path="team-calendar" element={<TeamCalendarView />} />
 
       {/* HR */}
-      <Route path="employees" element={<HREmployeesPage />} />
+      {/* <Route path="employees" element={<HREmployeesPage />} /> */}
       <Route path="low-balance" element={<LowBalancePage />} />
       <Route path="verifications" element={<HRVerificationPage />} />
 
@@ -70,8 +70,8 @@ const DashboardRoutes = () => {
       <Route path="flash-news" element={<FlashNewsForm />} />
 
       {/* PAYROLL */}
-      <Route path="payroll" element={<PayrollView />} />
-      <Route path="payslip" element={<PayslipPage />} />
+      <Route path="payslip" element={<PayrollView />} />
+      <Route path="payroll" element={<PayslipPage />} />
 
       {/* DEFAULT */}
       <Route path="*" element={<Navigate to="dashboard" />} />

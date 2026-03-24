@@ -5,7 +5,7 @@ interface LoaderProps {
   onClick? : () => void
 }
 
-const Loader: React.FC<LoaderProps> = ({ message = "Signing you in..." , onClick }) => {
+const Loader: React.FC<LoaderProps> = ({ message = "Signing you in..."  }) => {
   return (
     <div className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm gap-8">
 

@@ -11,7 +11,6 @@ const OnboardingStats: React.FC<OnboardingStatsProps> = ({
   newEmployeesCount,
   pendingBiometricCount,
   pendingVPNCount,
-  onboardingList =[],
 }) => {
 
   const allcomplete = pendingBiometricCount === 0 && pendingVPNCount === 0 && newEmployeesCount === 0;

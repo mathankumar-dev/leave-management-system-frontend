@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { notificationService } from '../services/notificationService';
-import type { NotificationResponse } from '../services/notification/types';
+import type { NotificationResponse } from '@/features/notification/types';
 
 export const useNotifications = (employeeId: number) => {
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);

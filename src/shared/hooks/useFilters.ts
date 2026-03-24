@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 export const useFilters = () => {
 
-    const [loading, setLoading] = useState(false);
+    const [loading, ] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [filters, setFilters] = useState({
         month: 'all',

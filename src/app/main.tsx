@@ -9,7 +9,6 @@ import { AuthProvider } from '@/shared/auth/AuthContext';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {/*  BrowserRouter For Routing */}
     <BrowserRouter>
       <AuthProvider>
         <App />

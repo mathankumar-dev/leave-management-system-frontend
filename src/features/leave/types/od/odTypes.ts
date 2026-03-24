@@ -1,3 +1,5 @@
+import type { LeaveType } from "@/features/leave/types/leave/leaveTypes";
+
 export type ODStatus = 'PENDING_TEAM_LEADER' | 'PENDING_MANAGER' | 'PENDING_HR' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 
 export interface ODRequest {

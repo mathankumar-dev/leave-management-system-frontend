@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../api/authApi";
-import SuccessModal from "../../../shared/components/SuccessModal";
 import FailureModal from "../../../shared/components/FailureModal";
 import { Loader } from "lucide-react";
 

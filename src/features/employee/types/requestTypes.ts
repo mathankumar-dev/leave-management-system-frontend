@@ -1,5 +1,6 @@
-import type { Gender, BloodGroup, MaritalStatus } from "@/features/auth/types";
+
 import type { UserRole } from "@/shared/auth/authTypes";
+import type { BloodGroup, Gender, MaritalStatus } from "@/shared/types";
 
 export interface PersonalDetailsRequest {
   firstName: string;

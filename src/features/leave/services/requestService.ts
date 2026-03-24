@@ -1,5 +1,5 @@
-import api from "../../../services/apiClient";
-import type { AccessRequest, AdminAccessDecision, LeaveType, ManagerAccessDecision, MeetingRequest, ODRequest } from "../../dashboard/types";
+import type { AccessRequest, ManagerAccessDecision, MeetingRequest, ODRequest } from "@/features/leave/types";
+import api from "@/services/apiClient";
 
 
 export const requestService = {
@@ -34,7 +34,7 @@ export const requestService = {
   approveOD: async (odId: number, approverId: number): Promise<void> => {
 
 
-    const res = await api.put(`/od/approve/${odId}`, {}, {
+    await api.put(`/od/approve/${odId}`, {}, {
       params: { approverId }
     });
   },

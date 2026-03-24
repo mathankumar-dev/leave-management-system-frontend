@@ -6,19 +6,20 @@ import { usePayroll } from "@/features/payroll/hooks/usePayroll";
 import { useAuth } from "@/shared/auth/useAuth";
 import type { ProfileData } from "@/features/employee/types";
 import type { YearlySummary } from "@/features/payroll/payrollTypes";
-import { dashboardService } from "@/features/dashboard/services/dashboardService";
+import api from "@/services/apiClient";
+import { payrollService } from "@/features/payroll/services/payrollService";
 
 const PayrollView: React.FC = () => {
   const { payslip, fetchPayslip } = usePayroll();
   const { user } = useAuth();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [summary, setSummary] = useState<YearlySummary | null>(null);
+  const [summary,setSummary] = useState<YearlySummary | null>(null);
   const [viewMode, setViewMode] = useState<"monthly" | "yearly">("monthly");
 
   const [loading, setLoading] = useState(false);
   const [loadingPDF, setLoadingPDF] = useState(false);
-  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [, setLoadingProfile] = useState(false);
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -47,7 +48,7 @@ const PayrollView: React.FC = () => {
   const fetchYearlySummary = async (year: number) => {
     try {
       setLoading(true);
-      const data: YearlySummary = await dashboardService.getHistory(year);
+      const data: YearlySummary = await payrollService.getHistory(year);
       setSummary(data);
     } catch (e) {
       console.error("Yearly summary failed", e);
@@ -62,6 +63,8 @@ const PayrollView: React.FC = () => {
       fetchPayslip(year, month);
       fetchProfile();
     } else {
+      console.log("Search");
+      
       fetchYearlySummary(year);
     }
   };

@@ -305,7 +305,6 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
             <tbody className="divide-y divide-slate-100">
               {/* MAP THROUGH BREAKDOWN DATA */}
               {dashboardData?.personalStats.breakdown.map((leave, index) => {
-                const percentage = Math.min(Math.round((leave.usedDays / leave.allocatedDays) * 100), 100);
 
                 return (
                   <tr key={index} className="hover:bg-slate-50/50 transition-colors">

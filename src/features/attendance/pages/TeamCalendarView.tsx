@@ -151,7 +151,7 @@ const TeamCalendarView: React.FC = () => {
                     )}
 
                     {/* Render Personal Leave/Status (Yellow) */}
-                    {myDailyStatus.map((status, i) => (
+                    {myDailyStatus.map(( i) => (
                       <div key={`my-${i}`} className="px-1.5 py-0.5 bg-amber-100 border border-amber-200 text-amber-700 text-[8px] font-black uppercase rounded-sm truncate">
                         ME: Leave
                       </div>

@@ -1,4 +1,4 @@
-import { employeeService, type Employee } from '@/features/employee/services/employeeService';
+import {  type Employee } from '@/features/employee/services/employeeService';
 import { notify } from '@/features/notification/utils/notifications';
 import { usePayslip } from '@/features/payroll/hooks/usePayslip';
 import type { Payslip, PayslipCreateRequest } from '@/features/payroll/payrollTypes';
@@ -251,7 +251,7 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
 
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employees] = useState<Employee[]>([]);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [searchQuery, setSearchQuery] = useState('');
@@ -259,20 +259,21 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
   const [editTarget, setEditTarget] = useState<Payslip | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Payslip | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  
 
-  // Fetch employees
-  useEffect(() => {
-    const load = async () => {
-      try {
-        // !!!TODO change the structure
-        const res = await employeeService.getAllEmployees();
-        setEmployees(res.content);
-      } catch {
-        console.warn('Employee list unavailable — names will show as Emp #id');
-      }
-    };
-    load();
-  }, []);
+  // // Fetch employees
+  // useEffect(() => {
+  //   const load = async () => {
+  //     try {
+  //       // !!!TODO change the structure
+  //       const res = await employeeService.getAllEmployees();
+  //       setEmployees(res.content);
+  //     } catch {
+  //       console.warn('Employee list unavailable — names will show as Emp #id');
+  //     }
+  //   };
+  //   load();
+  // }, []);
 
   // Auto select employee when coming from CFOEmployeesPage
   useEffect(() => {

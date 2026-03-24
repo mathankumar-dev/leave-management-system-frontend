@@ -8,7 +8,7 @@ export const usePayroll = () => {
       
       
         const [payslip, setPayslip] = useState<any>(null);
-        const [history, setHistory] = useState<any[]>([]);
+        // const [history, setHistory] = useState<any[]>([]);
 
       const fetchPayslip = async (year: number, month: number) => {
         try {

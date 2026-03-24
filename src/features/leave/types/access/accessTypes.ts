@@ -1,4 +1,4 @@
-import type { LeaveType } from "@/features/leave/types";
+import type { LeaveDecision, LeaveType } from "@/features/leave/types";
 
 export type BiometricVpnStatus = 'PENDING' | 'PROVIDED';
 
