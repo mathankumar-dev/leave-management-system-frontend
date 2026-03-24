@@ -41,6 +41,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   const [fetching, setFetching] = useState(true);
   const [selectedCard, setSelectedCard] = useState<StatItem | null>(null);
 
+  const [lopPercent, setLopPercent] = useState(0);
+
   const loadDashboardData = useCallback(async () => {
     if (!employeeId) return;
 
@@ -72,7 +74,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           pendingCount: annualLeave?.pendingCount ?? 0,
         },
         {
-          title: "Yearly Balance",
+          title: "Total Leave Balance",
           used: data.yearlyUsed || 0,
           total: data.yearlyAllocated || 0,
         },
@@ -99,6 +101,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       setStats(newStats);
       setApproved(data.approvedCount || 0);
       setRejected(data.rejectedCount || 0);
+      setLopPercent(data.lossOfPayPercentage || 0);
     } catch (err: any) {
       setError(err?.message || "Failed to load dashboard data");
     } finally {
@@ -133,7 +136,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       </div>
 
       {/* STATUS CARDS */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <motion.div
           whileHover={{ scale: 1.03 }}
           className="bg-gradient-to-br from-green-50 to-white border p-5 rounded-xl shadow-sm"
@@ -153,6 +156,17 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             {rejected}
           </h3>
         </motion.div>
+        
+              <motion.div
+        whileHover={{ scale: 1.03 }}
+        className="bg-gradient-to-br from-yellow-50 to-white border p-5 rounded-xl shadow-sm"
+      >
+        <p className="text-sm text-gray-500">Loss Of Pay </p>
+
+        <h3 className="text-3xl font-bold text-yellow-600">
+          {lopPercent}
+        </h3>
+      </motion.div>
       </div>
 
       <div className="bg-white border rounded-2xl shadow-md overflow-hidden">
