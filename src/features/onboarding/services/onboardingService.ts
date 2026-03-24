@@ -1,0 +1,41 @@
+import type { AccessResponse, AdminAccessDecision, BiometricVpnStatus, PendingOnboardingResponse } from "@/features/leave/types";
+import api from "@/services/apiClient";
+
+export const onboardingServices = {
+
+    getOnboardingRequests: async (): Promise<PendingOnboardingResponse[]> => {
+        const res = await api.get("/access-requests/admin/pending-approvals");
+        console.log("onboarding");
+        console.log(res.data);
+        return res.data;
+    },
+    approveAccessAdmin: async (requestId: number, decision: AdminAccessDecision) => {
+        await api.patch(`/access-requests/${requestId}/admin-decision`, decision,);
+    },
+
+
+    approveOnboardingBioRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
+        console.log("calling bio");
+
+        await api.patch(`/admin/onboarding/bio/decision/${employeeId}`, {}, {
+            params: {
+                decision
+            }
+        });
+    },
+    approveOnboardingVpnRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
+        console.log("calling vpn");
+        await api.patch(`/admin/onboarding/vpn/decision/${employeeId}`, {}, {
+            params: {
+                decision
+            }
+        });
+    },
+
+    // get all access requests
+
+    getPendingAccessRequests: async (id: number): Promise<AccessResponse[]> => {
+        const res = await api.get(`/access-requests/manager/pending/${id}`);
+        return res.data;
+    },
+}
