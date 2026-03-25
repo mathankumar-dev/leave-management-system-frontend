@@ -2,6 +2,7 @@ import NotFoundPage from "@/app/NotFoundPage";
 import AuthPage from "@/features/auth/pages/AuthPage";
 import ForgotPassword from "@/features/auth/pages/ForgotPassword";
 import DashboardLayout from "@/features/dashboard/layout/DashboardLayout";
+import EmployeeProfile from "@/features/employee/pages/self/EmployeeProfile";
 import LandingPage from "@/features/landingpage/pages/LandingPage";
 import PrivacyPolicy from "@/features/landingpage/pages/PrivacyPolicy";
 import TermsOfService from "@/features/landingpage/pages/TermsOfService";
@@ -12,67 +13,52 @@ import Loader from "@/shared/components/Loader";
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
-import EmployeeProfile from "@/features/employee/pages/self/EmployeeProfile";
 
 
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <Loader />
-    );
-  }
+  if (isLoading) return <Loader />;
 
   return (
     <Routes>
+      {/* 1. PROTECTED PORTAL & DASHBOARDS */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/portal" element={<LaunchPage />} />
 
-      <Route path="/portal" element={<LaunchPage />} />
+        {/* ROLE SPECIFIC DASHBOARDS */}
+        <Route element={<ProtectedRoute allowedRoles={["EMPLOYEE"]} />}>
+          <Route path="/employee/*" element={<DashboardLayout />} />
+        </Route>
 
-      <Route
-        path="/"
-        element={
-          isAuthenticated ? <Navigate to="/portal" replace /> : <LandingPage />
-        }
-      />
+        <Route element={<ProtectedRoute allowedRoles={["MANAGER", "TEAM_LEADER"]} />}>
+          <Route path="/manager/*" element={<DashboardLayout />} />
+        </Route>
 
-      <Route
-        path="/login"
-        element={
-          !isAuthenticated ? <AuthPage /> : <Navigate to="/portal" replace />
-        }
-      />
+        <Route element={<ProtectedRoute allowedRoles={["HR"]} />}>
+          <Route path="/hr/*" element={<DashboardLayout />} />
+        </Route>
 
-      {/* EMPLOYEE */}
-      <Route element={<ProtectedRoute allowedRoles={["EMPLOYEE"]} />}>
-        <Route path="/employee/*" element={<DashboardLayout />} />
+        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
+          <Route path="/admin/*" element={<DashboardLayout />} />
+        </Route>
+
+        {/* Profile is also protected */}
+        <Route path="/profile" element={<EmployeeProfile />} />
       </Route>
 
-      {/* MANAGER */}
-      <Route element={<ProtectedRoute allowedRoles={["MANAGER", "TEAM_LEADER"]} />}>
-        <Route path="/manager/*" element={<DashboardLayout />} />
-      </Route>
-
-      {/* HR */}
-      <Route element={<ProtectedRoute allowedRoles={["HR"]} />}>
-        <Route path="/hr/*" element={<DashboardLayout />} />
-      </Route>
-
-      {/* ADMIN */}
-      <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-        <Route path="/admin/*" element={<DashboardLayout />} />
-      </Route>
-
-      {/* COMMON */}
+      {/* 2. PUBLIC ROUTES */}
+      <Route path="/" element={isAuthenticated ? <Navigate to="/portal" replace /> : <LandingPage />} />
+      <Route path="/login" element={!isAuthenticated ? <AuthPage /> : <Navigate to="/portal" replace />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+
+      {/* 3. INFORMATION ROUTES */}
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/leave-policy" element={<LeavePolicies />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
-      <Route path="/profile" element={<EmployeeProfile />} />
 
       <Route path="*" element={<NotFoundPage />} />
-
     </Routes>
   );
 };

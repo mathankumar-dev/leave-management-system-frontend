@@ -1,4 +1,4 @@
-import type { UserRole } from "@/shared/auth/authTypes";
+import type { ExperienceType, UserRole } from "@/shared/auth/authTypes";
 
 export interface User {
   id: number;
@@ -6,10 +6,10 @@ export interface User {
   email: string;
   role: UserRole;
   department: string | null;
-  managerId: number | null;
+  managerId?: number | null;
   teamLeaderId?: number | null;
   teamLeaderName?: string | null;
-  managerName: string;
+  managerName?: string;
   hrname?: string | null;
   active: boolean;
   joiningDate: string;
@@ -19,7 +19,6 @@ export interface User {
   createdAt: string;
   updatedAt: string;
   mustChangePassword?: boolean;
-
   contactNumber: string | null;
   gender: string | null;
   aadharNumber: string | null;
@@ -35,6 +34,7 @@ export interface User {
   skillSet: string | null;
   personalDetailsComplete: boolean | null;
   personalDetailsLocked: boolean | null;
+  employeeExperience : ExperienceType;
 }
 
 export interface Employee {

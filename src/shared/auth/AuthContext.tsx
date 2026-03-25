@@ -1,18 +1,13 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
-import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import { authService } from "@/features/auth/api/authApi";
+import { setToken as saveTokenToCookie, logout as globalLogout } from "@/services/auth/authStorage";
 
 import type { AuthResponse } from "./authTypes";
 import type { User } from "@/features/employee/types";
 
-interface JwtPayload {
-  exp: number;
-}
-
 export interface AuthContextType {
   user: User | null;
-  token: string | null;
   login: (data: AuthResponse) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -26,38 +21,29 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const logout = useCallback(() => {
-    Cookies.remove("lms_token");
-    Cookies.remove("lms_user_id");
+    globalLogout(); // Clears cookies and redirects
     setUser(null);
-    setToken(null);
   }, []);
 
   /* ---------------- INIT AUTH ---------------- */
   useEffect(() => {
     const initAuth = async () => {
-      const savedToken = Cookies.get("lms_token");
       const savedId = Cookies.get("lms_user_id");
 
-      if (savedToken && savedId) {
+      // We check for savedId. Even if the token is expired/missing, 
+      // the interceptor will try to refresh it during the profile call.
+      if (savedId) {
         try {
-          const decoded = jwtDecode<JwtPayload>(savedToken);
-          const isExpired = decoded.exp * 1000 < Date.now();
-
-          if (isExpired) {
-            logout();
-          } else {
-            setToken(savedToken);
-
-            const profile = await authService.getEmployeeProfile(Number(savedId));
-            setUser(profile);
-          }
+          const profile = await authService.getEmployeeProfile(Number(savedId));
+          setUser(profile);
         } catch (error) {
-          console.error("Auth initialization failed:", error);
-          logout();
+          console.error("Session restoration failed:", error);
+          // If profile fetch fails AND refresh fails, interceptor calls logout.
+          // We just ensure state is clean here.
+          setUser(null);
         }
       }
 
@@ -65,25 +51,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     initAuth();
-  }, [logout]);
+  }, []);
 
   /* ---------------- LOGIN ---------------- */
   const login = async (data: AuthResponse) => {
     try {
-      const decoded = jwtDecode<JwtPayload>(data.token);
-      const expiryDate = new Date(decoded.exp * 1000);
+      // 1. Save the access token (Interceptor will use this)
+      saveTokenToCookie(data.token);
 
-      Cookies.set("lms_token", data.token, {
-        expires: expiryDate,
-        secure: true,
+      // 2. Save the User ID for profile fetching
+      Cookies.set("lms_user_id", data.id.toString(), { 
+        secure: true, 
+        sameSite: 'Lax',
+        expires: 7 // Keep ID for 7 days
       });
 
-      Cookies.set("lms_user_id", data.id.toString(), {
-        expires: expiryDate,
-      });
-
-      setToken(data.token);
-
+      // 3. Fetch profile
       const profile = await authService.getEmployeeProfile(data.id);
       setUser(profile);
     } catch (e) {
@@ -96,7 +79,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         user,
-        token,
         login,
         logout,
         isAuthenticated: !!user,
