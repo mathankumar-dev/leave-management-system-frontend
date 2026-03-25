@@ -1,6 +1,8 @@
 import type { User } from "@/features/employee/types";
 import type { LoginCredentials, AuthResponse } from "@/shared/auth/authTypes";
 import api from "../../../services/apiClient";
+import Cookies from "node_modules/@types/js-cookie";
+import axios from "axios";
 
 export const authService = {
 
@@ -64,6 +66,21 @@ export const authService = {
 
     return response.data;
   },
+
+  refreshToken: async () => {
+
+  const refreshToken = Cookies.get("lms_refresh_token");
+
+  if (!refreshToken) {
+    throw new Error("No refresh token found");
+  }
+
+  const response = await axios.post("/auth/refresh", {
+    refreshToken
+  });
+
+  return response.data;
+},
 
   changePassword: async (newPassword: string): Promise<void> => {
     await api.put('/auth/change-password', {

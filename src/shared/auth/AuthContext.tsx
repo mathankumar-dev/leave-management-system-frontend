@@ -37,60 +37,109 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   /* ---------------- INIT AUTH ---------------- */
-  useEffect(() => {
-    const initAuth = async () => {
-      const savedToken = Cookies.get("lms_token");
-      const savedId = Cookies.get("lms_user_id");
+ useEffect(() => {
 
-      if (savedToken && savedId) {
-        try {
-          const decoded = jwtDecode<JwtPayload>(savedToken);
-          const isExpired = decoded.exp * 1000 < Date.now();
+  const initAuth = async () => {
 
-          if (isExpired) {
-            logout();
-          } else {
-            setToken(savedToken);
+    let savedToken = Cookies.get("lms_token");
+    const savedId = Cookies.get("lms_user_id");
 
-            const profile = await authService.getEmployeeProfile(Number(savedId));
-            setUser(profile);
-          }
-        } catch (error) {
-          console.error("Auth initialization failed:", error);
-          logout();
+    if (!savedId) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+
+      if (savedToken) {
+
+        const decoded = jwtDecode<JwtPayload>(savedToken);
+
+        const isExpired = decoded.exp * 1000 < Date.now();
+
+        // if expired → refresh token
+        if (isExpired) {
+
+          const refreshResponse = await authService.refreshToken();
+
+          savedToken = refreshResponse.accessToken;
+
+          const newDecoded = jwtDecode<JwtPayload>(savedToken);
+
+          Cookies.set("lms_token", savedToken, {
+            expires: new Date(newDecoded.exp * 1000),
+            secure: true
+          });
+
+          Cookies.set("lms_refresh_token", refreshResponse.refreshToken, {
+            expires: 7,
+            secure: true
+          });
         }
       }
 
-      setIsLoading(false);
-    };
+      if (savedToken) {
 
-    initAuth();
-  }, [logout]);
+        setToken(savedToken);
 
-  /* ---------------- LOGIN ---------------- */
-  const login = async (data: AuthResponse) => {
-    try {
-      const decoded = jwtDecode<JwtPayload>(data.token);
-      const expiryDate = new Date(decoded.exp * 1000);
+        const profile = await authService.getEmployeeProfile(Number(savedId));
 
-      Cookies.set("lms_token", data.token, {
-        expires: expiryDate,
-        secure: true,
-      });
+        setUser(profile);
+      }
 
-      Cookies.set("lms_user_id", data.id.toString(), {
-        expires: expiryDate,
-      });
+    } catch (error) {
 
-      setToken(data.token);
+      console.error("Token refresh failed:", error);
 
-      const profile = await authService.getEmployeeProfile(data.id);
-      setUser(profile);
-    } catch (e) {
-      console.error("Login failed:", e);
-      throw e;
+      logout();
     }
+
+    setIsLoading(false);
   };
+
+  initAuth();
+
+}, [logout]);
+
+  
+  const login = async (data: AuthResponse) => {
+
+  try {
+
+    if (!data.accessToken || !data.refreshToken) {
+      throw new Error("Tokens missing from backend response");
+    }
+
+    const decoded = jwtDecode<JwtPayload>(data.accessToken);
+
+    const accessExpiry = new Date(decoded.exp * 1000);
+
+    // store access token
+    Cookies.set("lms_token", data.accessToken, {
+      expires: accessExpiry,
+      secure: true,
+    });
+
+    // store refresh token (long expiry 7 days or from backend config)
+    Cookies.set("lms_refresh_token", data.refreshToken, {
+      expires: 7,
+      secure: true,
+    });
+
+    Cookies.set("lms_user_id", data.id.toString(), {
+      expires: accessExpiry,
+    });
+
+    setToken(data.accessToken);
+
+    const profile = await authService.getEmployeeProfile(data.id);
+    setUser(profile);
+
+  } catch (error) {
+    console.error("Login failed:", error);
+    throw error;
+  }
+};
 
   return (
     <AuthContext.Provider
