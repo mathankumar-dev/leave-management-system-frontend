@@ -15,15 +15,13 @@ import {
     HiOutlineBuildingLibrary
 } from "react-icons/hi2";
 
-
 const PersonalDetailsModal = () => {
     const { user, setUser } = useAuth();
 
-    // 1. TYPE TOGGLE STATE
-    const [isExperienced, setIsExperienced] = useState(false);
-    const submissionType = isExperienced ? "experienced" : "fresher";
+    // Derived state from the User interface
+    const isExperienced = user?.employeeExperience === "EXPERIENCED";
+    const submissionType = isExperienced ? "EXPERIENCED" : "FRESHER";
 
-    // 2. TEXT DATA STATE (Updated with NEW fields)
     const [formData, setFormData] = useState<Partial<PersonalDetailsRequest>>({
         firstName: "",
         lastName: "",
@@ -42,7 +40,6 @@ const PersonalDetailsModal = () => {
         oldCompanyEndDate: ""
     });
 
-    // 3. FILE STATE
     const [files, setFiles] = useState<Record<string, File | null>>({
         aadhaarCard: null,
         tc: null,
@@ -62,7 +59,6 @@ const PersonalDetailsModal = () => {
     };
 
     const handleSubmit = async () => {
-        // Updated common required fields list
         const commonRequired: (keyof PersonalDetailsRequest)[] = [
             'firstName', 'lastName', 'surName', 'contactNumber', 'aadharNumber',
             'personalEmail', 'dateOfBirth', 'presentAddress', 'permanentAddress',
@@ -71,13 +67,14 @@ const PersonalDetailsModal = () => {
 
         const isMissingText = commonRequired.some(field => !formData[field]);
 
+        // Logic: Experienced needs Aadhaar + Exp + Leaving + Academic (TC/Offer)
+        // Fresher just needs Aadhaar + TC + Offer
         const requiredFiles = isExperienced
-            ? ['aadhaarCard', 'experienceCertificate', 'leavingLetter']
+            ? ['aadhaarCard', 'experienceCertificate', 'leavingLetter', 'tc', 'offerLetter']
             : ['aadhaarCard', 'tc', 'offerLetter'];
 
         const isMissingFile = requiredFiles.some(key => !files[key]);
 
-        // Specific checks for Experienced path
         const isMissingExpInfo = isExperienced && (
             !formData.unaNumber ||
             !formData.oldCompanyFromDate ||
@@ -145,7 +142,7 @@ const PersonalDetailsModal = () => {
                 <Loader message="Uploading documents..." isFinished={loaderState.finished} onFinished={handleFinalize} />
             )}
 
-            <div className="fixed inset-0 z-9998 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
                 <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]">
 
                     {/* HEADER */}
@@ -154,23 +151,9 @@ const PersonalDetailsModal = () => {
                             <HiOutlineUserCircle />
                         </div>
                         <h3 className="text-lg font-bold text-neutral-900">Complete Professional Profile</h3>
-
-                        <div className="mt-4 flex justify-center">
-                            <div className="inline-flex p-1 bg-neutral-100 rounded-lg">
-                                <button
-                                    onClick={() => setIsExperienced(false)}
-                                    className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${!isExperienced ? 'bg-white text-indigo-600 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
-                                >
-                                    Fresher
-                                </button>
-                                <button
-                                    onClick={() => setIsExperienced(true)}
-                                    className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${isExperienced ? 'bg-white text-indigo-600 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
-                                >
-                                    Experienced
-                                </button>
-                            </div>
-                        </div>
+                        <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mt-1">
+                            Account Type: {submissionType}
+                        </p>
                     </div>
 
                     <div className="p-8 overflow-y-auto space-y-8 bg-neutral-25/30 custom-scrollbar">
@@ -182,7 +165,6 @@ const PersonalDetailsModal = () => {
                                 <span className="text-xs font-bold uppercase tracking-wider">Identity & Contact</span>
                             </div>
 
-                            {/* Full Name Fields */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <InputLabel>First Name</InputLabel>
@@ -271,7 +253,6 @@ const PersonalDetailsModal = () => {
                                 </div>
                             </div>
 
-                            {/* CONDITIONAL EXPERIENCED FIELDS */}
                             {isExperienced && (
                                 <div className="space-y-4 p-4 bg-indigo-50/30 rounded-xl border border-indigo-100">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -296,23 +277,21 @@ const PersonalDetailsModal = () => {
                             )}
                         </div>
 
-                        {/* SECTION 4: DOCUMENTS */}
+                        {/* SECTION 4: DOCUMENTS (DYNAMIC) */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
                                 <HiOutlineDocumentArrowUp size={18} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Upload {isExperienced ? 'Experience' : 'Academic'} Docs</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">Document Uploads</span>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <FileInput label="Aadhaar Card" id="aadhaarCard" />
-                                {isExperienced ? (
+                                <FileInput label="Transfer Cert (TC)" id="tc" />
+                                <FileInput label="Offer Letter" id="offerLetter" />
+                                
+                                {isExperienced && (
                                     <>
                                         <FileInput label="Experience Cert" id="experienceCertificate" />
                                         <FileInput label="Leaving Letter" id="leavingLetter" />
-                                    </>
-                                ) : (
-                                    <>
-                                        <FileInput label="Transfer Cert (TC)" id="tc" />
-                                        <FileInput label="Offer Letter" id="offerLetter" />
                                     </>
                                 )}
                             </div>
@@ -337,7 +316,6 @@ const PersonalDetailsModal = () => {
                                 <span className="text-xs font-bold uppercase tracking-wider">Family Information</span>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Father */}
                                 <div className="p-4 bg-white border border-neutral-100 rounded-xl space-y-3">
                                     <div className="flex justify-between items-center">
                                         <p className="text-[10px] font-black text-indigo-600 uppercase">Father's Details</p>
@@ -347,7 +325,6 @@ const PersonalDetailsModal = () => {
                                     <MyDatePicker label="DOB" selected={formData.fatherDateOfBirth ? new Date(formData.fatherDateOfBirth) : null} onChange={d => setFormData({ ...formData, fatherDateOfBirth: d?.toISOString().split('T')[0] })} />
                                     <input placeholder="Occupation" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.fatherOccupation || ""} onChange={e => setFormData({ ...formData, fatherOccupation: e.target.value })} />
                                 </div>
-                                {/* Mother */}
                                 <div className="p-4 bg-white border border-neutral-100 rounded-xl space-y-3">
                                     <div className="flex justify-between items-center">
                                         <p className="text-[10px] font-black text-indigo-600 uppercase">Mother's Details</p>

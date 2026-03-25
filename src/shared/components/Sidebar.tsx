@@ -63,6 +63,7 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
 
     { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["ADMIN"] },
     { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
+    
   ];
 
   const visibleTabs = tabs.filter((tab) =>
@@ -107,7 +108,7 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
 
         {/* PROFILE */}
         <div
-          onClick={() => handleNavigate(`${basePath}/profile`)}
+          onClick={() => handleNavigate("profile")}
           className="bg-neutral-800 rounded-lg p-4 mb-8 border border-neutral-700/30 flex items-center gap-3 cursor-pointer"
         >
           <div className="w-10 h-10 rounded-lg bg-primary-500 flex items-center justify-center text-white font-bold">

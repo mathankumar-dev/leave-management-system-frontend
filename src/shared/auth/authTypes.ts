@@ -6,8 +6,12 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token: string;
+  token?: string;
   id: number;
   role: UserRole;
   forcePasswordChange: boolean;
 }
+
+
+
+export type ExperienceType = 'EXPERIENCED' | 'FRESHER';

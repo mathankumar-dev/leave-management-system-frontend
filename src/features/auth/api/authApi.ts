@@ -1,6 +1,6 @@
 import type { User } from "@/features/employee/types";
-import type { LoginCredentials, AuthResponse } from "@/shared/auth/authTypes";
-import api from "../../../services/apiClient";
+import api from "@/services/apiClient";
+import type { LoginCredentials, AuthResponse, ExperienceType } from "@/shared/auth/authTypes";
 
 export const authService = {
 
@@ -14,9 +14,21 @@ export const authService = {
     return response.data;
   },
 
+    // ─── JWT cookie-la iruku — backend extracts user automatically ───
+  getMyProfile: async (): Promise<User> => {
+    const response = await api.get<User>('/employees/me');
+    return response.data;
+  },
+  getProfileByID: async (id  : number): Promise<User> => {
+    const response = await api.get<User>(`/employees/profile/${id}`);
+    console.log(response);
+    
+    return response.data;
+  },
+
   submitMultipartDetails: async (
     id: number,
-    type: 'fresher' | 'experienced',
+    type: ExperienceType,
     data: any,
     files: Record<string, File | null>
   ): Promise<any> => {
@@ -37,7 +49,7 @@ export const authService = {
       if (data[key] !== undefined) requestPayload[key] = data[key];
     });
 
-    if (type === 'experienced') {
+    if (type === 'EXPERIENCED') {
       requestPayload.unaNumber = data.unaNumber;
       requestPayload.previousRole = data.previousRole;
       requestPayload.oldCompanyName = data.oldCompanyName;
@@ -47,7 +59,7 @@ export const authService = {
 
     formData.append("data", JSON.stringify(requestPayload));
 
-    if (type === 'fresher') {
+    if (type === 'FRESHER') {
       if (files.aadhaarCard) formData.append("aadhaarCard", files.aadhaarCard);
       if (files.tc) formData.append("tc", files.tc);
       if (files.offerLetter) formData.append("offerLetter", files.offerLetter);
@@ -57,8 +69,8 @@ export const authService = {
       if (files.leavingLetter) formData.append("leavingLetter", files.leavingLetter);
     }
 
-
-    const response = await api.post(`/employees/personal-details/${id}/${type}`, formData, {
+    let urlType  = type.toString().toLowerCase();
+    const response = await api.post(`/employees/personal-details/${id}/${urlType}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
 

@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import api from '../../../services/apiClient';
-import type { CreateUserRequest, EmployeeEntity, EmployeeFilters, PaginatedResponse, TeamMember } from '@/features/employee/types';
+import type { CreateUserRequest, EmployeeEntity, EmployeeFilters, PaginatedResponse, ProfileData, TeamMember } from '@/features/employee/types';
 
 export interface Employee {
   designation: string;
@@ -42,21 +42,21 @@ const handleError = (err: unknown, context: string): never => {
 
 export const employeeService = {
 
-  // getAllEmployees: async (
-  //   page = 0,
-  //   size = 10,
-  //   signal?: AbortSignal
-  // ): Promise<EmployeePageResponse> => {
-  //   try {
-  //     const response = await api.get<EmployeePageResponse>('/employees/all', {
-  //       params: { page, size },
-  //       signal,
-  //     });
-  //     return response.data;
-  //   } catch (err) {
-  //     throw handleError(err, 'getAllEmployees');
-  //   }
-  // },
+  getAllEmployeesHR: async (
+    page = 0,
+    size = 10,
+    signal?: AbortSignal
+  ): Promise<EmployeePageResponse> => {
+    try {
+      const response = await api.get<EmployeePageResponse>('/employees/all', {
+        params: { page, size },
+        signal,
+      });
+      return response.data;
+    } catch (err) {
+      throw handleError(err, 'getAllEmployees');
+    }
+  },
 
   searchEmployees: async (
     query: string,
@@ -104,12 +104,8 @@ export const employeeService = {
       throw error.response?.data?.message || "Failed to delete user";
     }
   },
-  completeProfile: async (data: any) => {
-    const response = await api.post("/employees/profile/complete", data);
+    getProfile: async (employeeId: number): Promise<ProfileData> => {
+    const response = await api.get(`/employees/profile/${employeeId}`);
     return response.data;
   },
-  //   getProfile: async (employeeId: number): Promise<ProfileData> => {
-  //   const response = await api.get(`/employees//profile/${employeeId}`);
-  //   return response.data;
-  // },
 };
