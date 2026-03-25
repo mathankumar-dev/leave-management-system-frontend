@@ -14,6 +14,18 @@ export const authService = {
     return response.data;
   },
 
+    // ─── JWT cookie-la iruku — backend extracts user automatically ───
+  getMyProfile: async (): Promise<User> => {
+    const response = await api.get<User>('/employees/me');
+    return response.data;
+  },
+  getProfileByID: async (id  : number): Promise<User> => {
+    const response = await api.get<User>(`/employees/profile/${id}`);
+    console.log(response);
+    
+    return response.data;
+  },
+
   submitMultipartDetails: async (
     id: number,
     type: ExperienceType,

@@ -1,10 +1,9 @@
-import React, { createContext, useState, useEffect, useCallback } from "react";
-import Cookies from "js-cookie";
 import { authService } from "@/features/auth/api/authApi";
-import { setToken as saveTokenToCookie, logout as globalLogout } from "@/services/auth/authStorage";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 
-import type { AuthResponse } from "./authTypes";
 import type { User } from "@/features/employee/types";
+import type { AuthResponse } from "./authTypes";
+import api from "@/services/apiClient";
 
 export interface AuthContextType {
   user: User | null;
@@ -23,57 +22,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const logout = useCallback(() => {
-    globalLogout(); // Clears cookies and redirects
-    setUser(null);
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // fail aana also redirect
+    } finally {
+      setUser(null);
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
   }, []);
 
-  /* ---------------- INIT AUTH ---------------- */
+  // ─── Page Refresh — Session Restore ───────────────────────────
   useEffect(() => {
     const initAuth = async () => {
-      const savedId = Cookies.get("lms_user_id");
-
-      // We check for savedId. Even if the token is expired/missing, 
-      // the interceptor will try to refresh it during the profile call.
-      if (savedId) {
-        try {
-          const profile = await authService.getEmployeeProfile(Number(savedId));
-          setUser(profile);
-        } catch (error) {
-          console.error("Session restoration failed:", error);
-          // If profile fetch fails AND refresh fails, interceptor calls logout.
-          // We just ensure state is clean here.
-          setUser(null);
-        }
+      try {
+        const profile = await authService.getMyProfile();
+        setUser(profile);
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
     initAuth();
   }, []);
 
-  /* ---------------- LOGIN ---------------- */
-  const login = async (data: AuthResponse) => {
+  // ─── Login ────────────────────────────────────────────────────
+  const login = useCallback(async (data: { id: number; role: string; forcePasswordChange: boolean }) => {
     try {
-      // 1. Save the access token (Interceptor will use this)
-      saveTokenToCookie(data.token);
-
-      // 2. Save the User ID for profile fetching
-      Cookies.set("lms_user_id", data.id.toString(), { 
-        secure: true, 
-        sameSite: 'Lax',
-        expires: 7 // Keep ID for 7 days
-      });
-
-      // 3. Fetch profile
-      const profile = await authService.getEmployeeProfile(data.id);
+      const profile = await authService.getProfileByID(data.id);
       setUser(profile);
     } catch (e) {
-      console.error("Login failed:", e);
+      console.error("Profile fetch failed:", e);
       throw e;
     }
-  };
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -84,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         mustChangePassword: user?.mustChangePassword ?? false,
-        personalDetailsComplete: user?.personalDetailsComplete ?? false,
+        personalDetailsComplete: user?.personalDetailsComplete === true || user?.verificationStatus === "VERIFIED",
         setUser,
       }}
     >
