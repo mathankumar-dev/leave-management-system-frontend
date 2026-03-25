@@ -1,5 +1,5 @@
 import api from "../../../api/axiosInstance";
-import type { LoginCredentials, AuthResponse, User, PersonalDetailsRequest } from "../types";
+import type { LoginCredentials, AuthResponse, User } from "../types";
 
 export const authService = {
 
@@ -8,19 +8,18 @@ export const authService = {
     return response.data;
   },
 
-
-  getEmployeeProfile: async (id: number): Promise<User> => {
-
+  // ─── JWT cookie-la iruku — backend extracts user automatically ───
+  getMyProfile: async (): Promise<User> => {
+    const response = await api.get<User>('/employees/me');
+    return response.data;
+  },
+  getProfileByID: async (id  : number): Promise<User> => {
     const response = await api.get<User>(`/employees/profile/${id}`);
+    console.log(response);
+    
     return response.data;
   },
 
-  // updatePersonalDetails: async (id: number, data: PersonalDetailsRequest): Promise<any> => {
-
-  //     const response = await api.post(`/employees/personal-details/${id}`, data);
-  //     return response.data;
-  // },
-  
   submitMultipartDetails: async (
     id: number,
     type: 'fresher' | 'experienced',
@@ -29,7 +28,6 @@ export const authService = {
   ): Promise<any> => {
     const formData = new FormData();
 
-    // 1. Define common fields (Identity, Bank, Family, etc.)
     const commonFields = [
       'firstName', 'lastName', 'surName', 'contactNumber', 'gender',
       'aadharNumber', 'personalEmail', 'dateOfBirth', 'presentAddress',
@@ -39,15 +37,11 @@ export const authService = {
       'motherName', 'motherDateOfBirth', 'motherOccupation', 'motherAlive'
     ];
 
-    // 2. Build the specific DTO based on the type
     const requestPayload: any = {};
-
-    // Always add common fields
     commonFields.forEach(key => {
       if (data[key] !== undefined) requestPayload[key] = data[key];
     });
 
-    // Only add experience fields if the type is 'experienced'
     if (type === 'experienced') {
       requestPayload.unaNumber = data.unaNumber;
       requestPayload.previousRole = data.previousRole;
@@ -56,7 +50,6 @@ export const authService = {
       requestPayload.oldCompanyEndDate = data.oldCompanyEndDate;
     }
 
-    // 3. Append the JSON and specific files
     formData.append("data", JSON.stringify(requestPayload));
 
     if (type === 'fresher') {
@@ -69,10 +62,6 @@ export const authService = {
       if (files.leavingLetter) formData.append("leavingLetter", files.leavingLetter);
     }
 
-
-    console.log(formData);
-
-    // 4. Post to the correct distinct endpoint
     const response = await api.post(`/employees/personal-details/${id}/${type}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -81,19 +70,12 @@ export const authService = {
   },
 
   changePassword: async (newPassword: string): Promise<void> => {
-    await api.put('/auth/change-password', {
-      newPassword,
-    });
-  },
-
-  getMyProfile: async (): Promise<User> => {
-    const response = await api.get<User>('/employees/profile/me');
-    return response.data;
+    await api.put('/auth/change-password', { newPassword });
   },
 
   forgotPassword: async (email: string): Promise<void> => {
     await api.post('/password-reset/request', null, {
       params: { email }
     });
-  }
+  },
 };

@@ -36,7 +36,6 @@ const handleLogout = () => {
 };
 
 // ─── Request interceptor ──────────────────────────────────────────
-// No manual token needed — withCredentials handles HTTP-only cookies
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => config,
   (error) => Promise.reject(error)
@@ -50,9 +49,11 @@ api.interceptors.response.use(
     const message = error.response?.data?.message || "Something went wrong";
     const originalRequest = error.config;
 
-    // ─── 401 → Silent refresh ─────────────────────────────────
+    // ─── 401 / 403 → Silent refresh ───────────────────────────
+    // Backend token expire → 403 return pannudu (ideally 401 aaganum)
+    // Temporary-a 403-um handle pannrom
     if (
-      status === 401 &&
+      (status === 401 || status === 403) &&
       !originalRequest._retry &&
       !originalRequest.url?.includes('/auth/refresh') &&
       !originalRequest.url?.includes('/auth/login')
@@ -69,11 +70,9 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Browser auto sends HTTP-only refreshToken cookie
         await api.post('/auth/refresh');
-        // New accessToken → browser cookie-la set aagum (backend)
         processQueue(null);
-        return api(originalRequest); // retry original
+        return api(originalRequest);
 
       } catch (refreshError) {
         processQueue(refreshError);
@@ -100,10 +99,10 @@ api.interceptors.response.use(
             toast.warning("Invalid Request", { description: message });
           break;
         case 401:
-          // Already handled above
-          break;
+          break; // Already handled above
         case 403:
-          if (!error.config?.silent?.includes(403))
+          // Refresh try பண்ணிட்டு still 403 வந்தா (_retry true) — show toast
+          if (originalRequest._retry && !error.config?.silent?.includes(403))
             toast.error("Access Denied", { description: "You don't have permission for this." });
           break;
         case 404:

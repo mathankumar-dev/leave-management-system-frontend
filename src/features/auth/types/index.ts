@@ -6,7 +6,6 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token: string;
   id: number;
   role: UserRole;
   forcePasswordChange: boolean;
@@ -47,9 +46,9 @@ export interface User {
   department: string | null;
   managerId: number | null;
   teamLeaderId?: number | null;
-  teamLeaderName?: string | null; 
+  teamLeaderName?: string | null;
   managerName: string;
-  hrname? : string | null;
+  hrname?: string | null;
   active: boolean;
   joiningDate: string;
   biometricStatus: string;
@@ -57,8 +56,12 @@ export interface User {
   onboardingCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+
+  // ─── Password flags ───────────────────────────────────────
   mustChangePassword?: boolean;
-  
+  forcePasswordChange?: boolean; // ← backend sends this
+
+  // ─── Personal Details ─────────────────────────────────────
   contactNumber: string | null;
   gender: Gender | null;
   aadharNumber: string | null;
@@ -72,12 +75,14 @@ export interface User {
   motherName: string | null;
   designation: string | null;
   skillSet: string | null;
-  personalDetailsComplete: boolean | null;
-  personalDetailsLocked: boolean | null;
+
+  // ─── Verification / Completion flags ─────────────────────
+  personalDetailsComplete?: boolean | null;
+  personalDetailsLocked?: boolean | null;
+  verificationStatus?: string | null; // ← backend sends "VERIFIED"
 }
 
 export interface PersonalDetailsRequest {
-  // --- Identity & Contact ---
   firstName: string;
   lastName: string;
   surName: string;
@@ -85,7 +90,7 @@ export interface PersonalDetailsRequest {
   gender: Gender;
   aadharNumber: string;
   personalEmail: string;
-  dateOfBirth: string; 
+  dateOfBirth: string;
   presentAddress: string;
   permanentAddress: string;
   bloodGroup: BloodGroup;
@@ -93,12 +98,8 @@ export interface PersonalDetailsRequest {
   emergencyContactNumber?: string;
   designation: string;
   skillSet: string;
-
-  // --- NEW: Bank Details ---
-  bankName: string;        // Added this
-  accountNumber: string;   // Added this
-
-  // --- Family Details ---
+  bankName: string;
+  accountNumber: string;
   fatherName: string;
   fatherDateOfBirth: string;
   fatherOccupation: string;
@@ -107,16 +108,12 @@ export interface PersonalDetailsRequest {
   motherDateOfBirth: string;
   motherOccupation: string;
   motherAlive: boolean;
-
-  // --- Experienced Specific Fields ---
   unaNumber?: string;
   previousRole?: string;
   oldCompanyName?: string;
-  oldCompanyFromDate?: string; // Added this
-  oldCompanyEndDate?: string;   // Added this
-
-  // --- Document Keys ---
-  aadhaarCard?: any; 
+  oldCompanyFromDate?: string;
+  oldCompanyEndDate?: string;
+  aadhaarCard?: any;
   tc?: any;
   offerLetter?: any;
   experienceCertificate?: any;

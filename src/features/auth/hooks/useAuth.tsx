@@ -24,7 +24,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(async () => {
     try {
       await api.post('/auth/logout');
-      // Backend → accessToken + refreshToken cookies clear pannudu
     } catch {
       // fail aana also redirect
     } finally {
@@ -35,33 +34,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // ─── Page Refresh — Session Restore ──────────────────────────
+  // ─── Page Refresh — Session Restore ───────────────────────────
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // lms_user_id regular cookie-la iruku
-        const userIdCookie = document.cookie
-          .split(';')
-          .find(c => c.trim().startsWith('lms_user_id='));
-
-        if (!userIdCookie) {
-          setIsLoading(false);
-          return;
-        }
-
-        const userId = Number(userIdCookie.split('=')[1]);
-        if (!userId || isNaN(userId)) {
-          setIsLoading(false);
-          return;
-        }
-
-        // accessToken HTTP-only cookie → withCredentials auto send
-        const profile = await authService.getEmployeeProfile(userId);
+        const profile = await authService.getMyProfile();
         setUser(profile);
-
       } catch {
-        // Token expired → interceptor refresh try pannudu
-        // Refresh fail → /login redirect aagum
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -71,14 +50,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, []);
 
-  // ─── Login ───────────────────────────────────────────────────
+  // ─── Login ────────────────────────────────────────────────────
   const login = useCallback(async (data: { id: number; role: string; forcePasswordChange: boolean }) => {
     try {
-      // accessToken → backend HTTP-only cookie-la set pannudu (auto)
-      // lms_user_id → LoginForm-la set pannuvom (or here)
-      document.cookie = `lms_user_id=${data.id}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-
-      const profile = await authService.getEmployeeProfile(data.id);
+      const profile = await authService.getMyProfile();
       setUser(profile);
     } catch (e) {
       console.error("Profile fetch failed:", e);
@@ -94,8 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         isAuthenticated: !!user,
         isLoading,
-        mustChangePassword: user?.mustChangePassword ?? false,
-        personalDetailsComplete: user?.personalDetailsComplete ?? false,
+        // forcePasswordChange → mustChangePassword alias
+        mustChangePassword: user?.mustChangePassword ?? user?.forcePasswordChange ?? false,
+        // verificationStatus === "VERIFIED" → personalDetailsComplete
+        personalDetailsComplete: user?.personalDetailsComplete === true || user?.verificationStatus === "VERIFIED",
         setUser,
       }}
     >

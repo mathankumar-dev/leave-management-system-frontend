@@ -478,7 +478,7 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
                     {EARNINGS_FIELDS.map(({ label, field }) => (
                       <div key={field} className="space-y-1">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
-                        <input type="tel" value={form[field as keyof PayslipCreateRequest]}
+                        <input type="number" value={form[field as keyof PayslipCreateRequest]}
                           onChange={e => update(field as keyof PayslipCreateRequest, parseFloat(e.target.value) || 0)}
                           className="w-full px-3 py-2 bg-emerald-50 border border-emerald-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                         />
@@ -494,7 +494,7 @@ const CreatePayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
                     {DEDUCTION_FIELDS.map(({ label, field }) => (
                       <div key={field} className="space-y-1">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
-                        <input type="tel" value={form[field as keyof PayslipCreateRequest]}
+                        <input type="number" value={form[field as keyof PayslipCreateRequest]}
                           onChange={e => update(field as keyof PayslipCreateRequest, parseFloat(e.target.value) || 0)}
                           className="w-full px-3 py-2 bg-rose-50 border border-rose-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/20"
                         />
@@ -609,11 +609,20 @@ export const CFOEmployeesPage: React.FC = () => {
     return manager?.name || `#${managerId}`;
   };
 
-  const filtered = employees.filter(e =>
-    e.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.id?.toString().includes(searchQuery) ||
-    e.role?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filtered = employees.filter(e => {
+    // Search filter
+    const matchSearch =
+      e.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.id?.toString().includes(searchQuery) ||
+      e.role?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Joining date filter → selected month/year-ku on or before join pannavan மட்டும்
+    const joinDate = e.joiningDate ? new Date(e.joiningDate) : null;
+    const selectedDate = new Date(year, month - 1, 1); // selected month 1st day
+    const matchJoin = joinDate ? joinDate <= selectedDate : true;
+
+    return matchSearch && matchJoin;
+  });
 
   const toggleTaxRegime = (id: number) => {
     setTaxRegimes(prev => ({ ...prev, [id]: prev[id] === 'OLD' ? 'NEW' : 'OLD' }));

@@ -120,7 +120,7 @@ const DashboardLayout: React.FC = () => {
 
       case "Leave Config":
         return <LeaveTypesView />;
-      case "Apply Leave":
+      case "Apply Leave": 
         return <LeaveApplicationForm />;
 
       case "Request center":
