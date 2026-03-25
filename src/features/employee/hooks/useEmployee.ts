@@ -1,6 +1,6 @@
 import { dashboardService } from "@/features/dashboard/services/dashboardService";
 import { employeeService } from "@/features/employee/services/employeeService";
-import type { CreateUserRequest, Employee, EmployeeEntity, EmployeeFilters, PaginatedResponse, TeamMember } from "@/features/employee/types";
+import type { CreateUserRequest, Employee, EmployeeEntity, EmployeeFilters, PaginatedResponse, ProfileData, TeamMember } from "@/features/employee/types";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
@@ -9,6 +9,7 @@ export const useEmployee = () => {
 
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [profile, setProfile] = useState<ProfileData | null>(null);
 
     const fetchEmployees = async (employeeId: number): Promise<Employee[]> => {
         setLoading(true);
@@ -23,6 +24,28 @@ export const useEmployee = () => {
         }
     };
 
+    const fetchEmployeeProfile = useCallback(
+        async (
+            employeeId: number
+        ): Promise<ProfileData | null> => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await employeeService.getProfile(employeeId);
+                setProfile(response);
+                return response;
+            } catch (err: unknown) {
+                const msg =
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to fetch employee profile";
+                setError(msg);
+                return null;
+            } finally {
+                setLoading(false);
+            }
+        }, []
+    );
     const fetchAllEmployees = useCallback(
         async (
             filters: EmployeeFilters
@@ -81,21 +104,21 @@ export const useEmployee = () => {
             setLoading(false);
         }
     }, []);
-    
-      const fetchTeamMembers = useCallback(async (id: number): Promise<TeamMember[]> => {
+
+    const fetchTeamMembers = useCallback(async (id: number): Promise<TeamMember[]> => {
         setLoading(true);
         setError(null);
         try {
-          const result = await employeeService.getTeamMembers(id);
-          return result;
+            const result = await employeeService.getTeamMembers(id);
+            return result;
         } catch (err: any) {
-          const errorMessage = err.response?.data?.message || err.message || "Comp-Off banking failed";
-          setError(errorMessage);
-          return [];
+            const errorMessage = err.response?.data?.message || err.message || "Comp-Off banking failed";
+            setError(errorMessage);
+            return [];
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      }, []);
+    }, []);
     return {
         loading,
         error,
@@ -106,6 +129,8 @@ export const useEmployee = () => {
         deleteUser,
         getTeamMembers,
         fetchTeamMembers,
-        
+        fetchEmployeeProfile,
+        profile,
+
     }
 }
