@@ -14,11 +14,13 @@ export const authService = {
     const response = await api.get<User>(`/employees/profile/${id}`);
     return response.data;
   },
+
   // updatePersonalDetails: async (id: number, data: PersonalDetailsRequest): Promise<any> => {
 
   //     const response = await api.post(`/employees/personal-details/${id}`, data);
   //     return response.data;
   // },
+  
   submitMultipartDetails: async (
     id: number,
     type: 'fresher' | 'experienced',
@@ -69,7 +71,7 @@ export const authService = {
 
 
     console.log(formData);
-    
+
     // 4. Post to the correct distinct endpoint
     const response = await api.post(`/employees/personal-details/${id}/${type}`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -82,6 +84,11 @@ export const authService = {
     await api.put('/auth/change-password', {
       newPassword,
     });
+  },
+
+  getMyProfile: async (): Promise<User> => {
+    const response = await api.get<User>('/employees/profile/me');
+    return response.data;
   },
 
   forgotPassword: async (email: string): Promise<void> => {

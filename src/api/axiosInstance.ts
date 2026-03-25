@@ -1,4 +1,3 @@
-import Cookies from "js-cookie";
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { ENV } from '../config/environment';
 import { toast } from "sonner";
@@ -12,7 +11,7 @@ declare module 'axios' {
 
 const api: AxiosInstance = axios.create({
   baseURL: ENV.API_BASE_URL,
-  withCredentials: true, // ← refreshToken HTTP-only cookie auto send
+  withCredentials: true, // ← accessToken + refreshToken HTTP-only cookie auto send
   headers: {
     'Content-Type': 'application/json',
   },
@@ -20,34 +19,26 @@ const api: AxiosInstance = axios.create({
 
 // ─── Refresh queue ────────────────────────────────────────────────
 let isRefreshing = false;
-let failedQueue: { resolve: (token: string) => void; reject: (err: any) => void }[] = [];
+let failedQueue: { resolve: () => void; reject: (err: any) => void }[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: any) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
-    else resolve(token!);
+    else resolve();
   });
   failedQueue = [];
 };
 
 const handleLogout = () => {
-  Cookies.remove("lms_token");
-  Cookies.remove("lms_user_id");
-  delete api.defaults.headers.common['Authorization'];
   if (window.location.pathname !== "/login") {
     window.location.href = "/login";
   }
 };
 
 // ─── Request interceptor ──────────────────────────────────────────
+// No manual token needed — withCredentials handles HTTP-only cookies
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = Cookies.get("lms_token");
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
+  (config: InternalAxiosRequestConfig) => config,
   (error) => Promise.reject(error)
 );
 
@@ -67,12 +58,11 @@ api.interceptors.response.use(
       !originalRequest.url?.includes('/auth/login')
     ) {
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then((newToken) => {
-          originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-          return api(originalRequest);
-        }).catch((err) => Promise.reject(err));
+        })
+          .then(() => api(originalRequest))
+          .catch((err) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
@@ -80,22 +70,13 @@ api.interceptors.response.use(
 
       try {
         // Browser auto sends HTTP-only refreshToken cookie
-        const { data } = await api.post('/auth/refresh');
-        const newToken = data.token;
-
-        // New token → cookie update
-        Cookies.set("lms_token", newToken, {
-          secure: true,
-          sameSite: 'strict',
-        });
-        api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-
-        processQueue(null, newToken);
-        return api(originalRequest);
+        await api.post('/auth/refresh');
+        // New accessToken → browser cookie-la set aagum (backend)
+        processQueue(null);
+        return api(originalRequest); // retry original
 
       } catch (refreshError) {
-        processQueue(refreshError, null);
+        processQueue(refreshError);
         toast.error("Session Expired", { description: "Please log in again." });
         handleLogout();
         return Promise.reject(refreshError);
@@ -142,11 +123,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// ─── App load → restore token from cookie ────────────────────────
-const token = Cookies.get("lms_token");
-if (token) {
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
 
 export default api;

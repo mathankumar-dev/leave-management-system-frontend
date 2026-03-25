@@ -1,18 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { jwtDecode } from "jwt-decode";
-import Cookies from "js-cookie";
-import type { AuthResponse, User } from "../types";
+import type { User } from "../types";
 import { authService } from "../services/AuthService";
 import api from "../../../api/axiosInstance";
 
-interface JwtPayload {
-  exp: number;
-}
-
 interface AuthContextType {
   user: User | null;
-  token: string | null;
-  login: (data: AuthResponse) => Promise<void>;
+  login: (data: { id: number; role: string; forcePasswordChange: boolean }) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -25,105 +18,85 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // ─── Logout ───────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try {
       await api.post('/auth/logout');
+      // Backend → accessToken + refreshToken cookies clear pannudu
     } catch {
-      // fail aana also clear pannuvom
+      // fail aana also redirect
     } finally {
-      Cookies.remove("lms_token");
-      Cookies.remove("lms_user_id");
-      delete api.defaults.headers.common['Authorization'];
       setUser(null);
-      setToken(null);
       if (window.location.pathname !== "/login") {
         window.location.href = "/login";
       }
     }
   }, []);
 
-  // ─── Init Auth (page refresh) ─────────────────────────────────
+  // ─── Page Refresh — Session Restore ──────────────────────────
   useEffect(() => {
     const initAuth = async () => {
-      const savedToken = Cookies.get("lms_token");
-      const savedId = Cookies.get("lms_user_id");
+      try {
+        // lms_user_id regular cookie-la iruku
+        const userIdCookie = document.cookie
+          .split(';')
+          .find(c => c.trim().startsWith('lms_user_id='));
 
-      if (savedToken && savedId) {
-        try {
-          const decoded = jwtDecode<JwtPayload>(savedToken);
-          const isExpired = decoded.exp * 1000 < Date.now();
-
-          // Expired or not → set header → interceptor handles refresh
-          api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-
-          if (!isExpired) {
-            setToken(savedToken);
-          }
-
-          const profile = await authService.getEmployeeProfile(Number(savedId));
-          setUser(profile);
-
-        } catch (error) {
-          console.error("Auth initialization failed:", error);
-          Cookies.remove("lms_token");
-          Cookies.remove("lms_user_id");
-          delete api.defaults.headers.common['Authorization'];
-          setUser(null);
-          setToken(null);
+        if (!userIdCookie) {
+          setIsLoading(false);
+          return;
         }
-      }
 
-      setIsLoading(false);
+        const userId = Number(userIdCookie.split('=')[1]);
+        if (!userId || isNaN(userId)) {
+          setIsLoading(false);
+          return;
+        }
+
+        // accessToken HTTP-only cookie → withCredentials auto send
+        const profile = await authService.getEmployeeProfile(userId);
+        setUser(profile);
+
+      } catch {
+        // Token expired → interceptor refresh try pannudu
+        // Refresh fail → /login redirect aagum
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     initAuth();
   }, []);
 
-  // ─── Login ────────────────────────────────────────────────────
-  const login = async (data: AuthResponse) => {
+  // ─── Login ───────────────────────────────────────────────────
+  const login = useCallback(async (data: { id: number; role: string; forcePasswordChange: boolean }) => {
     try {
-      const decoded = jwtDecode<JwtPayload>(data.token);
-      const expiryDate = new Date(decoded.exp * 1000);
-
-      // Cookie-la store pannuvom
-      Cookies.set("lms_token", data.token, {
-        expires: expiryDate,
-        secure: true,
-        sameSite: 'strict',
-      });
-      Cookies.set("lms_user_id", data.id.toString(), {
-        expires: expiryDate,
-      });
-
-      // Axios header set pannuvom
-      api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
-      setToken(data.token);
+      // accessToken → backend HTTP-only cookie-la set pannudu (auto)
+      // lms_user_id → LoginForm-la set pannuvom (or here)
+      document.cookie = `lms_user_id=${data.id}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
 
       const profile = await authService.getEmployeeProfile(data.id);
       setUser(profile);
-
     } catch (e) {
-      console.error("Login failed:", e);
+      console.error("Profile fetch failed:", e);
       throw e;
     }
-  };
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
         login,
         logout,
         isAuthenticated: !!user,
         isLoading,
         mustChangePassword: user?.mustChangePassword ?? false,
         personalDetailsComplete: user?.personalDetailsComplete ?? false,
-        setUser
+        setUser,
       }}
     >
       {children}

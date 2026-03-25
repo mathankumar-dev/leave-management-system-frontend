@@ -3,46 +3,39 @@ import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
-import type { LoginCredentials } from "../types";
+import type { LoginCredentials, AuthResponse } from "../types";
 import logoSVG from "../../../assets/logo.svg";
 
 import FailureModal from "../../../components/ui/FailureModal";
-import Loader from "../../../components/ui/Loader"; 
+import Loader from "../../../components/ui/Loader";
 import { authService } from "../services/AuthService";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Simplified UI states for the loader
   const [loaderState, setLoaderState] = useState({
     active: false,
     finished: false,
   });
 
   const [showError, setShowError] = useState(false);
-  const [loginResponse, setLoginResponse] = useState<any>(null); 
+  const [loginResponse, setLoginResponse] = useState<AuthResponse | null>(null); // ← any → AuthResponse
   const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. Show the circular loader immediately
     setLoaderState({ active: true, finished: false });
     setShowError(false);
 
     try {
       const credentials: LoginCredentials = { email, password };
       const response = await authService.loginUser(credentials);
-      
       setLoginResponse(response);
-
-      // 2. Mark as finished to trigger the 'Success' text and exit animation
       setLoaderState({ active: true, finished: true });
 
     } catch (error) {
-      console.error("Login failed:", error);
-      // 3. Hide loader and show error
       setLoaderState({ active: false, finished: false });
       setShowError(true);
     }
@@ -53,10 +46,10 @@ const LoginForm: React.FC = () => {
 
       {/* FULL-SCREEN CIRCULAR LOADER */}
       {loaderState.active && (
-        <Loader 
-          message="Authenticating..." 
+        <Loader
+          message="Authenticating..."
           isFinished={loaderState.finished}
-          onFinished={() => login(loginResponse)} 
+          onFinished={() => loginResponse && login(loginResponse)} // ← null check add
         />
       )}
 
@@ -114,7 +107,7 @@ const LoginForm: React.FC = () => {
               className="w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm"
             />
           </div>
-          <Link to="/forgot-password" intrinsic-size="11" className="text-[11px] font-bold text-primary-600 hover:underline flex justify-end">
+          <Link to="/forgot-password" className="text-[11px] font-bold text-primary-600 hover:underline flex justify-end">
             Forgot Password?
           </Link>
         </div>
