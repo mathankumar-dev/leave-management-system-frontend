@@ -1,8 +1,9 @@
 import type { User } from "@/features/employee/types";
 import type { LoginCredentials, AuthResponse } from "@/shared/auth/authTypes";
 import api from "../../../services/apiClient";
-import Cookies from "node_modules/@types/js-cookie";
+// import Cookies from "node_modules/@types/js-cookie";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 export const authService = {
 
@@ -10,11 +11,26 @@ export const authService = {
     const response = await api.post<AuthResponse>('/auth/login', credentials);
     return response.data;
   },
+
+  
+
   getEmployeeProfile: async (id: number): Promise<User> => {
 
     const response = await api.get<User>(`/employees/profile/${id}`);
     return response.data;
   },
+
+   refreshToken: async (refreshToken: string) => {
+
+  const res = await axios.post("/api/auth/refresh", {
+
+    refreshToken
+
+  });
+
+  return res.data;
+
+ },
 
   submitMultipartDetails: async (
     id: number,
@@ -67,7 +83,7 @@ export const authService = {
     return response.data;
   },
 
-  refreshToken: async () => {
+  refreshToken: async (refreshToken: string) => {
 
   const refreshToken = Cookies.get("lms_refresh_token");
 

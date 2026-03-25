@@ -6,10 +6,8 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  
   accessToken: string;
   refreshToken: string;
-  
   id: number;
   role: UserRole;
   forcePasswordChange: boolean;

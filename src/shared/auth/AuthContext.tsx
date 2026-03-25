@@ -5,9 +5,22 @@ import { authService } from "@/features/auth/api/authApi";
 
 import type { AuthResponse } from "./authTypes";
 import type { User } from "@/features/employee/types";
+import axios from "axios";
 
 interface JwtPayload {
   exp: number;
+}
+
+refreshToken: async (refreshToken: string) => {
+
+  const res = await axios.post("/api/auth/refresh", {
+
+    refreshToken
+
+  });
+
+  return res.data;
+
 }
 
 export interface AuthContextType {
@@ -39,70 +52,88 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /* ---------------- INIT AUTH ---------------- */
  useEffect(() => {
 
-  const initAuth = async () => {
+ const initAuth = async () => {
 
-    let savedToken = Cookies.get("lms_token");
-    const savedId = Cookies.get("lms_user_id");
+  let Token = Cookies.get("lms_token");
 
-    if (!savedId) {
-      setIsLoading(false);
-      return;
-    }
+  const refreshToken = Cookies.get("lms_refresh_token");
 
-    try {
+  const savedId = Cookies.get("lms_user_id");
 
-      if (savedToken) {
-
-        const decoded = jwtDecode<JwtPayload>(savedToken);
-
-        const isExpired = decoded.exp * 1000 < Date.now();
-
-        // if expired → refresh token
-        if (isExpired) {
-
-          const refreshResponse = await authService.refreshToken();
-
-          savedToken = refreshResponse.accessToken;
-
-          const newDecoded = jwtDecode<JwtPayload>(savedToken);
-
-          Cookies.set("lms_token", savedToken, {
-            expires: new Date(newDecoded.exp * 1000),
-            secure: true
-          });
-
-          Cookies.set("lms_refresh_token", refreshResponse.refreshToken, {
-            expires: 7,
-            secure: true
-          });
-        }
-      }
-
-      if (savedToken) {
-
-        setToken(savedToken);
-
-        const profile = await authService.getEmployeeProfile(Number(savedId));
-
-        setUser(profile);
-      }
-
-    } catch (error) {
-
-      console.error("Token refresh failed:", error);
-
-      logout();
-    }
+  if (!savedId) {
 
     setIsLoading(false);
-  };
 
-  initAuth();
+    return;
+
+  }
+
+  try {
+
+    if (Token) {
+
+      const decoded = jwtDecode<JwtPayload>(Token);
+
+      const isExpired = decoded.exp * 1000 < Date.now();
+
+      if (isExpired && refreshToken) {
+
+        const refreshResponse =
+          await authService.refreshToken(refreshToken);
+
+        Token = refreshResponse.accessToken; // ✅ update variable
+
+        const newDecoded = jwtDecode<JwtPayload>(Token);
+
+        Cookies.set("lms_token", Token, {
+
+          expires: new Date(newDecoded.exp * 1000),
+
+          secure: true
+
+        });
+
+        Cookies.set("lms_refresh_token",
+          refreshResponse.refreshToken,
+          {
+            expires: 7,
+            secure: true
+          }
+        );
+
+      }
+
+    }
+
+    if (Token) {
+
+      setToken(Token);
+
+      const profile =
+        await authService.getEmployeeProfile(Number(savedId));
+
+      setUser(profile);
+
+    }
+
+  } catch (error) {
+
+    console.error("Token refresh failed:", error);
+
+    logout();
+
+  }
+
+  setIsLoading(false);
+
+ };
+
+ initAuth();
 
 }, [logout]);
 
   
-  const login = async (data: AuthResponse) => {
+ const login = async (data: AuthResponse) => {
 
   try {
 
@@ -120,7 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       secure: true,
     });
 
-    // store refresh token (long expiry 7 days or from backend config)
+    // store refresh token
     Cookies.set("lms_refresh_token", data.refreshToken, {
       expires: 7,
       secure: true,
@@ -133,11 +164,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(data.accessToken);
 
     const profile = await authService.getEmployeeProfile(data.id);
+
     setUser(profile);
 
   } catch (error) {
+
     console.error("Login failed:", error);
+
     throw error;
+
   }
 };
 
