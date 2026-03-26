@@ -1,18 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa";
 import { useAuth } from "@/shared/auth/useAuth";
 import { useEmployeeDashboard } from "@/features/dashboard/hooks";
 import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
 import LeaveDetailsDrawer from "@/features/leave/components/LeaveDetailsDrawer";
-
-
-export type DashboardScope = "SELF" | "TEAM" | "ALL";
-
-interface DashboardViewProps {
-  scope?: DashboardScope;
-  onNavigate?: (tab: string) => void;
-}
 
 interface LeaveTypeBreakdown {
   leaveType: string;
@@ -29,228 +21,421 @@ interface StatItem {
   pendingCount?: number;
 }
 
-const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
+const DashboardView = ({ onNavigate }: any) => {
+
   const { fetchDashboard, setError } = useEmployeeDashboard();
   const { user } = useAuth();
-  const employeeId = user?.id;
+
+  const [monthly, setMonthly] = useState({
+    annualAllocated: 0,
+    annualUsed: 0,
+    annualBalance: 0,
+    sickAllocated: 0,
+    sickUsed: 0,
+    sickBalance: 0,
+    totalBalance: 0
+  });
 
   const [stats, setStats] = useState<StatItem[]>([]);
   const [approved, setApproved] = useState(0);
   const [rejected, setRejected] = useState(0);
-  const [fetching, setFetching] = useState(true);
+  const [lopPercent, setLopPercent] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [selectedCard, setSelectedCard] = useState<StatItem | null>(null);
 
-  const [lopPercent, setLopPercent] = useState(0);
 
-  const loadDashboardData = useCallback(async () => {
-    if (!employeeId) return;
+  const loadDashboard = useCallback(async () => {
+
+    if (!user?.id) return;
 
     try {
-      setFetching(true);
 
-      const data = await fetchDashboard(employeeId);
+      setLoading(true);
+
+      const data = await fetchDashboard(user.id);
+
       const breakdown: LeaveTypeBreakdown[] = data.breakdown || [];
 
-      const sickLeave = breakdown.find((b) =>
-        b.leaveType?.toUpperCase().includes("SICK")
-      );
+      const sick = breakdown.find(b => b.leaveType?.includes("SICK"));
 
-      const annualLeave = breakdown.find((b) =>
-        b.leaveType?.toUpperCase().includes("ANNUAL")
-      );
+      const annual = breakdown.find(b => b.leaveType?.includes("ANNUAL"));
 
-      const newStats: StatItem[] = [
+      setMonthly({
+        annualAllocated: data.monthlyAnnualAllocated || 0,
+        annualUsed: data.monthlyAnnualUsed || 0,
+        annualBalance: data.monthlyAnnualBalance || 0,
+        sickAllocated: data.monthlySickAllocated || 0,
+        sickUsed: data.monthlySickUsed || 0,
+        sickBalance: data.monthlySickBalance || 0,
+        totalBalance: data.monthlyTotalBalance || 0
+      });
+
+      setStats([
         {
-          title: "Sick Leave",
-          used: sickLeave?.usedDays ?? 0,
-          total: sickLeave?.allocatedDays ?? 0,
-          pendingCount: sickLeave?.pendingCount ?? 0,
+          title: "Yearly Sick Leave",
+          used: sick?.usedDays ?? 0,
+          total: sick?.allocatedDays ?? 0,
+          pendingCount: sick?.pendingCount ?? 0
         },
         {
-          title: "Annual Leave",
-          used: annualLeave?.usedDays ?? 0,
-          total: annualLeave?.allocatedDays ?? 0,
-          pendingCount: annualLeave?.pendingCount ?? 0,
+          title: "Yearly Annual Leave",
+          used: annual?.usedDays ?? 0,
+          total: annual?.allocatedDays ?? 0,
+          pendingCount: annual?.pendingCount ?? 0
         },
         {
-          title: "Total Leave Balance",
-          used: data.yearlyUsed || 0,
-          total: data.yearlyAllocated || 0,
-        },
-        {
-          title: "Monthly Balance",
-          used: data.monthlyUsed || 0,
-          total: data.monthlyAllocated || 0,
+          title: "Total Leave Count",
+          used: data.yearlyUsed,
+          total: data.yearlyAllocated
         },
         {
           title: "Carry Forward",
-          used:
-            (data.carryForwardTotal || 0) -
-            (data.carryForwardRemaining || 0),
-          total: data.carryForwardTotal || 0,
+          used: (data.carryForwardTotal || 0) - (data.carryForwardRemaining || 0),
+          total: data.carryForwardTotal
         },
         {
-          title: "Comp Off Balance",
-          used: data.compoffBalance || 0,
-          total: data.compoffBalance || 0,
-          pendingCount: 0,
-        },
-      ];
+          title: "Comp Off",
+          used: data.compoffBalance,
+          total: data.compoffBalance
+        }
+      ]);
 
-      setStats(newStats);
-      setApproved(data.approvedCount || 0);
-      setRejected(data.rejectedCount || 0);
-      setLopPercent(data.lossOfPayPercentage || 0);
-    } catch (err: any) {
-      setError(err?.message || "Failed to load dashboard data");
+      setApproved(data.approvedCount);
+      setRejected(data.rejectedCount);
+      setLopPercent(data.lossOfPayPercentage);
+
+    } catch (e: any) {
+
+      setError(e.message);
+
     } finally {
-      setFetching(false);
+
+      setLoading(false);
+
     }
-  }, [employeeId, fetchDashboard, setError]);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
+  }, [user?.id]);
 
-  if (fetching) return <CustomLoader label="Loading dashboard..." />;
+
+  useEffect(() => { loadDashboard(); }, [loadDashboard]);
+
+
+  if (loading) return <CustomLoader label="Loading dashboard..." />;
+
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+
+    <motion.div
+      initial={{opacity:0,y:10}}
+      animate={{opacity:1,y:0}}
+      className="max-w-7xl mx-auto px-6 py-6 space-y-6"
+    >
 
       {/* HEADER */}
+
       <div className="flex justify-between items-center">
+
         <div>
-          <h2 className="text-2xl font-semibold">
-            Welcome back, {user?.name}
-          </h2>
+
+          <h1 className="text-xl font-semibold">
+            Welcome, {user?.name}
+          </h1>
+
+          <p className="text-xs text-gray-500">
+            Track leave balances & requests
+          </p>
 
         </div>
 
-        <button
+        <motion.button
+          whileHover={{scale:1.05}}
+          whileTap={{scale:0.95}}
           onClick={() => onNavigate?.("Apply Leave")}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm shadow hover:bg-indigo-700"
         >
-          <FaPlus /> Apply Leave
-        </button>
+          <FaPlus size={12}/>
+          Apply Leave
+        </motion.button>
+
       </div>
 
-      {/* STATUS CARDS */}
-      <div className="grid grid-cols-3 gap-4">
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="bg-gradient-to-br from-green-50 to-white border p-5 rounded-xl shadow-sm"
-        >
-          <p className="text-sm text-gray-500">Approved Leaves</p>
-          <h3 className="text-3xl font-bold text-green-600">
-            {approved}
-          </h3>
-        </motion.div>
 
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          className="bg-gradient-to-br from-red-50 to-white border p-5 rounded-xl shadow-sm"
-        >
-          <p className="text-sm text-gray-500">Rejected Leaves</p>
-          <h3 className="text-3xl font-bold text-red-600">
-            {rejected}
-          </h3>
-        </motion.div>
-        
-              <motion.div
-        whileHover={{ scale: 1.03 }}
-        className="bg-gradient-to-br from-yellow-50 to-white border p-5 rounded-xl shadow-sm"
+      {/* MONTHLY */}
+
+      <div className="grid md:grid-cols-3 gap-4">
+
+        <MiniCard
+          title="Monthly Annual Leave"
+          used={monthly.annualUsed}
+          total={monthly.annualAllocated}
+          color="indigo"
+        />
+
+        <MiniCard
+          title="Monthly Sick Leave"
+          used={monthly.sickUsed}
+          total={monthly.sickAllocated}
+          color="pink"
+        />
+
+        <HighlightCard
+          title="Total Monthly Balance"
+          value={monthly.totalBalance}
+        />
+
+      </div>
+
+
+
+      {/* STATUS */}
+
+      <div className="grid md:grid-cols-3 gap-4">
+
+        <StatCard
+          title="Approved"
+          value={approved}
+          icon={<FaCheckCircle/>}
+          color="green"
+        />
+
+        <StatCard
+          title="Rejected"
+          value={rejected}
+          icon={<FaTimesCircle/>}
+          color="red"
+        />
+
+        <StatCard
+          title="LOP In Days"
+          value={lopPercent}
+          icon={<FaClock/>}
+          color="yellow"
+        />
+
+      </div>
+
+
+
+      {/* TABLE */}
+
+      <motion.div
+        initial={{opacity:0}}
+        animate={{opacity:1}}
+        className="bg-white rounded-xl border shadow-sm overflow-hidden"
       >
-        <p className="text-sm text-gray-500">Loss Of Pay </p>
 
-        <h3 className="text-3xl font-bold text-yellow-600">
-          {lopPercent}
-        </h3>
-      </motion.div>
-      </div>
-
-      <div className="bg-white border rounded-2xl shadow-md overflow-hidden">
         <table className="w-full text-sm">
 
-          {/* HEADER */}
-          <thead className="bg-gradient-to-r from-gray-900 to-gray-800 text-white text-xs uppercase tracking-wider">
-            <tr>
-              <th className="px-6 py-4 text-left">Category</th>
-              <th className="px-6 py-4 text-center">Allocated</th>
-              <th className="px-6 py-4 text-center">Used</th>
-              <th className="px-6 py-4 text-center">Pending</th>
+          <thead className="text-xs text-white border-b bg-gray-50">
+
+            <tr className="bg-black">
+              <th className="p-3 text-left">Type</th>
+              <th className="p-3 text-center">Allocated</th>
+              <th className="p-3 text-center">Used</th>
+              <th className="p-3 text-center">Pending</th>
             </tr>
+
           </thead>
 
-          {/* BODY */}
-          <tbody className="divide-y divide-gray-200">
-            {stats.map((stat, index) => {
 
+          <tbody>
+
+            {stats.map((s,i)=>{
+
+              const percent = s.total
+                ? Math.min(100,(s.used/s.total)*100)
+                : 0;
 
               return (
-                <tr
-                  key={index}
-                  onClick={() => setSelectedCard(stat)}
-                  className="hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+
+                <motion.tr
+                  key={i}
+                  whileHover={{backgroundColor:"#f8fafc"}}
+                  onClick={()=>setSelectedCard(s)}
+                  className="border-b cursor-pointer"
                 >
-                  {/* CATEGORY */}
-                  <td className="px-6 py-4 font-medium text-gray-800">
-                    {stat.title}
+
+                  <td className="p-3 font-medium">
+                    {s.title}
                   </td>
 
-                  {/* ALLOCATED */}
-                  <td className="px-6 py-4 text-center text-gray-600">
-                    {stat.total ?? "-"}
+
+                  <td className="text-center text-gray-600">
+                    {s.total ?? "-"}
                   </td>
 
-                  {/* USED */}
-                  <td className="px-6 py-4 text-center">
-                    <span className="font-semibold text-indigo-600">
-                      {stat.used}
-                    </span>
 
-
-
-
+                  <td className="text-center font-semibold text-indigo-600">
+                    {s.used}
                   </td>
 
-                  {/* PENDING */}
-                  <td className="px-6 py-4 text-center">
-                    {stat.pendingCount !== undefined ? (
-                      <span className="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700 font-medium">
-                        {stat.pendingCount}
+
+                  <td className="text-center">
+
+                    {s.pendingCount ? (
+
+                      <span className="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
+                        {s.pendingCount}
                       </span>
-                    ) : (
-                      "-"
-                    )}
+
+                    ) : "-"}
+
                   </td>
-                </tr>
+
+                </motion.tr>
+
               );
+
             })}
+
           </tbody>
+
         </table>
-      </div>
+
+      </motion.div>
 
 
 
-      {/* DRAWER */}
       <LeaveDetailsDrawer
         open={!!selectedCard}
         stat={selectedCard}
-        onClose={() => setSelectedCard(null)}
-        onClick={() => onNavigate?.("Apply Leave")}
+        onClose={()=>setSelectedCard(null)}
+        onClick={()=>onNavigate?.("Apply Leave")}
       />
 
-      {/* FAB */}
+
       {user?.role !== "EMPLOYEE" && (
+
         <MyFloatingActionButton
-          icon={<FaPlus />}
-          onClick={() => onNavigate?.("Apply Leave")}
-          title="New Leave Request"
-          tooltipLabel="Apply Leave"
+          icon={<FaPlus/>}
+          onClick={()=>onNavigate?.("Apply Leave")}
+          title="Apply Leave"
         />
+
       )}
-    </div>
+
+    </motion.div>
+
   );
+
 };
 
 export default DashboardView;
+
+
+
+// progress card
+const MiniCard = ({title,used,total,color="indigo"}:any)=>{
+
+  const percent = total ? (used/total)*100 : 0;
+
+  const colorMap:any = {
+
+    indigo:"bg-indigo-500",
+    pink:"bg-pink-500",
+    green:"bg-green-500",
+    yellow:"bg-yellow-500"
+
+  };
+
+  return(
+
+    <motion.div
+      whileHover={{y:-4,scale:1.02}}
+      className="bg-white border rounded-xl p-4 shadow-sm"
+    >
+
+      <p className="text-xs text-gray-500">
+        {title}
+      </p>
+
+      <div className="flex justify-between mt-1 text-sm">
+
+        <span className="font-semibold">
+          {used}
+        </span>
+
+        <span className="text-gray-400">
+          / {total}
+        </span>
+
+      </div>
+
+      <div className="h-2 bg-gray-100 rounded mt-3 overflow-hidden">
+
+        <motion.div
+          initial={{width:0}}
+          animate={{width:`${percent}%`}}
+          transition={{duration:0.8}}
+          className={`h-2 rounded ${colorMap[color]}`}
+        />
+
+      </div>
+
+    </motion.div>
+
+  );
+
+};
+
+
+// highlight card
+const HighlightCard = ({title,value}:any)=>(
+
+  <motion.div
+    whileHover={{scale:1.04}}
+    className="bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white rounded-xl p-4 shadow"
+  >
+
+    <p className="text-xs opacity-80">
+      {title}
+    </p>
+
+    <h2 className="text-3xl font-bold mt-1">
+      {value}
+    </h2>
+
+  </motion.div>
+
+);
+
+
+// stat card
+const StatCard = ({title,value,color,icon}:any)=>{
+
+  const colorMap:any = {
+
+    green:"text-green-600 bg-green-50",
+    red:"text-red-600 bg-red-50",
+    yellow:"text-yellow-600 bg-yellow-50"
+
+  };
+
+  return(
+
+    <motion.div
+      whileHover={{y:-4}}
+      className={`border rounded-xl p-4 shadow-sm ${colorMap[color]}`}
+    >
+
+      <div className="flex justify-between items-center">
+
+        <p className="text-xs font-medium">
+          {title}
+        </p>
+
+        <div className="opacity-70">
+          {icon}
+        </div>
+
+      </div>
+
+      <h2 className="text-2xl font-bold mt-2">
+        {value}
+      </h2>
+
+    </motion.div>
+
+  );
+
+};

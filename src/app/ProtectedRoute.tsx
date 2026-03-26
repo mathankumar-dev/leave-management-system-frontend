@@ -33,9 +33,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   }
 
   // 3. MANDATORY CHECK: Personal Details
-  if (!personalDetailsComplete) {
-    return <PersonalDetailsModal />;
-  }
+  // if (!personalDetailsComplete) {
+  //   return <PersonalDetailsModal />;
+  // }
 
   // 4. Role Authorization
   if (allowedRoles && user?.role) {

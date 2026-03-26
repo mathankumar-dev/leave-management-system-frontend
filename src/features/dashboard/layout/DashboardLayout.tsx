@@ -9,8 +9,8 @@ const DashboardLayout: React.FC = () => {
   const { logout, mustChangePassword, personalDetailsComplete } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (mustChangePassword) return <ChangePasswordDialog />;
-  if (!personalDetailsComplete) return <PersonalDetailsModal />;
+  // if (mustChangePassword) return <ChangePasswordDialog />;
+  // if (!personalDetailsComplete) return <PersonalDetailsModal />;
 
   return (
     <div className="flex h-screen bg-neutral-25 overflow-hidden">
