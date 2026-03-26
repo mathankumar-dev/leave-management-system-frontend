@@ -7,6 +7,7 @@ import {
   FaExclamationTriangle,
   FaFileInvoiceDollar,
   FaFileSignature,
+  FaHistory,
   FaSignOutAlt,
   FaThLarge,
   FaUsers,
@@ -45,21 +46,23 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
 
   const tabs = [
     { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
-
+    
     { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
-
+    
     { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
     { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR"] },
 
     { name: "Low Balance", path: "low-balance", icon: <FaExclamationTriangle />, roles: ["HR"] },
     { name: "Verifications", path: "verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
 
-    { name: "Requests", path: "requests", icon: <FaFileSignature />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
+    { name: "My Requests", path: "requests", icon: <FaHistory />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
     { name: "Request Center", path: "request-center", icon: <FaFileSignature />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
 
     { name: "Notifications", path: "notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
+    { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
+
 
     { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["ADMIN"] },
     { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },

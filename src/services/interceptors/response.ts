@@ -1,8 +1,10 @@
 
-import { toast } from "sonner";
-import { setToken, logout } from "@/services/auth/authStorage";
 import { ENV } from "@/config/environment";
+import api from "@/services/apiClient";
+import { logout } from "@/services/auth/authStorage";
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 const refreshApi = axios.create({
   baseURL: ENV.API_BASE_URL,
@@ -11,14 +13,14 @@ const refreshApi = axios.create({
 
 let isRefreshing = false;
 let failedQueue: {
-  resolve: (token: string) => void;
+  resolve: () => void;
   reject: (err: any) => void;
 }[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: any) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
-    else resolve(token!);
+    else resolve();
   });
   failedQueue = [];
 };
@@ -31,16 +33,14 @@ export const responseInterceptor = async (error: AxiosError) => {
   if (
     status === 401 &&
     !originalRequest._retry &&
-    !originalRequest.url?.includes("/auth/refresh") &&
-    !originalRequest.url?.includes("/auth/login")
+    Cookies.get("lms_user_id")
   ) {
     if (isRefreshing) {
-      return new Promise<string>((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         failedQueue.push({ resolve, reject });
       })
-        .then((newToken) => {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return axios(originalRequest);
+        .then(() => {
+          return api(originalRequest);
         })
         .catch((err) => Promise.reject(err));
     }
@@ -49,17 +49,16 @@ export const responseInterceptor = async (error: AxiosError) => {
     isRefreshing = true;
 
     try {
-      const response = await refreshApi.post("/auth/refresh");
-      const newToken = response.data.token;
+      await refreshApi.post("/auth/refresh");
 
-      setToken(newToken);
-      processQueue(null, newToken);
+      processQueue(null);
 
-      originalRequest.headers.Authorization = `Bearer ${newToken}`;
-      return axios(originalRequest);
+      originalRequest.withCredentials = true;
+
+      return api(originalRequest);
 
     } catch (refreshError) {
-      processQueue(refreshError, null);
+      processQueue(refreshError);
       toast.error("Session Expired", {
         description: "Please log in again.",
       });
