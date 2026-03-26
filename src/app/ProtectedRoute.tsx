@@ -20,7 +20,7 @@ const roleRedirectMap: Record<UserRole, string> = {
 };
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
-  const { isAuthenticated, user, mustChangePassword, personalDetailsComplete } = useAuth();
+  const { isAuthenticated, user, mustChangePassword, personalDetailsComplete , } = useAuth();
 
   // 1. Check Authentication
   if (!isAuthenticated) {

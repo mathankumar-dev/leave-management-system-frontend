@@ -35,7 +35,7 @@ export interface User {
   personalDetailsComplete: boolean | null;
   personalDetailsLocked: boolean | null;
   employeeExperience : ExperienceType;
-  verificationStatus : boolean;
+  verificationStatus : String;
 }
 
 export interface Employee {
