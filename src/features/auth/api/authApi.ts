@@ -81,7 +81,9 @@ export const authService = {
     return response.data;
   },
 
-  refreshToken: async (refreshToken: string) => {
+ 
+
+  refreshToken: async () => {
 
   const refreshToken = Cookies.get("lms_refresh_token");
 
@@ -89,11 +91,7 @@ export const authService = {
     throw new Error("No refresh token found");
   }
 
-  const response = await axios.post("/auth/refresh", {
-    refreshToken
-  });
-
-  return response.data;
+  return axios.post("/refresh-token", { refreshToken });
 },
 
   changePassword: async (newPassword: string): Promise<void> => {
