@@ -15,7 +15,7 @@ const roleRedirectMap: Record<UserRole, string> = {
   TEAM_LEADER: "/manager/dashboard",
   HR: "/hr/dashboard",
   ADMIN: "/admin/dashboard",
-  CFO: "/admin/dashboard",
+  CFO: "/cfo/dashboard",
   CEO: "/admin/dashboard"
 };
 

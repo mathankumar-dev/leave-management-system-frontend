@@ -77,19 +77,31 @@ export const employeeService = {
     const res = await api.get(`/dashboard/team-members/${id}`);
     return res.data;
   },
-  
-  getAllEmployees: async (filters: EmployeeFilters): Promise<PaginatedResponse<EmployeeEntity>> => {
-    const res = await api.get('/employees/all', {
-      params: filters
-    });
-    return res.data;
-  },
 
+  // ─── Unified getAllEmployees
+  getAllEmployees: async (
+    pageOrFilters: number | EmployeeFilters = 0,
+    size = 10,
+    signal?: AbortSignal
+  ): Promise<EmployeePageResponse> => {
+    try {
+      const params = typeof pageOrFilters === 'number'
+        ? { page: pageOrFilters, size }  // getAllEmployees(0, 10) — old usage
+        : pageOrFilters;                  // getAllEmployees({ page, size, ... }) — filter usage
+
+      const response = await api.get<EmployeePageResponse>('/employees/all', {
+        params,
+        signal,
+      });
+      return response.data;
+    } catch (err) {
+      throw handleError(err, 'getAllEmployees');
+    }
+  },
 
   createUser: async (userData: CreateUserRequest): Promise<string> => {
     try {
       const response = await api.post('/admin/users/add', userData);
-
       return response.data;
     } catch (error: any) {
       throw error.response?.data || "Failed to create user";
@@ -104,7 +116,8 @@ export const employeeService = {
       throw error.response?.data?.message || "Failed to delete user";
     }
   },
-    getProfile: async (employeeId: number): Promise<ProfileData> => {
+
+  getProfile: async (employeeId: number): Promise<ProfileData> => {
     const response = await api.get(`/employees/profile/${employeeId}`);
     return response.data;
   },

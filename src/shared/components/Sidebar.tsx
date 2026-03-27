@@ -65,7 +65,7 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
 
 
     { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["ADMIN"] },
-    { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
+    { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "MANAGER", "ADMIN" , "CFO"] },
     
   ];
 
