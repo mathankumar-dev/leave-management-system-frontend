@@ -80,9 +80,11 @@
 .animate-in {
   animation: fadeIn 0.7s ease-out forwards;
 }
-textarea{
+
+textarea {
   resize: none;
 }
+
 html,
 body {
   margin: 0;
@@ -145,4 +147,35 @@ input[type='number'] {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary-700);
+}
+
+
+@theme {
+  --color-brand-blue: #0066ff;
+  --color-brand-dark: #0052cc;
+
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-grow-bar: growBar 1s ease-out forwards;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-15px);
+    }
+  }
+
+  @keyframes growBar {
+    from {
+      transform: scaleY(0);
+    }
+
+    to {
+      transform: scaleY(1);
+    }
+  }
 }

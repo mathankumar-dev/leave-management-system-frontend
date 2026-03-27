@@ -5,7 +5,7 @@ import type { User } from "@/features/employee/types";
 import api from "@/services/apiClient";
 import Cookies from "js-cookie";
 import type { AuthResponse } from "./authTypes";
-import { logout } from "@/services/auth/authStorage";
+import { logout, setToken } from "@/services/auth/authStorage";
 
 export interface AuthContextType {
   user: User | null;
@@ -62,6 +62,7 @@ const contextLogout = useCallback(async () => {
 
   const login = useCallback(async (data: { id: number; role: string; forcePasswordChange: boolean }) => {
     try {
+      setToken(String(data.id));
       const profile = await authService.getEmployeeProfile(data.id);
       setUser(profile);
     } catch (e) {

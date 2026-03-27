@@ -27,6 +27,8 @@ const processQueue = (error: any) => {
 
 export const responseInterceptor = async (error: AxiosError) => {
   const status = error.response?.status;
+  console.log(status);
+
   const message = (error.response?.data as any)?.message || "Something went wrong";
   const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean; silent?: number[] };
 
@@ -49,8 +51,10 @@ export const responseInterceptor = async (error: AxiosError) => {
     isRefreshing = true;
 
     try {
+      console.log("going to call refresh");
       await refreshApi.post("/auth/refresh");
 
+      console.log("after call refresh");
       processQueue(null);
 
       originalRequest.withCredentials = true;
