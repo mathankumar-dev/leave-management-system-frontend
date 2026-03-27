@@ -260,7 +260,7 @@ const DashboardView = ({ onNavigate }: any) => {
                   </td>
 
 
-                  <td className="text-center text-gray-600">
+                  <td className="text-center text-black">
                     {s.total ?? "-"}
                   </td>
 
@@ -333,7 +333,7 @@ const MiniCard = ({title,used,total,color="indigo"}:any)=>{
 
     indigo:"bg-indigo-500",
     pink:"bg-pink-500",
-    green:"bg-green-500",
+    green:"bg-green-200",
     yellow:"bg-yellow-500"
 
   };
@@ -352,11 +352,12 @@ const MiniCard = ({title,used,total,color="indigo"}:any)=>{
       <div className="flex justify-between mt-1 text-sm">
 
         <span className="font-semibold">
-          {used}
+          
+          {total}
         </span>
 
         <span className="text-gray-400">
-          / {total}
+          /{used}
         </span>
 
       </div>
