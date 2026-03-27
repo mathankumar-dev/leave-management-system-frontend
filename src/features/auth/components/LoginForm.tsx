@@ -42,7 +42,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white rounded-lg drop-shadow-lg w-full max-w-140 min-h-150 p-8">
+    <div className="flex flex-col items-center justify-center bg-white rounded-lg  w-full max-w-140 min-h-150 p-8">
 
       {loaderState.active && (
         <Loader
@@ -52,7 +52,7 @@ const LoginForm: React.FC = () => {
         />
       )}
       {/* LOGO */}
-      <img src={logoSVG} alt="Company logo" className="w-20 h-20 mb-4" />
+      {/* <img src={logoSVG} alt="Company logo" className="w-20 h-20 mb-4" /> */}
 
       <form onSubmit={handleLogin} className="space-y-6 w-full">
         <div className="flex flex-col gap-2 items-center">
