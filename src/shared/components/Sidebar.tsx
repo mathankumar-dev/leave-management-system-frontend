@@ -39,20 +39,20 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
     TEAM_LEADER: "/manager",
     HR: "/hr",
     ADMIN: "/admin",
-    CFO: "/admin",
+    CFO: "/cfo",
   };
 
   const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
 
   const tabs = [
     { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
-    
+
     { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
-    
+
     { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
-    { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR"] },
+    { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR", "CFO"] },
 
     { name: "Low Balance", path: "low-balance", icon: <FaExclamationTriangle />, roles: ["HR"] },
     { name: "Verifications", path: "verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
@@ -64,9 +64,9 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
     { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
 
 
-    { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["ADMIN"] },
-    { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "MANAGER", "ADMIN" , "CFO"] },
-    
+    { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["CFO"] },
+    { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "TEAM_LEADER", "MANAGER", "ADMIN", "HR"] },
+
   ];
 
   const visibleTabs = tabs.filter((tab) =>

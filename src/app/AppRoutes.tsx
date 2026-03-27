@@ -13,7 +13,6 @@ import Loader from "@/shared/components/Loader";
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
-import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
 
 
 
@@ -46,7 +45,7 @@ const AppRoutes: React.FC = () => {
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["CFO"]} />}>
-          <Route path="/cfo/*" element={<CFOEmployeesPage />} />
+          <Route path="/cfo/*" element={<DashboardLayout />} />
         </Route>
 
         {/* Profile is also protected */}
