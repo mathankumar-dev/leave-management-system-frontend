@@ -1,230 +1,300 @@
-import React, { useState, useEffect } from "react";
-
+import wenxtdashboard from "@/assets/images/wenxtimage.png";
 import logo from "@/assets/svg/logo.svg";
-import CalendarSVG from "@/assets/svg/calendar-svg.svg";
-import moneySVG from "@/assets/svg/money-svg.svg";
-import { useAuth } from "@/shared/auth/useAuth";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFlashNews } from "@/features/notification/hooks/useFlashNews";
-import { formatTimeAgo } from "@/shared/utils/formatTimeAgo";
+/* ── Count-up Hook ── */
+export function useCountUp(target: number, animate: boolean, duration = 1800) {
+  const [count, setCount] = useState(0);
+  const [done, setDone] = useState(false);
+  const hasRun = useRef(false);
 
+  useEffect(() => {
+    if (!animate || hasRun.current) return;
+    hasRun.current = true;
+    const STEPS = 72;
+    const step = target / STEPS;
+    const delay = duration / STEPS;
+    let cur = 0;
+    const id = setInterval(() => {
+      cur += step;
+      if (cur >= target) {
+        setCount(target);
+        setDone(true);
+        clearInterval(id);
+      } else {
+        setCount(Math.floor(cur));
+      }
+    }, delay);
+    return () => clearInterval(id);
+  }, [animate, target, duration]);
 
-export interface FlashNews {
-  id: number;
-  priority: number;
-  message: string;
-  active: boolean;
-  createdAt: string;
+  return { count, done };
 }
 
-const roleBasePath : Record<string,string> = {
-  EMPLOYEE: "/employee",
-  MANAGER: "/manager",
-  TEAM_LEADER: "/manager",
-  HR: "/hr",
-  ADMIN: "/admin",
-  CFO: "/admin",
-};
+/* ── Navbar ── */
+export function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
 
-const LaunchPage: React.FC = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
-  const basePath = roleBasePath[user?.role || "EMPLOYEE"];
-
-  const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
-  const [isLoading, setLoading] = useState(false);
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const { fetchFlashNews } = useFlashNews();
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchFlashNews();
-        const sortedData = (data || []).sort((a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setFlashNews(sortedData);
-      } catch (err) {
-        console.error("News fetch failed", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [fetchFlashNews]);
+    const fn = () => setScrolled(window.scrollY > 28);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
 
-  useEffect(() => {
-    if (flashNews.length <= 1) return;
-
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % flashNews.length);
-    }, 5000); 
-
-    return () => clearInterval(timer);
-  }, [flashNews]);
-  const systems = [
-    {
-      title: "Leave System",
-      desc: "Apply for leaves, view balances, and track approvals.",
-      icon: CalendarSVG,
-      color: "bg-indigo-500",
-      path: `${basePath}/dashboard`,
-    },
-    {
-      title: "Payroll System",
-      desc: "View payslips, tax documents, and payment history.",
-      icon: moneySVG,
-      color: "bg-indigo-500",
-      path: `${basePath}/dashboard`,
-    },
-  ];
-
-  const policies = [
-    { title: "Leave Policy 2026", link: "/leave-policy" },
-    { title: "Privacy Policy", link: "/privacy-policy" },
-    { title: "Terms of Service", link: "/terms-of-service" },
-  ];
+  const links = ["Home", "Features", "About", "Contact"];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
-      {/* HEADER */}
-      <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/")}>
-            <img src={logo} alt="logo" className="h-10 w-10" />
-            <span className="text-2xl font-black text-slate-800">
-              WeNxt <span className="text-indigo-600">Technologies</span>
-            </span>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200" : "bg-transparent"
+      }`}>
+      <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between">
+        <a href="#home" className="flex items-center gap-3">
+          {/* <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center overflow-hidden">
+             <span className="text-white font-black text-xl">W</span>
+
+          </div> */}
+          <img src={logo} alt="" height={50} width={50} />
+          {/* <span className="text-slate-900 font-semibold text-subheading hidden sm:block">WeNxt Technologies</span> */}
+        </a>
+
+        {/* Desktop Links */}
+        <ul className="hidden md:flex items-center justify-end gap-2">
+          {links.map((l) => (
+            <li key={l}>
+              <a href={`#${l.toLowerCase()}`} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-brand transition-colors relative group">
+                {l}
+                <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-brand scale-x-0 group-hover:scale-x-100 transition-transform origin-center" />
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <div className="flex items-center gap-4">
+          {/* <a href="#contact" className="hidden md:block bg-brand text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-brand-dark hover:scale-105 transition-all shadow-md">
+            Get Started
+          </a> */}
+
+          <button className="md:hidden flex flex-col gap-1.5" onClick={() => setOpen(!open)}>
+            <span className={`h-0.5 w-6 bg-slate-800 transition-all ${open ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`h-0.5 w-6 bg-slate-800 transition-all ${open ? "opacity-0" : ""}`} />
+            <span className={`h-0.5 w-6 bg-slate-800 transition-all ${open ? "-rotate-45 -translate-y-2" : ""}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`md:hidden bg-white border-b border-slate-200 overflow-hidden transition-all duration-300 ${open ? "max-h-64 py-4" : "max-h-0"}`}>
+        {links.map((l) => (
+          <a key={l} href={`#${l.toLowerCase()}`} className="block px-8 py-3 text-base font-semibold text-slate-600 hover:bg-blue-50" onClick={() => setOpen(false)}>
+            {l}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+/* ── Hero Section ── */
+export function Hero() {
+  const navigate = useNavigate();
+  return (
+    <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-brand-bg">
+      {/* Background Blobs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-160 h-160 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 left-10 w-100 h-100 bg-emerald-500/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 leading-[1.1] mb-6 ">
+            Simplifying <span className="text-primary-500">Leave </span>&  <span className="text-primary-500">Workforce</span> Management
+          </h1>
+          <p className="text-lg text-slate-500 leading-relaxed mb-10 max-w-lg">
+            Manage employee leaves, track attendance, and streamline HR operations — all in one place.          </p>
+          <div className="flex flex-wrap gap-4 mb-10">
+            <button onClick={() => navigate('login')} className="bg-brand text-white px-8 py-3.5 rounded-lg font-bold flex items-center gap-2 hover:bg-brand-dark transition-all hover:scale-105 shadow-xl shadow-blue-500/30">
+              Get Started
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+            <button className="border-2 border-brand text-brand px-8 py-3.5 rounded-lg font-bold hover:bg-blue-50 transition-all hover:scale-105">
+              Explore Features
+            </button>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current User</p>
-              <p className="text-sm font-bold text-slate-700">
-                {`${user?.name} (${user?.role})`}
-              </p>
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="w-9 h-9 rounded-full border-2 border-white bg-slate-200" />
+              ))}
             </div>
-            <div className="w-10 h-10 bg-indigo-600 text-white flex items-center justify-center rounded-full font-bold text-sm border-2 border-white shadow-sm">
-              {user?.name.charAt(0) || "U"}
+            <span className="text-sm text-slate-500">Trusted by <strong className="text-slate-800">25+ insurers</strong> worldwide</span>
+          </div>
+        </div>
+
+        <div className="relative flex justify-center">
+          {/* Main Hero Image Placeholder */}
+          <div className="w-full max-w-lg aspect-square bg-slate-200 rounded-[50px] shadow-2xl animate-float overflow-hidden relative border-8 border-white">
+            {/* <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+              [Hero Image: Wenxt Dashboard]
+            </div> */}
+            <img src={wenxtdashboard} alt="" />
+          </div>
+
+          {/* Floating Badge (Example) */}
+          <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-100">
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl text-green-600">✅</div>
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase">Status</p>
+              <p className="text-sm font-bold text-slate-800">25+ Clients Active</p>
             </div>
           </div>
         </div>
-      </header>
-
-      <div className="flex flex-1 max-w-7xl mx-auto w-full p-6 gap-8">
-        {/* LEFT SIDEBAR */}
-        <aside className="w-80 hidden lg:flex flex-col gap-6">
-          <div className="bg-indigo-500 p-6 rounded-xl text-white shadow-lg shadow-indigo-100">
-            <p className="text-xs uppercase font-bold opacity-80 mb-2 tracking-widest">Thought of the Day</p>
-            <p className="italic text-lg font-medium leading-tight">
-              "Insurtech isn't just about code; it's about engineering trust."
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-800 uppercase text-xs tracking-widest">
-              ⚖️ Policy Center
-            </h3>
-            <ul className="space-y-2">
-              {policies.map((policy, i) => (
-                <li key={i}>
-                  <button
-                    onClick={() => navigate(policy.link)}
-                    className="w-full flex items-center justify-between p-2 rounded-sm text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
-                  >
-                    <span>{policy.title}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          {/* ONE NEWS AT A TIME - SLIDING/FADING */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-40 flex flex-col justify-between overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold flex items-center gap-2 text-slate-800 uppercase text-xs tracking-widest">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-                </span>
-                Live Updates
-              </h3>
-              {/* Progress Dots */}
-              <div className="flex gap-1">
-                {flashNews.map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-1 w-3 rounded-full transition-all duration-500 ${i === currentIndex ? 'bg-indigo-500 w-5' : 'bg-slate-200'}`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="relative flex-1">
-              {isLoading ? (
-                <div className="h-12 bg-slate-100 animate-pulse rounded-lg" />
-              ) : flashNews.length > 0 ? (
-                <div
-                  key={currentIndex}
-                  className="animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out"                >
-                  <div className={`p-4 rounded-xl border-l-4 ${flashNews[currentIndex].priority == 1
-                    ? 'bg-amber-50 border-amber-400'
-                    : 'bg-slate-50 border-indigo-400'
-                    }`}>
-                    <p className="text-sm text-slate-800 font-semibold leading-relaxed">
-                      {flashNews[currentIndex].message}
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-3 font-bold uppercase tracking-wider">
-                      {formatTimeAgo(flashNews[currentIndex].createdAt)}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500 italic text-center py-4">No updates today.</p>
-              )}
-            </div>
-          </div>
-
-        </aside>
-
-        {/* CENTER CONTENT */}
-        <main className="flex-1 space-y-8">
-          <div>
-            <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">
-              Welcome back, {user?.name.split(' ')[0]}!
-            </h1>
-            <p className="text-slate-500 mt-1">Access your employee management tools below.</p>
-          </div>
-
-          {/* SYSTEM GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {systems.map((sys, idx) => (
-              <div
-                key={idx}
-                onClick={() => navigate(sys.path)}
-                className="group bg-white p-8 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer"
-              >
-                <div className={`${sys.color} w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-inner`}>
-                  <img src={sys.icon} className="w-10 h-10" alt={sys.title} />
-                </div>
-                <h3 className="text-2xl font-bold mb-2 group-hover:text-indigo-600 transition-colors text-slate-800">
-                  {sys.title}
-                </h3>
-                <p className="text-slate-500 leading-relaxed">{sys.desc}</p>
-                <div className="mt-8 flex items-center text-indigo-600 font-bold text-sm uppercase tracking-wider">
-                  Launch System <span className="ml-2 group-hover:translate-x-2 transition-transform">→</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-
-        </main>
       </div>
+    </section>
+  );
+}
+
+/* ── Stats Section ── */
+export function HomeStats() {
+  const [animate, setAnimate] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setAnimate(true); }, { threshold: 0.3 });
+    if (ref.current) io.observe(ref.current);
+    return () => io.disconnect();
+  }, []);
+
+  const stats = [
+    { target: 25, suffix: "+", label: "Customers", icon: "🤝", desc: "Insurance organisations trust WeNxt globally" },
+    { target: 50, suffix: "+", label: "Projects", icon: "🚀", desc: "Successful implementations delivered on time" },
+    { target: 12, suffix: "", label: "Countries", icon: "🌍", desc: "Nations where our platforms run in production" },
+  ];
+
+  return (
+    <section className="py-24 bg-gradient-to-b from-brand-bg to-white" ref={ref}>
+      <div className="max-w-5xl mx-auto px-6 text-center">
+        <p className="text-brand uppercase tracking-widest font-bold text-sm mb-3">Impact at a Glance</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 ">Trusted. Proven. Global.</h2>
+        <p className="text-slate-500 mb-16 max-w-xl mx-auto">We are building insurance technology across borders and lines of business.</p>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {stats.map((s) => {
+            const { count, done } = useCountUp(s.target, animate);
+            return (
+              <div key={s.label} className="bg-white border-2 border-slate-100 p-10 rounded-3xl hover:border-brand hover:-translate-y-2 transition-all group">
+                <div className="text-4xl mb-4">{s.icon}</div>
+                <div className="flex items-baseline justify-center gap-1 mb-2">
+                  <span className="text-5xl font-bold text-brand">{count}</span>
+                  <span className={`text-3xl font-bold text-brand transition-opacity duration-500 ${done ? "opacity-100" : "opacity-0"}`}>{s.suffix}</span>
+                </div>
+                <p className="font-bold text-slate-800 uppercase tracking-wide text-sm mb-2">{s.label}</p>
+                <p className="text-xs text-slate-400 leading-relaxed">{s.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Features ── */
+export function Features() {
+  const features = [
+    { icon: "🧠", title: "By Insurance Experts", desc: "Built by practitioners with 25+ years of domain expertise in life and health.", color: "bg-blue-50 text-blue-600" },
+    { icon: "🔌", title: "API-Driven Integration", desc: "Open RESTful APIs connect your CRM and portals in days—not months.", color: "bg-emerald-50 text-emerald-600" },
+    { icon: "☁️", title: "Cloud-Based", desc: "Elastic cloud infrastructure eliminates CAPEX. Scale instantly as you grow.", color: "bg-violet-50 text-violet-600" },
+    { icon: "🎛️", title: "No-Code Config", desc: "Launch new insurance lines without touching a single line of code.", color: "bg-amber-50 text-amber-600" },
+    { icon: "💱", title: "Multi-Currency", desc: "Handle local tax and FX requirements across 12+ countries seamlessly.", color: "bg-rose-50 text-rose-600" },
+  ];
+
+  return (
+    <section id="features" className="py-24 bg-slate-50">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <p className="text-brand uppercase tracking-widest font-bold text-sm mb-3">What We Offer</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900  ">Platform Capabilities</h2>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((f, i) => (
+            <div key={i} className={`bg-white p-8 rounded-2xl border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group ${i >= 3 ? 'lg:col-span-1' : ''}`}>
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-6 ${f.color}`}>
+                {f.icon}
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-3">{f.title}</h3>
+              <p className="text-slate-500 text-sm leading-relaxed mb-6">{f.desc}</p>
+              <button className="text-brand text-xs font-bold opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all">Learn more →</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Footer ── */
+export function Footer() {
+  return (
+    <footer id="contact" className="bg-slate-950 text-slate-400 pt-20 pb-10">
+      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <img src={logo} height={50} width={50} alt="" />
+            <span className="font-bold">WeNxt Technologies</span>
+          </div>
+          <p className="text-sm leading-relaxed"> Manage employee leaves, track attendance, and streamline HR operations — all in one place.</p>
+        </div>
+
+        <div>
+          <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-6">Contact</h4>
+          <ul className="space-y-4 text-sm">
+            <li className="flex gap-3"><span>🌐</span> <a href="#" className="hover:text-brand">www.wenxttech.com</a></li>
+            <li className="flex gap-3"><span>📍</span> <span>S-Floor, Fayola Towers, Chennai, TN</span></li>
+            <li className="flex gap-3"><span>✉️</span> <a href="mailto:info@wenxttech.com" className="hover:text-brand">info@wenxttech.com</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-6">Quick Links</h4>
+          <ul className="space-y-3 text-sm">
+            {["Home", "Features", "About", "Contact"].map(l => (
+              <li key={l}><a href="#" className="hover:text-brand transition-all hover:pl-2">{l}</a></li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-6">Stay Updated</h4>
+          <form className="flex flex-col gap-3">
+            <input type="email" placeholder="your@email.com" className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand text-white" />
+            <button className="bg-brand text-white font-bold py-2.5 rounded-lg text-sm hover:bg-brand-dark transition-all">Subscribe</button>
+          </form>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+        <span>© 2026 WENXT Technologies Pvt Ltd. All rights reserved.</span>
+
+      </div>
+    </footer>
+  );
+}
+
+/* ── Main Export ── */
+export default function LandingPage() {
+  return (
+    <div className="selection:bg-brand selection:text-white">
+      <Navbar />
+      <main>
+        <Hero />
+        <HomeStats />
+        <Features />
+      </main>
+      <Footer />
     </div>
   );
-};
-
-export default LaunchPage;
+}
