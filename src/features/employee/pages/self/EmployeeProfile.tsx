@@ -112,8 +112,8 @@ const EmployeeProfile: React.FC = () => {
           <Section title="Work Information">
             <Field label="Designation" value={profile.designation} />
             <Field label="Joining Date" value={formatDate(profile.joiningDate)} />
-            <Field label="Manager" value={profile.managerName} />
-            <Field label="Team Leader" value={profile.teamLeaderName} />
+            <Field label="Reports To" value={profile.managerName} />
+            {/* <Field label="Team Leader" value={profile.teamLeaderName} /> */}
             <Field label="Employee Type" value={profile.employeeType} />
           </Section>
 

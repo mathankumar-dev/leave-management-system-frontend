@@ -275,19 +275,19 @@ const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => 
           Approval Flow ({days} {days === 1 ? 'Day' : 'Days'})
         </h4>
         <div className="space-y-4 relative before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
-          {showTLStep && (
+          {/* {showTLStep && (
             <div className="relative pl-6">
               <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.teamLeaderDecision === 'APPROVED' ? 'bg-emerald-500' : item.teamLeaderDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
               <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Team Leader ({user?.teamLeaderName})</p>
               <p className="text-[10px] text-slate-500 mt-1">{item.teamLeaderDecision ? `${item.teamLeaderDecision} ${formatDate(item.teamLeaderDecidedAt)}` : 'Awaiting Review'}</p>
             </div>
-          )}
+          )} */}
 
           {needsManager && (
             <div className="relative pl-6">
               <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.managerDecision === 'APPROVED' ? 'bg-emerald-500' : item.managerDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
               <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Manager ({user?.managerName})</p>
-              <p className="text-[10px] text-slate-500 mt-1">{item.managerDecision ? `${item.managerDecision} on ${formatDate(item.managerDecidedAt)}` : (showTLStep && !item.teamLeaderDecision) ? 'Waiting for TL' : 'Awaiting Review'}</p>
+              <p className="text-[10px] text-slate-500 mt-1">{item.managerDecision ? `${item.managerDecision} on ${formatDate(item.managerDecidedAt)}` : (showTLStep && !item.teamLeaderDecision) ? 'Waiting for Approve' : 'Awaiting Review'}</p>
             </div>
           )}
 

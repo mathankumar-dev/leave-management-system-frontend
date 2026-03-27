@@ -1,164 +1,300 @@
-import React, { useEffect } from "react";
-import logo from "@/assets/images/bg-rm-logo-HRES.png";
-import AOS from "aos";
-import "aos/dist/aos.css";
+import wenxtdashboard from "@/assets/images/wenxtimage.png";
+import logo from "@/assets/svg/logo.svg";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+/* ── Count-up Hook ── */
+export function useCountUp(target: number, animate: boolean, duration = 1800) {
+  const [count, setCount] = useState(0);
+  const [done, setDone] = useState(false);
+  const hasRun = useRef(false);
 
-const LandingPage: React.FC = () => {
+  useEffect(() => {
+    if (!animate || hasRun.current) return;
+    hasRun.current = true;
+    const STEPS = 72;
+    const step = target / STEPS;
+    const delay = duration / STEPS;
+    let cur = 0;
+    const id = setInterval(() => {
+      cur += step;
+      if (cur >= target) {
+        setCount(target);
+        setDone(true);
+        clearInterval(id);
+      } else {
+        setCount(Math.floor(cur));
+      }
+    }, delay);
+    return () => clearInterval(id);
+  }, [animate, target, duration]);
+
+  return { count, done };
+}
+
+/* ── Navbar ── */
+export function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
+
   useEffect(() => {
-    AOS.init({ duration: 1000, once: true });
+    const fn = () => setScrolled(window.scrollY > 28);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
+  const links = ["Home", "Features", "About", "Contact"];
+
   return (
-    <div className="font-sans text-gray-900 bg-white">
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-1000 flex justify-between items-center px-[10%] py-5 bg-white shadow-md">
-        <div className="flex items-center gap-2.5">
-          <img src={logo} className="w-10" alt="logo" />
-          <span className="font-bold text-lg">WENXT <span className="text-primary-500">Technologies </span></span>
-        </div>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200" : "bg-transparent"
+      }`}>
+      <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between">
+        <a href="#home" className="flex items-center gap-3">
+          {/* <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center overflow-hidden">
+             <span className="text-white font-black text-xl">W</span>
 
-        <div className="hidden md:flex gap-6">
-          {["Home", "Features", "About", "Contact"].map((link) => (
-            <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
-              className="relative transition-colors hover:text-purple-600 after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-purple-500 after:left-0 after:-bottom-1 after:transition-all hover:after:w-full"
-            >
-              {link}
-            </a>
+          </div> */}
+          <img src={logo} alt="" height={50} width={50} />
+          {/* <span className="text-slate-900 font-semibold text-subheading hidden sm:block">WeNxt Technologies</span> */}
+        </a>
+
+        {/* Desktop Links */}
+        <ul className="hidden md:flex items-center justify-end gap-2">
+          {links.map((l) => (
+            <li key={l}>
+              <a href={`#${l.toLowerCase()}`} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-brand transition-colors relative group">
+                {l}
+                <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-brand scale-x-0 group-hover:scale-x-100 transition-transform origin-center" />
+              </a>
+            </li>
           ))}
-        </div>
-      </nav>
+        </ul>
 
-      {/* HERO */}
-      <section
-        id="home"
-        className="relative flex items-center justify-center text-center text-white py-32 px-[10%] bg-cover bg-center"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.70), rgba(0, 0, 0, 0.45)), url('https://images.unsplash.com/photo-1551434678-e076c223a692')`
-        }}
-      >
-        <div>
-          <img src={logo} className="w-80 drop-shadow-2xl drop-shadow-black" alt="logo" />
-        </div>
+        <div className="flex items-center gap-4">
+          {/* <a href="#contact" className="hidden md:block bg-brand text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-brand-dark hover:scale-105 transition-all shadow-md">
+            Get Started
+          </a> */}
 
-        <div className="max-w-2xl flex flex-col items-center gap-5">
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-            Simplifying Leave & Workforce Management
-          </h1>
-
-          <p className="text-lg opacity-90">
-            Manage employee leaves, track attendance, and streamline HR operations — all in one place.
-          </p>
-
-          <button
-            onClick={() => navigate('/login')}
-            className="mt-2.5 px-7 py-3 bg-[#12b9b3] text-white font-semibold rounded-full transition-transform hover:-translate-y-1 hover:scale-105 hover:bg-white hover:text-[#12b9b3]"
-          >
-            Access Dashboard
+          <button className="md:hidden flex flex-col gap-1.5" onClick={() => setOpen(!open)}>
+            <span className={`h-0.5 w-6 bg-slate-800 transition-all ${open ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`h-0.5 w-6 bg-slate-800 transition-all ${open ? "opacity-0" : ""}`} />
+            <span className={`h-0.5 w-6 bg-slate-800 transition-all ${open ? "-rotate-45 -translate-y-2" : ""}`} />
           </button>
         </div>
-      </section>
-
-      {/* STATS */}
-      <div
-        data-aos="zoom-in"
-        className="relative z-10 flex flex-col md:flex-row justify-around items-center gap-5 w-4/5 mx-auto -mt-12 p-10 bg-white rounded-xl shadow-2xl"
-      >
-        {[
-          { label: "Customers", val: "25+" },
-          { label: "Projects", val: "50+" },
-          { label: "Countries", val: "12" },
-        ].map((stat, i) => (
-          <div key={i} className="text-center animate-bounce-slow">
-            <h2 className="text-3xl font-bold text-purple-600">{stat.val}</h2>
-            <p className="text-gray-600">{stat.label}</p>
-          </div>
-        ))}
       </div>
 
-      {/* ABOUT */}
-      <section id="about" className="py-24 px-[10%] bg-gray-50">
-        <div className="flex flex-col lg:flex-row items-center gap-16">
-          <div className="flex-1" data-aos="fade-right">
-            <h2 className="text-3xl font-bold mb-5">About Us</h2>
-            <div className="space-y-4 text-gray-600 leading-relaxed">
-              <p>
-                <strong className="text-gray-900">WENXT Technologies LLC</strong> is headquartered in Dubai having an offshore office in Chennai, is a subsidiary of MaanSarovar Tech Solutions which has been delivering Insurance Technology solutions since 1999.
-              </p>
-              <p>
-                We have more than two decades of experience in providing Digital Solutions to the Insurance industry. We help insurers by providing digital tools with the right digital strategy, architecture, and tools.
-              </p>
-              <p>
-                We have 25+ reference customers across UAE, Oman, Saudi Arabia, Bahrain, USA, India & more.
-              </p>
+      {/* Mobile Menu */}
+      <div className={`md:hidden bg-white border-b border-slate-200 overflow-hidden transition-all duration-300 ${open ? "max-h-64 py-4" : "max-h-0"}`}>
+        {links.map((l) => (
+          <a key={l} href={`#${l.toLowerCase()}`} className="block px-8 py-3 text-base font-semibold text-slate-600 hover:bg-blue-50" onClick={() => setOpen(false)}>
+            {l}
+          </a>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+/* ── Hero Section ── */
+export function Hero() {
+  const navigate = useNavigate();
+  return (
+    <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-brand-bg">
+      {/* Background Blobs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-160 h-160 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 left-10 w-100 h-100 bg-emerald-500/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 leading-[1.1] mb-6 ">
+            Simplifying <span className="text-primary-500">Leave </span>&  <span className="text-primary-500">Workforce</span> Management
+          </h1>
+          <p className="text-lg text-slate-500 leading-relaxed mb-10 max-w-lg">
+            Manage employee leaves, track attendance, and streamline HR operations — all in one place.          </p>
+          <div className="flex flex-wrap gap-4 mb-10">
+            <button onClick={() => navigate('login')} className="bg-brand text-white px-8 py-3.5 rounded-lg font-bold flex items-center gap-2 hover:bg-brand-dark transition-all hover:scale-105 shadow-xl shadow-blue-500/30">
+              Get Started
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+            <button className="border-2 border-brand text-brand px-8 py-3.5 rounded-lg font-bold hover:bg-blue-50 transition-all hover:scale-105">
+              Explore Features
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="w-9 h-9 rounded-full border-2 border-white bg-slate-200" />
+              ))}
+            </div>
+            <span className="text-sm text-slate-500">Trusted by <strong className="text-slate-800">25+ insurers</strong> worldwide</span>
+          </div>
+        </div>
+
+        <div className="relative flex justify-center">
+          {/* Main Hero Image Placeholder */}
+          <div className="w-full max-w-lg aspect-square bg-slate-200 rounded-[50px] shadow-2xl animate-float overflow-hidden relative border-8 border-white">
+            {/* <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+              [Hero Image: Wenxt Dashboard]
+            </div> */}
+            <img src={wenxtdashboard} alt="" />
+          </div>
+
+          {/* Floating Badge (Example) */}
+          <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-100">
+            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl text-green-600">✅</div>
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase">Status</p>
+              <p className="text-sm font-bold text-slate-800">25+ Clients Active</p>
             </div>
           </div>
-          <div className="flex-1" data-aos="fade-left">
-            <img
-              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c"
-              alt="team"
-              className="w-full rounded-2xl shadow-2xl"
-            />
-          </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* FEATURES */}
-      <section id="features" className="py-20 px-[10%] text-center">
-        <h2 className="text-3xl font-bold mb-10">Our Approach</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div data-aos="zoom-in" className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 transition-all hover:-translate-y-2 hover:shadow-lg">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" className="w-16 mx-auto mb-4" alt="Strategy" />
-            <h3 className="font-bold text-xl mb-2">Digital Strategy</h3>
-            <p className="text-gray-500">Transform your business digitally</p>
-          </div>
-          <div data-aos="zoom-in" data-aos-delay="100" className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 transition-all hover:-translate-y-2 hover:shadow-lg">
-            <img src="https://cdn-icons-png.flaticon.com/512/2721/2721297.png" className="w-16 mx-auto mb-4" alt="Arch" />
-            <h3 className="font-bold text-xl mb-2">Tech Architecture</h3>
-            <p className="text-gray-500">Modern scalable systems</p>
-          </div>
-          <div data-aos="zoom-in" data-aos-delay="200" className="p-8 bg-white rounded-xl shadow-sm border border-gray-100 transition-all hover:-translate-y-2 hover:shadow-lg">
-            <img src="https://cdn-icons-png.flaticon.com/512/854/854878.png" className="w-16 mx-auto mb-4" alt="Integration" />
-            <h3 className="font-bold text-xl mb-2">Integration</h3>
-            <p className="text-gray-500">Seamless connectivity</p>
-          </div>
+/* ── Stats Section ── */
+export function HomeStats() {
+  const [animate, setAnimate] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) setAnimate(true); }, { threshold: 0.3 });
+    if (ref.current) io.observe(ref.current);
+    return () => io.disconnect();
+  }, []);
+
+  const stats = [
+    { target: 25, suffix: "+", label: "Customers", icon: "🤝", desc: "Insurance organisations trust WeNxt globally" },
+    { target: 50, suffix: "+", label: "Projects", icon: "🚀", desc: "Successful implementations delivered on time" },
+    { target: 12, suffix: "", label: "Countries", icon: "🌍", desc: "Nations where our platforms run in production" },
+  ];
+
+  return (
+    <section className="py-24 bg-gradient-to-b from-brand-bg to-white" ref={ref}>
+      <div className="max-w-5xl mx-auto px-6 text-center">
+        <p className="text-brand uppercase tracking-widest font-bold text-sm mb-3">Impact at a Glance</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 ">Trusted. Proven. Global.</h2>
+        <p className="text-slate-500 mb-16 max-w-xl mx-auto">We are building insurance technology across borders and lines of business.</p>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {stats.map((s) => {
+            const { count, done } = useCountUp(s.target, animate);
+            return (
+              <div key={s.label} className="bg-white border-2 border-slate-100 p-10 rounded-3xl hover:border-brand hover:-translate-y-2 transition-all group">
+                <div className="text-4xl mb-4">{s.icon}</div>
+                <div className="flex items-baseline justify-center gap-1 mb-2">
+                  <span className="text-5xl font-bold text-brand">{count}</span>
+                  <span className={`text-3xl font-bold text-brand transition-opacity duration-500 ${done ? "opacity-100" : "opacity-0"}`}>{s.suffix}</span>
+                </div>
+                <p className="font-bold text-slate-800 uppercase tracking-wide text-sm mb-2">{s.label}</p>
+                <p className="text-xs text-slate-400 leading-relaxed">{s.desc}</p>
+              </div>
+            );
+          })}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* FOOTER */}
-      <footer id="contact" className="bg-[#7a4db3] text-white py-14 px-[10%]">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          <div>
-            <h3 className="text-xl font-bold mb-4">WENXT Technologies</h3>
-            <p className="text-gray-200 text-sm leading-relaxed">
-              S-Floor, Fayola Towers, 200 Feet Radial Rd,<br />
-              Pallikaranai, Chennai, Tamil Nadu - 600100
-            </p>
-            <p className="mt-3 text-sm">Email: support@wenxttech.com</p>
-          </div>
-          <div>
-            <h4 className="font-bold mb-4 text-lg">Quick Links</h4>
-            <div className="flex flex-col gap-2 text-gray-200 text-sm">
-              <a href="#home" className="hover:underline">Home</a>
-              <a href="#features" className="hover:underline">Features</a>
-              <a href="#about" className="hover:underline">About</a>
+/* ── Features ── */
+export function Features() {
+  const features = [
+    { icon: "🧠", title: "By Insurance Experts", desc: "Built by practitioners with 25+ years of domain expertise in life and health.", color: "bg-blue-50 text-blue-600" },
+    { icon: "🔌", title: "API-Driven Integration", desc: "Open RESTful APIs connect your CRM and portals in days—not months.", color: "bg-emerald-50 text-emerald-600" },
+    { icon: "☁️", title: "Cloud-Based", desc: "Elastic cloud infrastructure eliminates CAPEX. Scale instantly as you grow.", color: "bg-violet-50 text-violet-600" },
+    { icon: "🎛️", title: "No-Code Config", desc: "Launch new insurance lines without touching a single line of code.", color: "bg-amber-50 text-amber-600" },
+    { icon: "💱", title: "Multi-Currency", desc: "Handle local tax and FX requirements across 12+ countries seamlessly.", color: "bg-rose-50 text-rose-600" },
+  ];
+
+  return (
+    <section id="features" className="py-24 bg-slate-50">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <p className="text-brand uppercase tracking-widest font-bold text-sm mb-3">What We Offer</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900  ">Platform Capabilities</h2>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((f, i) => (
+            <div key={i} className={`bg-white p-8 rounded-2xl border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group ${i >= 3 ? 'lg:col-span-1' : ''}`}>
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-6 ${f.color}`}>
+                {f.icon}
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-3">{f.title}</h3>
+              <p className="text-slate-500 text-sm leading-relaxed mb-6">{f.desc}</p>
+              <button className="text-brand text-xs font-bold opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all">Learn more →</button>
             </div>
-          </div>
-          <div>
-            <h4 className="font-bold mb-4 text-lg">Global Presence</h4>
-            <p className="text-gray-200 text-sm">UAE, Oman, Saudi Arabia, USA, India & more</p>
-          </div>
+          ))}
         </div>
-        <div className="mt-10 pt-5 border-t border-white/20 text-center text-sm text-gray-200">
-          <p>© 2026 WENXT Technologies | <a href="#" className="hover:underline">Terms</a> | <a href="#" className="hover:underline">Policies</a></p>
+      </div>
+    </section>
+  );
+}
+
+/* ── Footer ── */
+export function Footer() {
+  return (
+    <footer id="contact" className="bg-slate-950 text-slate-400 pt-20 pb-10">
+      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <img src={logo} height={50} width={50} alt="" />
+            <span className="font-bold">WeNxt Technologies</span>
+          </div>
+          <p className="text-sm leading-relaxed"> Manage employee leaves, track attendance, and streamline HR operations — all in one place.</p>
         </div>
-      </footer>
+
+        <div>
+          <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-6">Contact</h4>
+          <ul className="space-y-4 text-sm">
+            <li className="flex gap-3"><span>🌐</span> <a href="#" className="hover:text-brand">www.wenxttech.com</a></li>
+            <li className="flex gap-3"><span>📍</span> <span>S-Floor, Fayola Towers, Chennai, TN</span></li>
+            <li className="flex gap-3"><span>✉️</span> <a href="mailto:info@wenxttech.com" className="hover:text-brand">info@wenxttech.com</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-6">Quick Links</h4>
+          <ul className="space-y-3 text-sm">
+            {["Home", "Features", "About", "Contact"].map(l => (
+              <li key={l}><a href="#" className="hover:text-brand transition-all hover:pl-2">{l}</a></li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-6">Stay Updated</h4>
+          <form className="flex flex-col gap-3">
+            <input type="email" placeholder="your@email.com" className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-brand text-white" />
+            <button className="bg-brand text-white font-bold py-2.5 rounded-lg text-sm hover:bg-brand-dark transition-all">Subscribe</button>
+          </form>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-slate-900 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+        <span>© 2026 WENXT Technologies Pvt Ltd. All rights reserved.</span>
+
+      </div>
+    </footer>
+  );
+}
+
+/* ── Main Export ── */
+export default function LandingPage() {
+  return (
+    <div className="selection:bg-brand selection:text-white">
+      <Navbar />
+      <main>
+        <Hero />
+        <HomeStats />
+        <Features />
+      </main>
+      <Footer />
     </div>
   );
-};
-
-export default LandingPage;
+}

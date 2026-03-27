@@ -1,25 +1,29 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  FaCalendarAlt, FaCommentDots, FaArrowRight,
-  FaPlus, FaUserShield, FaChartPie} from "react-icons/fa";
-import { useAuth } from "@/shared/auth/useAuth";
-import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
+import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
+import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
 import { useManagerDashboard, useTeamLeaderDashboard } from "@/features/dashboard/hooks";
+import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
+import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
 import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
 import type { LeaveDecision } from "@/features/leave/types";
 import { notify } from "@/features/notification/utils/notifications";
+import { useAuth } from "@/shared/auth/useAuth";
 import { CommentDialog, CustomLoader, MyFloatingActionButton } from "@/shared/components";
-import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
-import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
-import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  FaArrowRight,
+  FaCalendarAlt,
+  FaChartPie,
+  FaCommentDots,
+  FaPlus, FaUserShield
+} from "react-icons/fa";
 
 const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
   const { fetchManagerDashboard, loading: dashboardLoading } = useManagerDashboard();
-  const {  fetchTeamLeaderDashboard} = useTeamLeaderDashboard();
+  const { fetchTeamLeaderDashboard } = useTeamLeaderDashboard();
 
-  const { processApproval} = useLeaveAction();
+  const { processApproval } = useLeaveAction();
 
 
   const [dashboardData, setDashboardData] = useState<ManagerDashBoardResponse>();
@@ -50,7 +54,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
     try {
 
       const response = user.role === "TEAM_LEADER"
-        ? await fetchTeamLeaderDashboard(user.id)
+        ? await fetchManagerDashboard(user.id)
         : await fetchManagerDashboard(user.id);
 
       if (response) {

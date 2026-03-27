@@ -3,13 +3,14 @@ import Cookies from "js-cookie";
 
 export const getToken = () => Cookies.get("lms_token");
 
-export const setToken = (token: string) =>
-  Cookies.set("lms_token", token, {
-    secure: true,
-    sameSite: "Lax", 
-    expires: 1,    
-    path: "/",
-  });
+export const setToken = (id : number) =>
+  // Cookies.set("lms_token", token, {
+  //   secure: true,
+  //   sameSite: "Lax", 
+  //   expires: 1,    
+  //   path: "/",
+  // });
+  Cookies.set("lms_user_id",String(id));
 
 export const clearToken = () => {
   Cookies.remove("lms_token");
