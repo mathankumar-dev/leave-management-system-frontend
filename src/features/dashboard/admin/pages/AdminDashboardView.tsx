@@ -120,13 +120,13 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
                       <span className="text-lg font-black   text-slate-900">
-                        {dashboardData?.personalStats.monthlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.monthlyAllocated}d
+                        {dashboardData?.personalStats.monthlyAnnualUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.monthlyAnnualAllocated}d
                       </span>
                     </div>
                     <div className="text-right flex flex-col">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
                       <span className="text-lg font-black   text-indigo-600">
-                        {dashboardData?.personalStats.monthlyBalance || 0}d
+                        {dashboardData?.personalStats.monthlyAnnualBalance || 0}d
                       </span>
                     </div>
                   </div>
@@ -182,64 +182,106 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
         </div>
       </div>
       <section className="space-y-4 pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FaChartPie className="text-indigo-600" size={14} />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">My Personal Credits</h3>
-          </div>
-          <button onClick={() => setDrawerConfig({ isOpen: true, type: 'PERSONAL' })} className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest">
-            Detailed Ledger
-          </button>
-        </div>
-
-        <div className="w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-neutral-800 text-white">
-              <tr>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Category</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Allocated</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Used</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Balance</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Remarks</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {dashboardData?.personalStats.breakdown.map((leave, index) => (
-                <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-xs uppercase text-slate-900">{leave.leaveType.replace(/_/g, " ")}</td>
-                  <td className="px-6 py-4 text-sm text-slate-400">{leave.allocatedDays}d</td>
-                  <td className="px-6 py-4 text-sm font-bold text-slate-700">{leave.usedDays}d</td>
-                  <td className="px-6 py-4 text-right">
-                    <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-black">
-                      {leave.remainingDays}
-                    </span>
-                  </td>
-                </tr>
-
-              ))}
-              {/* MONTHLY STATS ROW (SPECIAL HIGHLIGHT) */}
-              <tr className="bg-indigo-50/30">
-                <td className="px-6 py-4">
-                  <span className="text-xs font-black text-indigo-600 uppercase  ">Monthly Quota</span>
-                </td>
-                <td className="px-6 py-4 text-slate-400">{dashboardData?.personalStats.monthlyAllocated} Days</td>
-                <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyUsed} Days</td>
-                {/* <td className="px-6 py-4 font-bold text-slate-700">{dashboardData?.personalStats.monthlyBalance} Days</td> */}
-
-                {/* <td className="px-6 py-4">
-                 
-                  {/* <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-tighter">Current Period</span> 
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span className="text-sm font-black text-indigo-700">
-                    {dashboardData?.personalStats.monthlyAllocated! - dashboardData?.personalStats.monthlyUsed!}
-                  </span>
-                </td> */}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+              {/* Header Area */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FaChartPie className="text-indigo-600" size={14} />
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                    My Leave Credits
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setDrawerConfig({ isOpen: true, type: 'PERSONAL' })}
+                  className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
+                >
+                  View Details
+                </button>
+              </div>
+      
+              {/* Table Container */}
+              <div className="w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Leave Category
+                      </th>
+                      <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Allocated
+                      </th>
+                      <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Used
+                      </th>
+                      <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">
+                        Balance
+                      </th>
+                      <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">
+                        Pending
+                      </th>
+                    </tr>
+                  </thead>
+      
+                  <tbody className="divide-y divide-slate-100">
+                    {dashboardData?.personalStats.breakdown.map((leave, index) => {
+                      const balance = leave.allocatedDays - leave.usedDays;
+      
+                      return (
+                        <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
+                          <td className="px-6 py-4">
+                            <span className="text-xs font-bold text-slate-900 uppercase tracking-tight">
+                              {leave.leaveType.replace(/_/g, " ")}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-xs font-medium text-slate-400">
+                              {leave.allocatedDays} 
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-xs font-bold text-slate-700">
+                              {leave.usedDays} 
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span className={`px-2.5 py-1 rounded text-[10px] font-black ${balance <= 2 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
+                              }`}>
+                              {balance} 
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <span className="text-xs font-bold text-indigo-600">
+                              {leave.pendingCount! > 0 ? leave.pendingCount : "—"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+      
+                    {/* Highlighted Monthly Quota Row */}
+                    <tr className="bg-indigo-50/30 border-t border-indigo-100">
+                      <td className="px-6 py-4">
+                        <span className="text-[10px] font-black text-indigo-600 uppercase">
+                          Current Month Quota
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-indigo-400 font-medium">
+                        {dashboardData?.personalStats.monthlyAnnualAllocated!} 
+                      </td>
+                      <td className="px-6 py-4 text-xs text-indigo-900 font-bold">
+                        {dashboardData?.personalStats.monthlyAnnualUsed} 
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="text-xs font-black text-indigo-700">
+                          {dashboardData?.personalStats.monthlyAnnualAllocated! - dashboardData?.personalStats.monthlyAnnualUsed!} 
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+      
 
       {/* SYSTEM OVERVIEW STATS */}
       <section className="space-y-4 pt-4">

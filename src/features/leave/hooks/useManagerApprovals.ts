@@ -46,17 +46,17 @@ export const useManagerApprovals = (userId: number, role?: string) => {
         // const [tlRequests, tlODRequests] = await Promise.all([]);
       }
       // 1. Fetch data from services
-      const [leaveData, compOffs, ods, accessReqs] = isTeamLeader
+      const [leaveData, compOffs, ods] = isTeamLeader
         ? await Promise.all([leaveService.getPendingApprovals(userId),
           null, // Team leaders might not have comp-offs in your logic
-        leaveService.getPendingODApprovals(userId),
+        // leaveService.getPendingODApprovals(userId),
           null
         ])
         : await Promise.all([
           leaveService.getPendingApprovals(userId),
-          leaveService.getPendingCompOffs(userId),
-          leaveService.getPendingODApprovals(userId),
-          onboardingServices.getPendingAccessRequests(userId)
+          // leaveService.getPendingCompOffs(userId),
+          // leaveService.getPendingODApprovals(userId),
+          // onboardingServices.getPendingAccessRequests(userId)
         ]);
       const formattedLeaves = (leaveData || []).map((item: any) => ({
         ...item.leaveApplication, // This spreads id, employeeName, startDate, etc.
@@ -86,16 +86,16 @@ export const useManagerApprovals = (userId: number, role?: string) => {
       }));
 
 
-      console.log(accessReqs);
+      // console.log(accessReqs);
 
 
-      const formatedAccessReqs = (accessReqs || []).map((areq: AccessResponse) => ({
-        ...areq,
-        leaveType: areq.accessType,
-      }));
+      // const formatedAccessReqs = (accessReqs || []).map((areq: AccessResponse) => ({
+      //   ...areq,
+      //   leaveType: areq.accessType,
+      // }));
 
       // 5. Combine and Sort
-      const combined = [...formattedLeaves, ...formattedCompOffs, ...formattedODs, ...formatedAccessReqs].sort(
+      const combined = [...formattedLeaves, ...formattedCompOffs, ...formattedODs].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
