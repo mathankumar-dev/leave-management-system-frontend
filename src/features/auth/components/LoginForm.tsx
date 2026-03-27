@@ -3,7 +3,7 @@ import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../../../shared/auth/useAuth";
-import logoSVG from "@/assets/svg/logo.svg";
+
 
 import Loader from "../../../shared/components/Loader";
 import { authService } from "../api/authApi";
@@ -12,6 +12,8 @@ import type { LoginCredentials } from "@/shared/auth/authTypes";
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+ 
 
   // Simplified UI states for the loader
   const [loaderState, setLoaderState] = useState({
@@ -56,7 +58,7 @@ const LoginForm: React.FC = () => {
 
       <form onSubmit={handleLogin} className="space-y-6 w-full">
         <div className="flex flex-col gap-2 items-center">
-          <h1 className="text-3xl font-bold">Account Login</h1>
+          <h1 className="text-heading font-bold">Account Login</h1>
           <p className="text-sm text-center text-neutral-600">
             Enter your registered email and password to proceed
           </p>
