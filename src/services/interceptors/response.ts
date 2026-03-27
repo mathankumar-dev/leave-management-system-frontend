@@ -32,7 +32,7 @@ export const responseInterceptor = async (error: AxiosError) => {
 
   if (
     status === 401 &&
-    !originalRequest._retry &&
+    !originalRequest._retry ||
     Cookies.get("lms_user_id")
   ) {
     if (isRefreshing) {

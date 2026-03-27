@@ -535,19 +535,33 @@ export const CFOEmployeesPage: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
+    const [employeeMap, setEmployeeMap] = useState<Record<number, Employee>>({});
 
     // ─── Load employees with pagination ──────────────────────────
     const load = async (page = 0) => {
         try {
             setLoading(true);
             const res = await employeeService.getAllEmployeesHR(page, PAGE_SIZE);
+
             setEmployees(res.content);
             setTotalPages(res.totalPages);
             setTotalElements(res.totalElements);
             setCurrentPage(res.number);
+
+            // ✅ FIX: store employees in map (NO mutation)
+            setEmployeeMap(prev => {
+                const updated = { ...prev };
+                res.content.forEach((e: Employee) => {
+                    updated[e.id] = e;
+                });
+                return updated;
+            });
+
             const defaults: Record<number, 'OLD' | 'NEW'> = {};
             res.content.forEach((e: Employee) => { defaults[e.id] = 'OLD'; });
-            setTaxRegimes(prev => ({ ...defaults, ...prev })); // preserve existing toggles
+
+            setTaxRegimes(prev => ({ ...defaults, ...prev }));
+
         } catch {
             notify.error('Failed', 'Could not load employees');
         } finally {
@@ -559,8 +573,7 @@ export const CFOEmployeesPage: React.FC = () => {
 
     const getManagerName = (managerId: number | null) => {
         if (!managerId) return '—';
-        const manager = employees.find(e => e.id === managerId);
-        return manager?.name || `#${managerId}`;
+        return employeeMap[managerId]?.name || `#${managerId}`;
     };
 
     const filtered = employees.filter(e => {
@@ -746,8 +759,8 @@ export const CFOEmployeesPage: React.FC = () => {
                                             key={i}
                                             onClick={() => load(i)}
                                             className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-colors ${i === currentPage
-                                                    ? 'bg-indigo-600 text-white border-indigo-600'
-                                                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                                : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                                                 }`}
                                         >
                                             {i + 1}
