@@ -260,6 +260,7 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
   const [editTarget, setEditTarget] = useState<Payslip | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Payslip | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [employeeMap, setEmployeeMap] = useState<Record<number, Employee>>({});
 
 
   // // Fetch employees
@@ -281,6 +282,14 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
       try {
         const res = await employeeService.getAllEmployees();
         setEmployees(res.content);
+
+        const map: Record<number, Employee> = {};
+        res.content.forEach((e: Employee) => {
+          map[e.id] = e;
+        });
+
+        setEmployeeMap(map);
+
       } catch {
         console.warn('Employee list unavailable');
       }
@@ -305,12 +314,12 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
   }, [year, month]);
 
   const getEmpName = (row: Payslip) =>
-  employees.find(e => e.id === row.employeeId)?.name || `Emp #${row.employeeId}`;
+    employeeMap[row.employeeId]?.name || `Emp #${row.employeeId}`;
 
   const filtered = payrollData.filter(p =>
-  getEmpName(p).toLowerCase().includes(searchQuery.toLowerCase()) ||
-  p.employeeId.toString().includes(searchQuery)
-);
+    getEmpName(p).toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.employeeId.toString().includes(searchQuery)
+  );
 
   const totalGross = payrollData.reduce((sum, p) => sum + (p.grossSalary || 0), 0);
   const totalNet = payrollData.reduce((sum, p) => sum + (p.netSalary || 0), 0);
