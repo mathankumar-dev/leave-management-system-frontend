@@ -35,10 +35,15 @@ export interface User {
   personalDetailsComplete: boolean | null;
   personalDetailsLocked: boolean | null;
   employeeExperience : ExperienceType;
-  verificationStatus : boolean;
+  verificationStatus : string;
 }
 
 export interface Employee {
+  managerId: null;
+  active: any;
+  joiningDate: string | number | Date;
+  biometricStatus: string;
+  vpnStatus: string;
   department?: string;
   id: number | null | undefined;
   color: string;

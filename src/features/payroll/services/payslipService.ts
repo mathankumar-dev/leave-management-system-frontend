@@ -28,7 +28,7 @@ export const PayslipService = {
   exportPayrollCSV: async (year: number, month: number): Promise<string> =>
     (await api.get<string>(`/payslip/export/${year}/${month}`)).data,
 
-  getPrefill: async (employeeId: number, year: number, month: number): Promise<Payslip> =>
-    (await api.get<Payslip>(`/payslip/prefill?employeeId=${employeeId}&year=${year}&month=${month}`)).data,
+  // getPrefill: async (employeeId: number, year: number, month: number): Promise<Payslip> =>
+  //   (await api.get<Payslip>(`/payslip/prefill?employeeId=${employeeId}&year=${year}&month=${month}`)).data,
 
 };

@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         mustChangePassword: user?.mustChangePassword ?? false,
-        personalDetailsComplete: user?.personalDetailsComplete === true || user?.verificationStatus === "VERIFIED",
+        personalDetailsComplete: user?.personalDetailsComplete === true || user?.verificationStatus === "VERIFIED" || user?.verificationStatus === "PENDING",
         setUser,
       }}
     >

@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Users, Search, ChevronLeft, ChevronRight, RefreshCw, X } from 'lucide-react';
-import { Badge } from '@/shared/components/Badge';
-import { employeeService, type Employee, type EmployeePageResponse } from '@/features/employee/services/employeeService';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/Card';
+import { employeeService, type Employee, type EmployeePageResponse } from '../../services/employeeService';
+import {  Card, CardContent, CardHeader } from '@mui/material';
+import { CardDescription, CardTitle } from '@/shared/components/Card';
+import { Badge } from '@/shared/components';
 
 // ─── Role Badge ───────────────────────────────────────────────────
 function RoleBadge({ role }: { role: string }) {
   const styles: Record<string, string> = {
-    HR: 'bg-purple-50 text-purple-600 border-purple-100',
-    MANAGER: 'bg-blue-50 text-blue-600 border-blue-100',
+    HR:       'bg-purple-50 text-purple-600 border-purple-100',
+    MANAGER:  'bg-blue-50 text-blue-600 border-blue-100',
     EMPLOYEE: 'bg-slate-100 text-slate-600 border-slate-200',
-    ADMIN: 'bg-rose-50 text-rose-600 border-rose-100',
+    ADMIN:    'bg-rose-50 text-rose-600 border-rose-100',
   };
   return (
     <Badge className={`font-bold px-3 ${styles[role] ?? styles.EMPLOYEE}`}>
@@ -23,8 +24,9 @@ function RoleBadge({ role }: { role: string }) {
 function StatusBadge({ status }: { status: string }) {
   const isPending = status?.toUpperCase() === 'PENDING';
   return (
-    <Badge className={`font-bold px-2 text-[10px] border-none ${isPending ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
-      }`}>
+    <Badge className={`font-bold px-2 text-[10px] border-none ${
+      isPending ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
+    }`}>
       {status}
     </Badge>
   );
@@ -42,7 +44,12 @@ const SkeletonRow = () => (
 );
 
 // ─── Employee Row ─────────────────────────────────────────────────
-function EmployeeRow({ emp }: { emp: Employee }) {
+function EmployeeRow({ emp, allEmployees }: { emp: Employee; allEmployees: Employee[] }) {
+  const getManagerName = (managerId: number | null) => {
+    if (!managerId) return '—';
+    const manager = allEmployees.find(e => e.id === managerId);
+    return manager?.name || `#${managerId}`;
+  };
   return (
     <tr className="hover:bg-slate-50/80 transition-colors">
       <td className="py-3 px-3 text-xs text-slate-400 font-medium">#{emp.id}</td>
@@ -56,12 +63,20 @@ function EmployeeRow({ emp }: { emp: Employee }) {
         </div>
       </td>
       <td className="py-3 px-3 text-center"><RoleBadge role={emp.role} /></td>
-      <td className="py-3 px-3 text-center text-slate-500 font-medium">
-        {emp.managerId != null ? `#${emp.managerId}` : '—'}
+      <td className="py-3 px-3 text-center">
+        {emp.managerId != null ? (
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-xs font-semibold text-slate-700">{getManagerName(emp.managerId)}</span>
+            <span className="text-[10px] text-slate-400">#{emp.managerId}</span>
+          </div>
+        ) : (
+          <span className="text-slate-400">—</span>
+        )}
       </td>
       <td className="py-3 px-3 text-center">
-        <Badge className={`font-bold px-3 border-none ${emp.active ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
-          }`}>
+        <Badge className={`font-bold px-3 border-none ${
+          emp.active ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
+        }`}>
           {emp.active ? 'Active' : 'Inactive'}
         </Badge>
       </td>
@@ -79,31 +94,48 @@ function EmployeeRow({ emp }: { emp: Employee }) {
 // ─── Main Page ────────────────────────────────────────────────────
 export function HREmployeesPage() {
   // Paginated data (normal mode)
-  const [pageData, setPageData] = useState<EmployeePageResponse | null>(null);
+  const [pageData, setPageData]         = useState<EmployeePageResponse | null>(null);
   // Search results (search mode)
   const [searchResults, setSearchResults] = useState<Employee[] | null>(null);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState<string | null>(null);
+  const [currentPage, setCurrentPage]   = useState(0);
 
   // Search input
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState(''); // live input
-  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [search, setSearch]             = useState('');
+  const [searchInput, setSearchInput]   = useState(''); // live input
+  const searchTimeout                   = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Client-side filters (applied on top of search results or page data)
-  const [roleFilter, setRoleFilter] = useState('all');
+  const [roleFilter, setRoleFilter]     = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
   const isMounted = useRef(false);
+
+  // All employees for manager name lookup
+  const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
+
+
+  // ─── Fetch all employees for manager name ──────────────────────
+  useEffect(() => {
+    const loadAll = async () => {
+      try {
+        const data = await employeeService.getAllEmployeesHR(0, 1000);
+        setAllEmployees(data.content);
+      } catch {
+        // silent
+      }
+    };
+    loadAll();
+  }, []);
 
   // ─── Load paginated data ────────────────────────────────────────
   const loadEmployees = useCallback(async (page: number) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await employeeService.getAllEmployeesHR(page, 10);
+      const data = await employeeService.getAllEmployees(page, 10);
       if (isMounted.current) {
         setPageData(data);
         setSearchResults(null); // clear search mode
@@ -145,6 +177,19 @@ export function HREmployeesPage() {
     }
   }, [loadEmployees]);
 
+  // ─── Fetch all employees for manager name lookup ───────────────
+  useEffect(() => {
+    const loadAll = async () => {
+      try {
+        const data = await employeeService.getAllEmployees(0, 1000);
+        setAllEmployees(data.content);
+      } catch {
+        // silent
+      }
+    };
+    loadAll();
+  }, []);
+
   // ─── Initial load ───────────────────────────────────────────────
   useEffect(() => {
     isMounted.current = true;
@@ -181,7 +226,7 @@ export function HREmployeesPage() {
 
   // Client-side role + status filter on top
   const displayRows = baseRows.filter((emp) => {
-    const matchRole = roleFilter === 'all' || emp.role === roleFilter;
+    const matchRole   = roleFilter === 'all' || emp.role === roleFilter;
     const matchStatus = statusFilter === 'all'
       || (statusFilter === 'active' ? emp.active : !emp.active);
     return matchRole && matchStatus;
@@ -315,7 +360,7 @@ export function HREmployeesPage() {
                   <th className="text-left py-3 px-3">ID</th>
                   <th className="text-left py-3 px-3">Name</th>
                   <th className="text-center py-3 px-3">Role</th>
-                  <th className="text-center py-3 px-3">Manager ID</th>
+                  <th className="text-center py-3 px-3">Manager</th>
                   <th className="text-center py-3 px-3">Status</th>
                   <th className="text-center py-3 px-3">Joining Date</th>
                   <th className="text-center py-3 px-3">Biometric</th>
@@ -332,7 +377,7 @@ export function HREmployeesPage() {
                     </td>
                   </tr>
                 ) : (
-                  displayRows.map((emp) => <EmployeeRow key={emp.id} emp={emp} />)
+                  displayRows.map((emp) => <EmployeeRow key={emp.id} emp={emp} allEmployees={allEmployees} />)
                 )}
               </tbody>
             </table>
@@ -370,10 +415,11 @@ export function HREmployeesPage() {
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i)}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors ${i === pageData.number
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                    }`}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors ${
+                    i === pageData.number
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
                 >
                   {i + 1}
                 </button>
