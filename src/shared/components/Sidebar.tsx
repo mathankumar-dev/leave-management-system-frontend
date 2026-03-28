@@ -3,9 +3,7 @@ import {
   FaCalendarAlt,
   FaChevronLeft,
   FaCog,
-  FaDollarSign,
   FaExclamationTriangle,
-  FaFileInvoiceDollar,
   FaFileSignature,
   FaHistory,
   FaSignOutAlt,
@@ -51,7 +49,7 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
     { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
     
-    { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
+    // { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
     { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR"] },
 
     { name: "Low Balance", path: "low-balance", icon: <FaExclamationTriangle />, roles: ["HR"] },
@@ -64,8 +62,8 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
     { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
 
 
-    { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["ADMIN"] },
-    { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
+    // { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["ADMIN"] },
+    // { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "MANAGER", "ADMIN"] },
     
   ];
 

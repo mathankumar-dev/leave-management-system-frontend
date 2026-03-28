@@ -2,7 +2,6 @@ import { DashboardFilters, DepartmentChart, SummarySection } from '@/features/da
 import DashboardSkeleton from '@/features/dashboard/components/Dashboardskeleton';
 import { useHRDashboard } from '@/features/dashboard/hooks';
 import { ExportActions, ManagerTrackingTable, OnboardingStats } from '@/features/dashboard/hr/components';
-import LowBalanceTable from '@/features/dashboard/hr/components/LowBalanceTable';
 import { useCallback, useState } from 'react';
 
 interface HRDashboardProps {
@@ -13,12 +12,12 @@ export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
   const {
     data,
     departmentStats,
-    lowBalanceData,
-    lowBalanceError,
-    lowBalanceLoading,
+    // lowBalanceData,
+    // lowBalanceError,
+    // lowBalanceLoading,
     loading,
     error,
-    // reload,
+    // reload,wwww
   } = useHRDashboard();
 
 
@@ -107,11 +106,11 @@ export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
       </div>
 
       {/* Low Balance Table */}
-      <LowBalanceTable
+      {/* <LowBalanceTable
         data={lowBalanceData}
         loading={lowBalanceLoading}
         error={lowBalanceError}
-      />
+      /> */}
 
       {/* Manager Tracking */}
       <ManagerTrackingTable

@@ -48,4 +48,5 @@ export interface CreateUserRequest {
   teamLeaderId?: number | null;
   managerId?: number | null;
   joiningDate: string;
+  employeeExperience : string;
 }

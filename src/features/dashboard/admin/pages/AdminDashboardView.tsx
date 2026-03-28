@@ -39,6 +39,9 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
     if (!authLoading) loadAllData();
   }, [authLoading, loadAllData]);
 
+
+  console.log(dashboardData);
+  
   if (dashboardLoading || authLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
       <CustomLoader label="Syncing Admin Control Panel" />
