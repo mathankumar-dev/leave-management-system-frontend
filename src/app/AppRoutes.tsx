@@ -44,6 +44,10 @@ const AppRoutes: React.FC = () => {
           <Route path="/admin/*" element={<DashboardLayout />} />
         </Route>
 
+        <Route element={<ProtectedRoute allowedRoles={["CFO"]} />}>
+          <Route path="/cfo/*" element={<DashboardLayout />} />
+        </Route>
+
         {/* Profile is also protected */}
         <Route path="/profile" element={<EmployeeProfile />} />
       </Route>

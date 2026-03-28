@@ -2,13 +2,15 @@ import { authService } from "@/features/auth/api/authApi";
 import React, { createContext, useCallback, useEffect, useState } from "react";
 
 import type { User } from "@/features/employee/types";
-import type { AuthResponse } from "./authTypes";
 import api from "@/services/apiClient";
+import Cookies from "js-cookie";
+import type { AuthResponse } from "./authTypes";
+import { logout, setToken } from "@/services/auth/authStorage";
 
 export interface AuthContextType {
   user: User | null;
   login: (data: AuthResponse) => Promise<void>;
-  logout: () => void;
+  contextLogout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
   mustChangePassword: boolean;
@@ -22,24 +24,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const logout = useCallback(async () => {
-    try {
-      await api.post('/auth/logout');
-    } catch {
-      // fail aana also redirect
-    } finally {
-      setUser(null);
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
-    }
-  }, []);
 
-  // ─── Page Refresh — Session Restore ───────────────────────────
+const contextLogout = useCallback(async () => {
+  try {
+    await api.post('/auth/logout');
+  } catch (e) {
+    console.error("Logout request failed", e);
+  } finally {
+    setUser(null);
+    logout(); 
+  }
+}, []);
+
+
   useEffect(() => {
     const initAuth = async () => {
+      const id = Cookies.get("lms_user_id");
+
+      // 1. Add this guard clause
+      if (!id) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const profile = await authService.getMyProfile();
+        const profile = await authService.getEmployeeProfile(Number(id));
         setUser(profile);
       } catch {
         setUser(null);
@@ -51,10 +60,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, []);
 
-  // ─── Login ────────────────────────────────────────────────────
   const login = useCallback(async (data: { id: number; role: string; forcePasswordChange: boolean }) => {
     try {
-      const profile = await authService.getProfileByID(data.id);
+      setToken(String(data.id));
+      const profile = await authService.getEmployeeProfile(data.id);
       setUser(profile);
     } catch (e) {
       console.error("Profile fetch failed:", e);
@@ -67,11 +76,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         login,
-        logout,
+        contextLogout,
         isAuthenticated: !!user,
         isLoading,
         mustChangePassword: user?.mustChangePassword ?? false,
-        personalDetailsComplete: user?.personalDetailsComplete === true || user?.verificationStatus === "VERIFIED",
+        personalDetailsComplete: user?.personalDetailsComplete === true,
         setUser,
       }}
     >

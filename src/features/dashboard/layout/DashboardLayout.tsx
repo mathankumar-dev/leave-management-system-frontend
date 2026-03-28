@@ -1,16 +1,11 @@
-import ChangePasswordDialog from "@/features/auth/components/ChangePasswordDialog";
 import DashboardRoutes from "./DashboardRoutes";
 import { useAuth } from "@/shared/auth/useAuth";
 import { useState } from "react";
-import PersonalDetailsModal from "@/features/employee/components/PersonalDetailsModal";
 import { Sidebar, Topbar } from "@/shared/components";
 
 const DashboardLayout: React.FC = () => {
-  const { logout, mustChangePassword, personalDetailsComplete } = useAuth();
+  const { contextLogout : logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // if (mustChangePassword) return <ChangePasswordDialog />;
-  // if (!personalDetailsComplete) return <PersonalDetailsModal />;
 
   return (
     <div className="flex h-screen bg-neutral-25 overflow-hidden">
