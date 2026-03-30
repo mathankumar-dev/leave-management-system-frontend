@@ -1,11 +1,8 @@
 import { AxiosError } from 'axios';
 import api from '../../../services/apiClient';
-import type { CreateUserRequest, EmployeeEntity, EmployeeFilters, PaginatedResponse, ProfileData, TeamMember } from '@/features/employee/types';
+import type { CreateUserRequest, EmployeeFilters, PaginatedResponse, EmployeeEntity, ProfileData, TeamMember } from '@/features/employee/types';
 
 export interface Employee {
-  designation: string;
-  employeeId(employeeId: any, year: number, month: number): unknown;
-  employeeName: any;
   id: number;
   name: string;
   email: string;
@@ -18,6 +15,10 @@ export interface Employee {
   onboardingCompletedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  // ─── Optional fields ────────────────────────────────────────
+  designation?: string | null;
+  employeeId?: number;
+  employeeName?: string | null;
 }
 
 export interface EmployeePageResponse {
@@ -42,6 +43,7 @@ const handleError = (err: unknown, context: string): never => {
 
 export const employeeService = {
 
+  // ─── HR: paginated list ───────────────────────────────────────
   getAllEmployeesHR: async (
     page = 0,
     size = 10,
@@ -50,6 +52,27 @@ export const employeeService = {
     try {
       const response = await api.get<EmployeePageResponse>('/employees/all', {
         params: { page, size },
+        signal,
+      });
+      return response.data;
+    } catch (err) {
+      throw handleError(err, 'getAllEmployeesHR');
+    }
+  },
+
+  // ─── Unified getAllEmployees — supports both (page, size) and filters object ──
+  getAllEmployees: async (
+    pageOrFilters: number | EmployeeFilters = 0,
+    size = 10,
+    signal?: AbortSignal
+  ): Promise<EmployeePageResponse> => {
+    try {
+      const params = typeof pageOrFilters === 'number'
+        ? { page: pageOrFilters, size }
+        : pageOrFilters;
+
+      const response = await api.get<EmployeePageResponse>('/employees/all', {
+        params,
         signal,
       });
       return response.data;
@@ -76,27 +99,6 @@ export const employeeService = {
   getTeamMembers: async (id: number): Promise<TeamMember[]> => {
     const res = await api.get(`/dashboard/team-members/${id}`);
     return res.data;
-  },
-
-  // ─── Unified getAllEmployees
-  getAllEmployees: async (
-    pageOrFilters: number | EmployeeFilters = 0,
-    size = 10,
-    signal?: AbortSignal
-  ): Promise<EmployeePageResponse> => {
-    try {
-      const params = typeof pageOrFilters === 'number'
-        ? { page: pageOrFilters, size }  // getAllEmployees(0, 10) — old usage
-        : pageOrFilters;                  // getAllEmployees({ page, size, ... }) — filter usage
-
-      const response = await api.get<EmployeePageResponse>('/employees/all', {
-        params,
-        signal,
-      });
-      return response.data;
-    } catch (err) {
-      throw handleError(err, 'getAllEmployees');
-    }
   },
 
   createUser: async (userData: CreateUserRequest): Promise<string> => {
