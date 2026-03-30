@@ -42,7 +42,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white rounded-lg drop-shadow-lg w-full max-w-140 min-h-150 p-8">
+    <div className="flex flex-col items-center justify-center bg-white rounded-lg w-full max-w-140 min-h-150 p-8">
 
       {loaderState.active && (
         <Loader

@@ -1,5 +1,5 @@
 import wenxtdashboard from "@/assets/images/wenxtimage.png";
-import logo from "@/assets/svg/logo.svg";
+import logo from "@/assets/images/bg-rm-logo-HRES.png";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 /* ── Count-up Hook ── */
@@ -46,16 +46,11 @@ export function Navbar() {
   const links = ["Home", "Features", "About", "Contact"];
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200" : "bg-transparent"
-      }`}>
-      <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between">
+    <nav className={` top-0 h-25 w-full z-50 transition-all duration-300  border-slate-200 bg-transparent`}>
+      <div className="max-w-7xl mx-auto px-6 pt-3 h-18 flex items-center justify-between">
         <a href="#home" className="flex items-center gap-3">
-          {/* <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center overflow-hidden">
-             <span className="text-white font-black text-xl">W</span>
 
-          </div> */}
-          <img src={logo} alt="" height={50} width={50} />
-          {/* <span className="text-slate-900 font-semibold text-subheading hidden sm:block">WeNxt Technologies</span> */}
+          <img src={logo} alt="" height={100} width={100} />
         </a>
 
         {/* Desktop Links */}
@@ -100,6 +95,7 @@ export function Hero() {
   const navigate = useNavigate();
   return (
     <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-brand-bg">
+
       {/* Background Blobs */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-40 -right-40 w-160 h-160 bg-blue-500/10 rounded-full blur-3xl" />
@@ -123,14 +119,7 @@ export function Hero() {
             </button>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="w-9 h-9 rounded-full border-2 border-white bg-slate-200" />
-              ))}
-            </div>
-            <span className="text-sm text-slate-500">Trusted by <strong className="text-slate-800">25+ insurers</strong> worldwide</span>
-          </div>
+          
         </div>
 
         <div className="relative flex justify-center">

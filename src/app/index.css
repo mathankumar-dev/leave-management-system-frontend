@@ -22,15 +22,21 @@
 
 @theme {
   /* ACCESSIBILITY SIZES */
-/* Accessibility Sizes */
-  --text-heading: clamp(1.25rem, 4vw + 1rem, 2rem);    /* 20px -> ~32px */
-  --text-subheading: clamp(1.125rem, 3vw + 1rem, 1.75rem); /* 18px -> ~28px */
-  --text-body: clamp(1rem, 2vw + 0.5rem, 1.25rem);    /* 16px -> 20px */
+  /* Accessibility Sizes */
+  --text-heading: clamp(1.25rem, 4vw + 1rem, 2rem);
+  /* 20px -> ~32px */
+  --text-subheading: clamp(1.125rem, 3vw + 1rem, 1.75rem);
+  /* 18px -> ~28px */
+  --text-body: clamp(1rem, 2vw + 0.5rem, 1.25rem);
+  /* 16px -> 20px */
 
   /* Base Sizes */
   --text-base: 1rem;
   --text-lg: clamp(1.125rem, 1.5vw + 1rem, 1.25rem);
   --text-xl: clamp(1.25rem, 2.5vw + 1rem, 1.75rem);
+  --color-brand: #0066ff;
+  --color-brand-dark: #0052cc;
+  --color-brand-bg: #f7fbff;
 
   /* PRIMARY BLUE */
   --color-primary-50: #eff6ff;
@@ -155,16 +161,18 @@ input[type='number'] {
 }
 
 
-@theme {
-  --color-brand: #0066ff;
-  --color-brand-dark: #0052cc;
-  --color-brand-bg: #f7fbff;
-  --font-serif: "Times New Roman", Times, serif;
-}
+
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
 }
 
 .animate-float {
