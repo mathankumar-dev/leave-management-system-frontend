@@ -75,7 +75,7 @@ export default function LowBalanceTable({ data, loading }: LowBalanceTableProps)
     // }
 
     // Empty state
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
       return (
         <tr>
           <td colSpan={7} className="py-8 text-center text-slate-400 text-sm">

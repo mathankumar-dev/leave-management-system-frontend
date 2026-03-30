@@ -5,10 +5,10 @@ import FlashNewsForm from "@/features/notification/pages/FlashNewsCreate";
 /* COMMON */
 import TeamCalendarView from "@/features/attendance/pages/TeamCalendarView";
 import AdminDashboardView from "@/features/dashboard/admin/pages/AdminDashboardView";
-import { HRDashboard } from "@/features/dashboard/hr/pages/HRDashboard";
+// import { HRDashboard } from "@/features/dashboard/hr/pages/HRDashboard";
 import ManagerDashboardView from "@/features/dashboard/manager/pages/ManagerDashboardView";
 import RequestCenter from "@/features/employee/components/RequestCenter";
-import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
+// import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
 import { HRVerificationPage } from "@/features/employee/pages/hr/Hrverificationpage";
 import CalendarView from "@/features/employee/pages/self/CalendarView";
 import DashboardView from "@/features/employee/pages/self/DashboardView";
@@ -22,6 +22,9 @@ import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { PayslipPage } from "@/features/payroll/pages/PayslipPage";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
+import { HREmployeesPage } from "@/features/employee/pages/hr/HREmployeesPage";
+import HRDashboard from "../hr/pages/HRDashboard";
+// import LowBalanceTable from "../hr/components/LowBalanceTable";
 
 const DashboardRoutes = () => {
 

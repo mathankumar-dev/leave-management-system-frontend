@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import api from '../../../services/apiClient';
-import type { CreateUserRequest, EmployeeFilters, PaginatedResponse, EmployeeEntity, ProfileData, TeamMember } from '@/features/employee/types';
+import type { CreateUserRequest, EmployeeFilters, ProfileData, TeamMember } from '@/features/employee/types';
 
 export interface Employee {
   id: number;

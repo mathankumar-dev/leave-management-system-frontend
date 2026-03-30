@@ -11,7 +11,7 @@ import {
   FaDownload,
   FaEdit,
   FaFileInvoiceDollar,
-  FaPlus, FaSearch,
+  FaSearch,
   FaSyncAlt, FaTimes,
   FaTrash
 } from 'react-icons/fa';
@@ -22,7 +22,7 @@ const ConfirmModal: React.FC<{
   onConfirm: () => void;
   onCancel: () => void;
 }> = ({ message, onConfirm, onCancel }) => (
-  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-200 flex items-center justify-center p-4">
     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 bg-rose-50 rounded-xl flex items-center justify-center shrink-0">
@@ -110,7 +110,7 @@ const PayslipFormModal: React.FC<{
   ];
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
 
         <div className="flex items-center justify-between p-6 border-b border-slate-100 sticky top-0 bg-white z-10">
@@ -280,7 +280,7 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await employeeService.getAllEmployees();
+        const res = await employeeService.getAllEmployees(0,1000);
         setEmployees(res.content);
 
         const map: Record<number, Employee> = {};
@@ -378,10 +378,10 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
   };
 
   // ─── Create Payslip modal — pre-fill selected employee ───────────
-  const handleOpenCreate = () => {
-    setEditTarget(null);
-    setShowFormModal(true);
-  };
+  // const handleOpenCreate = () => {
+  //   setEditTarget(null);
+  //   setShowFormModal(true);
+  // };
 
   return (
     <div className="flex flex-col gap-6 w-full">
