@@ -1,44 +1,22 @@
 import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
 import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
-import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
-import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
 import { useManagerDashboard, useTeamLeaderDashboard } from "@/features/dashboard/hooks";
-import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
-import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
-import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
+import type { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
 import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
 import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
-import type { LeaveDecision } from "@/features/leave/types";
+import type { LeaveDecision } from "@/features/leave/types";        
 import { notify } from "@/features/notification/utils/notifications";
 import { useAuth } from "@/shared/auth/useAuth";
-import { useAuth } from "@/shared/auth/useAuth";
-import { CommentDialog, CustomLoader, MyFloatingActionButton } from "@/shared/components";
+import { CustomLoader, CommentDialog, MyFloatingActionButton } from "@/shared/components";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  FaArrowRight,
-  FaCalendarAlt,
-  FaChartPie,
-  FaCommentDots,
-  FaPlus, FaUserShield
-} from "react-icons/fa";
-import { AnimatePresence, motion } from "framer-motion";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  FaArrowRight,
-  FaCalendarAlt,
-  FaChartPie,
-  FaCommentDots,
-  FaPlus, FaUserShield
-} from "react-icons/fa";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { FaCalendarAlt, FaChartPie, FaUserShield, FaArrowRight, FaCommentDots, FaPlus } from "react-icons/fa";
 
 const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
   const { fetchManagerDashboard, loading: dashboardLoading } = useManagerDashboard();
   const { fetchTeamLeaderDashboard } = useTeamLeaderDashboard();
-  const { fetchTeamLeaderDashboard } = useTeamLeaderDashboard();
 
-  const { processApproval } = useLeaveAction();
   const { processApproval } = useLeaveAction();
 
 

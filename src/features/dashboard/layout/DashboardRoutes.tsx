@@ -22,6 +22,7 @@ import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { PayslipPage } from "@/features/payroll/pages/PayslipPage";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
+import { HREmployeesPage } from "@/features/employee/pages/hr/HREmployeesPage";
 
 const DashboardRoutes = () => {
 
