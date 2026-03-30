@@ -27,8 +27,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
     fullName: "",
     email: "",
     role: "EMPLOYEE" as UserRole,
-    teamId: "",
-    teamLeaderId: "",
+    employeeExperience: "FRESHER",
     managerId: "",
     joiningDate: ""
   });
@@ -69,10 +68,10 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
         name: formData.fullName,
         email: formData.email,
         role: formData.role,
-        teamId: formData.teamId ? Number(formData.teamId) : null, // Added
-        teamLeaderId: formData.teamLeaderId ? Number(formData.teamLeaderId) : null, // Added
+        // teamId: formData.teamId ? Number(formData.teamId) : null, // Added
         managerId: formData.managerId ? Number(formData.managerId) : null,
-        joiningDate: formData.joiningDate
+        joiningDate: formData.joiningDate,
+        employeeExperience: "FRESHER"
       };
 
       await addUser(payload);
@@ -100,8 +99,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
       fullName: "",
       email: "",
       role: "EMPLOYEE",
-      teamId: "",        // Added
-      teamLeaderId: "",  // Added
+      employeeExperience: "FRESHER",
       managerId: "",
       joiningDate: ""
     });
@@ -202,22 +200,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
                   >
                     <SectionHeader icon={<FaBriefcase />} title="Work Info" />
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormInput
-                        label="Team ID"
-                        name="teamId"
-                        type="number"
-                        value={formData.teamId}
-                        onChange={handleInputChange}
-                      />
-                      <FormInput
-                        label="Team Leader ID"
-                        name="teamLeaderId"
-                        type="number"
-                        value={formData.teamLeaderId}
-                        onChange={handleInputChange}
-                      />
-                    </div>
+
 
                     <FormInput
                       label="Manager ID"

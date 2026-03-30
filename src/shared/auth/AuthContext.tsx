@@ -64,6 +64,7 @@ const contextLogout = useCallback(async () => {
     try {
       setToken(String(data.id));
       const profile = await authService.getEmployeeProfile(data.id);
+      setToken(data.id);
       setUser(profile);
     } catch (e) {
       console.error("Profile fetch failed:", e);

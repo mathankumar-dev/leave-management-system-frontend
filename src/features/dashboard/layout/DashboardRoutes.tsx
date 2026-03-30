@@ -8,7 +8,7 @@ import AdminDashboardView from "@/features/dashboard/admin/pages/AdminDashboardV
 import { HRDashboard } from "@/features/dashboard/hr/pages/HRDashboard";
 import ManagerDashboardView from "@/features/dashboard/manager/pages/ManagerDashboardView";
 import RequestCenter from "@/features/employee/components/RequestCenter";
-import { HREmployeesPage } from "@/features/employee/pages/hr/HREmployeesPage";
+import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
 import { HRVerificationPage } from "@/features/employee/pages/hr/Hrverificationpage";
 import CalendarView from "@/features/employee/pages/self/CalendarView";
 import DashboardView from "@/features/employee/pages/self/DashboardView";

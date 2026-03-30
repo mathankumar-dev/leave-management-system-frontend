@@ -1,13 +1,27 @@
 import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
 import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
+import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
+import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
 import { useManagerDashboard, useTeamLeaderDashboard } from "@/features/dashboard/hooks";
+import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
+import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
 import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
 import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
 import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
 import type { LeaveDecision } from "@/features/leave/types";
 import { notify } from "@/features/notification/utils/notifications";
 import { useAuth } from "@/shared/auth/useAuth";
+import { useAuth } from "@/shared/auth/useAuth";
 import { CommentDialog, CustomLoader, MyFloatingActionButton } from "@/shared/components";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  FaArrowRight,
+  FaCalendarAlt,
+  FaChartPie,
+  FaCommentDots,
+  FaPlus, FaUserShield
+} from "react-icons/fa";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -22,7 +36,9 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
   const { user, isLoading: authLoading } = useAuth();
   const { fetchManagerDashboard, loading: dashboardLoading } = useManagerDashboard();
   const { fetchTeamLeaderDashboard } = useTeamLeaderDashboard();
+  const { fetchTeamLeaderDashboard } = useTeamLeaderDashboard();
 
+  const { processApproval } = useLeaveAction();
   const { processApproval } = useLeaveAction();
 
 
@@ -180,13 +196,13 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
                       <span className="text-lg font-black   text-slate-900">
-                        {dashboardData?.personalStats.monthlySickUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.monthlySickAllocated}d
+                        {dashboardData?.personalStats.monthlyAnnualUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.monthlyAnnualAllocated}d
                       </span>
                     </div>
                     <div className="text-right flex flex-col">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
                       <span className="text-lg font-black   text-indigo-600">
-                        {dashboardData?.personalStats.monthlySickBalance || 0}d
+                        {dashboardData?.personalStats.monthlyAnnualBalance || 0}d
                       </span>
                     </div>
                   </div>
@@ -252,70 +268,6 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
         </button>
       </div>
 
-      {/* <section className="space-y-4 pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FaChartPie className="text-indigo-600" size={14} />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">My Leave Credits</h3>
-          </div>
-          <button
-            onClick={() => setDrawerConfig({ isOpen: true, type: 'PERSONAL' })}
-            className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
-          >
-            View Details
-          </button>
-        </div>
-
-
-        <div className="w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-neutral-800  text-white">
-              <tr>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Leave Category</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Allocated</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Used</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Balance</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Pending Requests</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {dashboardData?.personalStats.breakdown.map((leave, index) => {
-
-                return (
-                  <tr key={index} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="text-xs font-bold text-slate-900 uppercase tracking-tight">
-                        {leave.leaveType.replace(/_/g, " ")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-medium text-slate-400">{leave.allocatedDays} </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-bold text-slate-700">{leave.usedDays} </span>
-                    </td>
-
-                    <td className="px-6 py-4 text-right">
-                      <span className="px-3 py-1 bg-blue-50 text-[#2563eb] rounded-md text-xs font-black">
-                        {leave.allocatedDays - leave.usedDays}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="px-3 py-1 bg-blue-50 text-[#2563eb] rounded-md text-xs font-black">
-                        {leave.pendingCount}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-
-
-            </tbody>
-          </table>
-        </div>
-      </section> */}
-
-
       <section className="space-y-4 pt-4">
         {/* Header Area */}
         <div className="flex items-center justify-between">
@@ -369,18 +321,18 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs font-medium text-slate-400">
-                        {leave.allocatedDays} Days
+                        {leave.allocatedDays} 
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-xs font-bold text-slate-700">
-                        {leave.usedDays} Days
+                        {leave.usedDays} 
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className={`px-2.5 py-1 rounded text-[10px] font-black ${balance <= 2 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
                         }`}>
-                        {balance} Left
+                        {balance} 
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -400,14 +352,14 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                   </span>
                 </td>
                 <td className="px-6 py-4 text-xs text-indigo-400 font-medium">
-                  {dashboardData?.personalStats.monthlyAnnualAllocated!} Days
+                  {dashboardData?.personalStats.monthlyAnnualAllocated!} 
                 </td>
                 <td className="px-6 py-4 text-xs text-indigo-900 font-bold">
-                  {dashboardData?.personalStats.monthlyAnnualUsed} Days
+                  {dashboardData?.personalStats.monthlyAnnualUsed} 
                 </td>
                 <td className="px-6 py-4 text-right">
                   <span className="text-xs font-black text-indigo-700">
-                    {dashboardData?.personalStats.monthlyAnnualAllocated! - dashboardData?.personalStats.monthlyAnnualUsed!} Rem.
+                    {dashboardData?.personalStats.monthlyAnnualAllocated! - dashboardData?.personalStats.monthlyAnnualUsed!} 
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">—</td>
