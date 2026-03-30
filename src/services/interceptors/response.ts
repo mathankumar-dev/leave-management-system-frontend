@@ -1,7 +1,10 @@
-import axios from "axios";
-import { toast } from "sonner";
-import { setToken, logout } from "@/services/auth/authStorage";
+
 import { ENV } from "@/config/environment";
+import api from "@/services/apiClient";
+import { logout } from "@/services/auth/authStorage";
+import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 const refreshApi = axios.create({
   baseURL: ENV.API_BASE_URL,
@@ -9,41 +12,35 @@ const refreshApi = axios.create({
 });
 
 let isRefreshing = false;
-
 let failedQueue: {
-  resolve: (token: string) => void;
+  resolve: () => void;
   reject: (err: any) => void;
 }[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: any) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
-    else resolve(token!);
+    else resolve();
   });
   failedQueue = [];
 };
 
-export const responseInterceptor = async (error: any) => {
+export const responseInterceptor = async (error: AxiosError) => {
   const status = error.response?.status;
-  const message =
-    error.response?.data?.message || "Something went wrong";
+  const message = (error.response?.data as any)?.message || "Something went wrong";
+  const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean; silent?: number[] };
 
-  const originalRequest = error.config;
-
-  // 🔥 REFRESH TOKEN LOGIC
   if (
     status === 401 &&
-    !originalRequest._retry &&
-    !originalRequest.url?.includes("/auth/refresh") &&
-    !originalRequest.url?.includes("/auth/login")
+    !originalRequest._retry ||
+    Cookies.get("lms_user_id")
   ) {
     if (isRefreshing) {
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         failedQueue.push({ resolve, reject });
       })
-        .then((newToken) => {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return axios(originalRequest);
+        .then(() => {
+          return api(originalRequest);
         })
         .catch((err) => Promise.reject(err));
     }
@@ -52,71 +49,52 @@ export const responseInterceptor = async (error: any) => {
     isRefreshing = true;
 
     try {
-      const { data } = await refreshApi.post("/auth/refresh");
+      await refreshApi.post("/auth/refresh");
 
-      const newToken = data.token;
+      processQueue(null);
 
-      setToken(newToken);
+      originalRequest.withCredentials = true;
 
-      processQueue(null, newToken);
-
-      // retry original request
-      originalRequest.headers.Authorization = `Bearer ${newToken}`;
-      return axios(originalRequest);
+      return api(originalRequest);
 
     } catch (refreshError) {
-      processQueue(refreshError, null);
-
+      processQueue(refreshError);
       toast.error("Session Expired", {
         description: "Please log in again.",
       });
-
       logout();
       return Promise.reject(refreshError);
-
     } finally {
       isRefreshing = false;
     }
   }
 
   if (!error.response) {
-    if (!error.config?.silent) {
+    if (!originalRequest.silent) {
       toast.error("Network Error", {
-        description:
-          "Please check your internet connection or try again later.",
+        description: "Please check your internet connection.",
       });
     }
   } else {
-    switch (status) {
-      case 400:
-        if (!error.config?.silent?.includes(400))
+    const shouldBeSilent = originalRequest.silent?.includes(status!);
+
+    if (!shouldBeSilent) {
+      switch (status) {
+        case 400:
           toast.warning("Invalid Request", { description: message });
-        break;
-
-      case 403:
-        if (!error.config?.silent?.includes(403))
-          toast.error("Access Denied", {
-            description: "You don't have permission for this.",
-          });
-        break;
-
-      case 404:
-        if (!error.config?.silent?.includes(404))
-          toast.info("Not Found", {
-            description: "Resource doesn't exist.",
-          });
-        break;
-
-      case 500:
-        if (!error.config?.silent?.includes(500))
-          toast.error("Server Error", {
-            description: "Try again later.",
-          });
-        break;
-
-      default:
-        if (!error.config?.silent?.includes(status))
+          break;
+        case 403:
+          toast.error("Access Denied", { description: "You don't have permission." });
+          break;
+        case 404:
+          toast.info("Not Found", { description: "Resource doesn't exist." });
+          break;
+        case 500:
+          toast.error("Server Error", { description: "Please try again later." });
+          break;
+        default:
           toast.error("Error", { description: message });
+      }
     }
   }
 

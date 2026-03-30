@@ -1,34 +1,41 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import {
-  FaShieldAlt,
-  FaMapMarkerAlt,
-  FaEnvelope,
-  FaPhone,
-  FaUserTie
-} from "react-icons/fa";
-import { useEmployeeProfile } from "@/features/employee/pages/UseEmployeeProfile";
+import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import type { ProfileData } from "@/features/employee/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CustomLoader } from "@/shared/components";
+import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import {
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaShieldAlt,
+  FaUserTie
+} from "react-icons/fa";
 
 
 const EmployeeProfile: React.FC = () => {
   const { user } = useAuth();
-  const { profile: backendProfile, loading } = useEmployeeProfile(user?.id);
+  const { profile: backendProfile, loading, fetchEmployeeProfile } = useEmployee();
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  useEffect(() => {
+    if (user?.id) {
+      fetchEmployeeProfile(user.id);
+    }
+  }, [fetchEmployeeProfile, user?.id]);
 
   useEffect(() => {
     if (backendProfile) {
       setProfile({
         ...backendProfile,
-        name:
-          backendProfile.fullName ||
-          `${backendProfile.fullName ?? ""} ${backendProfile.lastName ?? ""} ${backendProfile.surName ?? ""}`.trim(),
+
       });
     }
   }, [backendProfile]);
+
+
+  console.log(backendProfile);
+
 
   if (loading || !profile) {
     return (
@@ -105,8 +112,8 @@ const EmployeeProfile: React.FC = () => {
           <Section title="Work Information">
             <Field label="Designation" value={profile.designation} />
             <Field label="Joining Date" value={formatDate(profile.joiningDate)} />
-            <Field label="Manager" value={profile.managerName} />
-            <Field label="Team Leader" value={profile.teamLeaderName} />
+            <Field label="Reports To" value={profile.managerName} />
+            {/* <Field label="Team Leader" value={profile.teamLeaderName} /> */}
             <Field label="Employee Type" value={profile.employeeType} />
           </Section>
 

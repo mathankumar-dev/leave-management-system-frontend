@@ -1,20 +1,16 @@
-import React, { createContext, useState, useEffect, useCallback } from "react";
-import { jwtDecode } from "jwt-decode";
-import Cookies from "js-cookie";
 import { authService } from "@/features/auth/api/authApi";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 
-import type { AuthResponse } from "./authTypes";
 import type { User } from "@/features/employee/types";
-
-interface JwtPayload {
-  exp: number;
-}
+import api from "@/services/apiClient";
+import Cookies from "js-cookie";
+import type { AuthResponse } from "./authTypes";
+import { logout, setToken } from "@/services/auth/authStorage";
 
 export interface AuthContextType {
   user: User | null;
-  token: string | null;
   login: (data: AuthResponse) => Promise<void>;
-  logout: () => void;
+  contextLogout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
   mustChangePassword: boolean;
@@ -26,83 +22,66 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const logout = useCallback(() => {
-    Cookies.remove("lms_token");
-    Cookies.remove("lms_user_id");
-    setUser(null);
-    setToken(null);
-  }, []);
 
-  /* ---------------- INIT AUTH ---------------- */
+const contextLogout = useCallback(async () => {
+  try {
+    await api.post('/auth/logout');
+  } catch (e) {
+    console.error("Logout request failed", e);
+  } finally {
+    setUser(null);
+    logout(); 
+  }
+}, []);
+
+
   useEffect(() => {
     const initAuth = async () => {
-      const savedToken = Cookies.get("lms_token");
-      const savedId = Cookies.get("lms_user_id");
+      const id = Cookies.get("lms_user_id");
 
-      if (savedToken && savedId) {
-        try {
-          const decoded = jwtDecode<JwtPayload>(savedToken);
-          const isExpired = decoded.exp * 1000 < Date.now();
-
-          if (isExpired) {
-            logout();
-          } else {
-            setToken(savedToken);
-
-            const profile = await authService.getEmployeeProfile(Number(savedId));
-            setUser(profile);
-          }
-        } catch (error) {
-          console.error("Auth initialization failed:", error);
-          logout();
-        }
+      // 1. Add this guard clause
+      if (!id) {
+        setIsLoading(false);
+        return;
       }
 
-      setIsLoading(false);
+      try {
+        const profile = await authService.getEmployeeProfile(Number(id));
+        setUser(profile);
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     initAuth();
-  }, [logout]);
+  }, []);
 
-  /* ---------------- LOGIN ---------------- */
-  const login = async (data: AuthResponse) => {
+  const login = useCallback(async (data: { id: number; role: string; forcePasswordChange: boolean }) => {
     try {
-      const decoded = jwtDecode<JwtPayload>(data.token);
-      const expiryDate = new Date(decoded.exp * 1000);
-
-      Cookies.set("lms_token", data.token, {
-        expires: expiryDate,
-        secure: true,
-      });
-
-      Cookies.set("lms_user_id", data.id.toString(), {
-        expires: expiryDate,
-      });
-
-      setToken(data.token);
-
+      setToken(String(data.id));
       const profile = await authService.getEmployeeProfile(data.id);
+      setToken(data.id);
       setUser(profile);
     } catch (e) {
-      console.error("Login failed:", e);
+      console.error("Profile fetch failed:", e);
       throw e;
     }
-  };
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
         login,
-        logout,
+        contextLogout,
         isAuthenticated: !!user,
         isLoading,
         mustChangePassword: user?.mustChangePassword ?? false,
-        personalDetailsComplete: user?.personalDetailsComplete ?? false,
+        personalDetailsComplete: user?.personalDetailsComplete === true,
         setUser,
       }}
     >

@@ -1,9 +1,10 @@
-import {  type Employee } from '@/features/employee/services/employeeService';
+import { employeeService, type Employee } from '@/features/employee/services/employeeService';
 import { notify } from '@/features/notification/utils/notifications';
 import { usePayslip } from '@/features/payroll/hooks/usePayslip';
 import type { Payslip, PayslipCreateRequest } from '@/features/payroll/payrollTypes';
 import { CustomLoader } from '@/shared/components';
 import React, { useEffect, useState } from 'react';
+// import { set } from 'react-datepicker/dist/dist/date_utils.js';
 import {
   FaCheck,
   FaChevronDown,
@@ -251,7 +252,7 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
 
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  const [employees] = useState<Employee[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [searchQuery, setSearchQuery] = useState('');
@@ -259,7 +260,8 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
   const [editTarget, setEditTarget] = useState<Payslip | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Payslip | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  
+  const [employeeMap, setEmployeeMap] = useState<Record<number, Employee>>({});
+
 
   // // Fetch employees
   // useEffect(() => {
@@ -274,6 +276,26 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
   //   };
   //   load();
   // }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await employeeService.getAllEmployees();
+        setEmployees(res.content);
+
+        const map: Record<number, Employee> = {};
+        res.content.forEach((e: Employee) => {
+          map[e.id] = e;
+        });
+
+        setEmployeeMap(map);
+
+      } catch {
+        console.warn('Employee list unavailable');
+      }
+    };
+    load();
+  }, []);
 
   // Auto select employee when coming from CFOEmployeesPage
   useEffect(() => {
@@ -291,11 +313,11 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
     fetchPayrollData(year, month);
   }, [year, month]);
 
-  const getEmpName = (id: number) =>
-    employees.find(e => e.id === id)?.name || `Emp #${id}`;
+  const getEmpName = (row: Payslip) =>
+    employeeMap[row.employeeId]?.name || `Emp #${row.employeeId}`;
 
   const filtered = payrollData.filter(p =>
-    getEmpName(p.employeeId).toLowerCase().includes(searchQuery.toLowerCase()) ||
+    getEmpName(p).toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.employeeId.toString().includes(searchQuery)
   );
 
@@ -381,11 +403,11 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
           >
             <FaFileInvoiceDollar className="text-xs" /> Generate Payroll
           </button>
-          <button onClick={handleOpenCreate}
+          {/* <button onClick={handleOpenCreate}
             className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-xs font-bold text-white transition-colors"
           >
             <FaPlus className="text-xs" /> Create Payslip
-          </button>
+          </button> */}
           <button onClick={handleExportCSV} disabled={!payrollData.length}
             className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-600 transition-colors disabled:opacity-40"
           >
@@ -494,10 +516,10 @@ export const PayslipPage: React.FC<PayslipPageProps> = ({
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-2">
                         <div className="h-7 w-7 bg-indigo-100 rounded-lg flex items-center justify-center text-[10px] font-black text-indigo-600 shrink-0">
-                          {getEmpName(row.employeeId).charAt(0)}
+                          {getEmpName(row).charAt(0)}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-700 text-xs">{getEmpName(row.employeeId)}</p>
+                          <p className="font-semibold text-slate-700 text-xs">{getEmpName(row)}</p>
                           <p className="text-[10px] text-slate-400">#{row.employeeId}</p>
                         </div>
                       </div>

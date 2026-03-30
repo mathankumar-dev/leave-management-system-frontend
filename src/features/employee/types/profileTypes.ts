@@ -6,8 +6,8 @@ export interface ProfileData {
 
   managerId: number | null;
   managerName: string;
-  teamLeaderId: number;
-  teamLeaderName: string;
+  teamLeaderId?: number;
+  teamLeaderName?: string;
   hrname: string;
 
   joiningDate: string;
@@ -49,7 +49,7 @@ export interface ProfileData {
 
   employeeType: string;
 
-  fullName: string;
+  firstName: string;
   lastName?: string;
   surName?: string;
 

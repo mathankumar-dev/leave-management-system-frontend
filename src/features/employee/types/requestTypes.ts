@@ -18,10 +18,8 @@ export interface PersonalDetailsRequest {
   emergencyContactNumber?: string;
   designation: string;
   skillSet: string;
-
   bankName: string;
   accountNumber: string;
-
   fatherName: string;
   fatherDateOfBirth: string;
   fatherOccupation: string;
@@ -30,13 +28,11 @@ export interface PersonalDetailsRequest {
   motherDateOfBirth: string;
   motherOccupation: string;
   motherAlive: boolean;
-
   unaNumber?: string;
   previousRole?: string;
   oldCompanyName?: string;
   oldCompanyFromDate?: string;
   oldCompanyEndDate?: string;
-
   aadhaarCard?: any;
   tc?: any;
   offerLetter?: any;
@@ -52,4 +48,5 @@ export interface CreateUserRequest {
   teamLeaderId?: number | null;
   managerId?: number | null;
   joiningDate: string;
+  employeeExperience : string;
 }

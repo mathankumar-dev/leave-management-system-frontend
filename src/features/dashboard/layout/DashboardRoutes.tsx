@@ -1,6 +1,4 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-
-
 import OnboardingPendingPage from "@/features/leave/pages/AccessApprovalsPage";
 import FlashNewsForm from "@/features/notification/pages/FlashNewsCreate";
 
@@ -10,7 +8,7 @@ import AdminDashboardView from "@/features/dashboard/admin/pages/AdminDashboardV
 import { HRDashboard } from "@/features/dashboard/hr/pages/HRDashboard";
 import ManagerDashboardView from "@/features/dashboard/manager/pages/ManagerDashboardView";
 import RequestCenter from "@/features/employee/components/RequestCenter";
-// import { HREmployeesPage } from "@/features/employee/pages/hr/HREmployeesPage";
+import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
 import { HRVerificationPage } from "@/features/employee/pages/hr/Hrverificationpage";
 import CalendarView from "@/features/employee/pages/self/CalendarView";
 import DashboardView from "@/features/employee/pages/self/DashboardView";
@@ -23,6 +21,7 @@ import NotificationsView from "@/features/notification/pages/NotificationsView";
 import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { PayslipPage } from "@/features/payroll/pages/PayslipPage";
 import { useAuth } from "@/shared/auth/useAuth";
+import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
 
 const DashboardRoutes = () => {
 
@@ -38,8 +37,21 @@ const DashboardRoutes = () => {
       case "MANAGER":
       case "TEAM_LEADER":
         return <ManagerDashboardView />;
+      case "CFO":
+        return <CFOEmployeesPage/>;   
       default:
         return <DashboardView />;
+    }
+  };
+  const renderEmployees = () => {
+    switch (role) {
+      
+      case "HR":
+        return <HREmployeesPage />;
+      case "CFO":
+        return <CFOEmployeesPage/>;   
+      default:
+        return <HREmployeesPage />;
     }
   };
   return (
@@ -61,16 +73,19 @@ const DashboardRoutes = () => {
       <Route path="team-calendar" element={<TeamCalendarView />} />
 
       {/* HR */}
-      {/* <Route path="employees" element={<HREmployeesPage />} /> */}
+      <Route path="employees" element={renderEmployees()} />
       <Route path="low-balance" element={<LowBalancePage />} />
       <Route path="verifications" element={<HRVerificationPage />} />
 
       {/* ADMIN */}
       <Route path="onboarding" element={<OnboardingPendingPage />} />
       <Route path="flash-news" element={<FlashNewsForm />} />
+      <Route path="flash-news" element={<FlashNewsForm />} />
 
       {/* PAYROLL */}
       <Route path="payslip" element={<PayrollView />} />
+
+      {/*CFO*/}
       <Route path="payroll" element={<PayslipPage />} />
 
       {/* DEFAULT */}
