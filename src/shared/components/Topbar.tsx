@@ -1,17 +1,17 @@
-import React, { useState, useMemo } from "react";
+import { useNotifications } from "@/features/notification/hooks/useNotification";
+import { useAuth } from "@/shared/auth/useAuth";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useMemo, useState } from "react";
 import {
   FaBars,
   FaBell,
-  FaUserCircle,
-  FaSignOutAlt,
-  FaUserCog,
   FaChevronDown,
   FaCircle,
+  FaSignOutAlt,
+  FaUserCircle,
+  FaUserCog,
 } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/shared/auth/useAuth";
-import { useNotifications } from "@/features/notification/hooks/useNotification";
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -31,8 +31,21 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
 
   const userRole = user?.role;
   const userName = user?.name;
+  const basePathMap = {
+    EMPLOYEE: "/employee",
+    MANAGER: "/manager",
+    TEAM_LEADER: "/manager",
+    HR: "/hr",
+    ADMIN: "/admin",
+    CFO: "/admin",
+  };
 
-  /* 🔥 derive title from route */
+  const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
+
+  const handleNavigate = (path: string) => {
+    navigate(`${basePath}/${path}`);
+  };
+
   const title = useMemo(() => {
     const path = location.pathname;
 
@@ -50,12 +63,12 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
   }, [location.pathname]);
 
   const handleViewNotifications = () => {
-    navigate("/dashboard/notifications");
+    handleNavigate("notifications");
     setIsNotifOpen(false);
   };
 
   const goToProfile = () => {
-    navigate("/dashboard/employee/profile");
+    handleNavigate("profile");
     setIsProfileOpen(false);
   };
 
@@ -83,9 +96,8 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
               setIsNotifOpen(!isNotifOpen);
               setIsProfileOpen(false);
             }}
-            className={`relative p-2.5 rounded-xl ${
-              isNotifOpen ? "bg-indigo-50 text-indigo-600" : "text-slate-400 hover:text-indigo-600"
-            }`}
+            className={`relative p-2.5 rounded-xl ${isNotifOpen ? "bg-indigo-50 text-indigo-600" : "text-slate-400 hover:text-indigo-600"
+              }`}
           >
             <FaBell />
 

@@ -36,7 +36,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-
+console.log(scrolled);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 28);
     window.addEventListener("scroll", fn);
