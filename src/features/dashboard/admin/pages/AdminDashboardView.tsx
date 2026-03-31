@@ -11,11 +11,12 @@ import { notify } from "@/features/notification/utils/notifications";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
 import { useAdminDashboard } from "@/features/dashboard/hooks";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
   const { fetchAdminDashboard, loading: dashboardLoading } = useAdminDashboard();
-
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState<AdminDashBoardResponse>();
   const [drawerConfig, setDrawerConfig] = useState<{
     isOpen: boolean;
@@ -34,13 +35,29 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
       notify.error("Failed to fetch administrative data");
     }
   }, [user?.id, fetchAdminDashboard]);
+   const userRole = user?.role?.toUpperCase();
+
+   const basePathMap = {
+    EMPLOYEE: "/employee",
+    MANAGER: "/manager",
+    TEAM_LEADER: "/manager",
+    HR: "/hr",
+    ADMIN: "/admin",
+    CFO: "/admin",
+  };
+
+   const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
+  const handleNavigate = (path: string) => {
+  // 1. If the path already starts with the basePath, don't append it again
+  // 2. If the path is already absolute (starts with /), just use it
+  const finalPath = path.startsWith('/') ? path : `${basePath}/${path}`;
+
+  navigate(finalPath);
+};
 
   useEffect(() => {
     if (!authLoading) loadAllData();
   }, [authLoading, loadAllData]);
-
-
-  console.log(dashboardData);
   
   if (dashboardLoading || authLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -179,7 +196,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
           <p className="text-[20px] font-medium text-black  ">Welcome , <span className="font-bold">{user?.name}</span></p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => onNavigate?.("Employees")} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none">
+          <button onClick={() => handleNavigate("employees")} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none">
             <FaUsers /> Employees
           </button>
         </div>
@@ -335,7 +352,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
       </section>
 
       {!drawerConfig.isOpen && (
-        <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Request center")} title="New Request" />
+        <MyFloatingActionButton icon={<FaPlus />} onClick={() => handleNavigate("request-center")} title="New Request" />
       )}
     </motion.div>
   );

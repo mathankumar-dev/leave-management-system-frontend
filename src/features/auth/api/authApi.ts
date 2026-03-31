@@ -14,10 +14,10 @@ export const authService = {
     return response.data;
   },
 
-  // getMyProfile: async (): Promise<User> => {
-  //   const response = await api.get<User>('/employees/me');
-  //   return response.data;
-  // },
+  getMyProfile: async (): Promise<User> => {
+    const response = await api.get<User>('/employees/me');
+    return response.data;
+  },
   // getProfileByID: async (id  : number): Promise<User> => {
   //   const response = await api.get<User>(`/employees/profile/${id}`);
   //   console.log(response);
