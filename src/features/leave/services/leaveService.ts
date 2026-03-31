@@ -66,10 +66,6 @@ export const leaveService = {
 
   getPendingApprovalsForTeamLeader: async (teamLeaderId: number): Promise<PendingLeaveApplicationApiResponse[]> => {
     const response = await api.get(`/leave-approvals/pending/team-leader/${teamLeaderId}`);
-    console.log("getPendingApprovalsForTeamLeader");
-
-    console.log(response.data.content);
-
     return response.data.content;
   },
 

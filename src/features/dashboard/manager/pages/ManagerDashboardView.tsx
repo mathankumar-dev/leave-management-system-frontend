@@ -84,7 +84,6 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       setDialogConfig({ isOpen: false, req: null, status: null });
     }
   };
-  console.log(dashboardData);
 
 
   if (dashboardLoading || authLoading) return (

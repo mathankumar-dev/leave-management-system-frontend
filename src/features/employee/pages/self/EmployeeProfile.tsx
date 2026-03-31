@@ -34,7 +34,6 @@ const EmployeeProfile: React.FC = () => {
   }, [backendProfile]);
 
 
-  console.log(backendProfile);
 
 
   if (loading || !profile) {

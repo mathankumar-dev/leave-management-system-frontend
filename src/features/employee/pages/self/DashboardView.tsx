@@ -1,10 +1,10 @@
+import React, { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
+import { FaPlus, FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa";
+import { useAuth } from "@/shared/auth/useAuth";
 import { useEmployeeDashboard } from "@/features/dashboard/hooks";
 import LeaveDetailsDrawer from "@/features/leave/components/LeaveDetailsDrawer";
-import { useAuth } from "@/shared/auth/useAuth";
-import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
-import { motion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
-import { FaCheckCircle, FaClock, FaPlus, FaTimesCircle } from "react-icons/fa";
+import { CustomLoader } from "@/shared/components";
 
 interface LeaveTypeBreakdown {
   leaveType: string;
@@ -126,8 +126,8 @@ const DashboardView = ({ onNavigate }: any) => {
   return (
 
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{opacity:0,y:10}}
+      animate={{opacity:1,y:0}}
       className="max-w-7xl mx-auto px-6 py-6 space-y-6"
     >
 
@@ -148,12 +148,12 @@ const DashboardView = ({ onNavigate }: any) => {
         </div>
 
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{scale:1.05}}
+          whileTap={{scale:0.95}}
           onClick={() => onNavigate?.("Apply Leave")}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm shadow hover:bg-indigo-700"
         >
-          <FaPlus size={12} />
+          <FaPlus size={12}/>
           Apply Leave
         </motion.button>
 
@@ -194,21 +194,21 @@ const DashboardView = ({ onNavigate }: any) => {
         <StatCard
           title="Approved"
           value={approved}
-          icon={<FaCheckCircle />}
+          icon={<FaCheckCircle/>}
           color="green"
         />
 
         <StatCard
           title="Rejected"
           value={rejected}
-          icon={<FaTimesCircle />}
+          icon={<FaTimesCircle/>}
           color="red"
         />
 
         <StatCard
           title="LOP In Days"
           value={lopPercent}
-          icon={<FaClock />}
+          icon={<FaClock/>}
           color="yellow"
         />
 
@@ -219,8 +219,8 @@ const DashboardView = ({ onNavigate }: any) => {
       {/* TABLE */}
 
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{opacity:0}}
+        animate={{opacity:1}}
         className="bg-white rounded-xl border shadow-sm overflow-hidden"
       >
 
@@ -240,15 +240,18 @@ const DashboardView = ({ onNavigate }: any) => {
 
           <tbody>
 
-            {stats.map((s, i) => {
+            {stats.map((s,i)=>{
 
+              const percent = s.total
+                ? Math.min(100,(s.used/s.total)*100)
+                : 0;
 
               return (
 
                 <motion.tr
                   key={i}
-                  whileHover={{ backgroundColor: "#f8fafc" }}
-                  onClick={() => setSelectedCard(s)}
+                  whileHover={{backgroundColor:"#f8fafc"}}
+                  onClick={()=>setSelectedCard(s)}
                   className="border-b cursor-pointer"
                 >
 
@@ -257,7 +260,7 @@ const DashboardView = ({ onNavigate }: any) => {
                   </td>
 
 
-                  <td className="text-center text-gray-600">
+                  <td className="text-center text-black">
                     {s.total ?? "-"}
                   </td>
 
@@ -296,16 +299,16 @@ const DashboardView = ({ onNavigate }: any) => {
       <LeaveDetailsDrawer
         open={!!selectedCard}
         stat={selectedCard}
-        onClose={() => setSelectedCard(null)}
-        onClick={() => onNavigate?.("Apply Leave")}
+        onClose={()=>setSelectedCard(null)}
+        onClick={()=>onNavigate?.("Apply Leave")}
       />
 
 
       {user?.role !== "EMPLOYEE" && (
 
         <MyFloatingActionButton
-          icon={<FaPlus />}
-          onClick={() => onNavigate?.("Apply Leave")}
+          icon={<FaPlus/>}
+          onClick={()=>onNavigate?.("Apply Leave")}
           title="Apply Leave"
         />
 
@@ -322,23 +325,23 @@ export default DashboardView;
 
 
 // progress card
-const MiniCard = ({ title, used, total, color = "indigo" }: any) => {
+const MiniCard = ({title,used,total,color="indigo"}:any)=>{
 
-  const percent = total ? (used / total) * 100 : 0;
+  const percent = total ? (used/total)*100 : 0;
 
-  const colorMap: any = {
+  const colorMap:any = {
 
-    indigo: "bg-indigo-500",
-    pink: "bg-pink-500",
-    green: "bg-green-500",
-    yellow: "bg-yellow-500"
+    indigo:"bg-indigo-500",
+    pink:"bg-pink-500",
+    green:"bg-green-200",
+    yellow:"bg-yellow-500"
 
   };
 
-  return (
+  return(
 
     <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
+      whileHover={{y:-4,scale:1.02}}
       className="bg-white border rounded-xl p-4 shadow-sm"
     >
 
@@ -349,11 +352,12 @@ const MiniCard = ({ title, used, total, color = "indigo" }: any) => {
       <div className="flex justify-between mt-1 text-sm">
 
         <span className="font-semibold">
-          {used}
+          
+          {total}
         </span>
 
         <span className="text-gray-400">
-          / {total}
+          /{used}
         </span>
 
       </div>
@@ -361,9 +365,9 @@ const MiniCard = ({ title, used, total, color = "indigo" }: any) => {
       <div className="h-2 bg-gray-100 rounded mt-3 overflow-hidden">
 
         <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${percent}%` }}
-          transition={{ duration: 0.8 }}
+          initial={{width:0}}
+          animate={{width:`${percent}%`}}
+          transition={{duration:0.8}}
           className={`h-2 rounded ${colorMap[color]}`}
         />
 
@@ -377,10 +381,10 @@ const MiniCard = ({ title, used, total, color = "indigo" }: any) => {
 
 
 // highlight card
-const HighlightCard = ({ title, value }: any) => (
+const HighlightCard = ({title,value}:any)=>(
 
   <motion.div
-    whileHover={{ scale: 1.04 }}
+    whileHover={{scale:1.04}}
     className="bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white rounded-xl p-4 shadow"
   >
 
@@ -398,20 +402,20 @@ const HighlightCard = ({ title, value }: any) => (
 
 
 // stat card
-const StatCard = ({ title, value, color, icon }: any) => {
+const StatCard = ({title,value,color,icon}:any)=>{
 
-  const colorMap: any = {
+  const colorMap:any = {
 
-    green: "text-green-600 bg-green-50",
-    red: "text-red-600 bg-red-50",
-    yellow: "text-yellow-600 bg-yellow-50"
+    green:"text-green-600 bg-green-50",
+    red:"text-red-600 bg-red-50",
+    yellow:"text-yellow-600 bg-yellow-50"
 
   };
 
-  return (
+  return(
 
     <motion.div
-      whileHover={{ y: -4 }}
+      whileHover={{y:-4}}
       className={`border rounded-xl p-4 shadow-sm ${colorMap[color]}`}
     >
 

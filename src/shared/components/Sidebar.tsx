@@ -50,6 +50,8 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
     { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
+        { name: "Calendar", path: "calendar", icon: <FaThLarge />, roles: ["EMPLOYEE"] },
+
 
     { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
     { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR", "CFO"] },
