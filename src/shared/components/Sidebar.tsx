@@ -50,7 +50,6 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
     { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER"] },
     { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER"] },
-        { name: "Calendar", path: "calendar", icon: <FaThLarge />, roles: ["EMPLOYEE"] },
 
 
     { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
@@ -66,8 +65,8 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
     { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN"] },
 
 
-    { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["CFO"] },
-    { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "TEAM_LEADER", "MANAGER", "ADMIN", "HR"] },
+    // { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["CFO"] },
+    // { name: "Payslip", path: "payslip", icon: <FaFileInvoiceDollar />, roles: ["EMPLOYEE", "TEAM_LEADER", "MANAGER", "ADMIN", "HR"] },
 
   ];
 
@@ -99,8 +98,8 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
         <div className="flex items-center justify-between mb-8 px-2 border border-gray-50/25 rounded bg-gray-50/25">
           <div className="flex items-center">
             <img src={logoSVG} alt="" width={50} height={50} />
-            <span className="text-black text-xl font-bold">WeNxt</span>
-            <span className="text-primary-500 text-xl font-bold">Technologies</span>
+            <span className="text-black text-sm font-bold">WeNxt</span>
+            <span className="text-primary-500 text-sm font-bold">Technologies</span>
           </div>
 
           <button

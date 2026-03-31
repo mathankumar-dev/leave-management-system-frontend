@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import { toPng } from "html-to-image";
 import logo from "@/assets/images/bg-rm-logo-HRES.png";
@@ -38,7 +38,7 @@ const PayrollView: React.FC = () => {
     }
   }, [year, month, viewMode]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback( async () => {
     setLoadingProfile(true);
     try {
       const res = await api.get(`/employees/profile/${user?.id!}`);
@@ -48,7 +48,7 @@ const PayrollView: React.FC = () => {
     } finally {
       setLoadingProfile(false);
     }
-  };
+  },[]);
 
   const fetchYearlySummary = async (year: number) => {
     try {
