@@ -46,13 +46,12 @@ const DashboardRoutes = () => {
   };
   const renderEmployees = () => {
     switch (role) {
-      
       case "HR":
         return <HREmployeesPage />;
       case "CFO":
         return <CFOEmployeesPage/>;   
       default:
-        return <HREmployeesPage />;
+        return <EmployeesView/>;  
     }
   };
   return (

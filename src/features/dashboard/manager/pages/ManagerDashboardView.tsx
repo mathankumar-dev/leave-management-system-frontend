@@ -1,7 +1,7 @@
 import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
 import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
 import { useManagerDashboard, useTeamLeaderDashboard } from "@/features/dashboard/hooks";
-import type { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
+import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
 import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
 import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
 import type { LeaveDecision } from "@/features/leave/types";        

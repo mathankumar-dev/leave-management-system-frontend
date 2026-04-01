@@ -14,31 +14,31 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     setLoading(true);
     try {
       const isTeamLeader = role?.toUpperCase() === 'TEAM_LEADER';
-      const isHR = role?.toUpperCase() === 'HR';
+      // const isHR = role?.toUpperCase() === 'HR';
 
       // ─── HR role → HR pending leaves endpoint ─────────────────
-      if (isHR) {
-        const res = await api.get('/leave-approvals/pending/hr');
-        const hrLeaves = (res.data?.content || []).map((item: any) => ({
-          ...item.leaveApplication,
-          id: item.leaveApplication.id,
-          employeeName: item.leaveApplication.employeeName,
-          leaveType: item.leaveApplication.leaveType,
-          startDate: item.leaveApplication.startDate,
-          endDate: item.leaveApplication.endDate,
-          reason: item.leaveApplication.reason,
-          days: item.leaveApplication.days,
-          createdAt: item.leaveApplication.createdAt,
-          halfDayType: item.leaveApplication.halfDayType,
-          startDateHalfDayType: item.leaveApplication.startDateHalfDayType,
-          endDateHalfDayType: item.leaveApplication.endDateHalfDayType,
-          attachments: item.attachments || [],
-          attachmentCount: item.attachmentCount || 0,
-          isHRLeave: true,
-        }));
-        setRequests(hrLeaves);
-        return;
-      }
+      // if (isHR) {
+      //   const res = await api.get('/leave-approvals/pending/hr');
+      //   const hrLeaves = (res.data?.content || []).map((item: any) => ({
+      //     ...item.leaveApplication,
+      //     id: item.leaveApplication.id,
+      //     employeeName: item.leaveApplication.employeeName,
+      //     leaveType: item.leaveApplication.leaveType,
+      //     startDate: item.leaveApplication.startDate,
+      //     endDate: item.leaveApplication.endDate,
+      //     reason: item.leaveApplication.reason,
+      //     days: item.leaveApplication.days,
+      //     createdAt: item.leaveApplication.createdAt,
+      //     halfDayType: item.leaveApplication.halfDayType,
+      //     startDateHalfDayType: item.leaveApplication.startDateHalfDayType,
+      //     endDateHalfDayType: item.leaveApplication.endDateHalfDayType,
+      //     attachments: item.attachments || [],
+      //     attachmentCount: item.attachmentCount || 0,
+      //     isHRLeave: true,
+      //   }));
+      //   setRequests(hrLeaves);
+      //   return;
+      // }
 
       // ─── Team Leader ───────────────────────────────────────────
       if (isTeamLeader) {
