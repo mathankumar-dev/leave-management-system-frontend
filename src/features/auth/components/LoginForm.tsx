@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "../../../shared/auth/useAuth";
 
+import logoSVG from '@/assets/images/bg-rm-logo-HRES.png';
+
 
 import Loader from "../../../shared/components/Loader";
 import { authService } from "../api/authApi";
@@ -54,7 +56,7 @@ const LoginForm: React.FC = () => {
         />
       )}
       {/* LOGO */}
-      {/* <img src={logoSVG} alt="Company logo" className="w-20 h-20 mb-4" /> */}
+      <img src={logoSVG} alt="Company logo" className="w-20 h-20 mb-4" />
 
       <form onSubmit={handleLogin} className="space-y-6 w-full">
         <div className="flex flex-col gap-2 items-center">

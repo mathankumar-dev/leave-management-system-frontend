@@ -49,10 +49,9 @@ export function Navbar() {
 
   return (
     <nav className={` top-0 h-25 w-full z-50 transition-all duration-300  border-slate-200 bg-transparent`}>
-      <div className="max-w-7xl mx-auto px-6 pt-3 h-18 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 pt-7 h-18 flex items-center justify-between">
         <a href="#home" className="flex items-center gap-3">
-
-          <img src={logo} alt="" height={100} width={100} />
+          <img src={logo} alt="" height={80} width={80} />
         </a>
 
         {/* Desktop Links */}
