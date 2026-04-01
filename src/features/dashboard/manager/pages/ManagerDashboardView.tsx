@@ -203,7 +203,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50 border-rose-100">
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50">
                   <span className="text-[10px] font-black uppercase text-rose-400">Loss of Pay (%)</span>
                   <span className="text-lg font-black   text-rose-600">{dashboardData?.personalStats.lossOfPayPercentage || 0}%</span>
                 </div>
