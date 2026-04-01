@@ -85,7 +85,7 @@ const RequestCenter = () => {
                     onClick={() => setActiveTab(item.id as RequestType)}
                     className={`flex items-center gap-3 p-3 md:p-3.5 rounded-xl transition-all whitespace-nowrap min-w-fit md:min-w-0
                       ${isActive 
-                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100" 
+                        ? "bg-brand text-white shadow-lg shadow-indigo-100" 
                         : "text-slate-600 hover:bg-slate-50 bg-slate-50/50 md:bg-transparent"
                       }
                       ${isCollapsed ? "md:justify-center" : "md:justify-start"}
@@ -118,7 +118,7 @@ const RequestCenter = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl shadow-sm min-h-[400px] overflow-hidden"
+              className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl shadow-sm min-h-100 overflow-hidden"
             >
               <div className="p-4 md:p-8">
                 {activeTab === "LEAVE" && <LeaveApplicationForm />}

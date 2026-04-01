@@ -223,15 +223,15 @@ const LeaveApplicationForm = () => {
                       <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? "text-indigo-600" : "text-slate-400"}`}>
                         {item.leaveType.replace("_", " ")}
                       </span>
-                      <div className="flex items-center gap-1">
-                        <div className="flex flex-col justify-center items-center">
+                      <div className="flex items-center justify-around gap-1">
+                        {/* <div className="flex flex-col justify-center items-center">
                           <span>Used</span>
                           <span className="text-lg font-bold text-slate-700">{item.usedDays}</span>
                         </div>
-                        <Divider />
+                        <Divider /> */}
                         <div className="flex flex-col justify-center items-center">
-                          <span>Balance</span>
-                          <span className="text-lg font-medium text-slate-400">{item.allocatedDays}</span>
+                          <span className="font-medium">Balance</span>
+                          <span className="text-lg font-bold text-brand">{item.allocatedDays} <span className="font-medium text-slate-500">left</span></span>
                         </div>
                       </div>
                     </div>

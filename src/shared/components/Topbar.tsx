@@ -8,8 +8,7 @@ import {
   FaChevronDown,
   FaCircle,
   FaSignOutAlt,
-  FaUserCircle,
-  FaUserCog,
+  FaUserCog
 } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -172,47 +171,53 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
         {/* 👤 PROFILE */}
         <div className="relative">
           <button
-            onClick={() => {
-              setIsProfileOpen(!isProfileOpen);
-              setIsNotifOpen(false);
-            }}
-            className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-50"
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            className={`flex items-center gap-3 p-1.5 rounded-2xl transition-all duration-300 ${isProfileOpen ? "bg-white shadow-md" : "hover:bg-white/50"
+              }`}
           >
-            <FaUserCircle className="text-slate-400 text-xl" />
-
-            <div className="hidden lg:flex flex-col">
-              <span className="text-xs font-bold">{userName}</span>
-              <span className="text-[9px] text-indigo-500 uppercase">{userRole}</span>
+            {/* AVATAR STYLE MATCHING YOUR PREVIOUS CARDS */}
+            <div className="w-10 h-10 bg-brand text-white flex items-center justify-center rounded-full font-bold text-sm shadow-lg shadow-brand/20">
+              {user?.name.charAt(0) || "U"}
             </div>
 
             <FaChevronDown
-              className={`text-xs transition ${isProfileOpen ? "rotate-180" : ""}`}
+              className={`text-[10px] text-slate-400 transition-transform duration-500 mr-1 ${isProfileOpen ? "rotate-180 text-brand" : ""
+                }`}
             />
           </button>
 
           <AnimatePresence>
             {isProfileOpen && (
               <>
-                <div className="fixed inset-0" onClick={() => setIsProfileOpen(false)} />
+                {/* INVISIBLE OVERLAY TO CLOSE */}
+                <div className="fixed inset-0 z-0" onClick={() => setIsProfileOpen(false)} />
 
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute right-0 mt-3 w-48 bg-white border rounded-xl shadow-lg"
+                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                  className="absolute right-0 mt-4 w-56 bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-slate-200/50 p-2 z-50 border border-white"
                 >
+                  <div className="px-4 py-3 mb-2 border-b border-slate-50 lg:hidden">
+                    <p className="text-xs font-black text-slate-800">{user?.name}</p>
+                    <p className="text-[10px] text-brand font-bold">{user?.role}</p>
+                  </div>
+
                   <button
                     onClick={goToProfile}
-                    className="w-full px-4 py-2 text-left text-xs hover:bg-slate-50"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-slate-600 hover:bg-brand/5 hover:text-brand rounded-full transition-all"
                   >
-                    <FaUserCog /> Profile
+                    <FaUserCog className="text-lg opacity-70" />
+                    Profile
                   </button>
 
                   <button
                     onClick={onLogout}
-                    className="w-full px-4 py-2 text-left text-xs text-red-500 hover:bg-red-50"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-red-500 hover:bg-red-50 rounded-full transition-all mt-1"
                   >
-                    <FaSignOutAlt /> Logout
+                    <FaSignOutAlt className="text-lg opacity-70" />
+                    Sign Out
                   </button>
                 </motion.div>
               </>
