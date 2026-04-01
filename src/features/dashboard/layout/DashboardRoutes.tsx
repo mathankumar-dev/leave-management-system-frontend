@@ -80,7 +80,6 @@ const DashboardRoutes = () => {
       {/* ADMIN */}
       <Route path="onboarding" element={<OnboardingPendingPage />} />
       <Route path="flash-news" element={<FlashNewsForm />} />
-      <Route path="flash-news" element={<FlashNewsForm />} />
 
       {/* PAYROLL */}
       <Route path="payslip" element={<PayrollView />} />

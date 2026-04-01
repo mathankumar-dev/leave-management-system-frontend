@@ -12,6 +12,4 @@ export interface AuthResponse {
   forcePasswordChange: boolean;
 }
 
-
-
 export type ExperienceType = 'EXPERIENCED' | 'FRESHER';

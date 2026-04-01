@@ -8,6 +8,7 @@ import {
   FaFileInvoiceDollar,
   FaFileSignature,
   FaHistory,
+  FaNewspaper,
   FaSignOutAlt,
   FaThLarge,
   FaUsers,
@@ -63,6 +64,7 @@ function Sidebar({ isOpen, setIsOpen, onLogout }: SidebarProps) {
 
     { name: "Notifications", path: "notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN"] },
     { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "ADMIN"] },
+    { name: "Flash News", path: "flash-news", icon: <FaNewspaper />, roles: ["ADMIN"] },
 
 
     // { name: "Payroll", path: "payroll", icon: <FaDollarSign />, roles: ["CFO"] },

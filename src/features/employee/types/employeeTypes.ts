@@ -1,4 +1,24 @@
 import type { ExperienceType, UserRole } from "@/shared/auth/authTypes";
+import type { Gender } from "@/shared/types";
+
+
+// export type EmployeeExperience = 'FRESHER' | 'EXPERIENCED';
+// export interface Employee {
+//   empId: number;
+//   teamId?: number | null;
+//   departmentId: number;
+//   name: string;
+//   email: string;
+//   role: string;
+//   employeeExperience: EmployeeExperience;
+//   reportingId: number | null;
+//   branchId: number;
+// }
+
+// export interface ProfileResponse {
+//   employee: Employee;
+
+// }
 
 export interface User {
   id: number;
@@ -20,7 +40,7 @@ export interface User {
   updatedAt: string;
   mustChangePassword?: boolean;
   contactNumber: string | null;
-  gender: string | null;
+  gender: Gender;
   aadharNumber: string | null;
   personalEmail: string | null;
   dateOfBirth: string | null;
@@ -34,8 +54,8 @@ export interface User {
   skillSet: string | null;
   personalDetailsComplete: boolean | null;
   personalDetailsLocked: boolean | null;
-  employeeExperience : ExperienceType;
-  verificationStatus : string;
+  employeeExperience: ExperienceType;
+  verificationStatus: string;
 }
 
 export interface Employee {
@@ -69,3 +89,6 @@ export interface TeamMember {
   designation: string | null;
   skills: string | null;
 }
+
+
+

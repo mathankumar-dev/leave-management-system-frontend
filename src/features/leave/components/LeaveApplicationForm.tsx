@@ -1,6 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
 import { useLeave } from "@/features/leave/hooks/useLeave";
+import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
+import type { LeaveType } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
+import { Divider } from "@/shared/components";
+import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
+import React, { useEffect, useRef, useState } from "react";
 import {
   HiOutlineChatBubbleLeftRight,
   HiOutlineCheckCircle,
@@ -11,9 +15,6 @@ import {
   HiOutlineShieldCheck,
 } from "react-icons/hi2";
 import { toLocalISOString } from "../../../shared/utils/dateUtils";
-import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
-import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
-import type { LeaveType } from "@/features/leave/types";
 
 type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
@@ -42,6 +43,8 @@ const LeaveApplicationForm = () => {
     ANNUAL_LEAVE: "Annual Leave",
     SICK: "Sick Leave",
     COMP_OFF: "Bank Comp-Off",
+    PATERNITY: "Paternity",
+    MATERNITY: "Maternity"
   };
 
   useEffect(() => {
@@ -92,7 +95,7 @@ const LeaveApplicationForm = () => {
     fd.append("employeeId", employeeId.toString());
     fd.append("leaveType", formData.category);
     fd.append("startDate", toLocalISOString(formData.startDate));
-    
+
     const isFutureDate = formData.startDate ? new Date(formData.startDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) : false;
     const isAppointment = formData.category === "SICK" && isFutureDate && formData.isAppointment;
 
@@ -138,6 +141,23 @@ const LeaveApplicationForm = () => {
     if (formData.endDateHalfDayType) days -= 0.5;
     return days;
   };
+
+  const getAvailableLeaveTypes = () => {
+    // Base leaves available to everyone
+    const types = ["SICK", "ANNUAL_LEAVE", "COMP_OFF"];
+
+    const gender = user?.gender?.toUpperCase();
+
+    if (gender === "MALE") {
+      types.push("PATERNITY");
+    } else if (gender === "FEMALE") {
+      types.push("MATERNITY");
+    }
+
+    return types as (LeaveType )[];
+  };
+
+  const availableTypes = getAvailableLeaveTypes();
 
   const HalfDaySelector = ({ label, value, onChange }: { label: string, value: HalfDayType, onChange: (v: HalfDayType) => void }) => (
     <div className="flex flex-col gap-2">
@@ -187,14 +207,15 @@ const LeaveApplicationForm = () => {
         <div className="mb-6 mx-4 md:mx-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           <div className="flex overflow-x-auto no-scrollbar md:divide-x divide-slate-100">
             {leaveBalance.breakdown
-              .filter((item) => ["SICK", "ANNUAL_LEAVE", "COMP_OFF"].includes(item.leaveType))
+              // 2. Filter the top balance row
+              .filter((item) => availableTypes.includes(item.leaveType as any))
               .map((item) => {
                 const isActive = formData.category === item.leaveType;
                 return (
                   <div
                     key={item.leaveType}
                     onClick={() => setFormData({ ...formData, category: item.leaveType as any })}
-                    className={`flex-1 min-w-[140px] px-4 py-3 cursor-pointer transition-all relative ${isActive ? "bg-indigo-50/50" : "hover:bg-slate-50"
+                    className={`flex-1 min-w-35 px-4 py-3 cursor-pointer transition-all relative ${isActive ? "bg-indigo-50/50" : "hover:bg-slate-50"
                       }`}
                   >
                     {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
@@ -202,9 +223,16 @@ const LeaveApplicationForm = () => {
                       <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? "text-indigo-600" : "text-slate-400"}`}>
                         {item.leaveType.replace("_", " ")}
                       </span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-lg font-bold text-slate-700">{item.usedDays}</span>
-                        <span className="text-[10px] font-medium text-slate-400">/ {item.allocatedDays}</span>
+                      <div className="flex items-center gap-1">
+                        <div className="flex flex-col justify-center items-center">
+                          <span>Used</span>
+                          <span className="text-lg font-bold text-slate-700">{item.usedDays}</span>
+                        </div>
+                        <Divider />
+                        <div className="flex flex-col justify-center items-center">
+                          <span>Balance</span>
+                          <span className="text-lg font-medium text-slate-400">{item.allocatedDays}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -237,7 +265,7 @@ const LeaveApplicationForm = () => {
                 if (role === "TEAM_LEADER") approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
                 if (role === "MANAGER" || role === "ADMIN") approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
                 if (days > 7 && role !== "MANAGER" && !approvers.some(a => a.label.startsWith("HR"))) {
-                    approvers.push({ label: `HR: ${user?.hrname || 'Assigning...'}`, active: true });
+                  approvers.push({ label: `HR: ${user?.hrname || 'Assigning...'}`, active: true });
                 }
 
                 return approvers.map((app, index) => (
@@ -255,12 +283,14 @@ const LeaveApplicationForm = () => {
               <HiOutlineClock size={16} /> 01. Leave Category
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {(["SICK", "ANNUAL_LEAVE", "COMP_OFF"] as const).map((type) => (
+              {availableTypes.map((type) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => setFormData({ ...formData, category: type })}
-                  className={`py-3 px-4 text-sm font-medium rounded-xl border transition-all ${formData.category === type ? "bg-slate-900 border-slate-900 text-white shadow-md" : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                  className={`py-3 px-4 text-sm font-medium rounded-xl border transition-all ${formData.category === type
+                    ? "bg-slate-900 border-slate-900 text-white shadow-md"
+                    : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                     }`}
                 >
                   {leaveLabels[type]}
@@ -352,8 +382,8 @@ const LeaveApplicationForm = () => {
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                 <HiOutlinePaperClip size={16} /> 04. Attachments
               </label>
-              <div 
-                onClick={() => fileInputRef.current?.click()} 
+              <div
+                onClick={() => fileInputRef.current?.click()}
                 className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${selectedFile ? 'border-indigo-400 bg-indigo-50/30' : 'border-slate-200 hover:bg-slate-50'}`}
               >
                 <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} />

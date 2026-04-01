@@ -76,6 +76,7 @@ export const useLeave = () => {
         setError(null);
         try {
           const data = await leaveService.getLeaveBalances(employeeId, year);
+          console.log(data);
           setLeaveBalance(data);
           return data;
         } catch (err: any) {
@@ -99,8 +100,6 @@ export const useLeave = () => {
         teamOnLeave,
         fetchLeaveBalance,
         leaveBalance,
-
-
 
     }
 }
