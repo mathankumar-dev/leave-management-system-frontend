@@ -24,7 +24,7 @@ export const useCalendar = () => {
         }
     }, []);
 
-    const fetchEmployeeCalendar = useCallback(async (employeeId: number) => {
+    const fetchEmployeeCalendar = useCallback(async (employeeId: string) => {
         try {
             setLoading(true);
 

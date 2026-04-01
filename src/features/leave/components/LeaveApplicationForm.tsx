@@ -2,7 +2,6 @@ import { useLeave } from "@/features/leave/hooks/useLeave";
 import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
 import type { LeaveType } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
-import { Divider } from "@/shared/components";
 import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -20,13 +19,13 @@ type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
-  const { loading, error, setError, leaveBalance, fetchLeaveBalance } = useLeave();
-  const { applyLeave, bankCompOff } = useLeaveAction();
+  const {  error, setError, leaveBalance, fetchLeaveBalance } = useLeave();
+  const { applyLeave, bankCompOff , loading } = useLeaveAction();
   const [submitted, setSubmitted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    category: "ANNUAL_LEAVE" as LeaveType | "COMP_OFF",
+    leaveTypeName: "ANNUAL_LEAVE" as LeaveType | "COMP_OFF",
     startDate: null as Date | null,
     endDate: null as Date | null,
     compOffPlannedDate: null as Date | null,
@@ -72,7 +71,7 @@ const LeaveApplicationForm = () => {
       return;
     }
 
-    if (formData.category === "COMP_OFF") {
+    if (formData.leaveTypeName === "COMP_OFF") {
       if (!formData.compOffPlannedDate) {
         setError("Please select the date you plan to take your leave.");
         return;
@@ -92,12 +91,12 @@ const LeaveApplicationForm = () => {
     }
 
     const fd = new FormData();
-    fd.append("employeeId", employeeId.toString());
-    fd.append("leaveType", formData.category);
+    fd.append("employeeId", employeeId);
+    fd.append("leaveType", formData.leaveTypeName);
     fd.append("startDate", toLocalISOString(formData.startDate));
 
     const isFutureDate = formData.startDate ? new Date(formData.startDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) : false;
-    const isAppointment = formData.category === "SICK" && isFutureDate && formData.isAppointment;
+    const isAppointment = formData.leaveTypeName === "SICK" && isFutureDate && formData.isAppointment;
 
     fd.append("isAppointment", isAppointment.toString());
 
@@ -143,7 +142,6 @@ const LeaveApplicationForm = () => {
   };
 
   const getAvailableLeaveTypes = () => {
-    // Base leaves available to everyone
     const types = ["SICK", "ANNUAL_LEAVE", "COMP_OFF"];
 
     const gender = user?.gender?.toUpperCase();
@@ -202,12 +200,10 @@ const LeaveApplicationForm = () => {
         </div>
       )}
 
-      {/* Leave Balance: Mobile Scrollable Row */}
-      {leaveBalance && (
+      {/* {leaveBalance && (
         <div className="mb-6 mx-4 md:mx-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           <div className="flex overflow-x-auto no-scrollbar md:divide-x divide-slate-100">
             {leaveBalance.breakdown
-              // 2. Filter the top balance row
               .filter((item) => availableTypes.includes(item.leaveType as any))
               .map((item) => {
                 const isActive = formData.category === item.leaveType;
@@ -221,16 +217,12 @@ const LeaveApplicationForm = () => {
                     {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
                     <div className="flex flex-col">
                       <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? "text-indigo-600" : "text-slate-400"}`}>
-                        {item.leaveType.replace("_", " ")}
+                        {item.leaveType.replace("_", " ")} (annual)
                       </span>
                       <div className="flex items-center justify-around gap-1">
-                        {/* <div className="flex flex-col justify-center items-center">
-                          <span>Used</span>
-                          <span className="text-lg font-bold text-slate-700">{item.usedDays}</span>
-                        </div>
-                        <Divider /> */}
+                    
                         <div className="flex flex-col justify-center items-center">
-                          <span className="font-medium">Balance</span>
+                          <span className="font-medium">Balance </span>
                           <span className="text-lg font-bold text-brand">{item.allocatedDays} <span className="font-medium text-slate-500">left</span></span>
                         </div>
                       </div>
@@ -240,7 +232,7 @@ const LeaveApplicationForm = () => {
               })}
           </div>
         </div>
-      )}
+      )} */}
 
       <div className="bg-white border-y md:border border-slate-200 md:rounded-2xl shadow-sm overflow-hidden">
         {/* Responsive Header */}

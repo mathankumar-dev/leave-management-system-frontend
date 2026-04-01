@@ -13,7 +13,7 @@ export const authService = {
 
   
 
-  getEmployeeProfile: async (id: number): Promise<User> => {
+  getEmployeeProfile: async (id: string): Promise<User> => {
 
     const response = await api.get<User>(`/employees/profile/${id}`);
     return response.data;
@@ -31,7 +31,7 @@ export const authService = {
   // },
 
   submitMultipartDetails: async (
-    id: number,
+    id: string,
     type: ExperienceType,
     data: any,
     files: Record<string, File | null>

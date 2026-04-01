@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 export const getToken = () => Cookies.get("lms_token");
 
-export const setToken = (id : number) =>
+export const setToken = (id : string) =>
   // Cookies.set("lms_token", token, {
   //   secure: true,
   //   sameSite: "Lax", 

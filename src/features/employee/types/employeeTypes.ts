@@ -21,7 +21,7 @@ import type { Gender } from "@/shared/types";
 // }
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: UserRole;
@@ -58,6 +58,44 @@ export interface User {
   verificationStatus: string;
 }
 
+// export interface PersonalDetails {
+//   firstName: string;
+//   lastName: string;
+//   contactNumber: string;
+//   accountNumber: string;
+//   bankName: string;
+//   pfNumber: string;
+//   unaNumber?: string | null;
+//   gender: Gender;
+//   maritalStatus: MaritalStatus;
+//   aadharNumber: string;
+//   personalEmail: string;
+//   dateOfBirth: string;
+//   presentAddress: string;
+//   permanentAddress: string;
+//   bloodGroup: BloodGroup;
+
+//   emergencyContactNumber: string;
+//   fatherName: string;
+//   motherName: string;
+//   designation: string;
+//   skillSet: string;
+
+//   // DOC
+//   aadhaarDocPath: string;
+//   tcDocPath: string;
+//   offerLetterDocPath: string;
+//   experienceCertDocPath: string;
+//   leavingLetterDocPath: string;
+
+//   previousRole?: string | null;
+//   oldCompanyName?: string | null;
+//   oldCompanyFromDate?: string | null;
+//   oldCompanyEndDate: string | null;
+
+
+// }
+
 export interface Employee {
   managerId: null;
   active: any;
@@ -73,7 +111,7 @@ export interface Employee {
   dept: string;
   role: string;
   status: string;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   totalAllocated: number;
   totalUsed: number;
@@ -85,7 +123,7 @@ export interface Employee {
 
 export interface TeamMember {
   employeeName: string;
-  employeeId: number;
+  employeeId: string;
   designation: string | null;
   skills: string | null;
 }

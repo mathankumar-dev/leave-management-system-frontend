@@ -3,7 +3,7 @@ import api from '../../../services/apiClient';
 import type { CreateUserRequest, EmployeeFilters, PaginatedResponse, EmployeeEntity, ProfileData, TeamMember } from '@/features/employee/types';
 
 export interface Employee {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: string;
@@ -17,7 +17,7 @@ export interface Employee {
   updatedAt: string;
   // ─── Optional fields ────────────────────────────────────────
   designation?: string | null;
-  employeeId?: number;
+  employeeId?: string;
   employeeName?: string | null;
 }
 
@@ -96,7 +96,7 @@ export const employeeService = {
     }
   },
 
-  getTeamMembers: async (id: number): Promise<TeamMember[]> => {
+  getTeamMembers: async (id: string): Promise<TeamMember[]> => {
     const res = await api.get(`/dashboard/team-members/${id}`);
     return res.data;
   },
@@ -110,7 +110,7 @@ export const employeeService = {
     }
   },
 
-  deleteUser: async (employeeId: number): Promise<string> => {
+  deleteUser: async (employeeId: string): Promise<string> => {
     try {
       const res = await api.delete(`/employees/${employeeId}`);
       return res.data.message || "Employee deleted successfully";
@@ -119,7 +119,7 @@ export const employeeService = {
     }
   },
 
-  getProfile: async (employeeId: number): Promise<ProfileData> => {
+  getProfile: async (employeeId: string): Promise<ProfileData> => {
     const response = await api.get(`/employees/profile/${employeeId}`);
     return response.data;
   },

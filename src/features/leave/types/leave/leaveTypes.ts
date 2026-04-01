@@ -25,7 +25,7 @@ export interface LowBalanceEmployee {
 
 export interface LeaveRecord {
   id: number;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   leaveType: LeaveType;
   startDateHalfDayType: string | null;
@@ -58,7 +58,7 @@ export interface LeaveRecord {
 export interface PendingLeaveApplication {
   id: number;
 
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
 
   leaveType: LeaveType;
@@ -157,7 +157,7 @@ export interface LeaveTypeBreakdown {
 }
 
 export interface LeaveBalanceResponse {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   year: number;
 
@@ -190,7 +190,7 @@ export interface LeaveBalanceResponse {
 
 export type TeamPendingLeave = {
   leaveId: number;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   leaveType: LeaveType;
   reason: string;
@@ -202,7 +202,7 @@ export type TeamPendingLeave = {
 }
 
 export type TeamMemberOnLeave = {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   leaveType: LeaveType;
   startDate: string;
@@ -221,7 +221,7 @@ export type CompOffEntry = {
 
 
 export type CompOffRequest = {
-  employeeId: number;
+  employeeId: string;
   entries: CompOffEntry[];
 };
 
@@ -229,7 +229,7 @@ export type CompOffRequest = {
 
 export type CompOffResponse = {
   compoffId: number;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   workedDate: string;
   status: 'PENDING' | 'REJECTED' | 'USED';

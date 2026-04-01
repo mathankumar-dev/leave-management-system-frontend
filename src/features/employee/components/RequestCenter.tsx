@@ -122,11 +122,11 @@ const RequestCenter = () => {
             >
               <div className="p-4 md:p-8">
                 {activeTab === "LEAVE" && <LeaveApplicationForm />}
-                {activeTab === "OD" && <ODRequestForm />}
-                {activeTab === "ACCESS" && <AccessRequestForm />}
+                {/* activeTab === "OD" && <ODRequestForm />}
+                {activeTab === "ACCESS" && <AccessRequestForm />} */}
 
                 {/* Status for building modules */}
-                {(activeTab === "WFH" || activeTab === "OVERTIME") && (
+                {(activeTab === "WFH" || activeTab === "OVERTIME" || activeTab === "ACCESS" || activeTab === "OD" ) && (
                   <div className="flex flex-col items-center justify-center py-24 text-slate-400">
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                       <HiOutlineMoon size={32} className="opacity-20" />

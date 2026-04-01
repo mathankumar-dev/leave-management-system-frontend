@@ -15,7 +15,7 @@ export const useLeave = () => {
       const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponse | null>(null);
 
 
-    const fetchMyLeaves = useCallback(async (employeeId: number): Promise<LeaveRecord[]> => {
+    const fetchMyLeaves = useCallback(async (employeeId: string): Promise<LeaveRecord[]> => {
         setLoading(true);
         try {
             return await leaveService.getMyLeaveHistory(employeeId);
@@ -27,7 +27,7 @@ export const useLeave = () => {
         }
     }, []);
 
-    const fetchMyOD = useCallback(async (employeeId: number): Promise<ODResponse[]> => {
+    const fetchMyOD = useCallback(async (employeeId: string): Promise<ODResponse[]> => {
         setLoading(true);
         try {
             return await leaveService.getMyODHistory(employeeId);
@@ -40,7 +40,7 @@ export const useLeave = () => {
     }, []);
 
 
-    const fetchWeeklyLeaveSummary = useCallback(async (managerId: number): Promise<LeaveRecord[]> => {
+    const fetchWeeklyLeaveSummary = useCallback(async (managerId: string): Promise<LeaveRecord[]> => {
         setLoading(true);
         try {
             const data = await leaveService.getWeeklyLeaveSummary(managerId);
@@ -54,7 +54,7 @@ export const useLeave = () => {
         }
     }, []);
 
-    const fetchTeamOnLeave = useCallback(async (managerId: number): Promise<TeamMemberBalance[]> => {
+    const fetchTeamOnLeave = useCallback(async (managerId: string): Promise<TeamMemberBalance[]> => {
         setLoading(true);
         try {
             const data = await leaveService.getTeamOnLeave(managerId);
@@ -71,7 +71,7 @@ export const useLeave = () => {
     
     
     
-      const fetchLeaveBalance = useCallback(async (employeeId: number, year: number = 2026) => {
+      const fetchLeaveBalance = useCallback(async (employeeId: string, year: number = 2026) => {
         setLoading(true);
         setError(null);
         try {

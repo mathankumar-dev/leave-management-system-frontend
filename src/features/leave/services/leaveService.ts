@@ -31,7 +31,7 @@ export const leaveService = {
     return res.data;
   },
 
-  cancelLeave: async (id: number, employeeId: number): Promise<any> => {
+  cancelLeave: async (id: number, employeeId: string): Promise<any> => {
     try {
       const res = await api.patch(
         `/leaves/${id}/cancel`,
@@ -49,38 +49,38 @@ export const leaveService = {
   },
 
 
-  getMyLeaveHistory: async (employeeId: number): Promise<LeaveRecord[]> => {
+  getMyLeaveHistory: async (employeeId: string): Promise<LeaveRecord[]> => {
     const response = await api.get(`/leaves/employee/${employeeId}`);
     return response.data;
   },
 
-  getMyODHistory: async (employeeId: number): Promise<ODResponse[]> => {
+  getMyODHistory: async (employeeId: string): Promise<ODResponse[]> => {
     const response = await api.get(`/od/my/${employeeId}`);
     return response.data;
   },
 
-  getPendingApprovals: async (managerId: number): Promise<PendingLeaveApplicationApiResponse[]> => {
+  getPendingApprovals: async (managerId: string): Promise<PendingLeaveApplicationApiResponse[]> => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
     return response.data.content;
   },
 
-  getPendingApprovalsForTeamLeader: async (teamLeaderId: number): Promise<PendingLeaveApplicationApiResponse[]> => {
+  getPendingApprovalsForTeamLeader: async (teamLeaderId: string): Promise<PendingLeaveApplicationApiResponse[]> => {
     const response = await api.get(`/leave-approvals/pending/team-leader/${teamLeaderId}`);
     return response.data.content;
   },
 
-  getPendingCompOffs: async (managerId: number) => {
+  getPendingCompOffs: async (managerId: string) => {
     const response = await api.get(`/compoff/pending/${managerId}/approvals`);
     return response.data.content;
   },
 
-  getPendingODApprovalsForTeamLeader: async (teamLeaderId: number): Promise<ODResponse[]> => {
+  getPendingODApprovalsForTeamLeader: async (teamLeaderId: string): Promise<ODResponse[]> => {
 
     const response = await api.get(`/od/pending/teamleader/${teamLeaderId}`);
 
     return response.data;
   },
-  getPendingODApprovals: async (managerId: number): Promise<ODResponse[]> => {
+  getPendingODApprovals: async (managerId: string): Promise<ODResponse[]> => {
     const response = await api.get(`/od/pending/manager/${managerId}`);
     return response.data;
   },
@@ -114,7 +114,7 @@ export const leaveService = {
       }
     );
   },
-  getLeaveBalances: async (employeeId: number, year: number = 2026): Promise<LeaveBalanceResponse> => {
+  getLeaveBalances: async (employeeId: string, year: number = 2026): Promise<LeaveBalanceResponse> => {
     const res = await api.get(`leaves-balance/${employeeId}`, {
       params: { year }
     });
@@ -124,12 +124,12 @@ export const leaveService = {
     const response = await api.post('/compoff/request', payload);
     return response.data;
   },
-  getWeeklyLeaveSummary: async (managerId: number): Promise<LeaveRecord[]> => {
+  getWeeklyLeaveSummary: async (managerId: string): Promise<LeaveRecord[]> => {
     const response = await api.get(`/manager/${managerId}/team-leaves/week`);
     return response.data;
   },
 
-  getTeamOnLeave: async (managerId: number): Promise<TeamMemberBalance[]> => {
+  getTeamOnLeave: async (managerId: string): Promise<TeamMemberBalance[]> => {
     const response = await api.get(`/dashboard/team-on-leave/${managerId}`);
     return response.data;
   },

@@ -48,7 +48,7 @@ const contextLogout = useCallback(async () => {
       }
 
       try {
-        const profile = await authService.getEmployeeProfile(Number(id));
+        const profile = await authService.getEmployeeProfile(id);
         setUser(profile);
       } catch {
         setUser(null);
@@ -60,9 +60,9 @@ const contextLogout = useCallback(async () => {
     initAuth();
   }, []);
 
-  const login = useCallback(async (data: { id: number; role: string; forcePasswordChange: boolean }) => {
+  const login = useCallback(async (data: { id: string; role: string; forcePasswordChange: boolean }) => {
     try {
-      setToken(String(data.id));
+      // setToken(data.id);
       const profile = await authService.getEmployeeProfile(data.id);
       setToken(data.id);
       setUser(profile);

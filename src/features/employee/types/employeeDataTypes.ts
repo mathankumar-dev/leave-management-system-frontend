@@ -1,7 +1,7 @@
 import type { LeaveBreakDown } from "@/features/leave/types";
 
 // export interface EmployeeData {
-//   employeeId: number;
+//   employeeId: string;
 //   employeeName: string;
 //   currentYear: number;
 //   yearlyAllocated: number;
@@ -22,7 +22,7 @@ import type { LeaveBreakDown } from "@/features/leave/types";
 // }
 
 export interface EmployeeData {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   currentYear: number;
   lastUpdated: string; // Added from your data

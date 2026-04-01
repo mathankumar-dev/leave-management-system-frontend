@@ -2,24 +2,23 @@
 import type { UserRole } from "@/shared/auth/authTypes";
 import type { BloodGroup, Gender, MaritalStatus } from "@/shared/types";
 
-export interface PersonalDetailsRequest {
+export interface PersonalDetails {
   firstName: string;
   lastName: string;
-  surName: string;
   contactNumber: string;
   gender: Gender;
+  maritalStatus: MaritalStatus;
   aadharNumber: string;
   personalEmail: string;
   dateOfBirth: string;
   presentAddress: string;
   permanentAddress: string;
   bloodGroup: BloodGroup;
-  maritalStatus: MaritalStatus;
   emergencyContactNumber?: string;
   designation: string;
   skillSet: string;
-  bankName: string;
   accountNumber: string;
+  bankName: string;
   fatherName: string;
   fatherDateOfBirth: string;
   fatherOccupation: string;
@@ -33,11 +32,20 @@ export interface PersonalDetailsRequest {
   oldCompanyName?: string;
   oldCompanyFromDate?: string;
   oldCompanyEndDate?: string;
-  aadhaarCard?: any;
-  tc?: any;
-  offerLetter?: any;
-  experienceCertificate?: any;
-  leavingLetter?: any;
+
+}
+
+export type PersonalDetailsRequest = PersonalDetails; 
+
+export interface MultipartSubmission {
+    data: PersonalDetails;
+    files: {
+        aadhaarCard: File;
+        tc?: File;
+        offerLetter?: File;
+        experienceCertificate?: File;
+        leavingLetter?: File;
+    }
 }
 
 export interface CreateUserRequest {
@@ -48,5 +56,5 @@ export interface CreateUserRequest {
   teamLeaderId?: number | null;
   managerId?: number | null;
   joiningDate: string;
-  employeeExperience : string;
+  employeeExperience: string;
 }

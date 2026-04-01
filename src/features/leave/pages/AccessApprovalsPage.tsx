@@ -15,7 +15,7 @@ const OnboardingPendingPage: React.FC = () => {
     // State for the Decision Modal
     const [decisionModal, setDecisionModal] = useState<{
         isOpen: boolean;
-        employeeId: number | null;
+        employeeId: string | null;
         bio: boolean;
         vpn: boolean;
     }>({ isOpen: false, employeeId: null, bio: false, vpn: false });

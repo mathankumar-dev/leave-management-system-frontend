@@ -43,7 +43,7 @@ export const dashboardService = {
 
 
 
-  // getEmployeeDashboard: async (employeeId: number): Promise<Employee> => {
+  // getEmployeeDashboard: async (employeeId: string): Promise<Employee> => {
   //   const id = employeeId;
   //   if (!id) {
   //     console.error("Employee ID is missing! Cannot fetch dashboard.");
@@ -58,7 +58,7 @@ export const dashboardService = {
   //   }
   // },
 
-  getEmpDashboard: async (employeeId: number) => {
+  getEmpDashboard: async (employeeId: string) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
 

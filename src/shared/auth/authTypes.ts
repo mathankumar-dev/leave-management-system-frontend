@@ -7,7 +7,7 @@ export interface LoginCredentials {
 
 export interface AuthResponse {
   token?: string;
-  id: number;
+  id: string;
   role: UserRole;
   forcePasswordChange: boolean;
 }

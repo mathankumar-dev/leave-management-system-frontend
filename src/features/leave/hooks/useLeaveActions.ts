@@ -22,7 +22,7 @@ export const useLeaveAction = () => {
             setLoading(false);
         }
     }, []);
-    const cancelLeave = useCallback(async (id: number, employeeId: number) => {
+    const cancelLeave = useCallback(async (id: number, employeeId: string) => {
         setLoading(true);
         try {
             await leaveService.cancelLeave(id, employeeId);

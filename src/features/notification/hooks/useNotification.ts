@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { notificationService } from '../services/notificationService';
 import type { NotificationResponse } from '@/features/notification/types';
 
-export const useNotifications = (employeeId: number) => {
+export const useNotifications = (employeeId: string) => {
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -45,7 +45,7 @@ export const useNotifications = (employeeId: number) => {
     }
   };
 
-  const markAllAsRead = async (employeeId: number) => {
+  const markAllAsRead = async (employeeId: string) => {
     if (!employeeId) return;
     try {
       await notificationService.markAllAsRead(employeeId);

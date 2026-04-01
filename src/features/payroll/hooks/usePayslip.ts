@@ -37,7 +37,7 @@ export function usePayslip() {
   }, []);
 
   // ─── Delete Payslip ───────────────────────────────
-  const deletePayslip = useCallback(async (employeeId: number, year: number, month: number) => {
+  const deletePayslip = useCallback(async (employeeId: string, year: number, month: number) => {
     try {
       setLoading(true);
       await PayslipService.deletePayslip(employeeId, year, month);

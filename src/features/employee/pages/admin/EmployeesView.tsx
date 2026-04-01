@@ -2,10 +2,17 @@ import AddEmployeePopup from "@/features/employee/components/AddEmployeeForm";
 import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import type { EmployeeEntity } from "@/features/employee/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  FaUserPlus, FaSearch, FaEllipsisV, FaChevronLeft,
-  FaChevronRight, FaRegAddressCard, FaFilter, FaUserCheck, FaUserSlash
+  FaChevronLeft,
+  FaChevronRight,
+  FaEllipsisV,
+  FaFilter,
+  FaRegAddressCard,
+  FaSearch,
+  FaUserCheck,
+  FaUserPlus,
+  FaUserSlash
 } from "react-icons/fa";
 
 const EmployeesView = () => {
@@ -36,12 +43,15 @@ const EmployeesView = () => {
       active: statusFilter === "ALL" ? undefined : statusFilter === "ACTIVE"
     });
 
-    if (result) {
+    if (result && Array.isArray(result.content)) {
       setEmployees(result.content);
       setPagination({
-        totalElements: result.totalElements,
-        totalPages: result.totalPages
+        totalElements: result.totalElements || 0,
+        totalPages: result.totalPages || 0
       });
+    } else {
+      setEmployees([]);
+      setPagination({ totalElements: 0, totalPages: 0 });
     }
   }, [fetchAllEmployees, currentPage, searchTerm, roleFilter, statusFilter]);
 
@@ -52,7 +62,6 @@ const EmployeesView = () => {
 
   const handleAction = async () => {
     if (confirmState.empId) {
-      // Note: Assuming deleteUser toggles status or handles deactivation
       await deleteUser(confirmState.empId);
       setConfirmState({ ...confirmState, isOpen: false });
       loadEmployeeData();

@@ -30,7 +30,7 @@ interface LeaveBreakdown {
 }
 
 interface LeaveBalance {
-    employeeId: number;
+    employeeId: string;
     employeeName: string;
     year: number;
     totalAllocated: number;
@@ -503,7 +503,7 @@ const AnnualPayslipModal: React.FC<{ employee: Employee; onClose: () => void }> 
 };
 
 // ─── Helper ───────────────────────────────────────────────────────
-const fillFormFromData = (data: any, employeeId: number, month: number, year: number): PayslipCreateRequest => ({
+const fillFormFromData = (data: any, employeeId: string, month: number, year: number): PayslipCreateRequest => ({
     employeeId, month, year,
     status: data.status || 'PAID',
     basicSalary:      data.basicSalary      || 0,

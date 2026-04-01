@@ -11,7 +11,7 @@ export const useEmployee = () => {
     const [error, setError] = useState<string | null>(null);
     const [profile, setProfile] = useState<ProfileData | null>(null);
 
-    const fetchEmployees = async (employeeId: number): Promise<Employee[]> => {
+    const fetchEmployees = async (employeeId: string): Promise<Employee[]> => {
         setLoading(true);
         try {
             return await dashboardService.getEmpDashboard(employeeId);
@@ -26,7 +26,7 @@ export const useEmployee = () => {
 
     const fetchEmployeeProfile = useCallback(
         async (
-            employeeId: number
+            employeeId: string
         ): Promise<ProfileData | null> => {
             setLoading(true);
             setError(null);
@@ -80,7 +80,7 @@ export const useEmployee = () => {
         }
     };
 
-    const deleteUser = async (employeeId: number): Promise<void> => {
+    const deleteUser = async (employeeId: string): Promise<void> => {
         try {
             const message = await employeeService.deleteUser(employeeId);
             toast.success(message);

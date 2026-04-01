@@ -28,7 +28,7 @@ const LaunchPage: React.FC = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
 
-  const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
+  // const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
   const [isLoading, setLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const userRole = user?.role;
@@ -51,31 +51,31 @@ const LaunchPage: React.FC = () => {
     handleNavigate("profile");
     setIsProfileOpen(false);
   };
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchFlashNews();
-        const sortedData = (data || []).sort((a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setFlashNews(sortedData);
-      } catch (err) {
-        console.error("News fetch failed", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [fetchFlashNews]);
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const data = await fetchFlashNews();
+  //       const sortedData = (data || []).sort((a, b) =>
+  //         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  //       );
+  //       setFlashNews(sortedData);
+  //     } catch (err) {
+  //       console.error("News fetch failed", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   loadData();
+  // }, [fetchFlashNews]);
 
-  useEffect(() => {
-    if (flashNews.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % flashNews.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [flashNews]);
+  // useEffect(() => {
+  //   if (flashNews.length <= 1) return;
+  //   const timer = setInterval(() => {
+  //     setCurrentIndex((prev) => (prev + 1) % flashNews.length);
+  //   }, 5000);
+  //   return () => clearInterval(timer);
+  // }, [flashNews]);
 
   const systems = [
     {
@@ -238,17 +238,17 @@ const LaunchPage: React.FC = () => {
                 </span>
                 Live Updates
               </h3>
-              <div className="flex gap-1">
+              {/* <div className="flex gap-1">
                 {flashNews.map((_, i) => (
                   <div
                     key={i}
                     className={`h-1 rounded-full transition-all duration-500 ${i === currentIndex ? 'bg-brand w-4' : 'bg-slate-200 w-2'}`}
                   />
                 ))}
-              </div>
+              </div> */}
             </div>
 
-            <div className="relative flex-1">
+            {/* <div className="relative flex-1">
               {isLoading ? (
                 <div className="h-12 bg-slate-50 animate-pulse rounded-lg" />
               ) : flashNews.length > 0 ? (
@@ -269,7 +269,7 @@ const LaunchPage: React.FC = () => {
               ) : (
                 <p className="text-sm text-slate-500 italic text-center py-4">No updates today.</p>
               )}
-            </div>
+            </div> */}
           </div>
         </aside>
 

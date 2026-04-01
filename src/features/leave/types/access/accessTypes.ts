@@ -7,7 +7,7 @@ export type BiometricVpnStatus = 'PENDING' | 'PROVIDED';
 export type accessManagerDecision = 'APPROVED' | 'REJECTED';
 export interface AccessResponse {
   id: number;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   employeeEmail: string;
   employeeDesignation: string;

@@ -74,7 +74,7 @@ const LoginForm: React.FC = () => {
           <div className="relative group">
             <FaUserShield className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-primary-500 transition-colors" />
             <input
-              type="email"
+              type="text"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
