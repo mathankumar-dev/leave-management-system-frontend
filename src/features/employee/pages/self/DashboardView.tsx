@@ -2,7 +2,7 @@ import { useEmployeeDashboard } from "@/features/dashboard/hooks";
 import LeaveDetailsDrawer from "@/features/leave/components/LeaveDetailsDrawer";
 import type { LeaveTypeBreakDown } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
-import { CustomLoader, Divider } from "@/shared/components";
+import { CustomLoader, Divider, MyFloatingActionButton } from "@/shared/components";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import { FaCheckCircle, FaPlus, FaTimesCircle } from "react-icons/fa";
@@ -49,12 +49,18 @@ const DashboardView = () => {
       setLoading(true);
 
       const data = await fetchDashboard(user.id);
+      console.log(data);
+      
 
       const breakdown: LeaveTypeBreakDown[] = data.breakdown || [];
 
       const sick = breakdown.find(b => b.leaveTypeName?.includes("SICK"));
+     
+      
 
       const annual = breakdown.find(b => b.leaveTypeName?.includes("ANNUAL"));
+
+
       
 
       setMonthly({
@@ -129,10 +135,8 @@ const DashboardView = () => {
 
   const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
   const handleNavigate = (path: string) => {
-    // 1. If the path already starts with the basePath, don't append it again
-    // 2. If the path is already absolute (starts with /), just use it
     const finalPath = path.startsWith('/') ? path : `${basePath}/${path}`;
-
+    console.log("Navigating to:", finalPath);
     navigate(finalPath);
   };
 
@@ -163,15 +167,6 @@ const DashboardView = () => {
 
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => handleNavigate('request-center')}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm shadow hover:bg-indigo-700"
-        >
-          <FaPlus size={12} />
-          Apply Leave
-        </motion.button>
 
       </div>
 
@@ -322,7 +317,7 @@ const DashboardView = () => {
       />
 
 
-      {/* {user?.role !== "EMPLOYEE" && (
+     
 
         <MyFloatingActionButton
           icon={<FaPlus />}
@@ -330,7 +325,7 @@ const DashboardView = () => {
           title="Apply Leave"
         />
 
-      )} */}
+      
 
     </motion.div>
 
