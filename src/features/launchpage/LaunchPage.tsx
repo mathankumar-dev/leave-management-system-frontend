@@ -1,25 +1,12 @@
 import logo from "@/assets/images/wenxt-W-only-logo.png";
 import CalendarSVG from "@/assets/svg/calendar-svg.svg";
 import moneySVG from "@/assets/svg/money-svg.svg";
-import { useFlashNews } from "@/features/notification/hooks/useFlashNews";
-import type { FlashNews } from "@/features/notification/types";
 import { useAuth } from "@/shared/auth/useAuth";
-import { formatTimeAgo } from "@/shared/utils/formatTimeAgo";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { FaChevronDown, FaSignOutAlt, FaUserCog } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-
-
-const roleBasePath: Record<string, string> = {
-  EMPLOYEE: "/employee",
-  MANAGER: "/manager",
-  TEAM_LEADER: "/manager",
-  HR: "/hr",
-  ADMIN: "/admin",
-  CFO: "/admin",
-};
 
 const LaunchPage: React.FC = () => {
 
@@ -29,8 +16,6 @@ const LaunchPage: React.FC = () => {
 
 
   // const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
-  const [isLoading, setLoading] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const userRole = user?.role;
   const basePathMap = {
     EMPLOYEE: "/employee",
@@ -46,7 +31,6 @@ const LaunchPage: React.FC = () => {
   const handleNavigate = (path: string) => {
     navigate(`${basePath}/${path}`);
   };
-  const { fetchFlashNews } = useFlashNews();
   const goToProfile = () => {
     handleNavigate("profile");
     setIsProfileOpen(false);

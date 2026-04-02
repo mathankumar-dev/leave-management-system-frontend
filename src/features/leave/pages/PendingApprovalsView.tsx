@@ -38,7 +38,7 @@ const PendingApprovalsView: React.FC = () => {
         handleDecision,
     } = useManagerApprovals(user!.id, user?.role);
 
-    const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useLeave();
+    const { weeklyLeaveSummary, teamOnLeave } = useLeave();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");

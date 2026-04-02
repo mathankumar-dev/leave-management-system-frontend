@@ -48,6 +48,23 @@ export const employeeService = {
     const res = await api.get(`/employees/name/${employeeId}`);
     return res.data;
   },
+  getRoleList: async () => {
+    const res = await api.get(`/employees/role/list`);
+    return res.data;
+  },
+  getDepartmentList: async () => {
+    const res = await api.get(`/employees/departments/list`);
+    return res.data;
+  },
+    getAllManagers: async () => {
+    const res = await api.get(`/employees/managers/list`);
+    return res.data;
+  },
+    getAllBranches: async () => {
+    const res = await api.get(`/employees/branch/list`);
+    return res.data;
+  },
+
 
   // ─── HR: paginated list ───────────────────────────────────────
   getAllEmployeesHR: async (

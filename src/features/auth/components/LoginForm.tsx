@@ -12,7 +12,7 @@ import { authService } from "../api/authApi";
 import type { LoginCredentials } from "@/shared/auth/authTypes";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
  
@@ -32,7 +32,7 @@ const LoginForm: React.FC = () => {
     setLoaderState({ active: true, finished: false });
 
     try {
-      const credentials: LoginCredentials = { email, password };
+      const credentials: LoginCredentials = { identifier, password };
       const response = await authService.loginUser(credentials);
 
       setLoginResponse(response);
@@ -76,8 +76,8 @@ const LoginForm: React.FC = () => {
             <input
               type="text"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               placeholder="name@wenxttech.com"
               className="w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm"
             />

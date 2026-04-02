@@ -23,7 +23,7 @@ interface SidebarProps {
   onLogout: () => void;
 }
 
-function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed, onLogout }: SidebarProps) {
+function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

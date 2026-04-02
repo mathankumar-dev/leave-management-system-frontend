@@ -1,6 +1,6 @@
 import type { TeamMemberBalance } from "@/features/attendance/types";
 import { leaveService } from "@/features/leave/services/leaveService";
-import type { LeaveBalanceResponse, LeaveRecord, ODResponse } from "@/features/leave/types";
+import type { LeaveBalanceResponse, LeaveRecord } from "@/features/leave/types";
 import { useCallback, useState } from "react";
 
 
@@ -76,7 +76,6 @@ export const useLeave = () => {
         setError(null);
         try {
           const data = await leaveService.getLeaveBalances(employeeId, year);
-          console.log(data);
           setLeaveBalance(data);
           return data;
         } catch (err: any) {

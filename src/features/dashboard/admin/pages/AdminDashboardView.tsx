@@ -88,12 +88,12 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
                 {/* Reusing StatCard visual logic manually for drawer consistency */}
                 {dashboardData?.personalStats.breakdown.map((item) => (
                   <div
-                    key={item.leaveType}
+                    key={item.leaveTypeName}
                     className="flex flex-col gap-2 p-4 border-2 border-slate-100 hover:border-slate-200 transition-all bg-white"
                   >
                     {/* Leave Type Title */}
                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                      {item.leaveType.replace('_', ' ')}
+                      {item.leaveTypeName.replace('_', ' ')}
                     </span>
 
                     <div className="flex justify-between items-end">
@@ -170,7 +170,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50 border-rose-100">
+                <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50">
                   <span className="text-[10px] font-black uppercase text-rose-400">Loss of Pay (%)</span>
                   <span className="text-lg font-black   text-rose-600">{dashboardData?.personalStats.lossOfPayPercentage || 0}%</span>
                 </div>
@@ -249,7 +249,7 @@ const AdminDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ 
                         <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
                           <td className="px-6 py-4">
                             <span className="text-xs font-bold text-slate-900 uppercase tracking-tight">
-                              {leave.leaveType.replace(/_/g, " ")}
+                              {leave.leaveTypeName.replace(/_/g, " ")}
                             </span>
                           </td>
                           <td className="px-6 py-4">

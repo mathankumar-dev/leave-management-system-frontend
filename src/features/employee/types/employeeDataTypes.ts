@@ -1,4 +1,4 @@
-import type { LeaveBreakDown } from "@/features/leave/types";
+import type { LeaveTypeBreakDown } from "@/features/leave/types";
 
 // export interface EmployeeData {
 //   employeeId: string;
@@ -54,5 +54,5 @@ export interface EmployeeData {
   pendingCount: number;
 
   // Nested Data
-  breakdown: LeaveBreakDown[];
+  breakdown: LeaveTypeBreakDown[];
 }

@@ -1,6 +1,6 @@
 import { dashboardService } from "@/features/dashboard/services/dashboardService";
 import { employeeService } from "@/features/employee/services/employeeService";
-import type { CreateUserRequest, Employee, EmployeeEntity, EmployeeFilters, PaginatedResponse, ProfileData, TeamMember } from "@/features/employee/types";
+import type { CreateUserRequest, Employee, EmployeeEntity, PaginatedResponse, ProfileData, TeamMember } from "@/features/employee/types";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
@@ -10,6 +10,11 @@ export const useEmployee = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [profile, setProfile] = useState<ProfileData | null>(null);
+
+    const [roles, setRoles] = useState<any[]>([]);
+    const [branches, setBranches] = useState<any[]>([]);
+    const [departments, setDepartments] = useState<any[]>([]);
+    const [managers, setManagers] = useState<any[]>([]);
 
     const fetchEmployees = async (employeeId: string): Promise<Employee[]> => {
         setLoading(true);
@@ -47,6 +52,8 @@ export const useEmployee = () => {
             }
         }, []
     );
+
+
     const fetchEmployeeName = useCallback(
         async (
             employeeId: string
@@ -68,32 +75,91 @@ export const useEmployee = () => {
             }
         }, []
     );
+    const fetchRoles = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await employeeService.getRoleList();
+            setRoles(response); // Store in state
+            return response;
+        } catch (err: any) {
+            setError(err.message || "Failed to fetch roles");
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchBranches = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await employeeService.getAllBranches();
+            setBranches(response); // Store in state
+            return response;
+        } catch (err: any) {
+            setError(err.message || "Failed to fetch branches");
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchManagers = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await employeeService.getAllManagers();
+            setManagers(response); // Store in state
+            return response;
+        } catch (err: any) {
+            setError(err.message || "Failed to fetch managers");
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const fetchDepartments = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await employeeService.getDepartmentList();
+            setDepartments(response); // Store in state
+            return response;
+        } catch (err: any) {
+            setError(err.message || "Failed to fetch departments");
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
 
-    const fetchAllEmployees = useCallback(
-        async (
-            filters: EmployeeFilters
-        ): Promise<EmployeeEntity | null> => {
-            setLoading(true);
-            setError(null);
 
-            try {
-                const response = await employeeService.getAllEmployees(filters);
-                return response;
-            } catch (err: unknown) {
-                const msg =
-                    err instanceof Error
-                        ? err.message
-                        : "Failed to fetch employee directory";
 
-                setError(msg);
-                return null;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [employeeService]
-    );
+
+
+    // const fetchAllEmployees = useCallback(
+    //     async (
+    //         filters: EmployeeFilters
+    //     ): Promise<EmployeeEntity | null> => {
+    //         setLoading(true);
+    //         setError(null);
+
+    //         try {
+    //             const response = await employeeService.getAllEmployees(filters);
+    //             return response;
+    //         } catch (err: unknown) {
+    //             const msg =
+    //                 err instanceof Error
+    //                     ? err.message
+    //                     : "Failed to fetch employee directory";
+
+    //             setError(msg);
+    //             return null;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [employeeService]
+    // );
     const getEmployees = useCallback(async (filters?: any): Promise<PaginatedResponse<EmployeeEntity> | null> => {
         setLoading(true);
         try {
@@ -162,7 +228,7 @@ export const useEmployee = () => {
         error,
         setError,
         fetchEmployees,
-        fetchAllEmployees,
+        // fetchAllEmployees,
         addUser,
         deleteUser,
         getTeamMembers,
@@ -170,7 +236,15 @@ export const useEmployee = () => {
         fetchEmployeeProfile,
         profile,
         fetchEmployeeName,
-        getEmployees
+        getEmployees,
+        fetchDepartments,
+        fetchManagers,
+        fetchRoles,
+        fetchBranches,
+        roles,        // Exported state
+        branches,     // Exported state
+        departments,  // Exported state
+        managers,
 
     }
 }

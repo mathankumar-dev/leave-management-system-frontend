@@ -13,7 +13,6 @@ import { FaCalendarAlt, FaEdit, FaEllipsisV, FaInfoCircle, FaTimes } from "react
 const MyRequestsView: React.FC = () => {
   const { fetchMyLeaves } = useLeave();
 
-  const { fetchEmployeeName } = useEmployee();
   const { cancelLeave, editLeave, loading } = useLeaveAction();
   const { user } = useAuth();
   const [history, setHistory] = useState<(LeaveRecord)[]>([]);
@@ -41,7 +40,6 @@ const MyRequestsView: React.FC = () => {
   };
 
 
-  console.log(history);
 
   useEffect(() => {
     loadAllHistory();
@@ -67,7 +65,6 @@ const MyRequestsView: React.FC = () => {
       setEditingLeave(null);
     }
   };
-  console.log(history);
 
   const filteredHistory = useMemo(() => {
     let list = [...history];

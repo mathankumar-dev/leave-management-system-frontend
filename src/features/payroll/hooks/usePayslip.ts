@@ -86,28 +86,28 @@ export function usePayslip() {
   }, []);
 
   // ─── Fetch Payroll Data ───────────────────────────
-  const fetchPayrollData = useCallback(async (year: number, month: number, highlightId?: number) => {
-    try {
-      setLoading(true);
-      const data = await PayslipService.getPayrollData(year, month);
-      // New employee first-a varaum mathiri sort
-      if (highlightId) {
-        const sorted = [
-          ...data.filter(p => p.employeeId === highlightId),
-          ...data.filter(p => p.employeeId !== highlightId),
-        ];
-        setPayrollData(sorted);
-      } else {
-        setPayrollData(data);
-      }
-      return data;
-    } catch {
-      setPayrollData([]);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // const fetchPayrollData = useCallback(async (year: number, month: number, highlightId?: number) => {
+  //   try {
+  //     setLoading(true);
+  //     const data = await PayslipService.getPayrollData(year, month);
+  //     // New employee first-a varaum mathiri sort
+  //     if (highlightId) {
+  //       const sorted = [
+  //         ...data.filter(p => p.employeeId === highlightId),
+  //         ...data.filter(p => p.employeeId !== highlightId),
+  //       ];
+  //       setPayrollData(sorted);
+  //     } else {
+  //       setPayrollData(data);
+  //     }
+  //     return data;
+  //   } catch {
+  //     setPayrollData([]);
+  //     return [];
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
   // ─── Export CSV ───────────────────────────────────
   const exportCSV = useCallback(async (year: number, month: number) => {
@@ -137,7 +137,7 @@ export function usePayslip() {
     deletePayslip,
     generatePayroll,
     preparePayroll,
-    fetchPayrollData,
+    // fetchPayrollData,
     exportCSV,
   };
 }

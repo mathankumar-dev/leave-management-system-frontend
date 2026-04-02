@@ -16,7 +16,6 @@ export const authService = {
   getEmployeeProfile: async (id: string): Promise<User> => {
 
     const response = await api.get<User>(`/employees/profile/${id}`);
-    console.log(response);
     
     return response.data;
   },

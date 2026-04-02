@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import { useEmployee } from "@/features/employee/hooks/useEmployee";
+import type { CreateUserRequest } from "@/features/employee/types";
 import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
 import {
-  FaTimes, FaUser, FaBriefcase,
-  FaArrowLeft, FaCheckCircle, FaBuilding,
+  FaArrowLeft,
+  FaBuilding,
+  FaCheckCircle,
+  FaTimes, FaUser,
 } from "react-icons/fa";
 import { toast } from "sonner";
 import MyDatePicker from "../../../shared/components/datepicker/MyDatePicker";
 import Loader from "../../../shared/components/Loader";
-import type { CreateUserRequest } from "@/features/employee/types";
-import { useAuth } from "@/shared/auth/useAuth";
 
 interface Props {
   open: boolean;
@@ -20,15 +22,38 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-  const {user} = useAuth();
+
+  // Get data and fetchers from updated hook
+  const {
+    fetchBranches, branches,
+    fetchDepartments, departments,
+    fetchManagers, managers,
+    fetchRoles, roles,
+    loading: isFetchingData
+  } = useEmployee();
+
+  // Load dropdown data when popup opens
+  useEffect(() => {
+    if (open) {
+      fetchBranches();
+      fetchDepartments();
+      fetchManagers();
+      fetchRoles();
+    }
+  }, [open, fetchBranches, fetchDepartments, fetchManagers, fetchRoles]);
+
+
+
+
+
 
   const [formData, setFormData] = useState({
     empId: "",
     fullName: "",
     email: "",
-    roleId: 1, // Default to a numeric Role ID
+    roleId: "",
     employeeExperience: "FRESHER",
-    reportingId: "", // Backend: reportingId
+    reportingId: "",
     teamId: "",
     departmentId: "",
     branchId: "",
@@ -50,7 +75,8 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
       return (
         formData.empId.trim().length >= 3 &&
         formData.fullName.trim().length >= 3 &&
-        isEmailValid(formData.email)
+        isEmailValid(formData.email) &&
+        formData.roleId !== ""
       );
     }
     if (step === 2) {
@@ -77,7 +103,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
         teamId: formData.teamId ? Number(formData.teamId) : null,
         departmentId: Number(formData.departmentId),
         branchId: Number(formData.branchId),
-        joiningDate: formData.joiningDate.split('T')[0], // Extract YYYY-MM-DD
+        joiningDate: formData.joiningDate.split('T')[0],
         employeeExperience: formData.employeeExperience
       };
 
@@ -99,16 +125,9 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
   const handleClose = () => {
     setStep(1);
     setFormData({
-      empId: "",
-      fullName: "",
-      email: "",
-      roleId: 1,
-      employeeExperience: "FRESHER",
-      reportingId: "",
-      teamId: "",
-      departmentId: "",
-      branchId: "",
-      joiningDate: ""
+      empId: "", fullName: "", email: "", roleId: "",
+      employeeExperience: "FRESHER", reportingId: "",
+      teamId: "", departmentId: "", branchId: "", joiningDate: ""
     });
     setStatus("idle");
     setIsSubmitting(false);
@@ -122,7 +141,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
           <div onClick={handleClose} className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" />
 
           <motion.div className="relative z-10 w-full max-w-2xl bg-slate-50 rounded-xl shadow-2xl overflow-hidden flex flex-col">
-            
+
             {/* Header */}
             <div className="px-10 py-6 bg-white border-b flex justify-between items-center">
               <div>
@@ -131,7 +150,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
                     <div key={s} className={`h-1 w-8 ${step >= s ? "bg-indigo-600" : "bg-slate-200"}`} />
                   ))}
                 </div>
-                <h2 className="text-xl font-bold">Add New Employee</h2>
+                <h2 className="text-xl font-bold text-slate-800">Add New Employee</h2>
               </div>
               <button onClick={handleClose} className="text-slate-400 hover:text-slate-600">
                 <FaTimes />
@@ -144,25 +163,34 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
                 {step === 1 && (
                   <motion.div key="step1" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} className="space-y-4">
                     <SectionHeader icon={<FaUser />} title="Identity & Contact" />
-                    
+
                     <FormInput label="Employee ID (Custom ID)" name="empId" placeholder="e.g. WENXT001" value={formData.empId} onChange={handleInputChange} required />
-                    
+
                     <div className="grid grid-cols-2 gap-4">
                       <FormInput label="Full Name" name="fullName" value={formData.fullName} onChange={handleInputChange} required />
                       <FormInput label="Email Address" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs font-bold text-slate-600">Role ID *</label>
-                        <input type="number" name="roleId" value={formData.roleId} onChange={handleInputChange} className="w-full border px-3 py-2 rounded mt-1 outline-none" />
+                      <div className="flex flex-col">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Role *</label>
+                        <select
+                          name="roleId"
+                          value={formData.roleId}
+                          onChange={handleInputChange}
+                          className="w-full border-b-2 border-slate-200 py-2 mt-1 bg-transparent outline-none focus:border-indigo-500 text-sm transition-all cursor-pointer"
+                        >
+                          <option value="">{isFetchingData ? "Loading..." : "Select Role"}</option>
+                          {roles.map((r: any) => (
+                            <option key={r.id} value={r.id}>{r.roleName}</option>
+                          ))}
+                        </select>
                       </div>
-                      <div>
-                        <label className="text-xs font-bold text-slate-600">Experience Level</label>
-                        <select name="employeeExperience" value={formData.employeeExperience} onChange={handleInputChange} className="w-full border px-3 py-2 rounded mt-1 bg-white">
+                      <div className="flex flex-col">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Experience Level</label>
+                        <select name="employeeExperience" value={formData.employeeExperience} onChange={handleInputChange} className="w-full border-b-2 border-slate-200 py-2 mt-1 bg-transparent outline-none focus:border-indigo-500 text-sm transition-all cursor-pointer">
                           <option value="FRESHER">Fresher</option>
                           <option value="EXPERIENCED">Experienced</option>
-                          <option value="INTERN">Intern</option>
                         </select>
                       </div>
                     </div>
@@ -174,12 +202,36 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
                     <SectionHeader icon={<FaBuilding />} title="Organization Details" />
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormInput label="Department ID" name="departmentId" type="number" value={formData.departmentId} onChange={handleInputChange} required />
-                      <FormInput label="Branch ID" name="branchId" type="number" value={formData.branchId} onChange={handleInputChange} required />
+                      <div className="flex flex-col">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Department *</label>
+                        <select name="departmentId" value={formData.departmentId} onChange={handleInputChange} className="w-full border-b-2 border-slate-200 py-2 mt-1 bg-transparent outline-none focus:border-indigo-500 text-sm transition-all cursor-pointer">
+                          <option value="">{isFetchingData ? "Loading..." : "Select Department"}</option>
+                          {departments.map((d: any) => (
+                            <option key={d.id} value={d.id}>{d.departmentName}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Branch *</label>
+                        <select name="branchId" value={formData.branchId} onChange={handleInputChange} className="w-full border-b-2 border-slate-200 py-2 mt-1 bg-transparent outline-none focus:border-indigo-500 text-sm transition-all cursor-pointer">
+                          <option value="">{isFetchingData ? "Loading..." : "Select Branch"}</option>
+                          {branches.map((b: any) => (
+                            <option key={b.id} value={b.id}>{b.branchName}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <FormInput label="Reporting To (Manager ID)" name="reportingId" value={formData.reportingId} onChange={handleInputChange} />
+                      <div className="flex flex-col">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Reporting Manager</label>
+                        <select name="reportingId" value={formData.reportingId} onChange={handleInputChange} className="w-full border-b-2 border-slate-200 py-2 mt-1 bg-transparent outline-none focus:border-indigo-500 text-sm transition-all cursor-pointer">
+                          <option value="">{isFetchingData ? "Loading..." : "No Manager (Top Level)"}</option>
+                          {managers.map((m: any) => (
+                            <option key={m.empId} value={m.empId}>{m.empName} ({m.empId})</option>
+                          ))}
+                        </select>
+                      </div>
                       <FormInput label="Team ID" name="teamId" type="number" value={formData.teamId} onChange={handleInputChange} />
                     </div>
 
@@ -197,7 +249,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
             {/* Footer */}
             <div className="px-8 py-4 bg-white border-t flex justify-between">
               {step > 1 ? (
-                <button onClick={() => setStep(step - 1)} className="flex items-center gap-2 text-slate-600 font-bold">
+                <button onClick={() => setStep(step - 1)} className="flex items-center gap-2 text-slate-600 font-bold hover:text-indigo-600 transition-colors">
                   <FaArrowLeft /> Back
                 </button>
               ) : <div />}
@@ -206,7 +258,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
                 <button
                   disabled={!canProceed()}
                   onClick={() => setStep(2)}
-                  className={`px-6 py-2 rounded font-bold transition-all ${canProceed() ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-400 cursor-not-allowed"}`}
+                  className={`px-6 py-2 rounded font-bold transition-all ${canProceed() ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200" : "bg-slate-200 text-slate-400 cursor-not-allowed"}`}
                 >
                   Next Step
                 </button>
@@ -214,7 +266,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
                 <button
                   onClick={handleSubmit}
                   disabled={isSubmitting || !canProceed()}
-                  className="bg-indigo-600 text-white px-6 py-2 rounded font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all disabled:opacity-50"
+                  className="bg-indigo-600 text-white px-6 py-2 rounded font-bold flex items-center gap-2 hover:bg-indigo-700 transition-all disabled:opacity-50 shadow-lg shadow-indigo-200"
                 >
                   {isSubmitting ? "Processing..." : <>Create Employee <FaCheckCircle /></>}
                 </button>
@@ -227,7 +279,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
       {/* LOADER */}
       {(isSubmitting || status !== "idle") && (
         <Loader
-          message={status === "error" ? "Failed to Create" : status === "success" ? "Success!" : "Syncing with Server..."}
+          message={status === "error" ? "Failed to Create" : status === "success" ? "Success!" : "Syncing WorkSphere..."}
           isFinished={status === "success" || status === "error"}
           onFinished={handleLoaderFinished}
         />

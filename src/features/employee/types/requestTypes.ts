@@ -1,5 +1,4 @@
 
-import type { UserRole } from "@/shared/auth/authTypes";
 import type { BloodGroup, Gender, MaritalStatus } from "@/shared/types";
 
 export interface PersonalDetails {

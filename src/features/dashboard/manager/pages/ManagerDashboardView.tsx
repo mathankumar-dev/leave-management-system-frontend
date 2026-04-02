@@ -21,7 +21,6 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
 
   const [dashboardData, setDashboardData] = useState<ManagerDashBoardResponse>();
   const [approvals, setApprovals] = useState<any[]>([]);
-  const attendanceRef = useRef<HTMLDivElement>(null);
   const requestsRef = useRef<HTMLDivElement>(null);
 
   const [drawerConfig, setDrawerConfig] = useState<{
@@ -125,12 +124,12 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                 {/* Reusing StatCard visual logic manually for drawer consistency */}
                 {dashboardData?.personalStats.breakdown.map((item) => (
                   <div
-                    key={item.leaveType}
+                    key={item.leaveTypeName}
                     className="flex flex-col gap-2 p-4 border-2 border-slate-100 hover:border-slate-200 transition-all bg-white"
                   >
                     {/* Leave Type Title */}
                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                      {item.leaveType.replace('_', ' ')}
+                      {item.leaveTypeName.replace('_', ' ')}
                     </span>
 
                     <div className="flex justify-between items-end">
@@ -282,7 +281,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                 <tr key={index} className="hover:bg-white/60 transition-colors">
                   <td className="px-8 py-4">
                     <span className="text-xs font-bold text-slate-700 uppercase tracking-tight">
-                      {formatLeaveType(leave.leaveType)}
+                      {formatLeaveType(leave.leaveTypeName)}
                     </span>
                   </td>
                   <td className="px-8 py-4">

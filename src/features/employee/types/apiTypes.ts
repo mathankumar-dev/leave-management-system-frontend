@@ -1,4 +1,3 @@
-import type { UserRole } from "@/shared/auth/authTypes";
 
 export interface EmployeeEntity {
   empId: string;        

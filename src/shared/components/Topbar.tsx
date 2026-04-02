@@ -6,7 +6,6 @@ import {
   FaBars,
   FaBell,
   FaChevronDown,
-  FaCircle,
   FaSignOutAlt,
   FaUserCog
 } from "react-icons/fa";
@@ -26,10 +25,9 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
   const location = useLocation();
 
   const { notifications, isLoading, unreadCount } =
-    useNotifications(user?.id || 0);
+    useNotifications(String(user?.id));
 
   const userRole = user?.role;
-  const userName = user?.name;
   const basePathMap = {
     EMPLOYEE: "/employee",
     MANAGER: "/manager",
@@ -95,18 +93,20 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
               setIsNotifOpen(!isNotifOpen);
               setIsProfileOpen(false);
             }}
-            className={`relative p-2.5 rounded-xl ${isNotifOpen ? "bg-indigo-50 text-indigo-600" : "text-slate-400 hover:text-indigo-600"
+            className={`relative p-2.5 rounded-xl transition-all duration-300 ${isNotifOpen
+                ? "bg-brand/10 text-brand shadow-inner"
+                : "text-slate-400 hover:text-brand hover:bg-slate-50"
               }`}
           >
-            <FaBell />
+            <FaBell size={18} />
 
             <AnimatePresence>
               {unreadCount > 0 && (
                 <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
+                  initial={{ scale: 0, y: 5 }}
+                  animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0 }}
-                  className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-rose-500 text-[9px] text-white"
+                  className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white shadow-lg shadow-rose-500/40 border border-white"
                 >
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </motion.span>
@@ -117,51 +117,70 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
           <AnimatePresence>
             {isNotifOpen && (
               <>
+                {/* Invisible Backdrop for click-away */}
                 <div
-                  className="fixed inset-0 z-50"
+                  className="fixed inset-0 z-[60]"
                   onClick={() => setIsNotifOpen(false)}
                 />
 
                 <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 15 }}
-                  className="absolute right-0 mt-3 w-80 bg-white border rounded-2xl shadow-2xl"
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                  className="absolute right-0 mt-4 w-80 bg-white backdrop-blur-3xl border border-white rounded-[2rem] shadow-2xl shadow-slate-200/50 overflow-hidden z-[70]"
                 >
-                  <div className="p-4 border-b flex justify-between">
-                    <span className="text-xs font-bold">Notifications</span>
-                    <button onClick={handleViewNotifications} className="text-xs text-indigo-600">
-                      View All
+                  {/* HEADER */}
+                  <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-white/50">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800">
+                      Notifications
+                    </span>
+                    <button
+                      onClick={handleViewNotifications}
+                      className="text-[9px] font-black uppercase tracking-widest text-brand hover:opacity-70 transition-opacity"
+                    >
+                      Expand All
                     </button>
                   </div>
 
-                  <div className="max-h-80 overflow-y-auto">
+                  {/* NOTIFICATION LIST */}
+                  <div className="max-h-96 overflow-y-auto custom-scrollbar">
                     {isLoading ? (
-                      <div className="p-6 text-center text-xs">Loading...</div>
+                      <div className="p-10 text-center">
+                        <div className="animate-spin h-5 w-5 border-2 border-brand border-t-transparent rounded-full mx-auto mb-2" />
+                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Syncing...</p>
+                      </div>
                     ) : notifications.length ? (
                       notifications.slice(0, 5).map((n) => (
                         <div
                           key={n.id}
                           onClick={handleViewNotifications}
-                          className="p-3 border-b hover:bg-slate-50 cursor-pointer"
+                          className="p-5 border-b border-slate-50 hover:bg-white transition-colors cursor-pointer group"
                         >
-                          <div className="flex gap-2">
-                            <FaCircle className="text-indigo-500 mt-1 text-[6px]" />
-                            <div>
-                              <p className="text-xs font-bold">
+                          <div className="flex gap-4">
+
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight group-hover:text-brand transition-colors">
                                 {n.eventType?.replace(/_/g, " ")}
                               </p>
-                              <p className="text-[10px] text-slate-400">
-                                {n.message}
+                              <p className="text-[11px] text-slate-500 font-medium leading-relaxed italic">
+                                "{n.message}"
+                              </p>
+                              <p className="text-[9px] font-bold text-slate-300 uppercase tracking-tighter">
+                                Recently Processed
                               </p>
                             </div>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="p-6 text-center text-xs">No updates</div>
+                      <div className="p-12 text-center">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
+                          Terminal Clear
+                        </p>
+                      </div>
                     )}
                   </div>
+
                 </motion.div>
               </>
             )}

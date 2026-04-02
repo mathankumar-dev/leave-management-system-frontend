@@ -15,6 +15,7 @@ interface StatItem {
   used: number;
   total?: number;
   pendingCount?: number;
+  balance? : number;
 }
 
 const DashboardView = () => {
@@ -35,7 +36,6 @@ const DashboardView = () => {
   const [stats, setStats] = useState<StatItem[]>([]);
   const [approved, setApproved] = useState(0);
   const [rejected, setRejected] = useState(0);
-  const [lopPercent, setLopPercent] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedCard, setSelectedCard] = useState<StatItem | null>(null);
   const navigate = useNavigate();
@@ -55,6 +55,7 @@ const DashboardView = () => {
       const sick = breakdown.find(b => b.leaveTypeName?.includes("SICK"));
 
       const annual = breakdown.find(b => b.leaveTypeName?.includes("ANNUAL"));
+      
 
       setMonthly({
         annualAllocated: data.monthlyAnnualAllocated || 0,
@@ -71,13 +72,15 @@ const DashboardView = () => {
           title: "Sick Leave",
           used: sick?.usedDays ?? 0,
           total: sick?.allocatedDays ?? 0,
-          pendingCount: sick?.pendingCount ?? 0
+          pendingCount: sick?.pendingCount ?? 0,
+          balance : sick?.remainingDays ?? 0
         },
         {
           title: "Annual Leave",
           used: annual?.usedDays ?? 0,
           total: annual?.allocatedDays ?? 0,
-          pendingCount: annual?.pendingCount ?? 0
+          pendingCount: annual?.pendingCount ?? 0,
+          balance : annual?.remainingDays ?? 0
         },
         {
           title: "Total Leave Count",
@@ -98,7 +101,6 @@ const DashboardView = () => {
 
       setApproved(data.approvedCount);
       setRejected(data.rejectedCount);
-      setLopPercent(data.lossOfPayPercentage);
 
     } catch (e: any) {
 
@@ -253,6 +255,7 @@ const DashboardView = () => {
               <th className="p-3 text-left">Type</th>
               <th className="p-3 text-center">Allocated (yearly)</th>
               <th className="p-3 text-center">Used</th>
+              <th className="p-3 text-center">Balance</th>
               <th className="p-3 text-center">Pending</th>
             </tr>
 
@@ -280,6 +283,9 @@ const DashboardView = () => {
                   </td>
                   <td className="text-center font-semibold text-indigo-600">
                     {s.used}
+                  </td>
+                  <td className="text-center font-semibold text-indigo-600">
+                    {s.balance}
                   </td>
 
                   <td className="text-center">

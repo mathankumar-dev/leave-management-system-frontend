@@ -59,9 +59,16 @@ export const leaveService = {
     return response.data;
   },
 
-  getPendingApprovals: async (managerId: string): Promise<PendingLeaveApplicationApiResponse[]> => {
+  // getPendingApprovals: async (managerId: string): Promise<PendingLeaveApplicationApiResponse[]> => {
+  //   const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
+  //   return response.data.content;
+  // },
+
+  getPendingApprovals: async (managerId: string) => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
-    return response.data.content;
+    // If the response is a direct array, use response.data. 
+    // If it's paged, use response.data.content.
+    return response.data.content || response.data;
   },
 
   getPendingApprovalsForTeamLeader: async (teamLeaderId: string): Promise<PendingLeaveApplicationApiResponse[]> => {
@@ -88,7 +95,6 @@ export const leaveService = {
   updateDecision: async (
     decisionRequest: LeaveDecisionRequest
   ): Promise<void> => {
-    console.log(decisionRequest);
     await api.patch(
       "/leave-approvals/decision",
       decisionRequest

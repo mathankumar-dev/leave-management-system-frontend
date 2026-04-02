@@ -1,7 +1,7 @@
 export type UserRole = "EMPLOYEE" | "MANAGER" | "HR" | 'CEO' | "ADMIN" | "CFO" | "TEAM_LEADER" | "CTO" | "COO";
 
 export interface LoginCredentials {
-  email: string;
+  identifier: string;
   password: string;
 }
 

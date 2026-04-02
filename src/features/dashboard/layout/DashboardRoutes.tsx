@@ -4,8 +4,6 @@ import FlashNewsForm from "@/features/notification/pages/FlashNewsCreate";
 
 /* COMMON */
 import TeamCalendarView from "@/features/attendance/pages/TeamCalendarView";
-import AdminDashboardView from "@/features/dashboard/admin/pages/AdminDashboardView";
-import { HRDashboard } from "@/features/dashboard/hr/pages/HRDashboard";
 import ManagerDashboardView from "@/features/dashboard/manager/pages/ManagerDashboardView";
 import RequestCenter from "@/features/employee/components/RequestCenter";
 import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
@@ -19,10 +17,7 @@ import MyRequestsView from "@/features/leave/pages/MyLeavesView";
 import PendingApprovalsView from "@/features/leave/pages/PendingApprovalsView";
 import NotificationsView from "@/features/notification/pages/NotificationsView";
 import PayrollView from "@/features/payroll/pages/PayrollPage";
-import { PayslipPage } from "@/features/payroll/pages/PayslipPage";
 import { useAuth } from "@/shared/auth/useAuth";
-import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
-import { HREmployeesPage } from "@/features/employee/pages/hr/HREmployeesPage";
 
 const DashboardRoutes = () => {
 
@@ -40,11 +35,7 @@ const DashboardRoutes = () => {
     }
   };
   const renderEmployees = () => {
-    switch (role) {
-      case "HR":
-        return <HREmployeesPage />;
-      case "CFO":
-        return <CFOEmployeesPage/>;   
+    switch (role) { 
       default:
         return <EmployeesView/>;  
     }
@@ -80,7 +71,7 @@ const DashboardRoutes = () => {
       <Route path="payslip" element={<PayrollView />} />
 
       {/*CFO*/}
-      <Route path="payroll" element={<PayslipPage />} />
+      {/* <Route path="payroll" element={<PayslipPage />} /> */}
 
       {/* DEFAULT */}
       <Route path="*" element={<Navigate to="dashboard" />} />

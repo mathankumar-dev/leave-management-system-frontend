@@ -3,12 +3,11 @@ import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
 import type { LeaveType } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   HiOutlineChatBubbleLeftRight,
   HiOutlineCheckCircle,
   HiOutlineClock,
-  HiOutlineExclamationTriangle,
   HiOutlinePaperAirplane,
   HiOutlinePaperClip,
   HiOutlineShieldCheck,
@@ -19,7 +18,7 @@ type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
-  const {  error, setError, leaveBalance, fetchLeaveBalance } = useLeave();
+  const {  setError } = useLeave();
   const { applyLeave, bankCompOff , loading } = useLeaveAction();
   const [submitted, setSubmitted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
