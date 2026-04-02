@@ -12,11 +12,13 @@ interface ProtectedRouteProps {
 const roleRedirectMap: Record<UserRole, string> = {
   EMPLOYEE: "/employee/dashboard",
   MANAGER: "/manager/dashboard",
-  TEAM_LEADER: "/manager/dashboard",
+  CTO: "/manager/dashboard",
   HR: "/hr/dashboard",
   ADMIN: "/admin/dashboard",
   CFO: "/cfo/dashboard",
-  CEO: "/admin/dashboard"
+  CEO: "/admin/dashboard",
+  TEAM_LEADER: "",
+  COO: "/manager/dashboard"
 };
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {

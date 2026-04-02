@@ -31,7 +31,7 @@ export interface AccessRequest {
 export interface ManagerAccessDecision{
   decision : LeaveDecision,
   remarks : string;
-  managerId : number;
+  managerId : string;
 }
 export interface AdminAccessDecision {
   decision : LeaveDecision,

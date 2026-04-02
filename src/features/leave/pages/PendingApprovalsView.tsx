@@ -30,13 +30,13 @@ const PendingApprovalsView: React.FC = () => {
     const userRole = user?.role?.toUpperCase();
     const isManager = userRole === 'MANAGER';
     const isTeamLeader = userRole === 'TEAM_LEADER';
-    const canSeeDashboardMetrics = isManager || isTeamLeader;
+    const canSeeDashboardMetrics = true;
 
     const {
         requests,
         loading,
         handleDecision,
-    } = useManagerApprovals(user?.id || 0, user?.role);
+    } = useManagerApprovals(user!.id, user?.role);
 
     const { fetchWeeklyLeaveSummary, weeklyLeaveSummary, fetchTeamOnLeave, teamOnLeave } = useLeave();
 
@@ -45,10 +45,10 @@ const PendingApprovalsView: React.FC = () => {
 
     useEffect(() => {
         if (user?.id && canSeeDashboardMetrics) {
-            fetchWeeklyLeaveSummary(user.id);
-            fetchTeamOnLeave(user.id);
+            // fetchWeeklyLeaveSummary(user.id);
+            // fetchTeamOnLeave(user.id);
         }
-    }, [fetchWeeklyLeaveSummary, fetchTeamOnLeave, user?.id, canSeeDashboardMetrics]);
+    }, [ user?.id, canSeeDashboardMetrics]);
 
     const [dialogConfig, setDialogConfig] = useState<{
         isOpen: boolean;
@@ -133,7 +133,7 @@ const PendingApprovalsView: React.FC = () => {
             accessDecisionBody = {
                 decision: status,
                 remarks: commentText || "Approved",
-                managerId: Number(user?.id)
+                managerId: user!.id,
             };
         }
 

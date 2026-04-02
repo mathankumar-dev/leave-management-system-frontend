@@ -16,31 +16,36 @@ import {
 } from "react-icons/fa";
 
 const EmployeesView = () => {
-  const { fetchAllEmployees, loading, addUser, deleteUser } = useEmployee();
-
+  const { getEmployees, loading, addUser, deleteUser } = useEmployee();
 
   const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
   const [pagination, setPagination] = useState({ totalElements: 0, totalPages: 0 });
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL"); // New: Filter by status
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(0);
   const [openAddEmployee, setOpenAddEmployee] = useState(false);
-  const [activeMenu, setActiveMenu] = useState<number | null>(null);
 
-  const [confirmState, setConfirmState] = useState<{ isOpen: boolean; empId: number | null; mode: 'DEACTIVATE' | 'REACTIVATE' }>({
+  // Changed activeMenu and confirmState to use string | null because empId is "WENXT..."
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    empId: string | null;
+    mode: 'DEACTIVATE' | 'REACTIVATE'
+  }>({
     isOpen: false,
     empId: null,
     mode: 'DEACTIVATE'
   });
 
   const loadEmployeeData = useCallback(async () => {
-    const result = await fetchAllEmployees({
+    // Pass filters to the hook
+    const result = await getEmployees({
       page: currentPage,
       size: 10,
-      name: searchTerm,
-      role: roleFilter === "ALL" ? undefined : roleFilter,
-      active: statusFilter === "ALL" ? undefined : statusFilter === "ACTIVE"
+      searchTerm: searchTerm,
+      role: roleFilter !== "ALL" ? roleFilter : undefined,
+      status: statusFilter !== "ALL" ? statusFilter : undefined
     });
 
     if (result && Array.isArray(result.content)) {
@@ -53,7 +58,7 @@ const EmployeesView = () => {
       setEmployees([]);
       setPagination({ totalElements: 0, totalPages: 0 });
     }
-  }, [fetchAllEmployees, currentPage, searchTerm, roleFilter, statusFilter]);
+  }, [getEmployees, currentPage, searchTerm, roleFilter, statusFilter]);
 
   useEffect(() => {
     const delay = setTimeout(loadEmployeeData, 250);
@@ -62,6 +67,7 @@ const EmployeesView = () => {
 
   const handleAction = async () => {
     if (confirmState.empId) {
+      // Assuming deleteUser handles the string empId
       await deleteUser(confirmState.empId);
       setConfirmState({ ...confirmState, isOpen: false });
       loadEmployeeData();
@@ -77,7 +83,7 @@ const EmployeesView = () => {
             <FaRegAddressCard size={20} />
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Personnel Directory</h2>
+            <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Personnel Directory</h2>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
               {pagination.totalElements} Total Records
             </p>
@@ -152,7 +158,7 @@ const EmployeesView = () => {
             <tbody className="divide-y divide-slate-100">
               {employees.length > 0 ? (
                 employees.map((emp) => (
-                  <tr key={emp.id} className={`transition-colors duration-150 group ${!emp.active ? 'bg-slate-50/50' : 'hover:bg-slate-50'}`}>
+                  <tr key={emp.empId} className={`transition-colors duration-150 group ${!emp.active ? 'bg-slate-50/50' : 'hover:bg-slate-50'}`}>
                     <td className="px-6 py-4">
                       <div className={`flex items-center gap-3 ${!emp.active ? 'opacity-60' : ''}`}>
                         <div className={`h-9 w-9 rounded-sm flex items-center justify-center text-[11px] font-black border transition-all ${emp.active ? 'bg-slate-100 text-slate-500 border-slate-200 group-hover:bg-slate-900 group-hover:text-white' : 'bg-slate-200 text-slate-400 border-slate-300'}`}>
@@ -163,13 +169,14 @@ const EmployeesView = () => {
                             {emp.name}
                             {!emp.active && <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-black rounded-sm">INACTIVE</span>}
                           </p>
-                          <p className="text-[10px] font-medium text-slate-400">{emp.email}</p>
+                          <p className="text-[10px] font-medium text-slate-400 lowercase">{emp.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-sm text-[10px] font-black uppercase">
-                        {emp.role.replace(/_/g, " ")}
+                        {/* FIX: Use roleName and Optional Chaining */}
+                        {emp.roleName?.replace(/_/g, " ") || "UNASSIGNED"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -182,27 +189,27 @@ const EmployeesView = () => {
                     </td>
                     <td className="px-6 py-4 text-right relative overflow-visible">
                       <button
-                        onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === emp.id ? null : emp.id); }}
-                        className={`p-2 transition-all rounded-sm ${activeMenu === emp.id ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900 hover:bg-slate-100"}`}
+                        onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === emp.empId ? null : emp.empId); }}
+                        className={`p-2 transition-all rounded-sm ${activeMenu === emp.empId ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900 hover:bg-slate-100"}`}
                       >
                         <FaEllipsisV size={12} />
                       </button>
 
                       <AnimatePresence>
-                        {activeMenu === emp.id && (
+                        {activeMenu === emp.empId && (
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
                             <motion.div initial={{ opacity: 0, scale: 0.95, x: 5 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95, x: 5 }} className="absolute right-14 top-1/2 -translate-y-1/2 z-50 min-w-[180px] bg-white border border-slate-200 shadow-2xl rounded-sm p-1">
                               {emp.active ? (
                                 <button
-                                  onClick={() => { setConfirmState({ isOpen: true, empId: emp.id, mode: 'DEACTIVATE' }); setActiveMenu(null); }}
+                                  onClick={() => { setConfirmState({ isOpen: true, empId: emp.empId, mode: 'DEACTIVATE' }); setActiveMenu(null); }}
                                   className="w-full text-left px-3 py-2.5 text-[10px] font-black uppercase text-red-600 hover:bg-red-50 flex items-center gap-2"
                                 >
                                   <FaUserSlash size={12} /> Deactivate User
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => { setConfirmState({ isOpen: true, empId: emp.id, mode: 'REACTIVATE' }); setActiveMenu(null); }}
+                                  onClick={() => { setConfirmState({ isOpen: true, empId: emp.empId, mode: 'REACTIVATE' }); setActiveMenu(null); }}
                                   className="w-full text-left px-3 py-2.5 text-[10px] font-black uppercase text-emerald-600 hover:bg-emerald-50 flex items-center gap-2"
                                 >
                                   <FaUserCheck size={12} /> Reactivate User
@@ -282,7 +289,7 @@ const EmployeesView = () => {
 
 export default EmployeesView;
 
-/* Reusable Confirm Dialog */
+/* Reusable Confirm Dialog remains the same */
 interface ConfirmDialogProps {
   isOpen: boolean; title: string; message: string; confirmText: string;
   isDanger: boolean; onConfirm: () => void; onCancel: () => void;

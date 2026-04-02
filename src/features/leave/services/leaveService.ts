@@ -88,6 +88,7 @@ export const leaveService = {
   updateDecision: async (
     decisionRequest: LeaveDecisionRequest
   ): Promise<void> => {
+    console.log(decisionRequest);
     await api.patch(
       "/leave-approvals/decision",
       decisionRequest

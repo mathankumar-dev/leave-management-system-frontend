@@ -1,6 +1,6 @@
+import type { CreateUserRequest, EmployeeEntity, EmployeeFilters, PaginatedResponse, ProfileData, TeamMember } from '@/features/employee/types';
 import { AxiosError } from 'axios';
 import api from '../../../services/apiClient';
-import type { CreateUserRequest, EmployeeFilters, PaginatedResponse, EmployeeEntity, ProfileData, TeamMember } from '@/features/employee/types';
 
 export interface Employee {
   id: string;
@@ -43,6 +43,12 @@ const handleError = (err: unknown, context: string): never => {
 
 export const employeeService = {
 
+
+  getNameByID: async (employeeId: string) => {
+    const res = await api.get(`/employees/name/${employeeId}`);
+    return res.data;
+  },
+
   // ─── HR: paginated list ───────────────────────────────────────
   getAllEmployeesHR: async (
     page = 0,
@@ -64,23 +70,21 @@ export const employeeService = {
   getAllEmployees: async (
     pageOrFilters: number | EmployeeFilters = 0,
     size = 10,
-    signal?: AbortSignal
-  ): Promise<EmployeePageResponse> => {
+  ): Promise<PaginatedResponse<EmployeeEntity>> => { // <--- Changed this
     try {
       const params = typeof pageOrFilters === 'number'
         ? { page: pageOrFilters, size }
         : pageOrFilters;
 
-      const response = await api.get<EmployeePageResponse>('/employees/all', {
-        params,
-        signal,
+      const response = await api.get<PaginatedResponse<EmployeeEntity>>('/employees/all', {
+        params
       });
+
       return response.data;
     } catch (err) {
       throw handleError(err, 'getAllEmployees');
     }
   },
-
   searchEmployees: async (
     query: string,
     signal?: AbortSignal

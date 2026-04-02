@@ -6,7 +6,7 @@ import api from '../../../services/apiClient';
 
 export const dashboardService = {
 
-  getManagerDashboard: async (managerId: number) => {
+  getManagerDashboard: async (managerId: string) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
 
@@ -14,14 +14,14 @@ export const dashboardService = {
 
   },
 
-  getTeamLeaderDashboard: async (teamLeaderId: number) => {
+  getTeamLeaderDashboard: async (teamLeaderId: string) => {
 
     const response = await api.get(`/dashboard/teamleader/${teamLeaderId}`);
 
     return response.data;
 
   },
-  getAdminDashboard: async (adminId: number) => {
+  getAdminDashboard: async (adminId: string) => {
 
     const response = await api.get(`/dashboard/admin/${adminId}`);
 
@@ -29,7 +29,7 @@ export const dashboardService = {
 
   },
 
-  getManagerTeamStats: async (managerId: number): Promise<Employee[]> => {
+  getManagerTeamStats: async (managerId: string): Promise<Employee[]> => {
     const currentYear = new Date().getFullYear();
 
     const response = await api.get(`/dashboard/manager/team-balances/${managerId}`, {

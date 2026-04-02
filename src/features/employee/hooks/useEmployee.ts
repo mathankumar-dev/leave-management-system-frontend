@@ -24,6 +24,7 @@ export const useEmployee = () => {
         }
     };
 
+
     const fetchEmployeeProfile = useCallback(
         async (
             employeeId: string
@@ -46,10 +47,33 @@ export const useEmployee = () => {
             }
         }, []
     );
+    const fetchEmployeeName = useCallback(
+        async (
+            employeeId: string
+        ) => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await employeeService.getNameByID(employeeId);
+                return response;
+            } catch (err: unknown) {
+                const msg =
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to fetch employee profile";
+                setError(msg);
+                return null;
+            } finally {
+                setLoading(false);
+            }
+        }, []
+    );
+
+
     const fetchAllEmployees = useCallback(
         async (
             filters: EmployeeFilters
-        ): Promise<PaginatedResponse<EmployeeEntity> | null> => {
+        ): Promise<EmployeeEntity | null> => {
             setLoading(true);
             setError(null);
 
@@ -70,6 +94,18 @@ export const useEmployee = () => {
         },
         [employeeService]
     );
+    const getEmployees = useCallback(async (filters?: any): Promise<PaginatedResponse<EmployeeEntity> | null> => {
+        setLoading(true);
+        try {
+            const response = await employeeService.getAllEmployees(filters);
+            return response; // This is now the object containing { content: [...], totalElements: 4, ... }
+        } catch (err: unknown) {
+            setError("Failed to fetch");
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, [employeeService]);
     const addUser = async (data: CreateUserRequest): Promise<void> => {
         try {
             const message = await employeeService.createUser(data);
@@ -79,6 +115,8 @@ export const useEmployee = () => {
             throw err;
         }
     };
+
+
 
     const deleteUser = async (employeeId: string): Promise<void> => {
         try {
@@ -90,10 +128,10 @@ export const useEmployee = () => {
         }
     };
 
-    const getTeamMembers = useCallback(async (managerId: number): Promise<TeamMember[]> => {
+    const getTeamMembers = useCallback(async (employeeId: string): Promise<TeamMember[]> => {
         setLoading(true);
         try {
-            const response = await employeeService.getTeamMembers(managerId);
+            const response = await employeeService.getTeamMembers(employeeId);
             return response;
         } catch (err: any) {
             const message = err.message || "Failed to fetch team members";
@@ -105,11 +143,11 @@ export const useEmployee = () => {
         }
     }, []);
 
-    const fetchTeamMembers = useCallback(async (id: number): Promise<TeamMember[]> => {
+    const fetchTeamMembers = useCallback(async (employeeId: string): Promise<TeamMember[]> => {
         setLoading(true);
         setError(null);
         try {
-            const result = await employeeService.getTeamMembers(id);
+            const result = await employeeService.getTeamMembers(employeeId);
             return result;
         } catch (err: any) {
             const errorMessage = err.response?.data?.message || err.message || "Comp-Off banking failed";
@@ -131,6 +169,8 @@ export const useEmployee = () => {
         fetchTeamMembers,
         fetchEmployeeProfile,
         profile,
+        fetchEmployeeName,
+        getEmployees
 
     }
 }

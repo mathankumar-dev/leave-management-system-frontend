@@ -67,7 +67,7 @@ const EmployeeProfile: React.FC = () => {
             <ContactItem icon={<FaEnvelope />} label="Email" value={profile.email} />
             <ContactItem icon={<FaPhone />} label="Phone" value={profile.contactNumber} />
             <ContactItem icon={<HiOutlineLocationMarker />} label="Work Base" value={profile.presentAddress?.split(',')[0]} />
-            <ContactItem icon={<HiOutlineShieldCheck />} label="Manager" value={profile.managerName} />
+            <ContactItem icon={<HiOutlineShieldCheck />} label="Manager" value={profile.reportingName} />
           </div>
         </div>
       </motion.div>
@@ -87,7 +87,6 @@ const EmployeeProfile: React.FC = () => {
         <Section icon={<HiOutlineOfficeBuilding />} title="Employment Details">
           <Field label="Primary Designation" value={profile.designation} />
           <Field label="Joining Date" value={formatDate(profile.joiningDate)} />
-          <Field label="Reporting Manager" value={profile.managerName} />
           <Field label="Employment Type" value={profile.employeeType} />
           <div className="col-span-2 pt-4">
              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Verified Skillset</p>

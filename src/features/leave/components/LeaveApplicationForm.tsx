@@ -25,7 +25,7 @@ const LeaveApplicationForm = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    leaveTypeName: "ANNUAL_LEAVE" as LeaveType | "COMP_OFF",
+    leaveTypeName: "ANNUAL" as LeaveType | "COMP_OFF",
     startDate: null as Date | null,
     endDate: null as Date | null,
     compOffPlannedDate: null as Date | null,
@@ -39,18 +39,18 @@ const LeaveApplicationForm = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const leaveLabels: Record<string, string> = {
-    ANNUAL_LEAVE: "Annual Leave",
+    ANNUAL: "Annual Leave",
     SICK: "Sick Leave",
     COMP_OFF: "Bank Comp-Off",
     PATERNITY: "Paternity",
     MATERNITY: "Maternity"
   };
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchLeaveBalance(user.id, 2026);
-    }
-  }, [user?.id, fetchLeaveBalance]);
+  // useEffect(() => {
+  //   if (user?.id) {
+  //     fetchLeaveBalance(user.id, 2026);
+  //   }
+  // }, [user?.id, fetchLeaveBalance]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) setSelectedFile(e.target.files[0]);
@@ -92,7 +92,8 @@ const LeaveApplicationForm = () => {
 
     const fd = new FormData();
     fd.append("employeeId", employeeId);
-    fd.append("leaveType", formData.leaveTypeName);
+
+    fd.append("leaveTypeName", formData.leaveTypeName);
     fd.append("startDate", toLocalISOString(formData.startDate));
 
     const isFutureDate = formData.startDate ? new Date(formData.startDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) : false;
@@ -125,10 +126,10 @@ const LeaveApplicationForm = () => {
     const result = await applyLeave(fd);
     if (result) setSubmitted(true);
   };
-
+  
   const calculateDays = () => {
     if (!formData.startDate) return 0;
-    if (formData.isHalfDay || formData.category === "COMP_OFF") return formData.startDateHalfDayType ? 0.5 : 1;
+    if (formData.isHalfDay || formData.leaveTypeName === "COMP_OFF") return formData.startDateHalfDayType ? 0.5 : 1;
     if (!formData.endDate) return 1;
 
     const start = new Date(formData.startDate);
@@ -142,7 +143,7 @@ const LeaveApplicationForm = () => {
   };
 
   const getAvailableLeaveTypes = () => {
-    const types = ["SICK", "ANNUAL_LEAVE", "COMP_OFF"];
+    const types = ["SICK", "ANNUAL", "COMP_OFF"];
 
     const gender = user?.gender?.toUpperCase();
 
@@ -193,12 +194,12 @@ const LeaveApplicationForm = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto py-4 md:py-6 px-0 md:px-4">
-      {error && (
+      {/* {error && (
         <div className="mx-4 mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3">
           <HiOutlineExclamationTriangle size={20} className="text-rose-500 shrink-0 mt-0.5" />
           <p className="text-sm text-rose-700">{error}</p>
         </div>
-      )}
+      )} */}
 
       {/* {leaveBalance && (
         <div className="mb-6 mx-4 md:mx-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -238,7 +239,7 @@ const LeaveApplicationForm = () => {
         {/* Responsive Header */}
         <div className="px-6 py-5 bg-slate-50/50 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-lg md:text-xl font-bold text-slate-800">
-            {formData.category === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
+            {formData.leaveTypeName === "COMP_OFF" ? "Bank Comp-Off Credit" : "Apply for Leave"}
           </h1>
           <div className="flex flex-col items-start md:items-end w-full md:w-auto">
             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
@@ -279,8 +280,8 @@ const LeaveApplicationForm = () => {
                 <button
                   key={type}
                   type="button"
-                  onClick={() => setFormData({ ...formData, category: type })}
-                  className={`py-3 px-4 text-sm font-medium rounded-xl border transition-all ${formData.category === type
+                  onClick={() => setFormData({ ...formData, leaveTypeName: type })}
+                  className={`py-3 px-4 text-sm font-medium rounded-xl border transition-all ${formData.leaveTypeName === type
                     ? "bg-slate-900 border-slate-900 text-white shadow-md"
                     : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                     }`}
@@ -295,7 +296,7 @@ const LeaveApplicationForm = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <MyDatePicker
-                  label={formData.category === "COMP_OFF" ? "02. Date Worked" : "02. Start Date"}
+                  label={formData.leaveTypeName === "COMP_OFF" ? "02. Date Worked" : "02. Start Date"}
                   selected={formData.startDate}
                   onChange={(date) => setFormData({ ...formData, startDate: date })}
                   required
@@ -310,16 +311,16 @@ const LeaveApplicationForm = () => {
               {!formData.isHalfDay && (
                 <div className="space-y-4">
                   <MyDatePicker
-                    label={formData.category === "COMP_OFF" ? "03. Planned Leave Date" : "03. End Date"}
-                    selected={formData.category === "COMP_OFF" ? formData.compOffPlannedDate : formData.endDate}
+                    label={formData.leaveTypeName === "COMP_OFF" ? "03. Planned Leave Date" : "03. End Date"}
+                    selected={formData.leaveTypeName === "COMP_OFF" ? formData.compOffPlannedDate : formData.endDate}
                     onChange={(date) => setFormData({
                       ...formData,
-                      [formData.category === "COMP_OFF" ? "compOffPlannedDate" : "endDate"]: date
+                      [formData.leaveTypeName === "COMP_OFF" ? "compOffPlannedDate" : "endDate"]: date
                     })}
                     minDate={formData.startDate || new Date()}
                     required
                   />
-                  {formData.category !== "COMP_OFF" && (
+                  {formData.leaveTypeName !== "COMP_OFF" && (
                     <HalfDaySelector
                       label="End Day Type"
                       value={formData.endDateHalfDayType}
@@ -348,7 +349,7 @@ const LeaveApplicationForm = () => {
             </div>
           </div>
 
-          {formData.category === "SICK" && formData.startDate &&
+          {formData.leaveTypeName === "SICK" && formData.startDate &&
             new Date(formData.startDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) && (
               <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl">
                 <label className="flex items-center gap-3 cursor-pointer">

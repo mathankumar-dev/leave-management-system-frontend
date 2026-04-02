@@ -3,11 +3,9 @@ export interface ProfileData {
   name: string;
   email: string;
   role: string;
+  reportingId? : string | null;
+  reportingName? : string | null;
 
-  managerId: number | null;
-  managerName: string;
-  teamLeaderId?: number;
-  teamLeaderName?: string;
   hrname: string;
 
   joiningDate: string;

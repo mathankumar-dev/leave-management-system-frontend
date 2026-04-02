@@ -27,17 +27,17 @@ export const useLeave = () => {
         }
     }, []);
 
-    const fetchMyOD = useCallback(async (employeeId: string): Promise<ODResponse[]> => {
-        setLoading(true);
-        try {
-            return await leaveService.getMyODHistory(employeeId);
-        } catch (err: any) {
-            setError(err.message || "Failed to fetch leave history");
-            return [];
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    // const fetchMyOD = useCallback(async (employeeId: string): Promise<ODResponse[]> => {
+    //     setLoading(true);
+    //     try {
+    //         return await leaveService.getMyODHistory(employeeId);
+    //     } catch (err: any) {
+    //         setError(err.message || "Failed to fetch leave history");
+    //         return [];
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }, []);
 
 
     const fetchWeeklyLeaveSummary = useCallback(async (managerId: string): Promise<LeaveRecord[]> => {
@@ -93,7 +93,7 @@ export const useLeave = () => {
         error,
         setError,
         fetchMyLeaves,
-        fetchMyOD,
+        // fetchMyOD,
         fetchTeamOnLeave,
         fetchWeeklyLeaveSummary,
         weeklyLeaveSummary,

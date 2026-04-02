@@ -31,17 +31,12 @@ const DashboardRoutes = () => {
 
   const renderDashboard = () => {
     switch (role) {
+      case "EMPLOYEE":
+          return <DashboardView />;
       case "ADMIN":
-        return <AdminDashboardView />;
-      case "HR":
-        return <HRDashboard />;
-      case "MANAGER":
-      case "TEAM_LEADER":
-        return <ManagerDashboardView />;
-      case "CFO":
-        return <CFOEmployeesPage/>;   
+          return <DashboardView />;
       default:
-        return <DashboardView />;
+        return <ManagerDashboardView />;
     }
   };
   const renderEmployees = () => {

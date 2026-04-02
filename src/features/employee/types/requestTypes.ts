@@ -49,12 +49,14 @@ export interface MultipartSubmission {
 }
 
 export interface CreateUserRequest {
-  name: string;
-  email: string;
-  role: UserRole;
-  teamId?: number | null;
-  teamLeaderId?: number | null;
-  managerId?: number | null;
-  joiningDate: string;
-  employeeExperience: string;
+  empId: string;           // Matches private String empId
+  name: string;            // Matches private String name
+  email: string;           // Matches private String email
+  roleId: number;          // Matches private Long roleId (using number in TS)
+  reportingId?: string | null; // Matches private String reportingId
+  teamId?: number | null;  // Matches private Long teamId
+  departmentId: number;    // Matches private Long departmentId
+  branchId: number;        // Matches private Long branchId
+  joiningDate: string;     // Matches LocalDate (sent as ISO string)
+  employeeExperience: string; // Matches the Enum/String on backend
 }
