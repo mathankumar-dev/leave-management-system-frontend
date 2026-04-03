@@ -11,14 +11,14 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://106.51.0.210:8111',
-    //     // target: 'http://192.168.1.13:8111',
-    //     changeOrigin: true,
-    //     secure: false
-    //   }
-    // }
+    proxy: {
+      '/api': {
+        // target: 'http://106.51.0.210:8111',
+        target: 'http://192.168.1.13:8111',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   },
   resolve: {
     alias: {

@@ -252,7 +252,7 @@ const PersonalDetailsModal = () => {
                                 <div className="space-y-4 p-4 bg-indigo-50/30 rounded-xl border border-indigo-100">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
-                                            <InputLabel>UNA Number</InputLabel>
+                                            <InputLabel>UAN Number</InputLabel>
                                             <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.unaNumber || ""} onChange={e => setFormData({ ...formData, unaNumber: e.target.value })} />
                                         </div>
                                         <div>

@@ -6,7 +6,6 @@ import { useAuth } from "../../../shared/auth/useAuth";
 
 import logoSVG from '@/assets/images/bg-rm-logo-HRES.png';
 
-
 import Loader from "../../../shared/components/Loader";
 import { authService } from "../api/authApi";
 import type { LoginCredentials } from "@/shared/auth/authTypes";
