@@ -1,31 +1,30 @@
 import { authService } from "@/features/auth/api/authApi";
-import type { PersonalDetailsRequest } from "@/features/employee/types";
+import type { PersonalDetails } from "@/features/employee/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { FailureModal, Loader } from "@/shared/components";
 import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
 import { BloodGroupMap, GenderMap, MaritalStatusMap } from "@/shared/types";
 import React, { useState } from "react";
 import {
-    HiOutlineUserCircle,
-    HiOutlineUsers,
-    HiOutlineMapPin,
-    HiOutlineBriefcase,
-    HiOutlineDocumentArrowUp,
     HiCheckCircle,
-    HiOutlineBuildingLibrary
+    HiOutlineBriefcase,
+    HiOutlineBuildingLibrary,
+    HiOutlineDocumentArrowUp,
+    HiOutlineMapPin,
+    HiOutlineUserCircle,
+    HiOutlineUsers
 } from "react-icons/hi2";
 
 const PersonalDetailsModal = () => {
     const { user, setUser } = useAuth();
 
-    // Derived state from the User interface
     const isExperienced = user?.employeeExperience === "EXPERIENCED";
     const submissionType = isExperienced ? "EXPERIENCED" : "FRESHER";
 
-    const [formData, setFormData] = useState<Partial<PersonalDetailsRequest>>({
+    // Flattened state to match input handlers and the filtering logic in authService
+    const [formData, setFormData] = useState<Partial<PersonalDetails>>({
         firstName: "",
         lastName: "",
-        surName: "",
         gender: "MALE",
         bloodGroup: "O_POSITIVE",
         maritalStatus: "SINGLE",
@@ -59,18 +58,17 @@ const PersonalDetailsModal = () => {
     };
 
     const handleSubmit = async () => {
-        const commonRequired: (keyof PersonalDetailsRequest)[] = [
-            'firstName', 'lastName', 'surName', 'contactNumber', 'aadharNumber',
+        // FIX: Validation now checks keys against the flat PersonalDetails interface
+        const commonRequired: (keyof PersonalDetails)[] = [
+            'firstName', 'lastName', 'contactNumber', 'aadharNumber',
             'personalEmail', 'dateOfBirth', 'presentAddress', 'permanentAddress',
             'designation', 'bankName', 'accountNumber'
         ];
 
         const isMissingText = commonRequired.some(field => !formData[field]);
 
-        // Logic: Experienced needs Aadhaar + Exp + Leaving + Academic (TC/Offer)
-        // Fresher just needs Aadhaar + TC + Offer
         const requiredFiles = isExperienced
-            ? ['aadhaarCard', 'experienceCertificate', 'leavingLetter', 'tc', 'offerLetter']
+            ? ['aadhaarCard', 'experienceCertificate', 'leavingLetter']
             : ['aadhaarCard', 'tc', 'offerLetter'];
 
         const isMissingFile = requiredFiles.some(key => !files[key]);
@@ -91,6 +89,7 @@ const PersonalDetailsModal = () => {
 
         try {
             setLoaderState({ active: true, finished: false });
+            // This sends the data to your updated authService which handles the FormData wrapping
             await authService.submitMultipartDetails(user.id, submissionType, formData, files);
             setLoaderState({ active: true, finished: true });
         } catch (err: any) {
@@ -158,7 +157,7 @@ const PersonalDetailsModal = () => {
 
                     <div className="p-8 overflow-y-auto space-y-8 bg-neutral-25/30 custom-scrollbar">
 
-                        {/* SECTION 1: IDENTITY */}
+                        {/* IDENTITY SECTION */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
                                 <HiOutlineUserCircle size={18} />
@@ -173,10 +172,6 @@ const PersonalDetailsModal = () => {
                                 <div>
                                     <InputLabel>Last Name</InputLabel>
                                     <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.lastName || ""} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
-                                </div>
-                                <div>
-                                    <InputLabel>Surname</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.surName || ""} onChange={e => setFormData({ ...formData, surName: e.target.value })} />
                                 </div>
                             </div>
 
@@ -218,7 +213,7 @@ const PersonalDetailsModal = () => {
                             </div>
                         </div>
 
-                        {/* SECTION 2: BANK DETAILS */}
+                        {/* BANK DETAILS SECTION */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
                                 <HiOutlineBuildingLibrary size={18} />
@@ -236,7 +231,7 @@ const PersonalDetailsModal = () => {
                             </div>
                         </div>
 
-                        {/* SECTION 3: PROFESSIONAL */}
+                        {/* PROFESSIONAL SECTION */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
                                 <HiOutlineBriefcase size={18} />
@@ -277,18 +272,22 @@ const PersonalDetailsModal = () => {
                             )}
                         </div>
 
-                        {/* SECTION 4: DOCUMENTS (DYNAMIC) */}
+                        {/* DOCUMENTS SECTION */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
                                 <HiOutlineDocumentArrowUp size={18} />
                                 <span className="text-xs font-bold uppercase tracking-wider">Document Uploads</span>
                             </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <FileInput label="Aadhaar Card" id="aadhaarCard" />
-                                <FileInput label="Transfer Cert (TC)" id="tc" />
-                                <FileInput label="Offer Letter" id="offerLetter" />
-                                
-                                {isExperienced && (
+
+                                {!isExperienced ? (
+                                    <>
+                                        <FileInput label="Transfer Cert (TC)" id="tc" />
+                                        <FileInput label="Offer Letter" id="offerLetter" />
+                                    </>
+                                ) : (
                                     <>
                                         <FileInput label="Experience Cert" id="experienceCertificate" />
                                         <FileInput label="Leaving Letter" id="leavingLetter" />
@@ -297,7 +296,7 @@ const PersonalDetailsModal = () => {
                             </div>
                         </div>
 
-                        {/* SECTION 5: ADDRESSES */}
+                        {/* ADDRESSES SECTION */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
                                 <HiOutlineMapPin size={18} />
@@ -309,7 +308,7 @@ const PersonalDetailsModal = () => {
                             </div>
                         </div>
 
-                        {/* SECTION 6: FAMILY */}
+                        {/* FAMILY SECTION */}
                         <div className="space-y-4 pb-4">
                             <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
                                 <HiOutlineUsers size={18} />

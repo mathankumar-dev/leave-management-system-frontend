@@ -4,7 +4,7 @@ import type { EmployeeOnLeave, TeamMemberOnLeave, TeamPendingLeave } from "@/fea
 export type OnboardingStage = 'PENDING' | 'COMPLETED' | 'IN_PROGRESS';
 
 export interface TeamMember {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   email: string;
   yearlyBalance: number;
@@ -21,7 +21,7 @@ export interface TeamStructure {
 }
 
 export interface OnboardingEmployee {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   email: string;
   joiningDate: string;
@@ -111,7 +111,7 @@ export interface GlobalLeaveTypeUsage {
 
 export interface RejectedLeaveAudit {
   leaveId: number;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   leaveType: string;
   startDate: string;
@@ -123,7 +123,7 @@ export interface RejectedLeaveAudit {
 }
 
 export interface EmployeeCompliance {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   issue: string; // e.g., "Negative Balance Detected"
   severity: 'LOW' | 'MEDIUM' | 'HIGH';
@@ -132,7 +132,7 @@ export interface EmployeeCompliance {
 }
 
 export interface OnboardingStatus {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   email: string;
   joiningDate: string;

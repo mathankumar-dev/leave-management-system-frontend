@@ -6,7 +6,7 @@ export const useRequest = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const createOD = useCallback(async (request: ODRequest, employeeId: number) => {
+    const createOD = useCallback(async (request: ODRequest, employeeId: string) => {
         setLoading(true);
         setError(null);
         try {
@@ -20,7 +20,7 @@ export const useRequest = () => {
             setLoading(false);
         }
     }, []);
-    const createMeeting = useCallback(async (request: MeetingRequest, employeeId: number, attendeeIds?: number[]) => {
+    const createMeeting = useCallback(async (request: MeetingRequest, employeeId: string, attendeeIds?: number[]) => {
         setLoading(true);
         setError(null);
         try {
@@ -34,7 +34,7 @@ export const useRequest = () => {
             setLoading(false);
         }
     }, []);
-    const createAccessRequest = useCallback(async (request: AccessRequest, employeeId: number) => {
+    const createAccessRequest = useCallback(async (request: AccessRequest, employeeId: string) => {
         setLoading(true);
         setError(null);
         try {

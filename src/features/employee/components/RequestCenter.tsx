@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   HiOutlineClock, HiOutlineHome, HiOutlineBriefcase,
@@ -6,99 +6,100 @@ import {
   HiChevronDoubleLeft, HiChevronDoubleRight
 } from "react-icons/hi2";
 import { TbAccessPoint } from "react-icons/tb";
-import AccessRequestForm from "@/features/employee/components/AccessRequestForm";
-import LeaveApplicationForm from "@/features/leave/components/LeaveApplicationForm";
-import ODRequestForm from "@/features/leave/components/ODRequestForm";
 
+// Import your form components
+import LeaveApplicationForm from "@/features/leave/components/LeaveApplicationForm";
 
 type RequestType = "LEAVE" | "OD" | "WFH" | "MEETING" | "OVERTIME" | "ACCESS";
 
 const RequestCenter = () => {
   const [activeTab, setActiveTab] = useState<RequestType>("LEAVE");
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Handle responsive check correctly
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setIsCollapsed(false); // Never collapse on mobile
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const menuItems = [
-    { id: "LEAVE", label: "Leave Form", icon: <HiOutlineClock size={20} />, description: "Annual, Sick, Comp-off" },
-    { id: "OD", label: "OD Form", icon: <HiOutlineBriefcase size={20} />, description: "On-Duty / Field Work" },
-    { id: "ACCESS", label: "Access Form", icon: <TbAccessPoint size={20} />, description: "VPN / Bio Metric Access" },
-    // { id: "MEETING", label: "Meeting", icon: <HiOutlineUserGroup size={20} />, description: "Conference Room" },
-    { id: "WFH", label: "WFH Request", icon: <HiOutlineHome size={20} />, description: "Work from Home" },
-    { id: "OVERTIME", label: "Overtime", icon: <HiOutlineMoon size={20} />, description: "Extra Hours Credit" },
+    { id: "LEAVE", label: "Leave", icon: <HiOutlineClock size={18} />, description: "Annual, Sick" },
+    { id: "OD", label: "OD", icon: <HiOutlineBriefcase size={18} />, description: "On-Duty" },
+    { id: "ACCESS", label: "Access", icon: <TbAccessPoint size={18} />, description: "VPN / Bio" },
+    { id: "WFH", label: "WFH", icon: <HiOutlineHome size={18} />, description: "Home" },
+    { id: "OVERTIME", label: "Overtime", icon: <HiOutlineMoon size={18} />, description: "Extra Credit" },
   ];
 
   return (
-    <div className="max-w-350 mx-auto">
-      {/* MAIN GRID CONTAINER */}
-      <div className="grid grid-cols-[auto_1fr] gap-8 items-start">
+    <div className="w-full max-w-7xl mx-auto px-4 py-4 md:py-8 md:px-6">
+      {/* LAYOUT ENGINE:
+          Mobile: flex-col (Aside top, Main bottom)
+          Desktop: md:grid (Aside left, Main right)
+      */}
+      <div className="flex flex-col md:grid md:grid-cols-[auto_1fr] gap-4 md:gap-8 items-start">
 
+        {/* SIDEBAR / MOBILE TOP NAV */}
         <motion.aside
           initial={false}
-          animate={{ width: isCollapsed ? "84px" : "300px" }}
+          animate={{ 
+            width: isMobile ? "100%" : (isCollapsed ? "80px" : "260px") 
+          }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="sticky top-24 z-50" // Increased Z-index
+          className="w-full md:sticky md:top-24 z-30"
         >
-          <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm overflow-visible relative">
-
-            {/* Toggle Header */}
-            <div className={`flex items-center mb-6 px-4 pt-2 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+          <div className="bg-white border border-slate-200 rounded-2xl p-2 md:p-3 shadow-sm">
+            
+            {/* Desktop Toggle Header: Completely hidden on mobile */}
+            <div className="hidden md:flex items-center justify-between mb-4 px-4 pt-2">
               {!isCollapsed && (
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Menu</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Menu</span>
               )}
               <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="p-1.5 rounded-sm hover:bg-slate-100 text-slate-400 transition-colors flex items-center"
+                className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 transition-colors"
               >
-                {isCollapsed ? <HiChevronDoubleRight size={16} /> : <HiChevronDoubleLeft size={18} />}
+                {isCollapsed ? <HiChevronDoubleRight size={16} /> : <HiChevronDoubleLeft size={16} />}
               </button>
             </div>
 
-            <nav className="space-y-1.5 relative">
+            {/* Navigation List
+                Mobile: Horizontal Row (Swipeable)
+                Desktop: Vertical Column
+            */}
+            <nav className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible no-scrollbar">
               {menuItems.map((item) => {
                 const isActive = activeTab === item.id;
                 return (
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id as RequestType)}
-                    className={`w-full flex items-center p-3.5 rounded-xl transition-all relative group ${isCollapsed ? "justify-center" : "justify-start"
-                      } ${isActive
-                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100"
-                        : "hover:bg-slate-50 text-slate-600"
-                      }`}
+                    className={`flex items-center gap-3 p-3 md:p-3.5 rounded-xl transition-all whitespace-nowrap min-w-fit md:min-w-0
+                      ${isActive 
+                        ? "bg-brand text-white shadow-lg shadow-indigo-100" 
+                        : "text-slate-600 hover:bg-slate-50 bg-slate-50/50 md:bg-transparent"
+                      }
+                      ${isCollapsed ? "md:justify-center" : "md:justify-start"}
+                    `}
                   >
-                    {/* Icon & Label */}
-                    <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-4"} min-w-0`}>
-                      <div className={`shrink-0 ${isActive ? "text-white" : "text-indigo-500"}`}>
-                        {item.icon}
-                      </div>
-
-                      {!isCollapsed && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="text-left overflow-hidden"
-                        >
-                          <p className="text-sm font-bold truncate">{item.label}</p>
-                          <p className="text-[9px] font-medium opacity-70 truncate">{item.description}</p>
-                        </motion.div>
-                      )}
+                    <div className={`${isActive ? "text-white" : "text-indigo-500"} shrink-0`}>
+                      {item.icon}
                     </div>
 
-                    {/* --- TOOLTIP (Now safe from clipping) --- */}
-                    {isCollapsed && (
-                      <div
-                        className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 
-                px-3 py-1.5 bg-slate-900 text-white text-[10px] font-bold 
-                rounded-md opacity-0 group-hover:opacity-100 
-                pointer-events-none transition-all duration-200
-                -translate-x-2.5 group-hover:translate-x-0 
-                whitespace-nowrap z-999 shadow-2xl"
-                      >
-                        {/* Arrow */}
-                        <div className="absolute right-full top-1/2 -translate-y-1/2 
-                    border-[5px] border-transparent border-r-slate-900" />
-                        {item.label}
-                      </div>
-                    )}
+                    {/* Label handling */}
+                    <div className={`text-left ${isCollapsed ? "md:hidden" : "block"}`}>
+                      <p className="text-xs md:text-sm font-bold">{item.label}</p>
+                      <p className="hidden md:block text-[9px] font-medium opacity-70 uppercase tracking-tighter">
+                        {item.description}
+                      </p>
+                    </div>
                   </button>
                 );
               })}
@@ -106,29 +107,30 @@ const RequestCenter = () => {
           </div>
         </motion.aside>
 
-        {/* CONTENT AREA - Column 2 */}
-        <main className="min-w-0">
+        {/* FORM CONTENT AREA */}
+        <main className="w-full min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25, ease: "circOut" }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="bg-white border border-slate-200 rounded-2xl md:rounded-3xl shadow-sm min-h-100 overflow-hidden"
             >
-              <div className="bg-white border border-slate-200 rounded-3xl shadow-sm min-h-150 overflow-hidden">
-                {/* Internal form routing */}
+              <div className="p-4 md:p-8">
                 {activeTab === "LEAVE" && <LeaveApplicationForm />}
-                {activeTab === "OD" && <ODRequestForm />}
-                {activeTab === "ACCESS" && <AccessRequestForm />}
+                {/* activeTab === "OD" && <ODRequestForm />}
+                {activeTab === "ACCESS" && <AccessRequestForm />} */}
 
-                {/* Placeholders for new forms */}
-                {(activeTab === "WFH" || activeTab === "OVERTIME") && (
-                  <div className="flex flex-col items-center justify-center h-150 text-slate-400">
+                {/* Status for building modules */}
+                {(activeTab === "WFH" || activeTab === "OVERTIME" || activeTab === "ACCESS" || activeTab === "OD" ) && (
+                  <div className="flex flex-col items-center justify-center py-24 text-slate-400">
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                       <HiOutlineMoon size={32} className="opacity-20" />
                     </div>
-                    <p className="font-bold uppercase tracking-widest text-[10px]">Development in progress</p>
+                    <h3 className="text-slate-900 font-bold text-sm">Under Construction</h3>
+                    <p className="text-[10px] uppercase tracking-[0.2em] mt-1">Coming soon to WorkSphere</p>
                   </div>
                 )}
               </div>

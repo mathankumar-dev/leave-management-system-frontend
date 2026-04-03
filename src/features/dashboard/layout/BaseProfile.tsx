@@ -75,7 +75,7 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
 
           <div>
             <label className={labelClass}>Manager</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.managerName}</p>
+            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.reportingName}</p>
           </div>
           <div>
             <label className={labelClass}>Work Location</label>

@@ -5,7 +5,7 @@ export const useAdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAdminDashboard = useCallback(async (id: number) => {
+  const fetchAdminDashboard = useCallback(async (id: string) => {
     setLoading(true);
     try {
       return await dashboardService.getAdminDashboard(id);

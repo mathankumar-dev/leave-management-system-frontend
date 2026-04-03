@@ -31,7 +31,6 @@ export const useOnboarding = () => {
         setError(null);
         try {
 
-            console.log(requestId, type, decision);
             await onboardingServices.approveAccessAdmin(requestId, decision);
             // Refresh the list after a successful decision
             const updatedData = await onboardingServices.getOnboardingRequests();

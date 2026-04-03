@@ -1,17 +1,15 @@
-export type UserRole = "EMPLOYEE" | "MANAGER" | "HR" | "ADMIN" | "CFO" | "TEAM_LEADER" | "CEO";
+export type UserRole = "EMPLOYEE" | "MANAGER" | "HR" | 'CEO' | "ADMIN" | "CFO" | "TEAM_LEADER" | "CTO" | "COO";
 
 export interface LoginCredentials {
-  email: string;
+  identifier: string;
   password: string;
 }
 
 export interface AuthResponse {
   token?: string;
-  id: number;
+  id: string;
   role: UserRole;
   forcePasswordChange: boolean;
 }
-
-
 
 export type ExperienceType = 'EXPERIENCED' | 'FRESHER';

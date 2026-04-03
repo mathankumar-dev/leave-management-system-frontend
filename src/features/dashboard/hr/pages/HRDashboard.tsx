@@ -4,7 +4,6 @@ import { useHRDashboard } from '@/features/dashboard/hooks';
 import { ManagerTrackingTable, MonitoringSection, OnboardingStats } from '@/features/dashboard/hr/components';
 // import LowBalanceTable from '@/features/dashboard/hr/components/LowBalanceTable';
 import { useCallback, useState } from 'react';
-import LowBalanceTable from '../components/LowBalanceTable';
 
 interface HRDashboardProps {
   userName?: string;

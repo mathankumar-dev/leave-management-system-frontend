@@ -5,7 +5,7 @@ export const useManagerDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchManagerDashboard = useCallback(async (id: number) => {
+  const fetchManagerDashboard = useCallback(async (id: string) => {
     setLoading(true);
     try {
       return await dashboardService.getManagerDashboard(id);

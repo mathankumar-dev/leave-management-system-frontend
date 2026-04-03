@@ -27,7 +27,7 @@ const NotificationsView: React.FC = () => {
     unreadCount,
     markAllAsRead,
     markAsRead
-  } = useNotifications(user?.id || 0);
+  } = useNotifications(user?.id!);
 
   const sortedNotifications = useMemo(() => {
     return [...notifications].sort((a, b) => {

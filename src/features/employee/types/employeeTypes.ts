@@ -1,7 +1,27 @@
 import type { ExperienceType, UserRole } from "@/shared/auth/authTypes";
+import type { Gender } from "@/shared/types";
+
+
+// export type EmployeeExperience = 'FRESHER' | 'EXPERIENCED';
+// export interface Employee {
+//   empId: number;
+//   teamId?: number | null;
+//   departmentId: number;
+//   name: string;
+//   email: string;
+//   role: string;
+//   employeeExperience: EmployeeExperience;
+//   reportingId: number | null;
+//   branchId: number;
+// }
+
+// export interface ProfileResponse {
+//   employee: Employee;
+
+// }
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: UserRole;
@@ -20,7 +40,7 @@ export interface User {
   updatedAt: string;
   mustChangePassword?: boolean;
   contactNumber: string | null;
-  gender: string | null;
+  gender: Gender;
   aadharNumber: string | null;
   personalEmail: string | null;
   dateOfBirth: string | null;
@@ -34,9 +54,47 @@ export interface User {
   skillSet: string | null;
   personalDetailsComplete: boolean | null;
   personalDetailsLocked: boolean | null;
-  employeeExperience : ExperienceType;
-  verificationStatus : string;
+  employeeExperience: ExperienceType;
+  verificationStatus: string;
 }
+
+// export interface PersonalDetails {
+//   firstName: string;
+//   lastName: string;
+//   contactNumber: string;
+//   accountNumber: string;
+//   bankName: string;
+//   pfNumber: string;
+//   unaNumber?: string | null;
+//   gender: Gender;
+//   maritalStatus: MaritalStatus;
+//   aadharNumber: string;
+//   personalEmail: string;
+//   dateOfBirth: string;
+//   presentAddress: string;
+//   permanentAddress: string;
+//   bloodGroup: BloodGroup;
+
+//   emergencyContactNumber: string;
+//   fatherName: string;
+//   motherName: string;
+//   designation: string;
+//   skillSet: string;
+
+//   // DOC
+//   aadhaarDocPath: string;
+//   tcDocPath: string;
+//   offerLetterDocPath: string;
+//   experienceCertDocPath: string;
+//   leavingLetterDocPath: string;
+
+//   previousRole?: string | null;
+//   oldCompanyName?: string | null;
+//   oldCompanyFromDate?: string | null;
+//   oldCompanyEndDate: string | null;
+
+
+// }
 
 export interface Employee {
   managerId: null;
@@ -53,7 +111,7 @@ export interface Employee {
   dept: string;
   role: string;
   status: string;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   totalAllocated: number;
   totalUsed: number;
@@ -65,7 +123,10 @@ export interface Employee {
 
 export interface TeamMember {
   employeeName: string;
-  employeeId: number;
+  employeeId: string;
   designation: string | null;
   skills: string | null;
 }
+
+
+

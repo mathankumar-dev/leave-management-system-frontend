@@ -1,27 +1,24 @@
 import { useEmployeeDashboard } from "@/features/dashboard/hooks";
 import LeaveDetailsDrawer from "@/features/leave/components/LeaveDetailsDrawer";
+import type { LeaveTypeBreakDown } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
-import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
+import { CustomLoader, Divider, MyFloatingActionButton } from "@/shared/components";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
-import { FaCheckCircle, FaClock, FaPlus, FaTimesCircle } from "react-icons/fa";
+import { FaCheckCircle, FaPlus, FaTimesCircle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-interface LeaveTypeBreakdown {
-  leaveType: string;
-  allocatedDays: number;
-  usedDays: number;
-  remainingDays: number;
-  pendingCount?: number;
-}
+
 
 interface StatItem {
   title: string;
   used: number;
   total?: number;
   pendingCount?: number;
+  balance? : number;
 }
 
-const DashboardView = ({ onNavigate }: any) => {
+const DashboardView = () => {
 
   const { fetchDashboard, setError } = useEmployeeDashboard();
   const { user } = useAuth();
@@ -39,10 +36,9 @@ const DashboardView = ({ onNavigate }: any) => {
   const [stats, setStats] = useState<StatItem[]>([]);
   const [approved, setApproved] = useState(0);
   const [rejected, setRejected] = useState(0);
-  const [lopPercent, setLopPercent] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedCard, setSelectedCard] = useState<StatItem | null>(null);
-
+  const navigate = useNavigate();
 
   const loadDashboard = useCallback(async () => {
 
@@ -53,12 +49,19 @@ const DashboardView = ({ onNavigate }: any) => {
       setLoading(true);
 
       const data = await fetchDashboard(user.id);
+      console.log(data);
+      
 
-      const breakdown: LeaveTypeBreakdown[] = data.breakdown || [];
+      const breakdown: LeaveTypeBreakDown[] = data.breakdown || [];
 
-      const sick = breakdown.find(b => b.leaveType?.includes("SICK"));
+      const sick = breakdown.find(b => b.leaveTypeName?.includes("SICK"));
+     
+      
 
-      const annual = breakdown.find(b => b.leaveType?.includes("ANNUAL"));
+      const annual = breakdown.find(b => b.leaveTypeName?.includes("ANNUAL"));
+
+
+      
 
       setMonthly({
         annualAllocated: data.monthlyAnnualAllocated || 0,
@@ -72,16 +75,18 @@ const DashboardView = ({ onNavigate }: any) => {
 
       setStats([
         {
-          title: "Yearly Sick Leave",
+          title: "Sick Leave",
           used: sick?.usedDays ?? 0,
           total: sick?.allocatedDays ?? 0,
-          pendingCount: sick?.pendingCount ?? 0
+          pendingCount: sick?.pendingCount ?? 0,
+          balance : sick?.remainingDays ?? 0
         },
         {
-          title: "Yearly Annual Leave",
+          title: "Annual Leave",
           used: annual?.usedDays ?? 0,
           total: annual?.allocatedDays ?? 0,
-          pendingCount: annual?.pendingCount ?? 0
+          pendingCount: annual?.pendingCount ?? 0,
+          balance : annual?.remainingDays ?? 0
         },
         {
           title: "Total Leave Count",
@@ -102,7 +107,6 @@ const DashboardView = ({ onNavigate }: any) => {
 
       setApproved(data.approvedCount);
       setRejected(data.rejectedCount);
-      setLopPercent(data.lossOfPayPercentage);
 
     } catch (e: any) {
 
@@ -118,7 +122,23 @@ const DashboardView = ({ onNavigate }: any) => {
 
 
   useEffect(() => { loadDashboard(); }, [loadDashboard]);
+  const userRole = user?.role?.toUpperCase();
 
+  const basePathMap = {
+    EMPLOYEE: "/employee",
+    MANAGER: "/manager",
+    TEAM_LEADER: "/manager",
+    HR: "/hr",
+    ADMIN: "/manager",
+    CFO: "/manager",
+  };
+
+  const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
+  const handleNavigate = (path: string) => {
+    const finalPath = path.startsWith('/') ? path : `${basePath}/${path}`;
+    console.log("Navigating to:", finalPath);
+    navigate(finalPath);
+  };
 
   if (loading) return <CustomLoader label="Loading dashboard..." />;
 
@@ -128,7 +148,7 @@ const DashboardView = ({ onNavigate }: any) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto px-6 py-6 space-y-6"
+      className="max-w-7xl mx-auto  space-y-6"
     >
 
       {/* HEADER */}
@@ -147,42 +167,40 @@ const DashboardView = ({ onNavigate }: any) => {
 
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => onNavigate?.("Apply Leave")}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm shadow hover:bg-indigo-700"
-        >
-          <FaPlus size={12} />
-          Apply Leave
-        </motion.button>
 
       </div>
 
 
       {/* MONTHLY */}
+      <div className="flex gap-2 flex-col rounded p-2" >
+        <span className="font-bold text-2xl" >Monthly Stats</span>
+        <div className="grid md:grid-cols-3 gap-4">
 
-      <div className="grid md:grid-cols-3 gap-4">
+          <MiniCard
+            title="Annual Leave"
+            used={monthly.annualUsed}
+            balance={monthly.annualBalance}
+            total={monthly.annualAllocated}
+            color="indigo"
 
-        <MiniCard
-          title="Monthly Annual Leave"
-          used={monthly.annualUsed}
-          total={monthly.annualAllocated}
-          color="indigo"
-        />
 
-        <MiniCard
-          title="Monthly Sick Leave"
-          used={monthly.sickUsed}
-          total={monthly.sickAllocated}
-          color="pink"
-        />
+          />
 
-        <HighlightCard
-          title="Total Monthly Balance"
-          value={monthly.totalBalance}
-        />
+          <MiniCard
+            title="Sick Leave"
+            used={monthly.sickUsed}
+            total={monthly.sickAllocated}
+            balance={monthly.sickBalance}
 
+            color="pink"
+          />
+
+          <HighlightCard
+            title="Total Monthly Balance"
+            value={monthly.totalBalance}
+          />
+
+        </div>
       </div>
 
 
@@ -205,12 +223,12 @@ const DashboardView = ({ onNavigate }: any) => {
           color="red"
         />
 
-        <StatCard
+        {/* <StatCard
           title="LOP In Days"
           value={lopPercent}
           icon={<FaClock />}
           color="yellow"
-        />
+        /> */}
 
       </div>
 
@@ -230,8 +248,9 @@ const DashboardView = ({ onNavigate }: any) => {
 
             <tr className="bg-black">
               <th className="p-3 text-left">Type</th>
-              <th className="p-3 text-center">Allocated</th>
+              <th className="p-3 text-center">Allocated (yearly)</th>
               <th className="p-3 text-center">Used</th>
+              <th className="p-3 text-center">Balance</th>
               <th className="p-3 text-center">Pending</th>
             </tr>
 
@@ -240,8 +259,8 @@ const DashboardView = ({ onNavigate }: any) => {
 
           <tbody>
 
-            {stats.map((s, i) => {
 
+            {stats.map((s, i) => {
 
               return (
 
@@ -251,21 +270,18 @@ const DashboardView = ({ onNavigate }: any) => {
                   onClick={() => setSelectedCard(s)}
                   className="border-b cursor-pointer"
                 >
-
                   <td className="p-3 font-medium">
                     {s.title}
                   </td>
-
-
-                  <td className="text-center text-gray-600">
+                  <td className="text-center text-black">
                     {s.total ?? "-"}
                   </td>
-
-
                   <td className="text-center font-semibold text-indigo-600">
                     {s.used}
                   </td>
-
+                  <td className="text-center font-semibold text-indigo-600">
+                    {s.balance}
+                  </td>
 
                   <td className="text-center">
 
@@ -297,19 +313,19 @@ const DashboardView = ({ onNavigate }: any) => {
         open={!!selectedCard}
         stat={selectedCard}
         onClose={() => setSelectedCard(null)}
-        onClick={() => onNavigate?.("Apply Leave")}
+        onClick={() => handleNavigate('request-center')}
       />
 
 
-      {user?.role !== "EMPLOYEE" && (
+     
 
         <MyFloatingActionButton
           icon={<FaPlus />}
-          onClick={() => onNavigate?.("Apply Leave")}
+          onClick={() => handleNavigate('request-center')}
           title="Apply Leave"
         />
 
-      )}
+      
 
     </motion.div>
 
@@ -322,7 +338,7 @@ export default DashboardView;
 
 
 // progress card
-const MiniCard = ({ title, used, total, color = "indigo" }: any) => {
+const MiniCard = ({ title, used, total, balance, color = "indigo" }: any) => {
 
   const percent = total ? (used / total) * 100 : 0;
 
@@ -330,7 +346,7 @@ const MiniCard = ({ title, used, total, color = "indigo" }: any) => {
 
     indigo: "bg-indigo-500",
     pink: "bg-pink-500",
-    green: "bg-green-500",
+    green: "bg-green-200",
     yellow: "bg-yellow-500"
 
   };
@@ -341,20 +357,24 @@ const MiniCard = ({ title, used, total, color = "indigo" }: any) => {
       whileHover={{ y: -4, scale: 1.02 }}
       className="bg-white border rounded-xl p-4 shadow-sm"
     >
-
       <p className="text-xs text-gray-500">
         {title}
       </p>
-
       <div className="flex justify-between mt-1 text-sm">
 
+        <span className="text-gray-400">
+          {used} used
+        </span>
+        <Divider />
         <span className="font-semibold">
-          {used}
+          {total} total
+        </span>
+        <Divider />
+        <span className="font-semibold">
+          {balance} balance
         </span>
 
-        <span className="text-gray-400">
-          / {total}
-        </span>
+
 
       </div>
 
@@ -381,7 +401,7 @@ const HighlightCard = ({ title, value }: any) => (
 
   <motion.div
     whileHover={{ scale: 1.04 }}
-    className="bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white rounded-xl p-4 shadow"
+    className="bg-white border rounded-xl p-4 shadow-sm"
   >
 
     <p className="text-xs opacity-80">

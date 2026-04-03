@@ -1,7 +1,10 @@
-import wenxtdashboard from "@/assets/images/wenxtimage.png";
 import logo from "@/assets/images/bg-rm-logo-HRES.png";
+import wenxtdashboard from "@/assets/images/wenxtimage.png";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+
+
 /* ── Count-up Hook ── */
 export function useCountUp(target: number, animate: boolean, duration = 1800) {
   const [count, setCount] = useState(0);
@@ -35,8 +38,7 @@ export function useCountUp(target: number, animate: boolean, duration = 1800) {
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-
-
+  console.log(scrolled);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 28);
     window.addEventListener("scroll", fn);
@@ -47,10 +49,9 @@ export function Navbar() {
 
   return (
     <nav className={` top-0 h-25 w-full z-50 transition-all duration-300  border-slate-200 bg-transparent`}>
-      <div className="max-w-7xl mx-auto px-6 pt-3 h-18 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 pt-7 h-18 flex items-center justify-between">
         <a href="#home" className="flex items-center gap-3">
-
-          <img src={logo} alt="" height={100} width={100} />
+          <img src={logo} alt="" height={80} width={80} />
         </a>
 
         {/* Desktop Links */}
@@ -91,10 +92,15 @@ export function Navbar() {
 }
 
 /* ── Hero Section ── */
-export function Hero() {
+export function Hero({ featuresRef }: { featuresRef: React.RefObject<HTMLDivElement | null> }) {
   const navigate = useNavigate();
+
+  const handleScroll = () => {
+    // The ?. (optional chaining) safely handles the 'null' possibility
+    featuresRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   return (
-    <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-brand-bg">
+    <section id="home" className="relative min-h-[calc(100vh-100px)] flex items-center   overflow-hidden bg-brand-bg">
 
       {/* Background Blobs */}
       <div className="absolute inset-0 pointer-events-none">
@@ -114,12 +120,10 @@ export function Hero() {
               Get Started
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
             </button>
-            <button className="border-2 border-brand text-brand px-8 py-3.5 rounded-lg font-bold hover:bg-blue-50 transition-all hover:scale-105">
+            <button onClick={() => handleScroll()} className="border-2 border-brand text-brand px-8 py-3.5 rounded-lg font-bold hover:bg-blue-50 transition-all hover:scale-105">
               Explore Features
             </button>
           </div>
-
-          
         </div>
 
         <div className="relative flex justify-center">
@@ -191,7 +195,8 @@ export function HomeStats() {
 }
 
 /* ── Features ── */
-export function Features() {
+export function Features({ featuresRef }: { featuresRef: React.RefObject<HTMLDivElement | null> }) {
+
   const features = [
     { icon: "🧠", title: "By Insurance Experts", desc: "Built by practitioners with 25+ years of domain expertise in life and health.", color: "bg-blue-50 text-blue-600" },
     { icon: "🔌", title: "API-Driven Integration", desc: "Open RESTful APIs connect your CRM and portals in days—not months.", color: "bg-emerald-50 text-emerald-600" },
@@ -201,7 +206,7 @@ export function Features() {
   ];
 
   return (
-    <section id="features" className="py-24 bg-slate-50">
+    <section ref={featuresRef} id="features" className="py-24 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <p className="text-brand uppercase tracking-widest font-bold text-sm mb-3">What We Offer</p>
@@ -274,13 +279,15 @@ export function Footer() {
 
 /* ── Main Export ── */
 export default function LandingPage() {
+  const featuresRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className="selection:bg-brand selection:text-white">
       <Navbar />
       <main>
-        <Hero />
+        <Hero featuresRef={featuresRef} />
         <HomeStats />
-        <Features />
+        <Features featuresRef={featuresRef} />
       </main>
       <Footer />
     </div>

@@ -3,7 +3,7 @@ import { CardContent, CardHeader, CardTitle } from '@/shared/components/Card';
 import { AlertTriangle, CalendarClock } from 'lucide-react';
 
 interface OnboardingEmployee {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   email: string;
   joiningDate: string;

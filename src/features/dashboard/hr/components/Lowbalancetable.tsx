@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/Ca
 import { AlertTriangle } from 'lucide-react';
 
 export interface LowBalanceEmployee {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   totalAllocated: number;
   totalUsed: number;

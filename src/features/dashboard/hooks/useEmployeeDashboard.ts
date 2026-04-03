@@ -5,7 +5,7 @@ export const useEmployeeDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDashboard = useCallback(async (employeeId: number) => {
+  const fetchDashboard = useCallback(async (employeeId: string) => {
     setLoading(true);
     try {
       return await dashboardService.getEmpDashboard(employeeId);

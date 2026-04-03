@@ -1,7 +1,8 @@
+import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import EditLeaveModal from "@/features/leave/components/EditLeaveModal";
 import { useLeave } from "@/features/leave/hooks/useLeave";
 import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
-import type { LeaveRecord, ODResponse } from "@/features/leave/types";
+import type { LeaveRecord } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CustomLoader } from "@/shared/components";
 import { formatTimeAgo } from "@/shared/utils/formatTimeAgo";
@@ -10,10 +11,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FaCalendarAlt, FaEdit, FaEllipsisV, FaInfoCircle, FaTimes } from "react-icons/fa";
 
 const MyRequestsView: React.FC = () => {
-  const { fetchMyLeaves, fetchMyOD } = useLeave();
+  const { fetchMyLeaves } = useLeave();
+
   const { cancelLeave, editLeave, loading } = useLeaveAction();
   const { user } = useAuth();
-  const [history, setHistory] = useState<(LeaveRecord | ODResponse)[]>([]);
+  const [history, setHistory] = useState<(LeaveRecord)[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
@@ -27,15 +29,17 @@ const MyRequestsView: React.FC = () => {
   const loadAllHistory = async () => {
     if (!user?.id) return;
     try {
-      const [leavesData, odData] = await Promise.all([
+      const [leavesData] = await Promise.all([
         fetchMyLeaves(user.id),
-        fetchMyOD(user.id)
+        // fetchMyOD(user.id)
       ]);
-      setHistory([...(leavesData || []), ...(odData || [])]);
+      setHistory([...(leavesData || [])]);
     } catch (error) {
       console.error("Failed to fetch history:", error);
     }
   };
+
+
 
   useEffect(() => {
     loadAllHistory();
@@ -89,7 +93,7 @@ const MyRequestsView: React.FC = () => {
       return {
         ...item,
         days: calculatedDays,
-        displayType: item.leaveType ? item.leaveType.replace(/_/g, " ") : "N/A",
+        displayType: item.leaveTypeName ? item.leaveTypeName : "N/A",
         displayRange,
       };
     });
@@ -126,17 +130,17 @@ const MyRequestsView: React.FC = () => {
           {filteredHistory.map((item) => (
             <motion.div
               layout
-              key={`${item.leaveType}-${item.id}`}
+              key={`${item.leaveTypeName}-${item.id}`}
               className={`bg-white rounded-sm border overflow-hidden transition-colors ${expandedId === item.id ? 'border-indigo-300 ring-1 ring-indigo-50' : 'border-slate-200 shadow-sm'}`}
             >
               <div className="p-4 cursor-pointer active:bg-slate-50" onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}>
                 <div className="flex justify-between items-start mb-3">
                   <div className="min-w-0">
-                    <span className={`text-[9px] font-black uppercase block mb-0.5 tracking-wider ${item.leaveType === 'ON_DUTY' ? 'text-amber-500' : 'text-indigo-500'}`}>
+                    <span className={`text-[9px] font-black uppercase block mb-0.5 tracking-wider ${item.leaveTypeName === 'ON_DUTY' ? 'text-amber-500' : 'text-indigo-500'}`}>
                       {item.displayType}
                     </span>
                     <h3 className="text-base font-bold text-slate-900">
-                      {item.days} {item.days === 1 ? 'Day' : 'Days'} {item.leaveType === 'ON_DUTY' ? 'OD' : 'Leave'}
+                      {item.days} {item.days === 1 ? 'Day' : 'Days'} {item.leaveTypeName === 'ON_DUTY' ? 'OD' : 'Leave'}
                     </h3>
                   </div>
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -158,7 +162,7 @@ const MyRequestsView: React.FC = () => {
                 {expandedId === item.id && (
                   <motion.div key="content" variants={accordionVariants} initial="collapsed" animate="open" exit="collapsed" className="bg-slate-50 border-t border-slate-100">
                     <div className="p-4">
-                      <DetailContent item={item} userRole={user?.role} />
+                      <DetailContent item={item} />
                     </div>
                   </motion.div>
                 )}
@@ -183,9 +187,9 @@ const MyRequestsView: React.FC = () => {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {filteredHistory.map((item) => (
-              <React.Fragment key={`${item.leaveType}-${item.id}`}>
+              <React.Fragment key={`${item.leaveTypeName}-${item.id}`}>
                 <tr onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className={`transition-colors cursor-pointer ${expandedId === item.id ? 'bg-indigo-50/40' : 'hover:bg-slate-50/50'}`}>
-                  <td className={`px-6 py-4 font-bold uppercase text-xs ${item.leaveType === 'ON_DUTY' ? 'text-amber-600' : 'text-slate-900'}`}>{item.displayType}</td>
+                  <td className={`px-6 py-4 font-bold uppercase text-xs ${item.leaveTypeName === 'ON_DUTY' ? 'text-amber-600' : 'text-slate-900'}`}>{item.displayType}</td>
                   <td className="px-6 py-4 text-indigo-600 font-bold text-sm">{item.days} Days</td>
                   <td className="px-6 py-4 text-slate-600 text-xs font-bold">{item.displayRange}</td>
                   <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
@@ -204,7 +208,7 @@ const MyRequestsView: React.FC = () => {
                       {expandedId === item.id && (
                         <motion.div variants={accordionVariants} initial="collapsed" animate="open" exit="collapsed" className="overflow-hidden bg-slate-50/50 shadow-inner">
                           <div className="px-6 py-8">
-                            <DetailContent item={item} userRole={user?.role} />
+                            <DetailContent item={item} />
                           </div>
                         </motion.div>
                       )}
@@ -222,84 +226,127 @@ const MyRequestsView: React.FC = () => {
   );
 };
 
-const DetailContent = ({ item, userRole }: { item: any; userRole?: string }) => {
-  const { user } = useAuth();
-  const days = item.days || 1;
+const DetailContent = ({ item }: { item: any }) => {
+  const { fetchEmployeeName } = useEmployee();
+  const [firstApproverName, setFirstApproverName] = useState<string>("Loading...");
+  const [secondApproverName, setSecondApproverName] = useState<string>("Loading...");
 
-  const isEmployee = userRole === "EMPLOYEE";
-  const isTL = userRole === "TEAM_LEADER";
-  const isManager = userRole === "MANAGER";
-  const isAdmin = userRole === "ADMIN";
+  useEffect(() => {
+    const resolveNames = async () => {
+      try {
+        // Fetch and extract Level 1 Name
+        if (item.firstApproverId) {
+          const response1 = await fetchEmployeeName(item.firstApproverId);
+          // Extract empName from the object { empId, empName }
+          const name1 = response1?.empName || item.firstApproverId;
+          setFirstApproverName(name1);
+        }
 
-  // Logic: ODs often require different approval paths than regular leaves
-  const isOD = item.leaveType === "ON_DUTY";
+        // Fetch and extract Level 2 Name
+        if (item.secondApproverId) {
+          const response2 = await fetchEmployeeName(item.secondApproverId);
+          // Extract empName from the object { empId, empName }
+          const name2 = response2?.empName || item.secondApproverId;
+          setSecondApproverName(name2);
+        }
+      } catch (err) {
+        console.error("Failed to fetch approver names", err);
+        // Fallback to IDs if the API fails
+        setFirstApproverName(item.firstApproverId || "Unknown");
+        setSecondApproverName(item.secondApproverId || "Unknown");
+      }
+    };
 
-  const showTLStep = isEmployee;
-  // If OD, usually needs manager regardless of days; otherwise based on duration
-  const needsManager = isOD ? true : (isEmployee && days > 1) || isTL;
-  const needsHR = isManager || isAdmin || days > 7;
+    resolveNames();
+  }, [item.firstApproverId, item.secondApproverId]);
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "";
-    return new Date(dateStr).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
   };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Reason & Metadata */}
       <div className="space-y-3">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-          <FaInfoCircle className="text-indigo-400" /> Reason & Impact
+          <FaInfoCircle className="text-indigo-400" /> Request Details
         </h4>
         <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-[60px]">
-          <p className="text-xs text-slate-600 leading-relaxed">
+          <p className="text-xs text-slate-600 leading-relaxed mb-2">
             {item.reason ? `"${item.reason}"` : "No reason provided."}
           </p>
+          <div className="flex flex-wrap gap-2">
+            {item.isAppointment && (
+              <span className="bg-blue-50 text-blue-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase">Appointment</span>
+            )}
+            {item.startDateHalfDayType && (
+              <span className="bg-orange-50 text-orange-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase">
+                {item.startDateHalfDayType.replace('_', ' ')}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Date Range & Duration */}
       <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm h-fit">
         <div className="p-2.5 flex justify-between items-center">
-          <span className="text-[9px] font-black text-slate-500 uppercase">{item.startDate === item.endDate ? "Date" : "Starts"}</span>
+          <span className="text-[9px] font-black text-slate-500 uppercase">Start Date</span>
           <span className="text-xs font-black text-slate-700">{item.startDate}</span>
         </div>
-        {item.startDate !== item.endDate && (
-          <div className="p-2.5 flex justify-between items-center">
-            <span className="text-[9px] font-black text-slate-500 uppercase">Ends</span>
-            <span className="text-xs font-black text-slate-700">{item.endDate}</span>
-          </div>
-        )}
+        <div className="p-2.5 flex justify-between items-center">
+          <span className="text-[9px] font-black text-slate-500 uppercase">End Date</span>
+          <span className="text-xs font-black text-slate-700">{item.endDate}</span>
+        </div>
+        <div className="p-2.5 flex justify-between items-center bg-slate-50/50">
+          <span className="text-[9px] font-black text-slate-500 uppercase">Duration</span>
+          <span className="text-xs font-black text-indigo-600">{item.days} Day(s)</span>
+        </div>
       </div>
 
+      {/* Approval Timeline mapping to your JSON keys */}
       <div className="space-y-3">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          Approval Flow ({days} {days === 1 ? 'Day' : 'Days'})
+          Approval Workflow
         </h4>
-        <div className="space-y-4 relative before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
-          {/* {showTLStep && (
-            <div className="relative pl-6">
-              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.teamLeaderDecision === 'APPROVED' ? 'bg-emerald-500' : item.teamLeaderDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Team Leader ({user?.teamLeaderName})</p>
-              <p className="text-[10px] text-slate-500 mt-1">{item.teamLeaderDecision ? `${item.teamLeaderDecision} ${formatDate(item.teamLeaderDecidedAt)}` : 'Awaiting Review'}</p>
-            </div>
-          )} */}
+        <div className="space-y-6 relative before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
 
-          {needsManager && (
-            <div className="relative pl-6">
-              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.managerDecision === 'APPROVED' ? 'bg-emerald-500' : item.managerDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Manager ({user?.managerName})</p>
-              <p className="text-[10px] text-slate-500 mt-1">{item.managerDecision ? `${item.managerDecision} on ${formatDate(item.managerDecidedAt)}` : (showTLStep && !item.teamLeaderDecision) ? 'Waiting for Approve' : 'Awaiting Review'}</p>
-            </div>
-          )}
+          {/* First Approver Step */}
+          <div className="relative pl-6">
+            <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors 
+              ${item.firstApproverDecision === 'APPROVED' ? 'bg-emerald-500' : item.firstApproverDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`}
+            />
+            <p className="text-[11px] font-black text-slate-700 uppercase leading-none">
+              Level 1: {firstApproverName}
+            </p>
+            <p className="text-[10px] text-slate-500 mt-1">
+              {item.firstApproverDecision
+                ? `${item.firstApproverDecision} • ${formatDate(item.firstApproverDecidedAt)}`
+                : 'Awaiting Action'}
+            </p>
+          </div>
 
-          {needsHR && (
-            <div className="relative pl-6">
-              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.hrDecision === 'APPROVED' ? 'bg-emerald-500' : item.hrDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">HR ({user?.hrname})</p>
-              <p className="text-[10px] text-slate-500 mt-1">
-                {item.hrDecision ? `${item.hrDecision}` : (needsManager && !item.managerDecision) ? 'Waiting for Manager' : 'Awaiting Review'}
-              </p>
-            </div>
-          )}
+          {/* Second Approver Step */}
+          <div className="relative pl-6">
+            <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors 
+              ${item.secondApproverDecision === 'APPROVED' ? 'bg-emerald-500' : item.secondApproverDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`}
+            />
+            <p className="text-[11px] font-black text-slate-700 uppercase leading-none">
+              Level 2: {secondApproverName}
+            </p>
+            <p className="text-[10px] text-slate-500 mt-1">
+              {item.secondApproverDecision
+                ? `${item.secondApproverDecision} • ${formatDate(item.secondApproverDecidedAt)}`
+                : (item.firstApproverDecision === 'APPROVED' ? 'Awaiting Secondary Review' : 'Pending Level 1')}
+            </p>
+          </div>
+
         </div>
       </div>
     </div>
