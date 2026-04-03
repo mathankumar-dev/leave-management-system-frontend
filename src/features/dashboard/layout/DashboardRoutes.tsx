@@ -20,6 +20,7 @@ import PendingApprovalsView from "@/features/leave/pages/PendingApprovalsView";
 import NotificationsView from "@/features/notification/pages/NotificationsView";
 import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { useAuth } from "@/shared/auth/useAuth";
+import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
 // import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
 
 const DashboardRoutes = () => {
