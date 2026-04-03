@@ -26,7 +26,7 @@ export interface PersonalDetails {
   motherDateOfBirth: string;
   motherOccupation: string;
   motherAlive: boolean;
-  unaNumber?: string;
+  uanNumber?: string;
   previousRole?: string;
   oldCompanyName?: string;
   oldCompanyFromDate?: string;

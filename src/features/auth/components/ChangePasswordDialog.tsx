@@ -1,126 +1,153 @@
 import { authService } from "@/features/auth/api/authApi";
 import { useAuth } from "@/shared/auth/useAuth";
 import { FailureModal, Loader } from "@/shared/components";
-import React, { useState } from "react";
-import { FaShieldAlt } from "react-icons/fa";
-
+import React, { useState, useMemo } from "react";
+import { FaCheckCircle, FaTimesCircle, FaLock } from "react-icons/fa";
 
 const ChangePasswordDialog: React.FC = () => {
   const { user, setUser } = useAuth();
-
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Loader States
+  // Loader & Error States
   const [loaderState, setLoaderState] = useState({ active: false, finished: false });
-
   const [showFailure, setShowFailure] = useState(false);
   const [failureMessage, setFailureMessage] = useState("");
 
+  // Helper to prevent spaces during typing
+  const handlePasswordChange = (val: string, setter: (v: string) => void) => {
+    const noSpaces = val.replace(/\s/g, "");
+    setter(noSpaces);
+  };
+
+  // Updated Live Validation Logic
+  const validations = useMemo(() => {
+    return [
+      { label: "At least 8 characters", valid: newPassword.length >= 8 },
+      { label: "Contains a letter", valid: /[a-zA-Z]/.test(newPassword) },
+      { label: "Contains a number", valid: /\d/.test(newPassword) },
+      { label: "Special character (@$!%*#?)", valid: /[@$!%*#?&]/.test(newPassword) },
+      { label: "No spaces allowed", valid: !/\s/.test(newPassword) && newPassword.length > 0 },
+      { label: "Passwords match", valid: newPassword === confirmPassword && confirmPassword !== "" },
+    ];
+  }, [newPassword, confirmPassword]);
+
+  const allValid = validations.every((v) => v.valid);
+
   const handleSubmit = async () => {
-    // Validations
-    if (!newPassword || !confirmPassword) {
-      setFailureMessage("All fields are required.");
-      setShowFailure(true);
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setFailureMessage("Passwords do not match.");
-      setShowFailure(true);
-      return;
-    }
-    if (newPassword.length < 6) {
-      setFailureMessage("Password must be at least 6 characters.");
+    if (!allValid) {
+      setFailureMessage("Please meet all password requirements.");
       setShowFailure(true);
       return;
     }
 
     try {
-      // 1. Activate circular loader
       setLoaderState({ active: true, finished: false });
-
       await authService.changePassword(newPassword);
-
-      // 2. Mark as finished to trigger exit animation
       setLoaderState({ active: true, finished: true });
-
     } catch (err) {
-      console.error("Change password error:", err);
       setLoaderState({ active: false, finished: false });
       setFailureMessage("Failed to update password. Please try again.");
       setShowFailure(true);
     }
   };
 
-  // This runs after the loader finishes its "Success" state
   const handleFinalize = async () => {
     if (user) {
       try {
         const updatedProfile = await authService.getEmployeeProfile(user.id);
-        setUser(updatedProfile); // This triggers the redirect to dashboard
+        setUser(updatedProfile);
       } catch (err) {
-        window.location.reload(); // Fallback to refresh state
+        window.location.reload();
       }
     }
   };
 
   return (
     <>
-      {/* FULL-SCREEN CIRCULAR LOADER */}
       {loaderState.active && (
         <Loader
-          message="Updating Security..."
+          message="Securing your account..."
           isFinished={loaderState.finished}
           onFinished={handleFinalize}
         />
       )}
 
-      {/* Password Dialog - Only visible if not loading */}
       {!loaderState.active && (
-        <div className="fixed inset-0 z-9998 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-            <div className="p-8 text-center">
-              <div className="mx-auto w-16 h-16 bg-red-50 rounded-lg flex items-center justify-center mb-4 text-2xl text-red-600">
-                <FaShieldAlt />
+        <div className="fixed inset-0 z-9998 flex items-center justify-center p-6 bg-neutral-900/60 backdrop-blur-md">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-neutral-100">
+            
+            {/* Header Section */}
+            <div className="pt-10 pb-6 px-8 text-center bg-gradient-to-b from-red-50 to-white">
+              <div className="mx-auto w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mb-4 text-2xl text-white shadow-lg shadow-red-200 rotate-3">
+                <FaLock />
               </div>
-              <h3 className="text-2xl font-bold text-neutral-900">
-                Password Update Required
+              <h3 className="text-2xl font-black text-neutral-800 tracking-tight">
+                Update Password
               </h3>
-              <p className="text-neutral-500 mt-2 text-sm">
-                You must change your default password to continue.
+              <p className="text-neutral-500 mt-2 text-sm leading-relaxed">
+                Choose a strong password to protect your account.
               </p>
             </div>
 
-            <div className="px-8 pb-8 space-y-4">
-              <input
-                type="password"
-                placeholder="New Password"
-                className="w-full border border-neutral-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                className="w-full border border-neutral-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+            {/* Form Section */}
+            <div className="px-8 pb-10 space-y-5">
+              <div className="space-y-3">
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  className="w-full border border-neutral-200 bg-neutral-50 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all placeholder:text-neutral-400"
+                  value={newPassword}
+                  onChange={(e) => handlePasswordChange(e.target.value, setNewPassword)}
+                />
+                <input
+                  type="password"
+                  placeholder="Confirm Password"
+                  className="w-full border border-neutral-200 bg-neutral-50 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500 transition-all placeholder:text-neutral-400"
+                  value={confirmPassword}
+                  onChange={(e) => handlePasswordChange(e.target.value, setConfirmPassword)}
+                />
+              </div>
+
+              {/* Live Validation Checklist */}
+              <div className="bg-neutral-50 rounded-2xl p-4 border border-neutral-100 space-y-2">
+                {validations.map((v, i) => (
+                  <div key={i} className="flex items-center space-x-3">
+                    <div className="transition-all duration-300">
+                      {v.valid ? (
+                        <FaCheckCircle className="text-emerald-500 text-base" />
+                      ) : (
+                        <FaTimesCircle className="text-neutral-300 text-base" />
+                      )}
+                    </div>
+                    <span className={`text-xs font-semibold transition-colors duration-300 ${
+                      v.valid ? "text-emerald-700" : "text-neutral-400"
+                    }`}>
+                      {v.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
               <button
                 onClick={handleSubmit}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-red-200 active:scale-[0.98]"
+                disabled={!allValid}
+                className={`w-full py-4 rounded-2xl font-bold text-white transition-all transform active:scale-[0.95] shadow-xl ${
+                  allValid 
+                  ? "bg-red-600 hover:bg-red-700 shadow-red-200" 
+                  : "bg-neutral-200 text-neutral-400 cursor-not-allowed shadow-none"
+                }`}
               >
-                Update Password
+                Save Changes
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Failure Modal */}
       {showFailure && (
         <FailureModal
-          title="Update Failed"
+          title="Security Update Failed"
           message={failureMessage}
           buttonText="Try Again"
           onClose={() => setShowFailure(false)}

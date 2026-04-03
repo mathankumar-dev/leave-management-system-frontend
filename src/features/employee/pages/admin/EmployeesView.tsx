@@ -166,7 +166,7 @@ const EmployeesView = () => {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-slate-900 uppercase">
-                            {emp.name}
+                            {emp.name} ({emp.empId})
                             {!emp.active && <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-black rounded-sm">INACTIVE</span>}
                           </p>
                           <p className="text-[10px] font-medium text-slate-400 lowercase">{emp.email}</p>
