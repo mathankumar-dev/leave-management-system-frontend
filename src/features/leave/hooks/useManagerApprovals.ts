@@ -45,7 +45,7 @@ export const useManagerApprovals = (userId: number, role?: string) => {
         // const [tlRequests, tlODRequests] = await Promise.all([]);
       }
       // 1. Fetch data from services
-      const [leaveData, compOffs, ods] = isTeamLeader
+      const [leaveData, compOffs, ods] = isTeamLeader || isHR
         ? await Promise.all([leaveService.getPendingApprovals(userId),
           null, // Team leaders might not have comp-offs in your logic
         // leaveService.getPendingODApprovals(userId),
