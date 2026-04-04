@@ -130,7 +130,7 @@ const RequestCenter = () => {
                       <HiOutlineMoon size={32} className="opacity-20" />
                     </div>
                     <h3 className="text-slate-900 font-bold text-sm">Under Construction</h3>
-                    <p className="text-[10px] uppercase tracking-[0.2em] mt-1">Coming soon to WorkSphere</p>
+                    <p className="text-[10px] uppercase tracking-[0.2em] mt-1">Coming soon to WeHRM</p>
                   </div>
                 )}
               </div>

@@ -20,13 +20,14 @@ const ChangePasswordDialog: React.FC = () => {
     setter(noSpaces);
   };
 
-  // Updated Live Validation Logic
+  // Advanced Live Validation Logic
   const validations = useMemo(() => {
     return [
-      { label: "At least 8 characters", valid: newPassword.length >= 8 },
-      { label: "Contains a letter", valid: /[a-zA-Z]/.test(newPassword) },
-      { label: "Contains a number", valid: /\d/.test(newPassword) },
-      { label: "Special character (@$!%*#?)", valid: /[@$!%*#?&]/.test(newPassword) },
+      { label: "8+ Characters", valid: newPassword.length >= 8 },
+      { label: "Uppercase Letter", valid: /[A-Z]/.test(newPassword) },
+      { label: "Lowercase Letter", valid: /[a-z]/.test(newPassword) },
+      { label: "Contains a Number", valid: /\d/.test(newPassword) },
+      { label: "Special Symbol (@$!%*#?)", valid: /[@$!%*#?&]/.test(newPassword) },
       { label: "No spaces allowed", valid: !/\s/.test(newPassword) && newPassword.length > 0 },
       { label: "Passwords match", valid: newPassword === confirmPassword && confirmPassword !== "" },
     ];

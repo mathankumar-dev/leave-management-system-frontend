@@ -31,6 +31,7 @@ export interface PersonalDetails {
   oldCompanyName?: string;
   oldCompanyFromDate?: string;
   oldCompanyEndDate?: string;
+  
 
 }
 
@@ -46,6 +47,7 @@ export interface MultipartSubmission {
         leavingLetter?: File;
     }
 }
+
 
 export interface CreateUserRequest {
   empId: string;           // Matches private String empId

@@ -6,10 +6,9 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token?: string;
-  id: string;
+  token: string;   
+  employeeId: string; 
   role: UserRole;
   forcePasswordChange: boolean;
 }
-
 export type ExperienceType = 'EXPERIENCED' | 'FRESHER';
