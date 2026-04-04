@@ -18,8 +18,8 @@ type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
-  const {  setError } = useLeave();
-  const { applyLeave, bankCompOff , loading } = useLeaveAction();
+  const { setError } = useLeave();
+  const { applyLeave, bankCompOff, loading } = useLeaveAction();
   const [submitted, setSubmitted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -125,21 +125,21 @@ const LeaveApplicationForm = () => {
     const result = await applyLeave(fd);
     if (result) setSubmitted(true);
   };
-  
-  const calculateDays = () => {
-    if (!formData.startDate) return 0;
-    if (formData.isHalfDay || formData.leaveTypeName === "COMP_OFF") return formData.startDateHalfDayType ? 0.5 : 1;
-    if (!formData.endDate) return 1;
 
-    const start = new Date(formData.startDate);
-    const end = new Date(formData.endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    let days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  // const calculateDays = () => {
+  //   if (!formData.startDate) return 0;
+  //   if (formData.isHalfDay || formData.leaveTypeName === "COMP_OFF") return formData.startDateHalfDayType ? 0.5 : 1;
+  //   if (!formData.endDate) return 1;
 
-    if (formData.startDateHalfDayType) days -= 0.5;
-    if (formData.endDateHalfDayType) days -= 0.5;
-    return days;
-  };
+  //   const start = new Date(formData.startDate);
+  //   const end = new Date(formData.endDate);
+  //   const diffTime = Math.abs(end.getTime() - start.getTime());
+  //   let days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+  //   if (formData.startDateHalfDayType) days -= 0.5;
+  //   if (formData.endDateHalfDayType) days -= 0.5;
+  //   return days;
+  // };
 
   const getAvailableLeaveTypes = () => {
     const types = ["SICK", "ANNUAL"];
@@ -152,7 +152,7 @@ const LeaveApplicationForm = () => {
       types.push("MATERNITY");
     }
 
-    return types as (LeaveType )[];
+    return types as (LeaveType)[];
   };
 
   const availableTypes = getAvailableLeaveTypes();
@@ -245,25 +245,17 @@ const LeaveApplicationForm = () => {
               Required Approvals
             </span>
             <div className="flex flex-wrap gap-2">
-              {(() => {
+              {/* {(() => {
                 const approvers = [];
                 const days = calculateDays();
                 const role = user?.role?.toUpperCase();
 
-                if (role === "EMPLOYEE") {
-                  approvers.push({ label: `TL: ${user?.teamLeaderName || 'Assigning...'}`, active: true });
-                  if (days > 1) approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
-                }
-                if (role === "TEAM_LEADER") approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
-                if (role === "MANAGER" || role === "ADMIN") approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
-                if (days > 7 && role !== "MANAGER" && !approvers.some(a => a.label.startsWith("HR"))) {
-                  approvers.push({ label: `HR: ${user?.hrname || 'Assigning...'}`, active: true });
-                }
+
 
                 return approvers.map((app, index) => (
                   <Badge key={index} label={app.label} active={app.active} />
                 ));
-              })()}
+              })()} */}
             </div>
           </div>
         </div>
@@ -415,13 +407,13 @@ const LeaveApplicationForm = () => {
   );
 };
 
-const Badge = ({ label, active }: { label: string; active: boolean }) => (
-  <span className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all whitespace-nowrap ${active
-    ? "bg-indigo-50 text-indigo-700 border-indigo-200"
-    : "bg-slate-50 text-slate-400 border-slate-100"
-    }`}>
-    {label}
-  </span>
-);
+// const Badge = ({ label, active }: { label: string; active: boolean }) => (
+//   <span className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all whitespace-nowrap ${active
+//     ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+//     : "bg-slate-50 text-slate-400 border-slate-100"
+//     }`}>
+//     {label}
+//   </span>
+// );
 
 export default LeaveApplicationForm;

@@ -1,403 +1,437 @@
 import { authService } from "@/features/auth/api/authApi";
-import type { PersonalDetailsRequest } from "@/features/employee/types";
+import type {
+    ExperiencedPersonalDetailsRequest,
+    FresherPersonalDetailsRequest,
+} from "@/features/employee/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { FailureModal, Loader } from "@/shared/components";
-import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
-import { BloodGroupMap, GenderMap, MaritalStatusMap } from "@/shared/types";
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
-    HiCheckCircle,
+    HiOutlineBanknotes,
     HiOutlineBriefcase,
-    HiOutlineBuildingLibrary,
-    HiOutlineDocumentArrowUp,
-    HiOutlineMapPin,
+    HiOutlineCloudArrowUp,
+    HiOutlineDocumentText,
     HiOutlineUserCircle,
-    HiOutlineUsers
+    HiOutlineUsers,
+    HiPlus,
+    HiTrash,
 } from "react-icons/hi2";
 
-const PersonalDetailsModal = () => {
-    const { user, setUser } = useAuth();
+type PersonalDetailsForm = FresherPersonalDetailsRequest & Partial<ExperiencedPersonalDetailsRequest>;
 
+const PersonalDetailsModal = () => {
+    const { user } = useAuth();
     const isExperienced = user?.employeeExperience === "EXPERIENCED";
     const submissionType = isExperienced ? "EXPERIENCED" : "FRESHER";
 
-    const [formData, setFormData] = useState<Partial<PersonalDetailsRequest>>({
+    const [formData, setFormData] = useState<Partial<PersonalDetailsForm>>({
         firstName: "",
         lastName: "",
+        contactNumber: "",
         gender: "MALE",
-        bloodGroup: "O_POSITIVE",
         maritalStatus: "SINGLE",
-        bankName: "",
+        aadharNumber: "",
+        personalEmail: "",
+        dateOfBirth: "",
+        presentAddress: "",
+        permanentAddress: "",
+        bloodGroup: "O_POSITIVE",
+        emergencyContactNumber: "",
+        designation: "",
+        skillSet: "",
         accountNumber: "",
+        bankName: "",
+        ifscCode: "",
+        bankBranchName: "",
+        fatherName: "",
+        fatherDateOfBirth: "",
+        fatherOccupation: "",
         fatherAlive: true,
+        motherName: "",
+        motherDateOfBirth: "",
+        motherOccupation: "",
         motherAlive: true,
-        uanNumber: "",
-        previousRole: "",
-        oldCompanyName: "",
-        oldCompanyFromDate: "",
-        oldCompanyEndDate: "",
-        aadharNumber: ""
+        spouseName: "",
+        spouseDateOfBirth: "",
+        spouseOccupation: "",
+        spouseContactNumber: "",
+        children: [],
+        experiences: isExperienced ? [{ companyName: "", role: "", fromDate: "", endDate: "", lastCompany: true }] : [],
+        uanNumber: ""
     });
 
-    // Local state for the 4-4-4 Aadhaar UI
     const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
-
-    // Sync parts to the main formData
-    useEffect(() => {
-        const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
-        setFormData((prev: any) => ({ ...prev, aadharNumber: combined }));
-    }, [aadharParts]);
-
-    const handleAadharChange = (part: keyof typeof aadharParts, value: string) => {
-        const cleaned = value.replace(/\D/g, "").slice(0, 4);
-        setAadharParts(prev => ({ ...prev, [part]: cleaned }));
-
-        // Auto-focus next input
-        if (cleaned.length === 4) {
-            if (part === "p1") document.getElementById("aadhar-p2")?.focus();
-            if (part === "p2") document.getElementById("aadhar-p3")?.focus();
-        }
-    };
-
-    const [files, setFiles] = useState<Record<string, File | null>>({
-        aadhaarCard: null,
-        tc: null,
-        offerLetter: null,
-        experienceCertificate: null,
-        leavingLetter: null
-    });
-
+    const [files, setFiles] = useState<Record<string, File | File[] | null>>({});
     const [loaderState, setLoaderState] = useState({ active: false, finished: false });
     const [showFailure, setShowFailure] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
-        if (e.target.files && e.target.files[0]) {
-            setFiles(prev => ({ ...prev, [key]: e.target.files![0] }));
+    useEffect(() => {
+        const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
+        setFormData(prev => ({ ...prev, aadharNumber: combined }));
+    }, [aadharParts]);
+
+    const handleAadharChange = (part: keyof typeof aadharParts, value: string) => {
+        const sanitized = value.replace(/\D/g, "").slice(0, 4);
+        setAadharParts(prev => ({ ...prev, [part]: sanitized }));
+    };
+
+    const handleInputChange = (field: keyof PersonalDetailsForm, value: any) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleFileChange = (key: string, file: File | null) => {
+        setFiles(prev => ({ ...prev, [key]: file }));
+    };
+
+    const handleMultiFileChange = (key: string, fileList: FileList | null) => {
+        if (fileList) {
+            setFiles(prev => ({ ...prev, [key]: Array.from(fileList) }));
         }
     };
 
     const handleSubmit = async () => {
-        // 1. Define fields that are strictly strings for length checking
-        const requiredStrings: (keyof PersonalDetails)[] = [
-            'firstName', 'lastName', 'contactNumber', 'personalEmail', 
-            'dateOfBirth', 'presentAddress', 'permanentAddress', 
-            'designation', 'bankName', 'accountNumber'
-        ];
-
-        // 2. Type-safe validation check
-        const isMissingText = requiredStrings.some(field => {
-            const val = formData[field];
-            return typeof val === 'string' ? val.trim().length === 0 : !val;
-        });
-
-        // 3. Aadhaar Length Validation
-        if (!formData.aadharNumber || formData.aadharNumber.length !== 12) {
-            setErrorMessage("Please enter a valid 12-digit Aadhaar number (4 digits in each box).");
-            setShowFailure(true);
-            return;
-        }
-
-        const requiredFiles = isExperienced
-            ? ['aadhaarCard', 'experienceCertificate', 'leavingLetter']
-            : ['aadhaarCard', 'tc', 'offerLetter'];
-
-        const isMissingFile = requiredFiles.some(key => !files[key]);
-
-        const isMissingExpInfo = isExperienced && (
-            !formData.uanNumber ||
-            !formData.oldCompanyFromDate ||
-            !formData.oldCompanyEndDate
-        );
-
-        if (isMissingText || isMissingFile || isMissingExpInfo) {
-            setErrorMessage("Please fill all identity, bank, and professional fields and upload all required documents.");
-            setShowFailure(true);
-            return;
-        }
-
+    try {
         if (!user?.id) return;
 
-        try {
-            setLoaderState({ active: true, finished: false });
-            await authService.submitMultipartDetails(user.id, submissionType, formData, files);
-            setLoaderState({ active: true, finished: true });
-        } catch (err: any) {
-            setLoaderState({ active: false, finished: false });
-            setErrorMessage(err.response?.data?.message || "Failed to save record.");
+        // 1. Determine required files based on type
+        const requiredFiles = submissionType === "FRESHER"
+            ? ["idProof", "passportPhoto", "tenthMarksheet", "twelfthMarksheet", "degreeCertificate", "offerLetter"]
+            : ["idProof", "passportPhoto", "relievingLetter"];
+
+        const missing = requiredFiles.filter(k => !files[k]);
+        if (missing.length > 0) {
+            setErrorMessage(`Missing required files: ${missing.join(", ")}`);
             setShowFailure(true);
+            return;
         }
-    };
 
-    const handleFinalize = async () => {
-        if (user?.id) {
-            try {
-                const updatedProfile = await authService.getEmployeeProfile(user.id);
-                setUser(updatedProfile);
-            } catch (err) {
-                setLoaderState({ active: false, finished: false });
-            }
-        }
-    };
+        setLoaderState({ active: true, finished: false });
 
-    const InputLabel = ({ children }: { children: string }) => (
-        <label className="text-[10px] font-black text-neutral-600 tracking-widest mb-1 block ml-1 uppercase">
+        // 2. CREATE A CLEAN DATA OBJECT
+        // We spread the current formData but explicitly handle the conditional fields
+        const { experiences, uanNumber, ...restOfData } = formData;
+
+        const payload = submissionType === "EXPERIENCED" 
+            ? { ...formData } // Include everything for experienced
+            : { ...restOfData }; // EXCLUDE experiences and uanNumber for freshers
+
+        console.log("Submitting payload:", payload);
+
+        // 3. Send the cleaned payload
+        await authService.submitMultipartDetails(
+            user.id,
+            submissionType,
+            payload, // Use the cleaned object here
+            files
+        );
+
+        setLoaderState({ active: true, finished: true });
+    } catch (err: any) {
+        setLoaderState({ active: false, finished: false });
+        setErrorMessage(err.response?.data?.message || "Submission failed. Please check all fields.");
+        setShowFailure(true);
+    }
+};
+
+    const InputLabel = ({ children }: { children: React.ReactNode }) => (
+        <label className="text-[10px] font-black text-neutral-500 tracking-widest mb-1 block uppercase">
             {children}
         </label>
     );
 
-    const FileInput = ({ label, id }: { label: string, id: string }) => (
-        <div className="flex flex-col gap-1">
-            <InputLabel>{label}</InputLabel>
-            <div className="relative">
-                <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={e => handleFileChange(e, id)}
-                    className="block w-full text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all cursor-pointer"
-                />
-                {files[id] && (
-                    <span className="absolute right-2 top-2 text-green-500 text-[10px] font-bold flex items-center gap-1">
-                        <HiCheckCircle /> Selected
-                    </span>
-                )}
+    const FileRow = ({ label, fileKey, required = false, multiple = false }: { label: string, fileKey: string, required?: boolean, multiple?: boolean }) => (
+        <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-2xl group hover:border-indigo-200 transition-all">
+            <div className="flex items-center gap-3 overflow-hidden">
+                <div className={`p-2 rounded-lg shrink-0 ${files[fileKey] ? 'bg-green-100 text-green-600' : 'bg-neutral-100 text-neutral-400 group-hover:bg-indigo-50 group-hover:text-indigo-500'}`}>
+                    <HiOutlineDocumentText size={18} />
+                </div>
+                <div className="overflow-hidden">
+                    <p className="text-[11px] font-bold text-neutral-700 uppercase tracking-tight">{label} {required && <span className="text-red-500">*</span>}</p>
+                    <p className="text-[10px] text-neutral-400 truncate">
+                        {Array.isArray(files[fileKey]) ? `${(files[fileKey] as File[]).length} files` : (files[fileKey] as File)?.name || "Not uploaded"}
+                    </p>
+                </div>
             </div>
+            <label className="cursor-pointer shrink-0 bg-neutral-50 hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all border border-neutral-200">
+                {files[fileKey] ? "CHANGE" : "UPLOAD"}
+                <input type="file" hidden multiple={multiple} onChange={(e) => multiple ? handleMultiFileChange(fileKey, e.target.files) : handleFileChange(fileKey, e.target.files?.[0] || null)} />
+            </label>
         </div>
     );
 
     return (
         <>
             {loaderState.active && (
-                <Loader message="Uploading documents..." isFinished={loaderState.finished} onFinished={handleFinalize} />
+                <Loader message="Syncing WorkSphere Profile..." isFinished={loaderState.finished} onFinished={() => window.location.reload()} />
             )}
 
-            <div className="fixed inset-0 z-9998 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-                <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+                <div className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full flex flex-col max-h-[90vh] overflow-hidden">
 
                     {/* HEADER */}
-                    <div className="p-6 text-center border-b border-neutral-100 shrink-0 relative">
-                        <div className="mx-auto w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-2 text-2xl text-indigo-600">
-                            <HiOutlineUserCircle />
+                    <div className="p-6 border-b flex justify-between items-center bg-neutral-50 shrink-0">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-indigo-200 text-xl">W</div>
+                            <div>
+                                <h3 className="text-xl font-black text-neutral-900 tracking-tight">Onboarding Profile</h3>
+                                <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest italic">Secure Data Sync</p>
+                            </div>
                         </div>
-                        <h3 className="text-lg font-bold text-neutral-900">Complete Professional Profile</h3>
-                        <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest mt-1">
-                            Account Type: {submissionType}
-                        </p>
+                        <span className="px-4 py-1.5 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-full uppercase tracking-tighter border border-indigo-200">
+                            {submissionType} MODE
+                        </span>
                     </div>
 
-                    <div className="p-8 overflow-y-auto space-y-8 bg-neutral-25/30 custom-scrollbar">
+                    <div className="p-8 overflow-y-auto space-y-12 custom-scrollbar bg-white">
 
-                        {/* IDENTITY SECTION */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
-                                <HiOutlineUserCircle size={18} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Identity & Contact</span>
+                        {/* 1. DOCUMENTS SECTION */}
+                        <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="md:col-span-1 border-r border-neutral-100 pr-6">
+                                <div className="flex items-center gap-2 text-indigo-600 mb-2">
+                                    <HiOutlineCloudArrowUp size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Digital Vault</span>
+                                </div>
+                                <p className="text-xs text-neutral-400 leading-relaxed italic">Upload required documentation. All files are encrypted during transit.</p>
                             </div>
+                            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <FileRow label="ID Proof (Aadhar/PAN)" fileKey="idProof" required />
+                                <FileRow label="Passport Photo" fileKey="passportPhoto" required />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <InputLabel>First Name</InputLabel>
-                                    <input placeholder="e.g. Suresh" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.firstName || ""} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
-                                </div>
-                                <div>
-                                    <InputLabel>Last Name</InputLabel>
-                                    <input placeholder="e.g. Kumar" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.lastName || ""} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
-                                </div>
-                            </div>
+                                {/* Shared required for Freshers / Optional for experienced as per your logic */}
+                                <FileRow label="10th Marksheet" fileKey="tenthMarksheet" required={!isExperienced} />
+                                <FileRow label="12th Marksheet" fileKey="twelfthMarksheet" required={!isExperienced} />
+                                <FileRow label="Degree Certificate" fileKey="degreeCertificate" required={!isExperienced} />
+                                <FileRow label="Offer Letter" fileKey="offerLetter" required={!isExperienced} />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <InputLabel>Contact Number</InputLabel>
-                                    <input placeholder="10-digit mobile number" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.contactNumber || ""} onChange={e => setFormData({ ...formData, contactNumber: e.target.value })} />
-                                </div>
-                                <div>
-                                    <InputLabel>Personal Email</InputLabel>
-                                    <input placeholder="example@gmail.com" type="email" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.personalEmail || ""} onChange={e => setFormData({ ...formData, personalEmail: e.target.value })} />
-                                </div>
-                            </div>
-
-                            <div>
-                                <InputLabel>Aadhar Number</InputLabel>
-                                <div className="flex items-center gap-3">
-                                    <input id="aadhar-p1" placeholder="XXXX" className="w-full text-center border border-neutral-200 rounded-lg px-2 py-2.5 text-sm font-mono tracking-widest" value={aadharParts.p1} onChange={e => handleAadharChange("p1", e.target.value)} />
-                                    <span className="text-neutral-300">-</span>
-                                    <input id="aadhar-p2" placeholder="XXXX" className="w-full text-center border border-neutral-200 rounded-lg px-2 py-2.5 text-sm font-mono tracking-widest" value={aadharParts.p2} onChange={e => handleAadharChange("p2", e.target.value)} />
-                                    <span className="text-neutral-300">-</span>
-                                    <input id="aadhar-p3" placeholder="XXXX" className="w-full text-center border border-neutral-200 rounded-lg px-2 py-2.5 text-sm font-mono tracking-widest" value={aadharParts.p3} onChange={e => handleAadharChange("p3", e.target.value)} />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <InputLabel>Gender</InputLabel>
-                                    <select className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value as any })}>
-                                        {Object.values(GenderMap).map(v => <option key={v} value={v}>{v}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <InputLabel>Blood Group</InputLabel>
-                                    <select className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.bloodGroup} onChange={e => setFormData({ ...formData, bloodGroup: e.target.value as any })}>
-                                        {Object.values(BloodGroupMap).map(v => <option key={v} value={v}>{v.replace('_', ' ')}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <InputLabel>Marital Status</InputLabel>
-                                    <select className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.maritalStatus} onChange={e => setFormData({ ...formData, maritalStatus: e.target.value as any })}>
-                                        {Object.values(MaritalStatusMap).map(v => <option key={v} value={v}>{v}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="w-full">
-                                <MyDatePicker label="Date of Birth" selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null} onChange={d => setFormData({ ...formData, dateOfBirth: d?.toISOString().split('T')[0] })} />
-                            </div>
-                        </div>
-
-                        {/* BANK DETAILS SECTION */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
-                                <HiOutlineBuildingLibrary size={18} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Bank Information</span>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <InputLabel>Bank Name</InputLabel>
-                                    <input placeholder="e.g. State Bank of India" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.bankName || ""} onChange={e => setFormData({ ...formData, bankName: e.target.value })} />
-                                </div>
-                                <div>
-                                    <InputLabel>Account Number</InputLabel>
-                                    <input placeholder="Full bank account number" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.accountNumber || ""} onChange={e => setFormData({ ...formData, accountNumber: e.target.value })} />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* PROFESSIONAL SECTION */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
-                                <HiOutlineBriefcase size={18} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Professional Info</span>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <InputLabel>Designation</InputLabel>
-                                    <input placeholder="e.g. Full Stack Developer" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.designation || ""} onChange={e => setFormData({ ...formData, designation: e.target.value })} />
-                                </div>
-                                <div>
-                                    <InputLabel>Skill Set</InputLabel>
-                                    <input placeholder="e.g. React, Spring Boot, MySQL" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.skillSet || ""} onChange={e => setFormData({ ...formData, skillSet: e.target.value })} />
-                                </div>
-                            </div>
-
-                            {isExperienced && (
-                                <div className="space-y-4 p-4 bg-indigo-50/30 rounded-xl border border-indigo-100">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <InputLabel>UAN Number</InputLabel>
-                                            <input placeholder="12-digit EPF UAN" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white font-mono" value={formData.uanNumber || ""} onChange={e => setFormData({ ...formData, uanNumber: e.target.value })} />
-                                        </div>
-                                        <div>
-                                            <InputLabel>Prev. Role</InputLabel>
-                                            <input placeholder="Last job title" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.previousRole || ""} onChange={e => setFormData({ ...formData, previousRole: e.target.value })} />
-                                        </div>
-                                        <div>
-                                            <InputLabel>Prev. Company</InputLabel>
-                                            <input placeholder="Last organization" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.oldCompanyName || ""} onChange={e => setFormData({ ...formData, oldCompanyName: e.target.value })} />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <MyDatePicker label="From Date" selected={formData.oldCompanyFromDate ? new Date(formData.oldCompanyFromDate) : null} onChange={d => setFormData({ ...formData, oldCompanyFromDate: d?.toISOString().split('T')[0] })} />
-                                        <MyDatePicker label="End Date" selected={formData.oldCompanyEndDate ? new Date(formData.oldCompanyEndDate) : null} onChange={d => setFormData({ ...formData, oldCompanyEndDate: d?.toISOString().split('T')[0] })} />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* DOCUMENTS SECTION */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
-                                <HiOutlineDocumentArrowUp size={18} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Document Uploads</span>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <FileInput label="Aadhaar Card" id="aadhaarCard" />
-
-                                {!isExperienced ? (
+                                {isExperienced && (
                                     <>
-                                        <FileInput label="Transfer Cert (TC)" id="tc" />
-                                        <FileInput label="Offer Letter" id="offerLetter" />
-                                    </>
-                                ) : (
-                                    <>
-                                        <FileInput label="Experience Cert" id="experienceCertificate" />
-                                        <FileInput label="Leaving Letter" id="leavingLetter" />
+                                        <FileRow label="Relieving Letter" fileKey="relievingLetter" required />
+                                        <FileRow label="Exp. Certificates" fileKey="experienceCerts" multiple />
                                     </>
                                 )}
                             </div>
-                        </div>
+                        </section>
 
-                        {/* ADDRESSES SECTION */}
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
-                                <HiOutlineMapPin size={18} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Address Details</span>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <textarea placeholder="Current Address (House No, Street, City, State, PIN)..." rows={2} className="w-full border border-neutral-200 rounded-lg px-4 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" value={formData.presentAddress || ""} onChange={e => setFormData({ ...formData, presentAddress: e.target.value })} />
-                                <textarea placeholder="Permanent Address as per Aadhaar/ID..." rows={2} className="w-full border border-neutral-200 rounded-lg px-4 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" value={formData.permanentAddress || ""} onChange={e => setFormData({ ...formData, permanentAddress: e.target.value })} />
-                            </div>
-                        </div>
-
-                        {/* FAMILY SECTION */}
-                        <div className="space-y-4 pb-4">
-                            <div className="flex items-center gap-2 text-indigo-600 border-b border-indigo-50 pb-2">
-                                <HiOutlineUsers size={18} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Family Information</span>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="p-4 bg-white border border-neutral-100 rounded-xl space-y-3">
-                                    <div className="flex justify-between items-center">
-                                        <p className="text-[10px] font-black text-indigo-600">FATHER'S DETAILS</p>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] text-neutral-400 font-bold">ALIVE?</span>
-                                            <input type="checkbox" checked={formData.fatherAlive} onChange={e => setFormData({ ...formData, fatherAlive: e.target.checked })} />
+                        {/* 2. CORE IDENTITY */}
+                        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t pt-10">
+                            <div className="md:col-span-1 border-r border-neutral-100 pr-6">
+                                <div className="flex items-center gap-2 text-indigo-600 mb-6">
+                                    <HiOutlineUserCircle size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Core Identity</span>
+                                </div>
+                                <div className="space-y-6">
+                                    <div>
+                                        <InputLabel>Designation</InputLabel>
+                                        <input className="w-full border rounded-xl p-3 text-sm bg-neutral-50 font-bold" value={formData.designation} onChange={e => handleInputChange('designation', e.target.value)} />
+                                    </div>
+                                    <div>
+                                        <InputLabel>Aadhar Number</InputLabel>
+                                        <div className="flex gap-2">
+                                            {(['p1', 'p2', 'p3'] as const).map((p) => (
+                                                <input key={p} className="w-full text-center border rounded-xl p-3 font-mono text-sm outline-none focus:border-indigo-500" maxLength={4} value={aadharParts[p]} onChange={e => handleAadharChange(p, e.target.value)} />
+                                            ))}
                                         </div>
                                     </div>
-                                    <input placeholder="Father's Legal Name" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.fatherName || ""} onChange={e => setFormData({ ...formData, fatherName: e.target.value })} />
-                                    <MyDatePicker label="DOB" selected={formData.fatherDateOfBirth ? new Date(formData.fatherDateOfBirth) : null} onChange={d => setFormData({ ...formData, fatherDateOfBirth: d?.toISOString().split('T')[0] })} />
-                                    <input placeholder="Occupation" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.fatherOccupation || ""} onChange={e => setFormData({ ...formData, fatherOccupation: e.target.value })} />
-                                </div>
-                                <div className="p-4 bg-white border border-neutral-100 rounded-xl space-y-3">
-                                    <div className="flex justify-between items-center">
-                                        <p className="text-[10px] font-black text-indigo-600">MOTHER'S DETAILS</p>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] text-neutral-400 font-bold">ALIVE?</span>
-                                            <input type="checkbox" checked={formData.motherAlive} onChange={e => setFormData({ ...formData, motherAlive: e.target.checked })} />
-                                        </div>
+                                    <div>
+                                        <InputLabel>Skills (Comma separated)</InputLabel>
+                                        <input className="w-full border rounded-xl p-3 text-sm" placeholder="React, Spring, etc" value={formData.skillSet} onChange={e => handleInputChange('skillSet', e.target.value)} />
                                     </div>
-                                    <input placeholder="Mother's Legal Name" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.motherName || ""} onChange={e => setFormData({ ...formData, motherName: e.target.value })} />
-                                    <MyDatePicker label="DOB" selected={formData.motherDateOfBirth ? new Date(formData.motherDateOfBirth) : null} onChange={d => setFormData({ ...formData, motherDateOfBirth: d?.toISOString().split('T')[0] })} />
-                                    <input placeholder="Occupation" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.motherOccupation || ""} onChange={e => setFormData({ ...formData, motherOccupation: e.target.value })} />
                                 </div>
                             </div>
-                        </div>
+                            <div className="md:col-span-2 space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div><InputLabel>First Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.firstName} onChange={e => handleInputChange('firstName', e.target.value)} /></div>
+                                    <div><InputLabel>Last Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.lastName} onChange={e => handleInputChange('lastName', e.target.value)} /></div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div><InputLabel>Personal Email</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.personalEmail} onChange={e => handleInputChange('personalEmail', e.target.value)} /></div>
+                                    <div><InputLabel>Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.contactNumber} onChange={e => handleInputChange('contactNumber', e.target.value)} /></div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div><InputLabel>DOB</InputLabel><input type="date" className="w-full border rounded-xl p-3 text-sm" value={formData.dateOfBirth} onChange={e => handleInputChange('dateOfBirth', e.target.value)} /></div>
+                                    <div>
+                                        <InputLabel>Gender</InputLabel>
+                                        <select className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.gender} onChange={e => handleInputChange('gender', e.target.value as any)}>
+                                            <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <InputLabel>Blood Group</InputLabel>
+                                        <select className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.bloodGroup} onChange={e => handleInputChange('bloodGroup', e.target.value as any)}>
+                                            <option value="O_POSITIVE">O+</option><option value="O_NEGATIVE">O-</option>
+                                            <option value="A_POSITIVE">A+</option><option value="A_NEGATIVE">A-</option>
+                                            <option value="B_POSITIVE">B+</option><option value="B_NEGATIVE">B-</option>
+                                            <option value="AB_POSITIVE">AB+</option><option value="AB_NEGATIVE">AB-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div><InputLabel>Present Address</InputLabel><textarea rows={2} className="w-full border rounded-xl p-3 text-sm" value={formData.presentAddress} onChange={e => handleInputChange('presentAddress', e.target.value)} /></div>
+                                <div><InputLabel>Permanent Address</InputLabel><textarea rows={2} className="w-full border rounded-xl p-3 text-sm" value={formData.permanentAddress} onChange={e => handleInputChange('permanentAddress', e.target.value)} /></div>
+                            </div>
+                        </section>
+
+                        {/* 3. FAMILY */}
+                        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t pt-10">
+                            <div className="md:col-span-1 border-r border-neutral-100 pr-6">
+                                <div className="flex items-center gap-2 text-indigo-600 mb-2">
+                                    <HiOutlineUsers size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Family</span>
+                                </div>
+                                <p className="text-xs text-neutral-400 italic">Beneficiary details for payroll and health insurance.</p>
+                            </div>
+                            <div className="md:col-span-2 space-y-8">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
+                                        <div className="flex justify-between items-center mb-3"><InputLabel>Father's Details</InputLabel> <input type="checkbox" checked={formData.fatherAlive} onChange={e => handleInputChange('fatherAlive', e.target.checked)} /></div>
+                                        <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.fatherName} onChange={e => handleInputChange('fatherName', e.target.value)} />
+                                        <input type="date" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.fatherDateOfBirth} onChange={e => handleInputChange('fatherDateOfBirth', e.target.value)} />
+                                    </div>
+                                    <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
+                                        <div className="flex justify-between items-center mb-3"><InputLabel>Mother's Details</InputLabel> <input type="checkbox" checked={formData.motherAlive} onChange={e => handleInputChange('motherAlive', e.target.checked)} /></div>
+                                        <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.motherName} onChange={e => handleInputChange('motherName', e.target.value)} />
+                                        <input type="date" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.motherDateOfBirth} onChange={e => handleInputChange('motherDateOfBirth', e.target.value)} />
+                                    </div>
+                                </div>
+
+                                <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <InputLabel>Marital Status</InputLabel>
+                                        <select className="border rounded-lg px-2 py-1 text-xs font-bold" value={formData.maritalStatus} onChange={e => handleInputChange('maritalStatus', e.target.value as any)}>
+                                            <option value="SINGLE">SINGLE</option><option value="MARRIED">MARRIED</option>
+                                        </select>
+                                    </div>
+                                    {formData.maritalStatus === "MARRIED" && (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <input placeholder="Spouse Name" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseName} onChange={e => handleInputChange('spouseName', e.target.value)} />
+                                            <input placeholder="Spouse Contact" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseContactNumber} onChange={e => handleInputChange('spouseContactNumber', e.target.value)} />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <InputLabel>Children ({formData.children?.length || 0})</InputLabel>
+                                        <button onClick={() => setFormData(p => ({ ...p, children: [...(p.children || []), { childName: "", gender: "MALE", age: 0 }] }))} className="text-indigo-600 text-[10px] font-black flex items-center gap-1 hover:underline"><HiPlus /> ADD CHILD</button>
+                                    </div>
+                                    {formData.children?.map((child, idx) => (
+                                        <div key={idx} className="flex gap-4 items-end bg-neutral-50 p-4 rounded-2xl relative border border-neutral-100">
+                                            <div className="flex-1">
+                                                <InputLabel>Name</InputLabel>
+                                                <input className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.childName} onChange={e => {
+                                                    const children = [...(formData.children || [])];
+                                                    children[idx].childName = e.target.value;
+                                                    setFormData({ ...formData, children });
+                                                }} />
+                                            </div>
+                                            <div className="w-24">
+                                                <InputLabel>Age</InputLabel>
+                                                <input
+                                                    type="number"
+                                                    className="w-full border rounded-xl p-2.5 text-xs bg-white"
+                                                    value={child.age}
+                                                    onChange={e => {
+                                                        const children = [...(formData.children || [])];
+                                                        children[idx].age = Number(e.target.value);
+                                                        setFormData({ ...formData, children });
+                                                    }}
+                                                />
+                                            </div>
+                                            <button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 4. EXPERIENCE HISTORY (EXPERIENCED ONLY) */}
+                        {isExperienced && (
+                            <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t pt-10">
+                                <div className="md:col-span-1 border-r border-neutral-100 pr-6">
+                                    <div className="flex items-center gap-2 text-indigo-600 mb-2">
+                                        <HiOutlineBriefcase size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Experience</span>
+                                    </div>
+                                    <div className="mt-6">
+                                        <InputLabel>UAN Number</InputLabel>
+                                        <input placeholder="10XXXXXXXXXX" className="w-full border rounded-xl p-3 text-sm font-mono" value={formData.uanNumber} onChange={e => handleInputChange('uanNumber', e.target.value)} />
+                                    </div>
+                                </div>
+                                <div className="md:col-span-2 space-y-4">
+                                    <div className="flex justify-end">
+                                        <button onClick={() => setFormData(p => ({ ...p, experiences: [...(p.experiences || []), { companyName: "", role: "", fromDate: "", endDate: "", lastCompany: false }] }))} className="px-4 py-2 bg-neutral-900 text-white text-[10px] font-black rounded-xl uppercase tracking-widest hover:bg-black transition-all">Add Company</button>
+                                    </div>
+                                    {formData.experiences?.map((exp, idx) => (
+                                        <div key={idx} className="bg-white p-6 rounded-2xl border border-neutral-200 space-y-4 relative">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1 mr-4">
+                                                    <InputLabel>Company Name</InputLabel>
+                                                    <input className="w-full border rounded-xl p-3 text-sm" value={exp.companyName} onChange={e => {
+                                                        const exps = [...(formData.experiences || [])];
+                                                        exps[idx].companyName = e.target.value;
+                                                        setFormData({ ...formData, experiences: exps });
+                                                    }} />
+                                                </div>
+                                                <button onClick={() => setFormData(p => ({ ...p, experiences: p.experiences?.filter((_, i) => i !== idx) }))} className="p-3 text-neutral-400 hover:text-red-500 transition-colors"><HiTrash size={18} /></button>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <InputLabel>Role</InputLabel>
+                                                    <input className="w-full border rounded-xl p-3 text-sm" value={exp.role} onChange={e => {
+                                                        const exps = [...(formData.experiences || [])];
+                                                        exps[idx].role = e.target.value;
+                                                        setFormData({ ...formData, experiences: exps });
+                                                    }} />
+                                                </div>
+                                                <div className="flex items-center gap-2 pt-6 italic font-bold text-indigo-600 text-[10px] uppercase">
+                                                    <input type="checkbox" checked={exp.lastCompany} onChange={e => {
+                                                        const exps = [...(formData.experiences || [])].map(item => ({ ...item, lastCompany: false }));
+                                                        exps[idx].lastCompany = e.target.checked;
+                                                        setFormData({ ...formData, experiences: exps });
+                                                    }} /> IS LAST COMPANY
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div><InputLabel>From Date</InputLabel><input type="date" className="w-full border rounded-xl p-3 text-sm" value={exp.fromDate} onChange={e => {
+                                                    const exps = [...(formData.experiences || [])];
+                                                    exps[idx].fromDate = e.target.value;
+                                                    setFormData({ ...formData, experiences: exps });
+                                                }} /></div>
+                                                <div><InputLabel>End Date</InputLabel><input type="date" className="w-full border rounded-xl p-3 text-sm" value={exp.endDate} onChange={e => {
+                                                    const exps = [...(formData.experiences || [])];
+                                                    exps[idx].endDate = e.target.value;
+                                                    setFormData({ ...formData, experiences: exps });
+                                                }} /></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* 5. BANKING */}
+                        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t pt-10">
+                            <div className="md:col-span-1 border-r border-neutral-100 pr-6">
+                                <div className="flex items-center gap-2 text-indigo-600 mb-2">
+                                    <HiOutlineBanknotes size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Banking</span>
+                                </div>
+                                <p className="text-xs text-neutral-400 italic">Accurate bank details ensure automated salary credits.</p>
+                            </div>
+                            <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                                <div className="col-span-2"><InputLabel>Bank Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankName} onChange={e => handleInputChange('bankName', e.target.value)} /></div>
+                                <div><InputLabel>Account Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono" value={formData.accountNumber} onChange={e => handleInputChange('accountNumber', e.target.value)} /></div>
+                                <div><InputLabel>IFSC Code</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono uppercase" value={formData.ifscCode} onChange={e => handleInputChange('ifscCode', e.target.value)} /></div>
+                                <div className="col-span-2"><InputLabel>Branch Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankBranchName} onChange={e => handleInputChange('bankBranchName', e.target.value)} /></div>
+                            </div>
+                        </section>
                     </div>
 
-                    {/* FOOTER */}
-                    <div className="p-6 bg-white border-t border-neutral-100 shrink-0">
-                        <button
-                            onClick={handleSubmit}
-                            disabled={loaderState.active}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-indigo-100 disabled:opacity-50 uppercase tracking-widest text-[10px] active:scale-[0.98]"
-                        >
-                            {loaderState.active ? "Processing Records..." : "Submit Records"}
+                    {/* SUBMIT BUTTON */}
+                    <div className="p-6 border-t bg-neutral-50 shrink-0">
+                        <button onClick={handleSubmit} className="w-full bg-neutral-900 text-white font-black py-5 rounded-2xl text-[10px] tracking-widest uppercase hover:bg-black transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2">
+                            Finalize Profile & Sync with WorkSphere
                         </button>
                     </div>
                 </div>
             </div>
 
-            {showFailure && (
-                <FailureModal title="Submission Failed" message={errorMessage} onClose={() => setShowFailure(false)} />
-            )}
+            {showFailure && <FailureModal title="Sync Error" message={errorMessage} onClose={() => setShowFailure(false)} />}
         </>
     );
 };

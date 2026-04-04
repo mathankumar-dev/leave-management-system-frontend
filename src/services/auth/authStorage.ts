@@ -3,7 +3,6 @@ import Cookies from "js-cookie";
 const TOKEN_KEY = "lms_token";
 const USER_ID_KEY = "lms_user_id";
 
-export const getToken = () => Cookies.get(TOKEN_KEY);
 
 export const setAuthData = (id: string, token: string) => {
   Cookies.set(USER_ID_KEY, id, { expires: 1, path: "/" });
@@ -26,3 +25,7 @@ export const logout = () => {
     window.location.href = "/login";
   }
 };
+
+// authStorage.ts
+export const getUserId = () => Cookies.get(USER_ID_KEY); // Add this
+export const getToken = () => Cookies.get(TOKEN_KEY);
