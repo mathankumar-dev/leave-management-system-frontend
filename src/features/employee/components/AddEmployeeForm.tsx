@@ -279,7 +279,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
       {/* LOADER */}
       {(isSubmitting || status !== "idle") && (
         <Loader
-          message={status === "error" ? "Failed to Create" : status === "success" ? "Success!" : "Syncing WorkSphere..."}
+          message={status === "error" ? "Failed to Create" : status === "success" ? "Success!" : "Syncing WeHRM..."}
           isFinished={status === "success" || status === "error"}
           onFinished={handleLoaderFinished}
         />

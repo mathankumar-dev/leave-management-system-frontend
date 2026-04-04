@@ -148,7 +148,8 @@ const EmployeesView = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-neutral-800 text-white">
               <tr>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Member Identity</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Employee ID</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Name</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Role</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Status</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Options</th>
@@ -159,6 +160,7 @@ const EmployeesView = () => {
               {employees.length > 0 ? (
                 employees.map((emp) => (
                   <tr key={emp.empId} className={`transition-colors duration-150 group ${!emp.active ? 'bg-slate-50/50' : 'hover:bg-slate-50'}`}>
+
                     <td className="px-6 py-4">
                       <div className={`flex items-center gap-3 ${!emp.active ? 'opacity-60' : ''}`}>
                         <div className={`h-9 w-9 rounded-sm flex items-center justify-center text-[11px] font-black border transition-all ${emp.active ? 'bg-slate-100 text-slate-500 border-slate-200 group-hover:bg-slate-900 group-hover:text-white' : 'bg-slate-200 text-slate-400 border-slate-300'}`}>
@@ -166,10 +168,20 @@ const EmployeesView = () => {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-slate-900 uppercase">
-                            {emp.name} ({emp.empId})
+                            {emp.name}
                             {!emp.active && <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-black rounded-sm">INACTIVE</span>}
                           </p>
                           <p className="text-[10px] font-medium text-slate-400 lowercase">{emp.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className={`flex items-center gap-3 ${!emp.active ? 'opacity-60' : ''}`}>
+
+                        <div>
+                          <p className="text-xs font-bold text-slate-900 uppercase">
+                            {emp.empId}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -288,8 +300,6 @@ const EmployeesView = () => {
 };
 
 export default EmployeesView;
-
-/* Reusable Confirm Dialog remains the same */
 interface ConfirmDialogProps {
   isOpen: boolean; title: string; message: string; confirmText: string;
   isDanger: boolean; onConfirm: () => void; onCancel: () => void;
@@ -298,7 +308,7 @@ interface ConfirmDialogProps {
 const ConfirmDialog = ({ isOpen, title, message, confirmText, isDanger, onConfirm, onCancel }: ConfirmDialogProps) => (
   <AnimatePresence>
     {isOpen && (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onCancel} className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" />
         <motion.div initial={{ scale: 0.95, opacity: 0, y: 10 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 10 }} className="relative w-full max-w-sm bg-white border border-slate-200 rounded-sm shadow-2xl p-6">
           <h3 className="text-sm font-black text-slate-900 uppercase mb-2">{title}</h3>

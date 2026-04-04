@@ -3,9 +3,9 @@ import React, { createContext, useCallback, useEffect, useState } from "react";
 
 import type { User } from "@/features/employee/types";
 import api from "@/services/apiClient";
+import { logout, setAuthData } from "@/services/auth/authStorage";
 import Cookies from "js-cookie";
 import type { AuthResponse } from "./authTypes";
-import { logout, setToken } from "@/services/auth/authStorage";
 
 export interface AuthContextType {
   user: User | null;
@@ -25,16 +25,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
 
-const contextLogout = useCallback(async () => {
-  try {
-    await api.post('/auth/logout');
-  } catch (e) {
-    console.error("Logout request failed", e);
-  } finally {
-    setUser(null);
-    logout(); 
-  }
-}, []);
+  const contextLogout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      console.error("Logout request failed", e);
+    } finally {
+      setUser(null);
+      logout();
+    }
+  }, []);
 
 
   useEffect(() => {
@@ -60,15 +60,15 @@ const contextLogout = useCallback(async () => {
     initAuth();
   }, []);
 
-  const login = useCallback(async (data: { id: string; role: string; forcePasswordChange: boolean }) => {
+  const login = useCallback(async (data: AuthResponse) => {
     try {
-      // setToken(data.id);
-      const profile = await authService.getEmployeeProfile(data.id);
-      
-      setToken(data.id);
+      setAuthData(data.employeeId, data.token);
+
+      const profile = await authService.getEmployeeProfile(data.employeeId);
       setUser(profile);
     } catch (e) {
-      console.error("Profile fetch failed:", e);
+      console.error("Login initialization failed:", e);
+      logout();
       throw e;
     }
   }, []);

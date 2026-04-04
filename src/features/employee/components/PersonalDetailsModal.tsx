@@ -1,10 +1,10 @@
 import { authService } from "@/features/auth/api/authApi";
-import type { PersonalDetails } from "@/features/employee/types";
+import type { PersonalDetailsRequest } from "@/features/employee/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { FailureModal, Loader } from "@/shared/components";
 import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
 import { BloodGroupMap, GenderMap, MaritalStatusMap } from "@/shared/types";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     HiCheckCircle,
     HiOutlineBriefcase,
@@ -21,8 +21,7 @@ const PersonalDetailsModal = () => {
     const isExperienced = user?.employeeExperience === "EXPERIENCED";
     const submissionType = isExperienced ? "EXPERIENCED" : "FRESHER";
 
-    // Flattened state to match input handlers and the filtering logic in authService
-    const [formData, setFormData] = useState<Partial<PersonalDetails>>({
+    const [formData, setFormData] = useState<Partial<PersonalDetailsRequest>>({
         firstName: "",
         lastName: "",
         gender: "MALE",
@@ -36,8 +35,29 @@ const PersonalDetailsModal = () => {
         previousRole: "",
         oldCompanyName: "",
         oldCompanyFromDate: "",
-        oldCompanyEndDate: ""
+        oldCompanyEndDate: "",
+        aadharNumber: ""
     });
+
+    // Local state for the 4-4-4 Aadhaar UI
+    const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
+
+    // Sync parts to the main formData
+    useEffect(() => {
+        const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
+        setFormData((prev: any) => ({ ...prev, aadharNumber: combined }));
+    }, [aadharParts]);
+
+    const handleAadharChange = (part: keyof typeof aadharParts, value: string) => {
+        const cleaned = value.replace(/\D/g, "").slice(0, 4);
+        setAadharParts(prev => ({ ...prev, [part]: cleaned }));
+
+        // Auto-focus next input
+        if (cleaned.length === 4) {
+            if (part === "p1") document.getElementById("aadhar-p2")?.focus();
+            if (part === "p2") document.getElementById("aadhar-p3")?.focus();
+        }
+    };
 
     const [files, setFiles] = useState<Record<string, File | null>>({
         aadhaarCard: null,
@@ -58,14 +78,25 @@ const PersonalDetailsModal = () => {
     };
 
     const handleSubmit = async () => {
-        // FIX: Validation now checks keys against the flat PersonalDetails interface
-        const commonRequired: (keyof PersonalDetails)[] = [
-            'firstName', 'lastName', 'contactNumber', 'aadharNumber',
-            'personalEmail', 'dateOfBirth', 'presentAddress', 'permanentAddress',
+        // 1. Define fields that are strictly strings for length checking
+        const requiredStrings: (keyof PersonalDetails)[] = [
+            'firstName', 'lastName', 'contactNumber', 'personalEmail', 
+            'dateOfBirth', 'presentAddress', 'permanentAddress', 
             'designation', 'bankName', 'accountNumber'
         ];
 
-        const isMissingText = commonRequired.some(field => !formData[field]);
+        // 2. Type-safe validation check
+        const isMissingText = requiredStrings.some(field => {
+            const val = formData[field];
+            return typeof val === 'string' ? val.trim().length === 0 : !val;
+        });
+
+        // 3. Aadhaar Length Validation
+        if (!formData.aadharNumber || formData.aadharNumber.length !== 12) {
+            setErrorMessage("Please enter a valid 12-digit Aadhaar number (4 digits in each box).");
+            setShowFailure(true);
+            return;
+        }
 
         const requiredFiles = isExperienced
             ? ['aadhaarCard', 'experienceCertificate', 'leavingLetter']
@@ -89,7 +120,6 @@ const PersonalDetailsModal = () => {
 
         try {
             setLoaderState({ active: true, finished: false });
-            // This sends the data to your updated authService which handles the FormData wrapping
             await authService.submitMultipartDetails(user.id, submissionType, formData, files);
             setLoaderState({ active: true, finished: true });
         } catch (err: any) {
@@ -111,7 +141,7 @@ const PersonalDetailsModal = () => {
     };
 
     const InputLabel = ({ children }: { children: string }) => (
-        <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-1 block ml-1">
+        <label className="text-[10px] font-black text-neutral-600 tracking-widest mb-1 block ml-1 uppercase">
             {children}
         </label>
     );
@@ -141,7 +171,7 @@ const PersonalDetailsModal = () => {
                 <Loader message="Uploading documents..." isFinished={loaderState.finished} onFinished={handleFinalize} />
             )}
 
-            <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="fixed inset-0 z-9998 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
                 <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col max-h-[90vh]">
 
                     {/* HEADER */}
@@ -164,34 +194,40 @@ const PersonalDetailsModal = () => {
                                 <span className="text-xs font-bold uppercase tracking-wider">Identity & Contact</span>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <InputLabel>First Name</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.firstName || ""} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
+                                    <input placeholder="e.g. Suresh" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.firstName || ""} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
                                 </div>
                                 <div>
                                     <InputLabel>Last Name</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.lastName || ""} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
+                                    <input placeholder="e.g. Kumar" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.lastName || ""} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <InputLabel>Contact Number</InputLabel>
+                                    <input placeholder="10-digit mobile number" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.contactNumber || ""} onChange={e => setFormData({ ...formData, contactNumber: e.target.value })} />
+                                </div>
+                                <div>
+                                    <InputLabel>Personal Email</InputLabel>
+                                    <input placeholder="example@gmail.com" type="email" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.personalEmail || ""} onChange={e => setFormData({ ...formData, personalEmail: e.target.value })} />
+                                </div>
+                            </div>
+
+                            <div>
+                                <InputLabel>Aadhar Number</InputLabel>
+                                <div className="flex items-center gap-3">
+                                    <input id="aadhar-p1" placeholder="XXXX" className="w-full text-center border border-neutral-200 rounded-lg px-2 py-2.5 text-sm font-mono tracking-widest" value={aadharParts.p1} onChange={e => handleAadharChange("p1", e.target.value)} />
+                                    <span className="text-neutral-300">-</span>
+                                    <input id="aadhar-p2" placeholder="XXXX" className="w-full text-center border border-neutral-200 rounded-lg px-2 py-2.5 text-sm font-mono tracking-widest" value={aadharParts.p2} onChange={e => handleAadharChange("p2", e.target.value)} />
+                                    <span className="text-neutral-300">-</span>
+                                    <input id="aadhar-p3" placeholder="XXXX" className="w-full text-center border border-neutral-200 rounded-lg px-2 py-2.5 text-sm font-mono tracking-widest" value={aadharParts.p3} onChange={e => handleAadharChange("p3", e.target.value)} />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <InputLabel>Contact Number</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.contactNumber || ""} onChange={e => setFormData({ ...formData, contactNumber: e.target.value })} />
-                                </div>
-                                <div>
-                                    <InputLabel>Personal Email</InputLabel>
-                                    <input type="email" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.personalEmail || ""} onChange={e => setFormData({ ...formData, personalEmail: e.target.value })} />
-                                </div>
-                                <div>
-                                    <InputLabel>Aadhar Number</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.aadharNumber || ""} onChange={e => setFormData({ ...formData, aadharNumber: e.target.value })} />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <MyDatePicker label="Date of Birth" selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null} onChange={d => setFormData({ ...formData, dateOfBirth: d?.toISOString().split('T')[0] })} />
                                 <div>
                                     <InputLabel>Gender</InputLabel>
                                     <select className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value as any })}>
@@ -211,6 +247,9 @@ const PersonalDetailsModal = () => {
                                     </select>
                                 </div>
                             </div>
+                            <div className="w-full">
+                                <MyDatePicker label="Date of Birth" selected={formData.dateOfBirth ? new Date(formData.dateOfBirth) : null} onChange={d => setFormData({ ...formData, dateOfBirth: d?.toISOString().split('T')[0] })} />
+                            </div>
                         </div>
 
                         {/* BANK DETAILS SECTION */}
@@ -222,11 +261,11 @@ const PersonalDetailsModal = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <InputLabel>Bank Name</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.bankName || ""} onChange={e => setFormData({ ...formData, bankName: e.target.value })} />
+                                    <input placeholder="e.g. State Bank of India" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.bankName || ""} onChange={e => setFormData({ ...formData, bankName: e.target.value })} />
                                 </div>
                                 <div>
                                     <InputLabel>Account Number</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.accountNumber || ""} onChange={e => setFormData({ ...formData, accountNumber: e.target.value })} />
+                                    <input placeholder="Full bank account number" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.accountNumber || ""} onChange={e => setFormData({ ...formData, accountNumber: e.target.value })} />
                                 </div>
                             </div>
                         </div>
@@ -240,11 +279,11 @@ const PersonalDetailsModal = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <InputLabel>Designation</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.designation || ""} onChange={e => setFormData({ ...formData, designation: e.target.value })} />
+                                    <input placeholder="e.g. Full Stack Developer" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.designation || ""} onChange={e => setFormData({ ...formData, designation: e.target.value })} />
                                 </div>
                                 <div>
                                     <InputLabel>Skill Set</InputLabel>
-                                    <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.skillSet || ""} onChange={e => setFormData({ ...formData, skillSet: e.target.value })} />
+                                    <input placeholder="e.g. React, Spring Boot, MySQL" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm" value={formData.skillSet || ""} onChange={e => setFormData({ ...formData, skillSet: e.target.value })} />
                                 </div>
                             </div>
 
@@ -253,15 +292,15 @@ const PersonalDetailsModal = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <InputLabel>UAN Number</InputLabel>
-                                            <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.uanNumber || ""} onChange={e => setFormData({ ...formData, uanNumber: e.target.value })} />
+                                            <input placeholder="12-digit EPF UAN" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white font-mono" value={formData.uanNumber || ""} onChange={e => setFormData({ ...formData, uanNumber: e.target.value })} />
                                         </div>
                                         <div>
                                             <InputLabel>Prev. Role</InputLabel>
-                                            <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.previousRole || ""} onChange={e => setFormData({ ...formData, previousRole: e.target.value })} />
+                                            <input placeholder="Last job title" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.previousRole || ""} onChange={e => setFormData({ ...formData, previousRole: e.target.value })} />
                                         </div>
                                         <div>
                                             <InputLabel>Prev. Company</InputLabel>
-                                            <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.oldCompanyName || ""} onChange={e => setFormData({ ...formData, oldCompanyName: e.target.value })} />
+                                            <input placeholder="Last organization" className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.oldCompanyName || ""} onChange={e => setFormData({ ...formData, oldCompanyName: e.target.value })} />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -303,8 +342,8 @@ const PersonalDetailsModal = () => {
                                 <span className="text-xs font-bold uppercase tracking-wider">Address Details</span>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <textarea placeholder="Present Address" rows={2} className="w-full border border-neutral-200 rounded-lg px-4 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" value={formData.presentAddress || ""} onChange={e => setFormData({ ...formData, presentAddress: e.target.value })} />
-                                <textarea placeholder="Permanent Address" rows={2} className="w-full border border-neutral-200 rounded-lg px-4 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" value={formData.permanentAddress || ""} onChange={e => setFormData({ ...formData, permanentAddress: e.target.value })} />
+                                <textarea placeholder="Current Address (House No, Street, City, State, PIN)..." rows={2} className="w-full border border-neutral-200 rounded-lg px-4 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" value={formData.presentAddress || ""} onChange={e => setFormData({ ...formData, presentAddress: e.target.value })} />
+                                <textarea placeholder="Permanent Address as per Aadhaar/ID..." rows={2} className="w-full border border-neutral-200 rounded-lg px-4 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-indigo-500" value={formData.permanentAddress || ""} onChange={e => setFormData({ ...formData, permanentAddress: e.target.value })} />
                             </div>
                         </div>
 
@@ -317,19 +356,25 @@ const PersonalDetailsModal = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="p-4 bg-white border border-neutral-100 rounded-xl space-y-3">
                                     <div className="flex justify-between items-center">
-                                        <p className="text-[10px] font-black text-indigo-600 uppercase">Father's Details</p>
-                                        <input type="checkbox" checked={formData.fatherAlive} onChange={e => setFormData({ ...formData, fatherAlive: e.target.checked })} />
+                                        <p className="text-[10px] font-black text-indigo-600">FATHER'S DETAILS</p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] text-neutral-400 font-bold">ALIVE?</span>
+                                            <input type="checkbox" checked={formData.fatherAlive} onChange={e => setFormData({ ...formData, fatherAlive: e.target.checked })} />
+                                        </div>
                                     </div>
-                                    <input placeholder="Name" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.fatherName || ""} onChange={e => setFormData({ ...formData, fatherName: e.target.value })} />
+                                    <input placeholder="Father's Legal Name" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.fatherName || ""} onChange={e => setFormData({ ...formData, fatherName: e.target.value })} />
                                     <MyDatePicker label="DOB" selected={formData.fatherDateOfBirth ? new Date(formData.fatherDateOfBirth) : null} onChange={d => setFormData({ ...formData, fatherDateOfBirth: d?.toISOString().split('T')[0] })} />
                                     <input placeholder="Occupation" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.fatherOccupation || ""} onChange={e => setFormData({ ...formData, fatherOccupation: e.target.value })} />
                                 </div>
                                 <div className="p-4 bg-white border border-neutral-100 rounded-xl space-y-3">
                                     <div className="flex justify-between items-center">
-                                        <p className="text-[10px] font-black text-indigo-600 uppercase">Mother's Details</p>
-                                        <input type="checkbox" checked={formData.motherAlive} onChange={e => setFormData({ ...formData, motherAlive: e.target.checked })} />
+                                        <p className="text-[10px] font-black text-indigo-600">MOTHER'S DETAILS</p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] text-neutral-400 font-bold">ALIVE?</span>
+                                            <input type="checkbox" checked={formData.motherAlive} onChange={e => setFormData({ ...formData, motherAlive: e.target.checked })} />
+                                        </div>
                                     </div>
-                                    <input placeholder="Name" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.motherName || ""} onChange={e => setFormData({ ...formData, motherName: e.target.value })} />
+                                    <input placeholder="Mother's Legal Name" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.motherName || ""} onChange={e => setFormData({ ...formData, motherName: e.target.value })} />
                                     <MyDatePicker label="DOB" selected={formData.motherDateOfBirth ? new Date(formData.motherDateOfBirth) : null} onChange={d => setFormData({ ...formData, motherDateOfBirth: d?.toISOString().split('T')[0] })} />
                                     <input placeholder="Occupation" className="w-full border-b border-neutral-200 py-1 text-sm outline-none" value={formData.motherOccupation || ""} onChange={e => setFormData({ ...formData, motherOccupation: e.target.value })} />
                                 </div>

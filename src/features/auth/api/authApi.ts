@@ -1,6 +1,6 @@
-import type { User } from "@/features/employee/types";
+import type { PersonalDetailsRequest, User } from "@/features/employee/types";
 import api from "@/services/apiClient";
-import type { LoginCredentials, AuthResponse, ExperienceType } from "@/shared/auth/authTypes";
+import type { AuthResponse, ExperienceType, LoginCredentials } from "@/shared/auth/authTypes";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -11,12 +11,12 @@ export const authService = {
     return response.data;
   },
 
-  
+
 
   getEmployeeProfile: async (id: string): Promise<User> => {
 
     const response = await api.get<User>(`/employees/profile/${id}`);
-    
+
     return response.data;
   },
 
@@ -24,12 +24,12 @@ export const authService = {
     const response = await api.get<User>('/employees/me');
     return response.data;
   },
-  // getProfileByID: async (id  : number): Promise<User> => {
-  //   const response = await api.get<User>(`/employees/profile/${id}`);
-  //   console.log(response);
-    
-  //   return response.data;
-  // },
+  getProfileByID: async (id  : number): Promise<User> => {
+    const response = await api.get<User>(`/employees/profile/${id}`);
+    console.log(response);
+
+    return response.data;
+  },
 
   submitMultipartDetails: async (
     id: string,
@@ -82,18 +82,19 @@ export const authService = {
     return response.data;
   },
 
- 
+
+
 
   refreshToken: async () => {
 
-  const refreshToken = Cookies.get("lms_refresh_token");
+    const refreshToken = Cookies.get("lms_refresh_token");
 
-  if (!refreshToken) {
-    throw new Error("No refresh token found");
-  }
+    if (!refreshToken) {
+      throw new Error("No refresh token found");
+    }
 
-  return axios.post("/refresh-token", { refreshToken });
-},
+    return axios.post("/refresh-token", { refreshToken });
+  },
 
   changePassword: async (newPassword: string): Promise<void> => {
     await api.put('/auth/change-password', {
