@@ -32,7 +32,7 @@ const PersonalDetailsModal = () => {
         accountNumber: "",
         fatherAlive: true,
         motherAlive: true,
-        unaNumber: "",
+        uanNumber: "",
         previousRole: "",
         oldCompanyName: "",
         oldCompanyFromDate: "",
@@ -74,7 +74,7 @@ const PersonalDetailsModal = () => {
         const isMissingFile = requiredFiles.some(key => !files[key]);
 
         const isMissingExpInfo = isExperienced && (
-            !formData.unaNumber ||
+            !formData.uanNumber ||
             !formData.oldCompanyFromDate ||
             !formData.oldCompanyEndDate
         );
@@ -252,8 +252,8 @@ const PersonalDetailsModal = () => {
                                 <div className="space-y-4 p-4 bg-indigo-50/30 rounded-xl border border-indigo-100">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
-                                            <InputLabel>UNA Number</InputLabel>
-                                            <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.unaNumber || ""} onChange={e => setFormData({ ...formData, unaNumber: e.target.value })} />
+                                            <InputLabel>UAN Number</InputLabel>
+                                            <input className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm bg-white" value={formData.uanNumber || ""} onChange={e => setFormData({ ...formData, uanNumber: e.target.value })} />
                                         </div>
                                         <div>
                                             <InputLabel>Prev. Role</InputLabel>

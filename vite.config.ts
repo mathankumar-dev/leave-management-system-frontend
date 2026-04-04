@@ -13,8 +13,9 @@ export default defineConfig({
     port: 5173,
     // proxy: {
     //   '/api': {
-    //     target: 'http://106.51.0.210:8111',
-    //     // target: 'http://192.168.1.13:8111',
+    //     // target: 'http://106.51.0.210:8111',
+    //     target: 'http://192.168.1.13:8111',
+    //     // target: 'https://jgpq493j-8111.inc1.devtunnels.ms/api',
     //     changeOrigin: true,
     //     secure: false
     //   }

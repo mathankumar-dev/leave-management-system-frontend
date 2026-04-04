@@ -4,14 +4,17 @@ import { useAuth } from "@/shared/auth/useAuth";
 import { CustomLoader } from "@/shared/components";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState } from "react";
-import { FaEnvelope, FaPhone } from "react-icons/fa";
+import { FaEnvelope, FaPhone, FaPrint, FaEdit, FaTrash } from "react-icons/fa";
 import { HiOutlineLocationMarker, HiOutlineOfficeBuilding } from "react-icons/hi";
 import { HiOutlineShieldCheck, HiOutlineIdentification, HiOutlineCreditCard } from "react-icons/hi2";
+
+// ─── No logic changes — UI only ──────────────────────────────────
 
 const EmployeeProfile: React.FC = () => {
   const { user } = useAuth();
   const { profile: backendProfile, loading, fetchEmployeeProfile } = useEmployee();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     if (user?.id) fetchEmployeeProfile(user.id);
@@ -32,163 +35,310 @@ const EmployeeProfile: React.FC = () => {
   const formatDate = (date?: string | Date) =>
     date ? new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : "-";
 
+  const TABS = [
+    { id: "details", label: "Details" },
+    { id: "personal", label: "Personal" },
+    { id: "address", label: "Address" },
+    { id: "financial", label: "Financial" },
+    { id: "employment", label: "Employment" },
+  ];
+
   return (
-    <div className="max-w-6xl mx-auto py-10 px-4 space-y-10">
-      
-      {/* HEADER: IDENTITY CARD STYLE */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white/70 backdrop-blur-3xl rounded-[3rem] shadow-2xl shadow-slate-200/50 border border-white p-10 flex flex-col md:flex-row gap-10 items-center md:items-start relative overflow-hidden"
-      >
-        {/* Decorative background element */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full -mr-20 -mt-20 blur-3xl" />
+    <div className="max-w-6xl mx-auto py-6 px-4 space-y-0">
 
-        {/* Brand Avatar Box */}
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          className="w-32 h-32 rounded-full bg-brand text-white flex items-center justify-center text-4xl font-black shadow-2xl shadow-brand/30 shrink-0 relative z-10"
-        >
-          {profile.name?.charAt(0)}
-        </motion.div>
+      {/* ── TOP HEADER CARD ── */}
+      <div className="bg-white rounded-t-2xl border border-slate-200 shadow-sm px-6 py-5">
+        <div className="flex flex-col md:flex-row md:items-start gap-5">
 
-        {/* Main Identity Info */}
-        <div className="flex-1 text-center md:text-left relative z-10">
-          <div className="flex flex-col md:flex-row items-center gap-4 mb-2">
-            <h2 className="text-4xl font-black text-slate-800 tracking-tight">{profile.name}</h2>
-            <StatusBadge status={profile.verificationStatus} />
+          {/* Avatar */}
+          <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center text-2xl font-black text-rose-500 shrink-0 border-2 border-rose-200">
+            {profile.name?.charAt(0)}
           </div>
 
-          <p className="text-brand font-black uppercase tracking-[0.2em] text-xs mb-6">
-            {profile.designation || "Executive Associate"}
-          </p>
+          {/* Name + meta */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-xl font-bold text-slate-800">{profile.name}</h2>
+              <div className="flex items-center gap-2">
+                <FaPhone className="text-slate-400 text-sm" />
+                <FaEnvelope className="text-slate-400 text-sm" />
+              </div>
+            </div>
+            <div className="flex items-center gap-4 mt-1.5 text-xs text-slate-500 flex-wrap">
+              <span className="flex items-center gap-1.5">
+                <HiOutlineOfficeBuilding className="text-slate-400" />
+                {profile.designation || "Executive Associate"}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <HiOutlineLocationMarker className="text-slate-400" />
+                {formatDate(profile.joiningDate)}
+              </span>
+              <StatusBadge status={profile.verificationStatus} />
+            </div>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <ContactItem icon={<FaEnvelope />} label="Email" value={profile.email} />
-            <ContactItem icon={<FaPhone />} label="Phone" value={profile.contactNumber} />
-            <ContactItem icon={<HiOutlineLocationMarker />} label="Work Base" value={profile.presentAddress?.split(',')[0]} />
-            <ContactItem icon={<HiOutlineShieldCheck />} label="Manager" value={profile.reportingName} />
+          {/* Action buttons */}
+          <div className="flex flex-wrap md:flex-nowrap items-center gap-2 shrink-0 w-full md:w-auto">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+              <FaTrash className="text-xs text-slate-400" /> Delete
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+              <FaPrint className="text-xs text-slate-400" /> Print
+            </button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 border border-indigo-200 rounded-lg text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors">
+              <FaEdit className="text-xs" /> Edit
+            </button>
           </div>
         </div>
-      </motion.div>
 
-      {/* INFORMATION GRID */}
-      <div className="grid lg:grid-cols-2 gap-8">
-        
-        <Section icon={<HiOutlineIdentification />} title="Personal Profile">
-          <Field label="Full Legal Name" value={profile.name} />
-          <Field label="Gender Identity" value={profile.gender} />
-          <Field label="Date of Birth" value={formatDate(profile.dateOfBirth)} />
-          <Field label="Blood Group" value={profile.bloodGroup} />
-          <Field label="Personal Email" value={profile.personalEmail} />
-          <Field label="Family Reference" value={`${profile.fatherName} (F)`} />
-        </Section>
+        {/* Last updated */}
+        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-1.5 text-[11px] text-slate-400">
+          <HiOutlineShieldCheck className="text-slate-300" />
+          Verification Status: <span className="font-semibold text-slate-500">{profile.verificationStatus || "PENDING"}</span>
+        </div>
+      </div>
 
-        <Section icon={<HiOutlineOfficeBuilding />} title="Employment Details">
-          <Field label="Primary Designation" value={profile.designation} />
-          <Field label="Joining Date" value={formatDate(profile.joiningDate)} />
-          <Field label="Employment Type" value={profile.employeeType} />
-          <div className="col-span-2 pt-4">
-             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Verified Skillset</p>
-             <div className="flex flex-wrap gap-2">
-                {profile.skillSet?.map((s, i) => (
-                  <span key={i} className="bg-brand/10 text-brand text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-tighter">
-                    {s}
-                  </span>
-                ))}
-             </div>
-          </div>
-        </Section>
-
-        <Section icon={<HiOutlineLocationMarker />} title="Address Registry">
-          <Field label="Present Residence" value={profile.presentAddress} isFullWidth />
-          <Field label="Permanent Registry" value={profile.permanentAddress} isFullWidth />
-        </Section>
-
-        <Section icon={<HiOutlineCreditCard />} title="Financial">
-          <Field label="Bank Name" value={profile.bankName} />
-          <Field label="Account Number" value={profile.accountNumber ? `****${profile.accountNumber.slice(-4)}` : "-"} />
-          <Field label="PF Number" value={profile.pfNumber} />
-          <Field label="UAN Identity" value={profile.unaNumber} />
-        </Section>
-
-        {/* VERIFICATION WARNING IF REJECTED */}
-        <AnimatePresence>
-          {profile.verificationStatus === "REJECTED" && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="lg:col-span-2 bg-rose-50/50 backdrop-blur-md border border-rose-100 rounded-[2.5rem] p-8 flex gap-6 items-center"
+      {/* ── TABS ── */}
+      <div className="bg-white border-x border-slate-200 border-b">
+        <div className="flex overflow-x-auto">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-6 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
+                activeTab === tab.id
+                  ? "border-indigo-600 text-indigo-600 bg-indigo-50/30"
+                  : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+              }`}
             >
-              <div className="w-16 h-16 bg-rose-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-xl shadow-rose-200">
-                <HiOutlineShieldCheck size={32} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── TAB CONTENT ── */}
+      <div className="bg-slate-50 border-x border-b border-slate-200 rounded-b-2xl shadow-sm">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
+            className="p-6"
+          >
+
+            {/* DETAILS TAB */}
+            {activeTab === "details" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+
+                {/* Left — Contact Info */}
+                <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Contact Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField label="Phone Number" value={profile.contactNumber} />
+                    <FormField label="Email" value={profile.email} />
+                    <FormField label="Personal Email" value={profile.personalEmail} />
+                    <FormField label="Emergency Contact" value={profile.emergencyContactNumber} />
+                    <FormField label="Gender" value={profile.gender} />
+                    <FormField label="Blood Group" value={profile.bloodGroup} />
+                  </div>
+                </div>
+
+                {/* Right — Employment Info */}
+                <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Employment Details</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                    <FormField label="Designation" value={profile.designation} />
+                    <FormField label="Role" value={(profile as any).role} />
+                    <FormField label="Manager" value={profile.reportingName} />
+                    <FormField label="Joining Date" value={formatDate(profile.joiningDate)} />
+                    <FormField label="Employment Type" value={(profile as any).employeeType} />
+                    <FormField label="Biometric Status" value={(profile as any).biometricStatus} />
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Skills</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.skillSet?.map((s: string, i: number) => (
+                        <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg uppercase tracking-wide">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-black text-rose-500 uppercase tracking-[0.2em] mb-1">HR Review Required</p>
-                <p className="text-lg font-bold text-rose-900 leading-tight">"{profile.hrRemarks}"</p>
-                <p className="text-sm text-rose-600/70 mt-1 font-medium">Please update your records and resubmit for verification.</p>
+            )}
+
+            {/* PERSONAL TAB */}
+            {activeTab === "personal" && (
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <HiOutlineIdentification /> Personal Profile
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                  <FormField label="Full Legal Name" value={profile.name} />
+                  <FormField label="Gender Identity" value={profile.gender} />
+                  <FormField label="Date of Birth" value={formatDate(profile.dateOfBirth)} />
+                  <FormField label="Blood Group" value={profile.bloodGroup} />
+                  <FormField label="Aadhar Number" value={profile.aadharNumber ? `****${profile.aadharNumber.slice(-4)}` : "-"} />
+                  <FormField label="Marital Status" value={(profile as any).maritalStatus} />
+                  <FormField label="Father's Name" value={profile.fatherName} />
+                  <FormField label="Mother's Name" value={profile.motherName} />
+                  <FormField label="Emergency Contact" value={profile.emergencyContactNumber} />
+                </div>
               </div>
-            </motion.div>
-          )}
+            )}
+
+            {/* ADDRESS TAB */}
+            {activeTab === "address" && (
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <HiOutlineLocationMarker /> Address Registry
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Present Residence</p>
+                    <div className="bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-700 min-h-[80px]">
+                      {profile.presentAddress || <span className="text-slate-300 italic">Not Specified</span>}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Permanent Registry</p>
+                    <div className="bg-slate-50 rounded-xl p-4 text-sm font-medium text-slate-700 min-h-[80px]">
+                      {profile.permanentAddress || <span className="text-slate-300 italic">Not Specified</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* FINANCIAL TAB */}
+            {activeTab === "financial" && (
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <HiOutlineCreditCard /> Financial Details
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                  <FormField label="Bank Name" value={profile.bankName} />
+                  <FormField label="Account Number" value={profile.accountNumber ? `****${profile.accountNumber.slice(-4)}` : "-"} />
+                  <FormField label="PF Number" value={profile.pfNumber} />
+                  <FormField label="UAN Number" value={profile.unaNumber} />
+                </div>
+              </div>
+            )}
+
+            {/* EMPLOYMENT TAB */}
+            {activeTab === "employment" && (
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <HiOutlineOfficeBuilding /> Employment Details
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                  <FormField label="Designation" value={profile.designation} />
+                  <FormField label="Joining Date" value={formatDate(profile.joiningDate)} />
+                  <FormField label="Employment Type" value={(profile as any).employeeType} />
+                  <FormField label="Manager" value={profile.reportingName} />
+                  <FormField label="Biometric Status" value={(profile as any).biometricStatus} />
+                  <FormField label="VPN Status" value={(profile as any).vpnStatus} />
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Skillset</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {profile.skillSet?.map((s: string, i: number) => (
+                      <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg uppercase tracking-wide">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* VERIFICATION WARNING */}
+            <AnimatePresence>
+              {profile.verificationStatus === "REJECTED" && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mt-4 bg-rose-50 border border-rose-200 rounded-xl p-5 flex gap-4 items-start"
+                >
+                  <div className="w-10 h-10 bg-rose-500 text-white rounded-xl flex items-center justify-center shrink-0">
+                    <HiOutlineShieldCheck size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-1">HR Review Required</p>
+                    <p className="text-sm font-semibold text-rose-800">"{profile.hrRemarks}"</p>
+                    <p className="text-xs text-rose-500 mt-1">Please update your records and resubmit for verification.</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+          </motion.div>
         </AnimatePresence>
       </div>
     </div>
   );
 };
 
-/* REUSABLE SUB-COMPONENTS STYLED TO MATCH */
+/* ─── Reusable Sub-Components (logic unchanged) ─────────────────── */
 
-const Section = ({ title, icon, children }: any) => (
-  <motion.div
-    whileHover={{ y: -5 }}
-    className="bg-white/60 backdrop-blur-xl rounded-[2.5rem] shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 p-8 transition-all duration-500 border border-white/50"
-  >
-    <div className="flex items-center gap-3 mb-8">
-      <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500">
-        {React.cloneElement(icon, { size: 20 })}
-      </div>
-      <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">{title}</h3>
-    </div>
-    <div className="grid grid-cols-2 gap-x-8 gap-y-6">{children}</div>
-  </motion.div>
-);
-
-const Field = ({ label, value, isFullWidth }: any) => (
-  <div className={`flex flex-col gap-1.5 ${isFullWidth ? "col-span-2" : ""}`}>
-    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+const FormField = ({ label, value }: { label: string; value?: string | null }) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
       {label}
-    </span>
-    <div className="bg-white/50 p-3 rounded-2xl text-sm font-bold text-slate-700 min-h-11 flex items-center px-4">
-      {value || <span className="text-slate-300 font-medium italic">Not Specified</span>}
-    </div>
-  </div>
-);
-
-const ContactItem = ({ icon, label, value }: any) => (
-  <div className="flex flex-col">
-    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">{label}</span>
-    <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
-      <span className="text-brand/60">{icon}</span>
-      <span className="truncate">{value || "-"}</span>
+    </label>
+    <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 min-h-9 flex items-center">
+      {value || <span className="text-slate-300 italic text-xs">Not Specified</span>}
     </div>
   </div>
 );
 
 const StatusBadge = ({ status }: { status?: string }) => {
-  const config: any = {
-    VERIFIED: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    PENDING: "bg-amber-50 text-amber-600 border-amber-100 animate-pulse",
-    REJECTED: "bg-rose-50 text-rose-600 border-rose-100",
-    UNKNOWN: "bg-slate-50 text-slate-400 border-slate-100"
+  const config: Record<string, string> = {
+    VERIFIED: "bg-emerald-50 text-emerald-600 border-emerald-200",
+    PENDING: "bg-amber-50 text-amber-600 border-amber-200",
+    REJECTED: "bg-rose-50 text-rose-600 border-rose-200",
+    UNKNOWN: "bg-slate-50 text-slate-400 border-slate-200",
   };
-
-  const style = config[status || "UNKNOWN"];
-
+  const style = config[status || "UNKNOWN"] || config.UNKNOWN;
   return (
-    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${style}`}>
+    <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${style}`}>
       {status || "UNKNOWN"}
     </span>
   );
 };
+
+// ─── Old sub-components kept for compatibility (unused in new UI) ─
+// const Section = ({ title, icon, children }: any) => (
+//   <div className="bg-white rounded-xl border border-slate-200 p-6">
+//     <div className="flex items-center gap-2 mb-4">
+//       {React.cloneElement(icon, { size: 18, className: "text-slate-400" })}
+//       <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">{title}</h3>
+//     </div>
+//     <div className="grid grid-cols-2 gap-4">{children}</div>
+//   </div>
+// );
+
+// const Field = ({ label, value, isFullWidth }: any) => (
+//   <div className={`flex flex-col gap-1.5 ${isFullWidth ? "col-span-2" : ""}`}>
+//     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+//     <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700">
+//       {value || <span className="text-slate-300 italic text-xs">Not Specified</span>}
+//     </div>
+//   </div>
+// );
+
+// const ContactItem = ({ icon, label, value }: any) => (
+//   <div className="flex flex-col gap-1">
+//     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+//     <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+//       <span className="text-slate-400">{icon}</span>
+//       <span className="truncate">{value || "-"}</span>
+//     </div>
+//   </div>
+// );
 
 export default EmployeeProfile;

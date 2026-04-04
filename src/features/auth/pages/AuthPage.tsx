@@ -1,6 +1,6 @@
 
-import loginAnimation from "@/assets/animations/login.json"; // Your .json file
-import Lottie from "lottie-react"; // Standard Lottie component
+import loginAnimation from "@/assets/animations/login.json"; 
+import Lottie from "lottie-react"; 
 import { motion } from "framer-motion";
 import React from "react";
 import { FaArrowCircleLeft } from "react-icons/fa";

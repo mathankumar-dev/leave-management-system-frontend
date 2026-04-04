@@ -142,7 +142,7 @@ const LeaveApplicationForm = () => {
   };
 
   const getAvailableLeaveTypes = () => {
-    const types = ["SICK", "ANNUAL", "COMP_OFF"];
+    const types = ["SICK", "ANNUAL"];
 
     const gender = user?.gender?.toUpperCase();
 
