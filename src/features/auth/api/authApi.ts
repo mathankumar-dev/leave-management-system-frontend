@@ -32,47 +32,47 @@ export const authService = {
   },
 
   submitMultipartDetails: async (
-  id: string,
-  type: "FRESHER" | "EXPERIENCED",
-  data: any,
-  files: Record<string, File | File[] | null>
-): Promise<any> => {
-  const formData = new FormData();
+    id: string,
+    type: "FRESHER" | "EXPERIENCED",
+    data: any,
+    files: Record<string, File | File[] | null>
+  ): Promise<any> => {
+    const formData = new FormData();
 
-  // 1. JSON Payload
-  formData.append("data", JSON.stringify(data));
+    // 1. JSON Payload
+    formData.append("data", JSON.stringify(data));
 
-  // 2. Common Multipart Keys
-  if (files.idProof) formData.append("idProof", files.idProof as File);
-  if (files.passportPhoto) formData.append("passportPhoto", files.passportPhoto as File);
+    // 2. Common Multipart Keys
+    if (files.idProof) formData.append("idProof", files.idProof as File);
+    if (files.passportPhoto) formData.append("passportPhoto", files.passportPhoto as File);
 
-  // 3. Conditional Keys based on Employee Type
-  if (type === "FRESHER") {
-    // Keys must match Spring Boot @RequestPart names exactly
-    if (files.tenthMarksheet) formData.append("tenthMarksheet", files.tenthMarksheet as File);
-    if (files.twelfthMarksheet) formData.append("twelfthMarksheet", files.twelfthMarksheet as File);
-    if (files.degreeCertificate) formData.append("degreeCertificate", files.degreeCertificate as File);
-    if (files.offerLetter) formData.append("offerLetter", files.offerLetter as File);
-  } else {
-    // Experienced: handle List<MultipartFile> for experienceCerts
-    if (files.relievingLetter) formData.append("relievingLetter", files.relievingLetter as File);
-    
-    if (Array.isArray(files.experienceCerts)) {
-      files.experienceCerts.forEach((file) => {
-        formData.append("experienceCerts", file);
-      });
+    // 3. Conditional Keys based on Employee Type
+    if (type === "FRESHER") {
+      // Keys must match Spring Boot @RequestPart names exactly
+      if (files.tenthMarksheet) formData.append("tenthMarksheet", files.tenthMarksheet as File);
+      if (files.twelfthMarksheet) formData.append("twelfthMarksheet", files.twelfthMarksheet as File);
+      if (files.degreeCertificate) formData.append("degreeCertificate", files.degreeCertificate as File);
+      if (files.offerLetter) formData.append("offerLetter", files.offerLetter as File);
+    } else {
+      // Experienced: handle List<MultipartFile> for experienceCerts
+      if (files.relievingLetter) formData.append("relievingLetter", files.relievingLetter as File);
+
+      if (Array.isArray(files.experienceCerts)) {
+        files.experienceCerts.forEach((file) => {
+          formData.append("experienceCerts", file);
+        });
+      }
     }
-  }
 
-  // POST endpoint only
-  const response = await api.post(
-    `/employees/personal-details/${id}/${type.toLowerCase()}`,
-    formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
-  );
+    // POST endpoint only
+    const response = await api.post(
+      `/employees/personal-details/${id}/${type.toLowerCase()}`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
 
-  return response.data;
-},
+    return response.data;
+  },
 
 
   refreshToken: async () => {
