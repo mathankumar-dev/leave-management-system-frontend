@@ -35,6 +35,8 @@ const MyRequestsView: React.FC = () => {
     }
   };
 
+
+
   useEffect(() => {
     loadAllHistory();
   }, [user?.id]);
@@ -80,8 +82,8 @@ const MyRequestsView: React.FC = () => {
       }
 
       // Updated Logic: If days are less than 1, show "Partial Day"
-      const durationLabel = calculatedDays < 1 
-        ? "Half Day" 
+      const durationLabel = calculatedDays < 1
+        ? "Half Day"
         : `${calculatedDays} ${calculatedDays === 1 ? 'Day' : 'Days'}`;
 
       const dateOptions: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short" };
@@ -264,28 +266,44 @@ const DetailContent = ({ item }: { item: any }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div className="space-y-3">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-          <FaInfoCircle className="text-indigo-400" /> Request Details
-        </h4>
-        <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-[60px]">
-          <p className="text-xs text-slate-600 leading-relaxed mb-2">
-            {item.reason ? `"${item.reason}"` : "No reason provided."}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {item.isAppointment && (
-              <span className="bg-blue-50 text-blue-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase">Appointment</span>
-            )}
-            {item.startDateHalfDayType && (
-              <span className="bg-orange-50 text-orange-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase">
-                {item.startDateHalfDayType.replace('_', ' ')}
-              </span>
-            )}
+      {/* COLUMN 1: REQUEST INFO & REJECTION */}
+      <div className="space-y-4">
+        <div>
+          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-2">
+            <FaInfoCircle className="text-indigo-400" /> Request Details
+          </h4>
+          <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-[60px]">
+            <p className="text-xs text-slate-600 leading-relaxed mb-2 italic">
+              {item.reason ? `"${item.reason}"` : "No reason provided."}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {item.isAppointment && (
+                <span className="bg-blue-50 text-blue-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase">Appointment</span>
+              )}
+              {item.startDateHalfDayType && (
+                <span className="bg-orange-50 text-orange-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase">
+                  {item.startDateHalfDayType.replace('_', ' ')}
+                </span>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* REJECTION REASON SECTION */}
+        {(item.status === 'REJECTED' || item.firstApproverDecision === 'REJECTED' || item.secondApproverDecision === 'REJECTED') && (
+          <div className="bg-rose-50 border border-rose-200 p-3 rounded-sm">
+            <h5 className="text-[9px] font-black text-rose-600 uppercase tracking-tighter mb-1">
+              Reason for Rejection
+            </h5>
+            <p className="text-xs font-bold text-rose-900 leading-normal whitespace-pre-wrap wrap-break-word">
+              {item.rejectionReason || "No specific rejection reason provided."}
+            </p>
+          </div>
+        )}
       </div>
 
-      <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm h-fit">
+      {/* COLUMN 2: DATE SUMMARY */}
+      <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm h-fit self-start mt-6">
         <div className="p-2.5 flex justify-between items-center">
           <span className="text-[9px] font-black text-slate-500 uppercase">Start Date</span>
           <span className="text-xs font-black text-slate-700">{item.startDate}</span>
@@ -300,6 +318,7 @@ const DetailContent = ({ item }: { item: any }) => {
         </div>
       </div>
 
+      {/* COLUMN 3: WORKFLOW */}
       <div className="space-y-3">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
           Approval Workflow

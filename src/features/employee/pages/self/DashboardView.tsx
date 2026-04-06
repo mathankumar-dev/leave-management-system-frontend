@@ -4,7 +4,7 @@ import type { LeaveTypeBreakDown } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type JSX } from "react";
 import {
   FaCalendarAlt,
   FaCheckCircle,

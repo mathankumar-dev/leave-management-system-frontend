@@ -44,6 +44,8 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
   }, [authLoading, loadAllData]);
 
   const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
+    console.log(status);
+    
     const success = await processApproval({
       leaveId: req.leaveId,
       approverId: user!.id,
