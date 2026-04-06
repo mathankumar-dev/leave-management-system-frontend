@@ -19,7 +19,7 @@ const EditLeaveModal: React.FC<EditLeaveModalProps> = ({ isOpen, leave, onClose,
         startDate: leave.startDate,
         endDate: leave.endDate,
         reason: leave.reason,
-        leaveType: leave.leaveType,
+        leaveTypeName: leave.leaveTypeName,
       });
     }
   }, [leave]);

@@ -5,8 +5,7 @@ export const onboardingServices = {
 
     getOnboardingRequests: async (): Promise<PendingOnboardingResponse[]> => {
         const res = await api.get("/access-requests/admin/pending-approvals");
-        console.log("onboarding");
-        console.log(res.data);
+
         return res.data;
     },
     approveAccessAdmin: async (requestId: number, decision: AdminAccessDecision) => {
@@ -14,8 +13,8 @@ export const onboardingServices = {
     },
 
 
-    approveOnboardingBioRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
-        console.log("calling bio");
+    approveOnboardingBioRequests: async (employeeId: string, decision: BiometricVpnStatus): Promise<void> => {
+     
 
         await api.patch(`/admin/onboarding/bio/decision/${employeeId}`, {}, {
             params: {
@@ -23,8 +22,8 @@ export const onboardingServices = {
             }
         });
     },
-    approveOnboardingVpnRequests: async (employeeId: number, decision: BiometricVpnStatus): Promise<void> => {
-        console.log("calling vpn");
+    approveOnboardingVpnRequests: async (employeeId: string, decision: BiometricVpnStatus): Promise<void> => {
+      
         await api.patch(`/admin/onboarding/vpn/decision/${employeeId}`, {}, {
             params: {
                 decision
@@ -34,7 +33,7 @@ export const onboardingServices = {
 
     // get all access requests
 
-    getPendingAccessRequests: async (id: number): Promise<AccessResponse[]> => {
+    getPendingAccessRequests: async (id: string): Promise<AccessResponse[]> => {
         const res = await api.get(`/access-requests/manager/pending/${id}`);
         return res.data;
     },

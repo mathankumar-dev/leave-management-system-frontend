@@ -4,16 +4,20 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "../../../shared/auth/useAuth";
 
+import logoSVG from '@/assets/images/bg-rm-logo-HRES.png';
+import wehrm from '@/assets/images/logoWeHRM.png';
+
 
 import Loader from "../../../shared/components/Loader";
 import { authService } from "../api/authApi";
 import type { LoginCredentials } from "@/shared/auth/authTypes";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [useEmailLogin, setuseEmailLogin] = useState(false);
 
- 
+
 
   // Simplified UI states for the loader
   const [loaderState, setLoaderState] = useState({
@@ -30,7 +34,7 @@ const LoginForm: React.FC = () => {
     setLoaderState({ active: true, finished: false });
 
     try {
-      const credentials: LoginCredentials = { email, password };
+      const credentials: LoginCredentials = { identifier, password };
       const response = await authService.loginUser(credentials);
 
       setLoginResponse(response);
@@ -54,7 +58,7 @@ const LoginForm: React.FC = () => {
         />
       )}
       {/* LOGO */}
-      {/* <img src={logoSVG} alt="Company logo" className="w-20 h-20 mb-4" /> */}
+      <img src={wehrm} alt="Company logo" className="w-25 h-25 mb-4" />
 
       <form onSubmit={handleLogin} className="space-y-6 w-full">
         <div className="flex flex-col gap-2 items-center">
@@ -67,19 +71,39 @@ const LoginForm: React.FC = () => {
         {/* EMAIL */}
         <div className="space-y-2">
           <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700 ml-1">
-            Company Email
+            {useEmailLogin ? "Company Email" : "Employee ID"}
           </label>
+
           <div className="relative group">
             <FaUserShield className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-primary-500 transition-colors" />
+
             <input
-              type="email"
+              type="text"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@wenxttech.com"
-              className="w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm"
+              value={identifier}
+              onChange={(e) => {
+                const value = e.target.value;
+                setIdentifier(useEmailLogin ? value : value.toUpperCase());
+              }}
+              placeholder={useEmailLogin ? "name@wenxttech.com" : "WENXT011"}
+              className={`w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm ${!useEmailLogin ? "uppercase" : ""
+                }`}
             />
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={useEmailLogin}
+            onChange={(e) => {
+              setuseEmailLogin(e.target.checked);
+              setIdentifier(""); // reset when switching
+            }}
+            className="accent-primary-500"
+          />
+          <label className="text-xs text-neutral-600 font-semibold">
+            Login using Email instead
+          </label>
         </div>
 
         {/* PASSWORD */}
@@ -98,7 +122,7 @@ const LoginForm: React.FC = () => {
               className="w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm"
             />
           </div>
-          <Link to="/forgot-password" intrinsic-size="11" className="text-[11px] font-bold text-primary-600 hover:underline flex justify-end">
+          <Link to="/forgot-password" intrinsic-size="11" className="text-[11px] font-bold text-red-400 hover:underline flex justify-end">
             Forgot Password?
           </Link>
         </div>

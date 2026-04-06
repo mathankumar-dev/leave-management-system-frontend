@@ -13,7 +13,7 @@ import {
 // ─── Types ────────────────────────────────────────────────────────
 interface EmployeeVerification {
   id: number;
-  employeeId: number;
+  employeeId: string;
   employeeType: string;
   verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
   hrRemarks: string | null;
@@ -65,7 +65,7 @@ interface EmployeeVerification {
 const DetailModal: React.FC<{
   verification: EmployeeVerification;
   onClose: () => void;
-  onVerify: (employeeId: number, status: 'VERIFIED' | 'REJECTED', remarks: string) => void;
+  onVerify: (employeeId: string, status: 'VERIFIED' | 'REJECTED', remarks: string) => void;
 }> = ({ verification, onClose, onVerify }) => {
   const [remarks, setRemarks] = useState(verification.hrRemarks || '');
   const [loading, setLoading] = useState(false);
@@ -336,7 +336,7 @@ export const HRVerificationPage: React.FC = () => {
     fetchVerifications();
   }, [fetchVerifications]);
 
-  const handleVerify = async (employeeId: number, status: 'VERIFIED' | 'REJECTED', remarks: string) => {
+  const handleVerify = async (employeeId: string, status: 'VERIFIED' | 'REJECTED', remarks: string) => {
     try {
       await api.put(`/hr/verify/${employeeId}`, { status, hrRemarks: remarks });
       notify.success(`Employee ${status === 'VERIFIED' ? 'approved' : 'rejected'} successfully`);

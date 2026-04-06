@@ -5,10 +5,10 @@ export const useTeamLeaderDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTeamLeaderDashboard = useCallback(async (id: number) => {
+  const fetchTeamLeaderDashboard = useCallback(async (employeeId: string) => {
     setLoading(true);
     try {
-      return await dashboardService.getTeamLeaderDashboard(id);
+      return await dashboardService.getTeamLeaderDashboard(employeeId);
     } catch (err: any) {
       setError(err.message);
       return null;

@@ -1,33 +1,33 @@
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF";
-export type LeaveType = 'SICK' | 'ANNUAL_LEAVE' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF' | 'ON_DUTY' | 'VPN' | 'BIOMETRIC';
+export type LeaveType = 'SICK' | 'ANNUAL' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF' | 'ON_DUTY' | 'VPN' | 'BIOMETRIC';
 
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 
 export interface EmployeeOnLeave {
-  employeeId:   number;
+  employeeId: string;
   employeeName: string;
-  leaveType:    string;
-  department?:  string;
+  leaveType: string;
+  department?: string;
 }
 
 export interface LowBalanceEmployee {
-  employeeId:       number;
-  employeeName:     string;
-  totalAllocated:   number;
-  totalUsed:        number;
-  totalRemaining:   number;
-  compOffBalance:   number | null;
-  lopPercentage:    number | null;
+  employeeId: number;
+  employeeName: string;
+  totalAllocated: number;
+  totalUsed: number;
+  totalRemaining: number;
+  compOffBalance: number | null;
+  lopPercentage: number | null;
   totalWorkingDays: number | null;
 }
 
 export interface LeaveRecord {
   id: number;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
-  leaveType: LeaveType;
+  leaveTypeName: LeaveType;
   startDateHalfDayType: string | null;
   endDateHalfDayType: string | null;
   isAppointment: boolean | null;
@@ -58,7 +58,7 @@ export interface LeaveRecord {
 export interface PendingLeaveApplication {
   id: number;
 
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
 
   leaveType: LeaveType;
@@ -132,14 +132,14 @@ export interface PendingLeaveApplicationApiResponse {
 
 export interface LeaveDecisionRequest {
   leaveId: number;
-  approverId: number;
+  approverId: string;
   decision: LeaveDecision;
   comments?: string;
 }
 
 
-export type LeaveBreakDown = {
-  leaveType: LeaveType;
+export interface LeaveTypeBreakDown {
+  leaveTypeName: LeaveType;
   allocatedDays: number;
   usedDays: number;
   remainingDays: number;
@@ -149,15 +149,16 @@ export type LeaveBreakDown = {
 
 
 
-export interface LeaveTypeBreakdown {
-  leaveType: LeaveType;
+interface LeaveTypeBreakdown {
+  leaveTypeName: string;
   allocatedDays: number;
   usedDays: number;
   remainingDays: number;
+  pendingCount?: number;
 }
 
 export interface LeaveBalanceResponse {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   year: number;
 
@@ -190,7 +191,7 @@ export interface LeaveBalanceResponse {
 
 export type TeamPendingLeave = {
   leaveId: number;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   leaveType: LeaveType;
   reason: string;
@@ -202,7 +203,7 @@ export type TeamPendingLeave = {
 }
 
 export type TeamMemberOnLeave = {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   leaveType: LeaveType;
   startDate: string;
@@ -221,7 +222,7 @@ export type CompOffEntry = {
 
 
 export type CompOffRequest = {
-  employeeId: number;
+  employeeId: string;
   entries: CompOffEntry[];
 };
 
@@ -229,7 +230,7 @@ export type CompOffRequest = {
 
 export type CompOffResponse = {
   compoffId: number;
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   workedDate: string;
   status: 'PENDING' | 'REJECTED' | 'USED';

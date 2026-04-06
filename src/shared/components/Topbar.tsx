@@ -1,17 +1,15 @@
-import React, { useState, useMemo } from "react";
+import { useNotifications } from "@/features/notification/hooks/useNotification";
+import { useAuth } from "@/shared/auth/useAuth";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useMemo, useState } from "react";
 import {
   FaBars,
   FaBell,
-  FaUserCircle,
-  FaSignOutAlt,
-  FaUserCog,
   FaChevronDown,
-  FaCircle,
+  FaSignOutAlt,
+  FaUserCog
 } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/shared/auth/useAuth";
-import { useNotifications } from "@/features/notification/hooks/useNotification";
 
 interface TopbarProps {
   onMenuClick: () => void;
@@ -26,16 +24,33 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { notifications, isLoading, unreadCount } =
-    useNotifications(user?.id || 0);
+  const { notifications, isLoading, unreadCount } = useNotifications(String(user?.id));
 
-  const userRole = user?.role;
-  const userName = user?.name;
+  // 1. Normalize Role (Matching Sidebar Logic)
+  const userRole = user?.role?.toUpperCase();
 
-  /* 🔥 derive title from route */
+  const basePathMap = {
+    EMPLOYEE: "/employee",
+    MANAGER: "/manager",
+    TEAM_LEADER: "/manager",
+    CTO: "/manager",
+    COO: "/manager",
+    HR: "/hr",
+    ADMIN: "/admin",
+    CFO: "/cfo",
+  };
+
+  const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
+
+  // 2. Navigation Helper
+  const handleNavigate = (path: string) => {
+    navigate(`${basePath}/${path}`);
+    setIsNotifOpen(false);
+    setIsProfileOpen(false);
+  };
+
   const title = useMemo(() => {
     const path = location.pathname;
-
     if (path.includes("dashboard")) return "Dashboard";
     if (path.includes("calendar")) return "Calendar";
     if (path.includes("requests")) return "Requests";
@@ -45,19 +60,8 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
     if (path.includes("profile")) return "Profile";
     if (path.includes("payroll")) return "Payroll";
     if (path.includes("payslip")) return "Payslip";
-
     return "Dashboard";
   }, [location.pathname]);
-
-  const handleViewNotifications = () => {
-    navigate("/dashboard/notifications");
-    setIsNotifOpen(false);
-  };
-
-  const goToProfile = () => {
-    navigate("/dashboard/employee/profile");
-    setIsProfileOpen(false);
-  };
 
   return (
     <div className="sticky top-0 z-30 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 border-b border-neutral-200 w-full">
@@ -67,8 +71,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
         <button onClick={onMenuClick} className="md:hidden p-2.5 rounded-lg text-slate-500 active:bg-slate-100">
           <FaBars size={18} />
         </button>
-
-        <h1 className="text-xl md:text-2xl font-bold text-primary-500 uppercase truncate">
+        <h1 className="text-xl md:text-2xl font-bold text-primary-500  truncate">
           {title}
         </h1>
       </div>
@@ -83,19 +86,17 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
               setIsNotifOpen(!isNotifOpen);
               setIsProfileOpen(false);
             }}
-            className={`relative p-2.5 rounded-xl ${
-              isNotifOpen ? "bg-indigo-50 text-indigo-600" : "text-slate-400 hover:text-indigo-600"
-            }`}
+            className={`relative p-2.5 rounded-xl transition-all duration-300 ${isNotifOpen ? "bg-brand/10 text-brand shadow-inner" : "text-slate-400 hover:text-brand hover:bg-slate-50"
+              }`}
           >
-            <FaBell />
-
+            <FaBell size={18} />
             <AnimatePresence>
               {unreadCount > 0 && (
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
-                  className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-rose-500 text-[9px] text-white"
+                  className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white border border-white"
                 >
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </motion.span>
@@ -106,50 +107,33 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
           <AnimatePresence>
             {isNotifOpen && (
               <>
-                <div
-                  className="fixed inset-0 z-50"
-                  onClick={() => setIsNotifOpen(false)}
-                />
-
+                <div className="fixed inset-0 z-[60]" onClick={() => setIsNotifOpen(false)} />
                 <motion.div
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 15 }}
-                  className="absolute right-0 mt-3 w-80 bg-white border rounded-2xl shadow-2xl"
+                  exit={{ opacity: 0, y: 20 }}
+                  className="absolute right-0 mt-4 w-80 bg-white border border-slate-100 rounded-[2rem] shadow-2xl overflow-hidden z-[70]"
                 >
-                  <div className="p-4 border-b flex justify-between">
-                    <span className="text-xs font-bold">Notifications</span>
-                    <button onClick={handleViewNotifications} className="text-xs text-indigo-600">
+                  <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase tracking-widest">Notifications</span>
+                    <button
+                      onClick={() => handleNavigate("notifications")}
+                      className="text-[9px] font-black uppercase text-brand"
+                    >
                       View All
                     </button>
                   </div>
-
-                  <div className="max-h-80 overflow-y-auto">
-                    {isLoading ? (
-                      <div className="p-6 text-center text-xs">Loading...</div>
-                    ) : notifications.length ? (
-                      notifications.slice(0, 5).map((n) => (
-                        <div
-                          key={n.id}
-                          onClick={handleViewNotifications}
-                          className="p-3 border-b hover:bg-slate-50 cursor-pointer"
-                        >
-                          <div className="flex gap-2">
-                            <FaCircle className="text-indigo-500 mt-1 text-[6px]" />
-                            <div>
-                              <p className="text-xs font-bold">
-                                {n.eventType?.replace(/_/g, " ")}
-                              </p>
-                              <p className="text-[10px] text-slate-400">
-                                {n.message}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-6 text-center text-xs">No updates</div>
-                    )}
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications?.slice(0, 5).map((n) => (
+                      <div
+                        key={n.id}
+                        onClick={() => handleNavigate("notifications")}
+                        className="p-5 border-b border-slate-50 hover:bg-slate-50 cursor-pointer"
+                      >
+                        <p className="text-[10px] font-black uppercase text-slate-800">{n.eventType?.replace(/_/g, " ")}</p>
+                        <p className="text-[11px] text-slate-500 italic">"{n.message}"</p>
+                      </div>
+                    ))}
                   </div>
                 </motion.div>
               </>
@@ -164,43 +148,43 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
               setIsProfileOpen(!isProfileOpen);
               setIsNotifOpen(false);
             }}
-            className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-50"
+            className={`flex items-center gap-3 p-1.5 rounded-2xl transition-all ${isProfileOpen ? "bg-white shadow-md" : ""}`}
           >
-            <FaUserCircle className="text-slate-400 text-xl" />
-
-            <div className="hidden lg:flex flex-col">
-              <span className="text-xs font-bold">{userName}</span>
-              <span className="text-[9px] text-indigo-500 uppercase">{userRole}</span>
+            <div className="w-10 h-10 bg-brand text-white flex items-center justify-center rounded-full font-bold shadow-lg shadow-brand/20">
+              {user?.name?.charAt(0) || "U"}
             </div>
-
-            <FaChevronDown
-              className={`text-xs transition ${isProfileOpen ? "rotate-180" : ""}`}
-            />
+            <FaChevronDown className={`text-[10px] transition-transform ${isProfileOpen ? "rotate-180" : ""}`} />
           </button>
 
           <AnimatePresence>
             {isProfileOpen && (
               <>
-                <div className="fixed inset-0" onClick={() => setIsProfileOpen(false)} />
-
+                <div className="fixed inset-0 z-[80]" onClick={() => setIsProfileOpen(false)} />
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute right-0 mt-3 w-48 bg-white border rounded-xl shadow-lg"
+                  className="absolute right-0 mt-4 w-56 bg-white rounded-3xl shadow-2xl p-2 z-[90] border border-slate-100"
                 >
                   <button
-                    onClick={goToProfile}
-                    className="w-full px-4 py-2 text-left text-xs hover:bg-slate-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleNavigate("profile");
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-slate-600 hover:bg-brand/5 hover:text-brand rounded-2xl"
                   >
-                    <FaUserCog /> Profile
+                    <FaUserCog className="text-lg opacity-70" />
+                    Profile
                   </button>
-
                   <button
-                    onClick={onLogout}
-                    className="w-full px-4 py-2 text-left text-xs text-red-500 hover:bg-red-50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onLogout();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-red-500 hover:bg-red-50 rounded-2xl"
                   >
-                    <FaSignOutAlt /> Logout
+                    <FaSignOutAlt className="text-lg opacity-70" />
+                    Sign Out
                   </button>
                 </motion.div>
               </>

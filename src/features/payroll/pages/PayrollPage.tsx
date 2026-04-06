@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import { toPng } from "html-to-image";
 import logo from "@/assets/images/bg-rm-logo-HRES.png";
@@ -22,8 +22,13 @@ const PayrollView: React.FC = () => {
   const [, setLoadingProfile] = useState(false);
 
   const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [year, setYear] = useState(now.getFullYear()+1);
+  const [month, setMonth] = useState(now.getMonth() +1);
+
+  const months = [
+  "Jan","Feb","Mar","Apr","May","Jun",
+  "Jul","Aug","Sep","Oct","Nov","Dec"
+];
 
   // ================= FETCH =================
   useEffect(() => {
@@ -33,7 +38,7 @@ const PayrollView: React.FC = () => {
     }
   }, [year, month, viewMode]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback( async () => {
     setLoadingProfile(true);
     try {
       const res = await api.get(`/employees/profile/${user?.id!}`);
@@ -43,7 +48,7 @@ const PayrollView: React.FC = () => {
     } finally {
       setLoadingProfile(false);
     }
-  };
+  },[]);
 
   const fetchYearlySummary = async (year: number) => {
     try {
@@ -58,16 +63,27 @@ const PayrollView: React.FC = () => {
     }
   };
 
-  const search = () => {
+ const search = async () => {
+  try {
+    setLoading(true);
+
     if (viewMode === "monthly") {
-      fetchPayslip(year, month);
-      fetchProfile();
-    } else {
-      console.log("Search");
-      
-      fetchYearlySummary(year);
+      await Promise.all([
+        fetchPayslip(year, month),
+        fetchProfile()
+      ]);
     }
-  };
+
+    if (viewMode === "yearly") {
+      await fetchYearlySummary(year);
+    }
+
+  } catch (err) {
+    console.error("Search failed", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const numberToWords = (num: number): string => {
     const a = [
@@ -172,21 +188,27 @@ const PayrollView: React.FC = () => {
           className="border p-2"
         />
 
-        {viewMode === "monthly" && (
-          <input
-            type="number"
-            value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
-            className="border p-2"
-          />
-        )}
+        <select
+  value={month}
+  onChange={(e) => setMonth(Number(e.target.value))}
+  className="border p-2"
+>
+  {months.map((m, i) => (
+    <option key={i} value={i + 1}>
+      {m}
+    </option>
+  ))}
+</select>
 
         <button
-          onClick={search}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Search
-        </button>
+  onClick={search}
+  disabled={loading}
+  className={`px-4 py-2 rounded text-white 
+    ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
+  `}
+>
+  {loading ? "Loading..." : "Search"}
+</button>
 
         <button
           onClick={downloadPDF}
@@ -247,30 +269,7 @@ const PayrollView: React.FC = () => {
             {/* EMPLOYEE DETAILS */}
             {viewMode === "monthly" && payslip && profile && (
               <div className="border-2 border-black p-6 text-sm">
-                <div className="flex items-center justify-between border-b pb-4 mb-4">
-
-                  {/* LOGO */}
-                  <img
-                    src={logo} // OR use {logo} if imported
-                    alt="Company Logo"
-                    className="w-16 h-16 object-contain"
-                  />
-
-                  {/* COMPANY DETAILS */}
-                  <div className="text-center flex-1">
-                    <h2 className="font-bold text-lg">
-                      WENXT TECHNOLOGIES PRIVATE LIMITED
-                    </h2>
-                    <h3 className="text-xs mt-1">
-                      Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
-                      Thiruvanmiyur, Chennai- 600041
-                    </h3>
-                    <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
-                  </div>
-
-                  {/* EMPTY SPACE (for balance) */}
-                  <div className="w-16" />
-                </div>
+               
                 <table className="w-full border border-black mb-4 text-sm">
                   <tbody>
                     <tr>
@@ -364,8 +363,8 @@ const PayrollView: React.FC = () => {
                     <tr>
                       <td className="border p-2">Bonus</td>
                       <td className="border p-2">{formatCurrency(summary?.totalBonus)}</td>
-                      <td className="border p-2"></td>
-                      <td className="border p-2"></td>
+                      {/* <td className="border p-2"></td>
+                      <td className="border p-2"></td> */}
                     </tr>
 
                     <tr>

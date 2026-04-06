@@ -3,14 +3,14 @@ import api from "@/services/apiClient";
 
 
 export const notificationService = {
-  getNotifications: async (employeeId: number, page = 0, size = 10): Promise<PageResponse<NotificationResponse>> => {
+  getNotifications: async (employeeId: string, page = 0, size = 10): Promise<PageResponse<NotificationResponse>> => {
     const response = await api.get(`/notifications/user/${employeeId}`, {
       params: { page, size }
     });
     return response.data;
   },
 
-  getUnreadNotificationsCount: async (employeeId: number): Promise<number> => {
+  getUnreadNotificationsCount: async (employeeId: string): Promise<number> => {
     const response = await api.get(`/notifications/user/${employeeId}/unread-count`);
     return response.data;
   },
@@ -20,7 +20,7 @@ export const notificationService = {
     await api.patch(`/notifications/${notificationId}/read`);
   },
 
-  markAllAsRead: async (userId: number): Promise<void> => {
+  markAllAsRead: async (userId: string): Promise<void> => {
     await api.post(`/notifications/user/${userId}/mark-all-read`);
   },
 

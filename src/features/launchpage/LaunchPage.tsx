@@ -1,83 +1,79 @@
-import React, { useState, useEffect } from "react";
-
-import logo from "@/assets/svg/logo.svg";
+import logo from "@/assets/images/wenxt-W-only-logo.png";
 import CalendarSVG from "@/assets/svg/calendar-svg.svg";
 import moneySVG from "@/assets/svg/money-svg.svg";
 import { useAuth } from "@/shared/auth/useAuth";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useState } from "react";
+import { FaChevronDown, FaSignOutAlt, FaUserCog } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useFlashNews } from "@/features/notification/hooks/useFlashNews";
-import { formatTimeAgo } from "@/shared/utils/formatTimeAgo";
 
-
-export interface FlashNews {
-  id: number;
-  priority: number;
-  message: string;
-  active: boolean;
-  createdAt: string;
-}
-
-const roleBasePath : Record<string,string> = {
-  EMPLOYEE: "/employee",
-  MANAGER: "/manager",
-  TEAM_LEADER: "/manager",
-  HR: "/hr",
-  ADMIN: "/admin",
-  CFO: "/admin",
-};
 
 const LaunchPage: React.FC = () => {
-  const { user } = useAuth();
+
+  const { user, contextLogout: logout } = useAuth();
   const navigate = useNavigate();
-  const basePath = roleBasePath[user?.role || "EMPLOYEE"];
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
-  const [isLoading, setLoading] = useState(false);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
+  const userRole = user?.role;
+  const basePathMap = {
+    EMPLOYEE: "/employee",
+    MANAGER: "/manager",
+    TEAM_LEADER: "/manager",
+    HR: "/hr",
+    ADMIN: "/admin",
+    CFO: "/admin",
+  };
 
-  const { fetchFlashNews } = useFlashNews();
+  const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
 
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchFlashNews();
-        const sortedData = (data || []).sort((a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setFlashNews(sortedData);
-      } catch (err) {
-        console.error("News fetch failed", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [fetchFlashNews]);
+  const handleNavigate = (path: string) => {
+    navigate(`${basePath}/${path}`);
+  };
+  const goToProfile = () => {
+    handleNavigate("profile");
+    setIsProfileOpen(false);
+  };
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const data = await fetchFlashNews();
+  //       const sortedData = (data || []).sort((a, b) =>
+  //         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  //       );
+  //       setFlashNews(sortedData);
+  //     } catch (err) {
+  //       console.error("News fetch failed", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   loadData();
+  // }, [fetchFlashNews]);
 
-  useEffect(() => {
-    if (flashNews.length <= 1) return;
+  // useEffect(() => {
+  //   if (flashNews.length <= 1) return;
+  //   const timer = setInterval(() => {
+  //     setCurrentIndex((prev) => (prev + 1) % flashNews.length);
+  //   }, 5000);
+  //   return () => clearInterval(timer);
+  // }, [flashNews]);
 
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % flashNews.length);
-    }, 5000); 
-
-    return () => clearInterval(timer);
-  }, [flashNews]);
   const systems = [
     {
       title: "Leave System",
       desc: "Apply for leaves, view balances, and track approvals.",
       icon: CalendarSVG,
-      color: "bg-indigo-500",
+      color: "bg-brand/10",
       path: `${basePath}/dashboard`,
     },
     {
       title: "Payroll System",
       desc: "View payslips, tax documents, and payment history.",
       icon: moneySVG,
-      color: "bg-indigo-500",
+      color: "bg-emerald-500/10",
       path: `${basePath}/dashboard`,
     },
   ];
@@ -89,138 +85,270 @@ const LaunchPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen flex flex-col bg-brand-bg text-slate-900 font-sans selection:bg-brand selection:text-white overflow-hidden relative">
+
+      {/* BACKGROUND BLOBS - CONSISTENCY */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute -top-40 -right-40 w-160 h-160 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/2 -left-20 w-100 h-100 bg-emerald-500/5 rounded-full blur-3xl" />
+      </div>
+      {/* ANNOUNCEMENT BAR */}
+      <AnimatePresence>
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-brand overflow-hidden relative z-[60] shadow-lg shadow-brand/20 py-2.5 border-b border-white/10"
+        >
+          {/* TICKER CONTAINER */}
+          <div className="flex whitespace-nowrap overflow-hidden group">
+            <motion.div
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{
+                repeat: Infinity,
+                duration: 25, // Adjust this for speed (lower = faster)
+                ease: "linear",
+              }}
+              className="flex items-center gap-12 min-w-full"
+            >
+              {/* REPEATED CONTENT FOR SEAMLESS LOOP */}
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center gap-4 text-white">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                  </span>
+                  <p className="text-[11px] md:text-xs font-black  tracking-[0.15em]">
+                    IMPORTANT UPDATE:
+                    <span className="opacity-90 font-medium ml-2">
+                      Users can edit their profile details from
+                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">06.04.2026</span>
+                      to
+                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">11.06.2026</span>.
+                    </span>
+                  </p>
+                  <button
+                    onClick={goToProfile}
+                    className="bg-white text-brand px-3 py-1 rounded-full text-[10px] font-black uppercase hover:bg-slate-100 transition-colors pointer-events-auto"
+                  >
+                    Edit Now
+                  </button>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Shimmer Overlay (Optional) */}
+          <motion.div
+            animate={{ x: ["-100%", "100%"] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none"
+          />
+        </motion.div>
+      </AnimatePresence>
+
       {/* HEADER */}
-      <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/")}>
-            <img src={logo} alt="logo" className="h-10 w-10" />
-            <span className="text-2xl font-black text-slate-800">
-              WeNxt <span className="text-indigo-600">Technologies</span>
+      <header className="bg-white/70 backdrop-blur-xl sticky top-0 z-50 transition-all">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+
+          {/* LOGO SECTION */}
+          <div
+            className="flex items-center space-x-3 cursor-pointer group"
+            onClick={() => navigate("/")}
+          >
+            <img src={logo} alt="logo" className="h-10 w-10 object-contain transition-transform group-hover:scale-110" />
+            <span className="text-xl font-black text-slate-800 tracking-tight">
+              WeNxt <span className="text-brand">Technologies</span>
             </span>
           </div>
 
-          <div className="flex items-center space-x-4">
+          {/* RIGHT SECTION: USER INFO & DROPDOWN */}
+          <div className="flex items-center space-x-6">
+
+            {/* USER DETAILS */}
             <div className="text-right hidden sm:block">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current User</p>
-              <p className="text-sm font-bold text-slate-700">
-                {`${user?.name} (${user?.role})`}
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-0.5">Logged in as</p>
+              <p className="text-sm font-black text-slate-700">
+                {user?.name} <span className="text-brand/40 font-medium ml-1">({user?.role})</span>
               </p>
             </div>
-            <div className="w-10 h-10 bg-indigo-600 text-white flex items-center justify-center rounded-full font-bold text-sm border-2 border-white shadow-sm">
-              {user?.name.charAt(0) || "U"}
+
+            {/* PROFILE DROPDOWN WRAPPER */}
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className={`flex items-center gap-3 p-1.5 rounded-2xl transition-all duration-300 ${isProfileOpen ? "bg-white shadow-md" : "hover:bg-white/50"
+                  }`}
+              >
+                {/* AVATAR STYLE MATCHING YOUR PREVIOUS CARDS */}
+                <div className="w-10 h-10 bg-brand text-white flex items-center justify-center rounded-xl font-bold text-sm shadow-lg shadow-brand/20">
+                  {user?.name.charAt(0) || "U"}
+                </div>
+
+                <FaChevronDown
+                  className={`text-[10px] text-slate-400 transition-transform duration-500 mr-1 ${isProfileOpen ? "rotate-180 text-brand" : ""
+                    }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {isProfileOpen && (
+                  <>
+                    {/* INVISIBLE OVERLAY TO CLOSE */}
+                    <div className="fixed inset-0 z-0" onClick={() => setIsProfileOpen(false)} />
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ type: "spring", damping: 20, stiffness: 300 }}
+                      className="absolute right-0 mt-4 w-56 bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-slate-200/50 p-2 z-50 border border-white"
+                    >
+                      <div className="px-4 py-3 mb-2 border-b border-slate-50 lg:hidden">
+                        <p className="text-xs font-black text-slate-800">{user?.name}</p>
+                        <p className="text-[10px] text-brand font-bold">{user?.role}</p>
+                      </div>
+
+                      <button
+                        onClick={goToProfile}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-slate-600 hover:bg-brand/5 hover:text-brand rounded-2xl transition-all"
+                      >
+                        <FaUserCog className="text-lg opacity-70" />
+                        Account Settings
+                      </button>
+
+                      <button
+                        onClick={logout}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-red-500 hover:bg-red-50 rounded-2xl transition-all mt-1"
+                      >
+                        <FaSignOutAlt className="text-lg opacity-70" />
+                        Sign Out
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="flex flex-1 max-w-7xl mx-auto w-full p-6 gap-8">
+      <div className="flex flex-1 max-w-7xl mx-auto w-full p-6 gap-8 relative z-10">
         {/* LEFT SIDEBAR */}
         <aside className="w-80 hidden lg:flex flex-col gap-6">
-          <div className="bg-indigo-500 p-6 rounded-xl text-white shadow-lg shadow-indigo-100">
-            <p className="text-xs uppercase font-bold opacity-80 mb-2 tracking-widest">Thought of the Day</p>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="bg-brand p-6 rounded-2xl text-white shadow-xl shadow-brand/20"
+          >
+            <p className="text-[10px] uppercase font-bold opacity-70 mb-2 tracking-widest">Thought of the Day</p>
             <p className="italic text-lg font-medium leading-tight">
               "Insurtech isn't just about code; it's about engineering trust."
             </p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-800 uppercase text-xs tracking-widest">
+          <div className="bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-white shadow-sm">
+            <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-400 uppercase text-[10px] tracking-widest">
               ⚖️ Policy Center
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {policies.map((policy, i) => (
                 <li key={i}>
                   <button
                     onClick={() => navigate(policy.link)}
-                    className="w-full flex items-center justify-between p-2 rounded-sm text-sm text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors text-left"
+                    className="w-full flex items-center justify-between p-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-white hover:text-brand transition-all text-left"
                   >
                     <span>{policy.title}</span>
+                    <span className="opacity-0 group-hover:opacity-100">→</span>
                   </button>
                 </li>
               ))}
             </ul>
           </div>
-          {/* ONE NEWS AT A TIME - SLIDING/FADING */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-40 flex flex-col justify-between overflow-hidden">
+
+          {/* NEWS SECTION */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-40 flex flex-col justify-between overflow-hidden">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold flex items-center gap-2 text-slate-800 uppercase text-xs tracking-widest">
+              <h3 className="font-bold flex items-center gap-2 text-slate-400 uppercase text-[10px] tracking-widest">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand/40 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
                 </span>
                 Live Updates
               </h3>
-              {/* Progress Dots */}
-              <div className="flex gap-1">
+              {/* <div className="flex gap-1">
                 {flashNews.map((_, i) => (
                   <div
                     key={i}
-                    className={`h-1 w-3 rounded-full transition-all duration-500 ${i === currentIndex ? 'bg-indigo-500 w-5' : 'bg-slate-200'}`}
+                    className={`h-1 rounded-full transition-all duration-500 ${i === currentIndex ? 'bg-brand w-4' : 'bg-slate-200 w-2'}`}
                   />
                 ))}
-              </div>
+              </div> */}
             </div>
 
-            <div className="relative flex-1">
+            {/* <div className="relative flex-1">
               {isLoading ? (
-                <div className="h-12 bg-slate-100 animate-pulse rounded-lg" />
+                <div className="h-12 bg-slate-50 animate-pulse rounded-lg" />
               ) : flashNews.length > 0 ? (
-                <div
+                <motion.div
                   key={currentIndex}
-                  className="animate-in fade-in slide-in-from-bottom-2 duration-700 ease-out"                >
-                  <div className={`p-4 rounded-xl border-l-4 ${flashNews[currentIndex].priority == 1
-                    ? 'bg-amber-50 border-amber-400'
-                    : 'bg-slate-50 border-indigo-400'
-                    }`}>
-                    <p className="text-sm text-slate-800 font-semibold leading-relaxed">
-                      {flashNews[currentIndex].message}
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-3 font-bold uppercase tracking-wider">
-                      {formatTimeAgo(flashNews[currentIndex].createdAt)}
-                    </p>
-                  </div>
-                </div>
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="p-4 rounded-xl border border-slate-50 bg-slate-50/50"
+                >
+                  <p className="text-sm text-slate-800 font-bold leading-relaxed">
+                    {flashNews[currentIndex].message}
+                  </p>
+                  <p className="text-[9px] text-slate-400 mt-3 font-bold uppercase tracking-wider">
+                    {formatTimeAgo(flashNews[currentIndex].createdAt)}
+                  </p>
+                </motion.div>
               ) : (
                 <p className="text-sm text-slate-500 italic text-center py-4">No updates today.</p>
               )}
-            </div>
+            </div> */}
           </div>
-
         </aside>
 
         {/* CENTER CONTENT */}
         <main className="flex-1 space-y-8">
-          <div>
-            <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">
-              Welcome back, {user?.name.split(' ')[0]}!
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight">
+              Welcome back, <span className="text-brand">{user?.name.split(' ')[0]}!</span>
             </h1>
-            <p className="text-slate-500 mt-1">Access your employee management tools below.</p>
-          </div>
+            <p className="text-slate-500 mt-2 font-medium">Which system would you like to access today?</p>
+          </motion.div>
 
           {/* SYSTEM GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {systems.map((sys, idx) => (
-              <div
+              <motion.div
                 key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
                 onClick={() => navigate(sys.path)}
-                className="group bg-white p-8 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer"
+                className="group bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-brand/10 hover:-translate-y-2 transition-all duration-300 cursor-pointer relative overflow-hidden"
               >
-                <div className={`${sys.color} w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-inner`}>
-                  <img src={sys.icon} className="w-10 h-10" alt={sys.title} />
+                <div className="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-bl-full translate-x-10 -translate-y-10 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-500" />
+
+                <div className={`${sys.color} w-14 h-14 rounded-2xl flex items-center justify-center mb-6`}>
+                  <img src={sys.icon} className="w-8 h-8" alt={sys.title} />
                 </div>
-                <h3 className="text-2xl font-bold mb-2 group-hover:text-indigo-600 transition-colors text-slate-800">
+                <h3 className="text-2xl font-black mb-2 text-slate-800 group-hover:text-brand transition-colors">
                   {sys.title}
                 </h3>
-                <p className="text-slate-500 leading-relaxed">{sys.desc}</p>
-                <div className="mt-8 flex items-center text-indigo-600 font-bold text-sm uppercase tracking-wider">
+                <p className="text-slate-500 text-sm leading-relaxed font-medium">{sys.desc}</p>
+                <div className="mt-8 flex items-center text-brand font-bold text-xs uppercase tracking-widest">
                   Launch System <span className="ml-2 group-hover:translate-x-2 transition-transform">→</span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-
-
         </main>
       </div>
     </div>
