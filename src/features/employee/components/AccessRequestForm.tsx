@@ -1,7 +1,6 @@
 import { useRequest } from "@/features/leave/hooks/useRequest";
 import type { AccessRequest, LeaveType } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
-import Badge from "@/shared/components/NameBadge";
 import React, { useState } from "react";
 import {
     HiOutlineShieldCheck,
@@ -41,7 +40,7 @@ const AccessRequestForm = () => {
     const renderApprovers = () => {
         return (
             <>
-                <Badge label={`Manager: ${user?.managerName}`} active={true} />
+                {/* <Badge label={`Manager: ${user?.managerName}`} active={true} /> */}
                 {/* <Badge label={`Security: Automated`} active={true} /> */}
             </>
         );

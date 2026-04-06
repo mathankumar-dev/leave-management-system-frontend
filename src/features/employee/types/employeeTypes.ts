@@ -1,5 +1,3 @@
-import type { ExperienceType, UserRole } from "@/shared/auth/authTypes";
-import type { Gender } from "@/shared/types";
 
 
 // export type EmployeeExperience = 'FRESHER' | 'EXPERIENCED';
@@ -21,41 +19,48 @@ import type { Gender } from "@/shared/types";
 // }
 
 export interface User {
+  // Core Identity
   id: string;
   name: string;
   email: string;
-  role: UserRole;
-  department: string | null;
-  managerId?: number | null;
-  teamLeaderId?: number | null;
-  teamLeaderName?: string | null;
-  managerName?: string;
-  hrname?: string | null;
+  role: string;
   active: boolean;
+  mustChangePassword: boolean;
+
+  // Metadata/Status
+  personalDetailsComplete: boolean;
+  personalDetailsLocked: boolean;
+  verificationStatus: string; // Or your Enum
+  employeeExperience: 'FRESHER' | 'EXPERIENCED';
+  hrRemarks?: string;
+
+  // Personal Info
+  firstName: string;
+  lastName: string;
+  contactNumber: string;
+  personalEmail: string;
+  gender: string;
+  dateOfBirth: string; // ISO Date string
   joiningDate: string;
+  designation: string;
+  bloodGroup: string;
+  skillSet: string[]; // MATCHING JAVA: List<String> becomes string[]
+
+  // Reporting
+  reportingId: string;
+  reportingName: string;
+
+  // Bank/IDs
+  aadharNumber: string;
+  accountNumber?: string;
+  bankName?: string;
+  ifscCode?: string;
+  pfNumber?: string;
+  uanNumber?: string;
+
+  // UI status
   biometricStatus: string;
   vpnStatus: string;
-  onboardingCompletedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  mustChangePassword?: boolean;
-  contactNumber: string | null;
-  gender: Gender;
-  aadharNumber: string | null;
-  personalEmail: string | null;
-  dateOfBirth: string | null;
-  presentAddress: string | null;
-  permanentAddress: string | null;
-  bloodGroup: string | null;
-  emergencyContactNumber: string | null;
-  fatherName: string | null;
-  motherName: string | null;
-  designation: string | null;
-  skillSet: string | null;
-  personalDetailsComplete: boolean | null;
-  personalDetailsLocked: boolean | null;
-  employeeExperience: ExperienceType;
-  verificationStatus: string;
 }
 
 // export interface PersonalDetails {

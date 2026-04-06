@@ -1,6 +1,6 @@
-import type { PersonalDetailsRequest, User } from "@/features/employee/types";
+import type { User } from "@/features/employee/types";
 import api from "@/services/apiClient";
-import type { AuthResponse, ExperienceType, LoginCredentials } from "@/shared/auth/authTypes";
+import type { AuthResponse, LoginCredentials } from "@/shared/auth/authTypes";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -24,7 +24,7 @@ export const authService = {
     const response = await api.get<User>('/employees/me');
     return response.data;
   },
-  getProfileByID: async (id  : number): Promise<User> => {
+  getProfileByID: async (id: number): Promise<User> => {
     const response = await api.get<User>(`/employees/profile/${id}`);
     console.log(response);
 
@@ -32,109 +32,91 @@ export const authService = {
   },
 
   submitMultipartDetails: async (
-    id: string,
-    type: ExperienceType,
-    data: any,
-    files: Record<string, File | null>
-  ): Promise<any> => {
-    const formData = new FormData();
+  id: string,
+  type: "FRESHER" | "EXPERIENCED",
+  data: any,
+  files: Record<string, File | File[] | null>
+): Promise<any> => {
+  const formData = new FormData();
 
-    const commonFields = [
-      'firstName', 'lastName', 'surName', 'contactNumber', 'gender',
-      'aadharNumber', 'personalEmail', 'dateOfBirth', 'presentAddress',
-      'permanentAddress', 'bloodGroup', 'maritalStatus', 'designation',
-      'skillSet', 'bankName', 'accountNumber',
-      'fatherName', 'fatherDateOfBirth', 'fatherOccupation', 'fatherAlive',
-      'motherName', 'motherDateOfBirth', 'motherOccupation', 'motherAlive'
-    ];
+  // 1. JSON Payload
+  formData.append("data", JSON.stringify(data));
 
-    const requestPayload: any = {};
+  // 2. Common Multipart Keys
+  if (files.idProof) formData.append("idProof", files.idProof as File);
+  if (files.passportPhoto) formData.append("passportPhoto", files.passportPhoto as File);
 
-    commonFields.forEach(key => {
-      if (data[key] !== undefined) requestPayload[key] = data[key];
-    });
-
-    if (type === 'EXPERIENCED') {
-      requestPayload.unaNumber = data.unaNumber;
-      requestPayload.previousRole = data.previousRole;
-      requestPayload.oldCompanyName = data.oldCompanyName;
-      requestPayload.oldCompanyFromDate = data.oldCompanyFromDate;
-      requestPayload.oldCompanyEndDate = data.oldCompanyEndDate;
+  // 3. Conditional Keys based on Employee Type
+  if (type === "FRESHER") {
+    // Keys must match Spring Boot @RequestPart names exactly
+    if (files.tenthMarksheet) formData.append("tenthMarksheet", files.tenthMarksheet as File);
+    if (files.twelfthMarksheet) formData.append("twelfthMarksheet", files.twelfthMarksheet as File);
+    if (files.degreeCertificate) formData.append("degreeCertificate", files.degreeCertificate as File);
+    if (files.offerLetter) formData.append("offerLetter", files.offerLetter as File);
+  } else {
+    // Experienced: handle List<MultipartFile> for experienceCerts
+    if (files.relievingLetter) formData.append("relievingLetter", files.relievingLetter as File);
+    
+    if (Array.isArray(files.experienceCerts)) {
+      files.experienceCerts.forEach((file) => {
+        formData.append("experienceCerts", file);
+      });
     }
+  }
 
-    formData.append("data", JSON.stringify(requestPayload));
+  // POST endpoint only
+  const response = await api.post(
+    `/employees/personal-details/${id}/${type.toLowerCase()}`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
 
-    if (type === 'FRESHER') {
-      if (files.aadhaarCard) formData.append("aadhaarCard", files.aadhaarCard);
-      if (files.tc) formData.append("tc", files.tc);
-      if (files.offerLetter) formData.append("offerLetter", files.offerLetter);
-    } else {
-      if (files.aadhaarCard) formData.append("aadhaarCard", files.aadhaarCard);
-      if (files.experienceCertificate) formData.append("experienceCertificate", files.experienceCertificate);
-      if (files.leavingLetter) formData.append("leavingLetter", files.leavingLetter);
-    }
-
-    let urlType  = type.toString().toLowerCase();
-    const response = await api.post(`/employees/personal-details/${id}/${urlType}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    return response.data;
-  },
-
-
+  return response.data;
+},
   updateProfileDetails: async (
-    id: string,
-    type: ExperienceType,
-    data: any,
-    files: Record<string, File | null>
-  ): Promise<any> => {
-    const formData = new FormData();
+  id: string,
+  type: "FRESHER" | "EXPERIENCED",
+  data: any,
+  files: Record<string, File | File[] | null>
+): Promise<any> => {
+  const formData = new FormData();
 
-    const commonFields = [
-      'firstName', 'lastName', 'surName', 'contactNumber', 'gender',
-      'aadharNumber', 'personalEmail', 'dateOfBirth', 'presentAddress',
-      'permanentAddress', 'bloodGroup', 'maritalStatus', 'designation',
-      'skillSet', 'bankName', 'accountNumber',
-      'fatherName', 'fatherDateOfBirth', 'fatherOccupation', 'fatherAlive',
-      'motherName', 'motherDateOfBirth', 'motherOccupation', 'motherAlive'
-    ];
+  // 1. JSON Payload
+  formData.append("data", JSON.stringify(data));
 
-    const requestPayload: any = {};
+  // 2. Common Multipart Keys
+  if (files.idProof) formData.append("idProof", files.idProof as File);
+  if (files.passportPhoto) formData.append("passportPhoto", files.passportPhoto as File);
 
-    commonFields.forEach(key => {
-      if (data[key] !== undefined) requestPayload[key] = data[key];
-    });
+  // 3. Conditional Keys based on Employee Type
+  if (type === "FRESHER") {
+    // Keys must match Spring Boot @RequestPart names exactly
+    if (files.tenthMarksheet) formData.append("tenthMarksheet", files.tenthMarksheet as File);
+    if (files.twelfthMarksheet) formData.append("twelfthMarksheet", files.twelfthMarksheet as File);
+    if (files.degreeCertificate) formData.append("degreeCertificate", files.degreeCertificate as File);
+    if (files.offerLetter) formData.append("offerLetter", files.offerLetter as File);
 
-    if (type === 'EXPERIENCED') {
-      requestPayload.unaNumber = data.unaNumber;
-      requestPayload.previousRole = data.previousRole;
-      requestPayload.oldCompanyName = data.oldCompanyName;
-      requestPayload.oldCompanyFromDate = data.oldCompanyFromDate;
-      requestPayload.oldCompanyEndDate = data.oldCompanyEndDate;
+    if (files.idProof) formData.append("idProof", files.idProof as File);
+  } else {
+    // Experienced: handle List<MultipartFile> for experienceCerts
+    if (files.relievingLetter) formData.append("relievingLetter", files.relievingLetter as File);
+    
+    if (Array.isArray(files.experienceCerts)) {
+      files.experienceCerts.forEach((file) => {
+        formData.append("experienceCerts", file);
+      });
     }
+  }
 
-    formData.append("data", JSON.stringify(requestPayload));
+  // PUT endpoint only
+  const response = await api.put(
+    `/employees/personal-details/${id}/${type.toLowerCase()}`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
 
-    if (type === 'FRESHER') {
-      if (files.aadhaarCard) formData.append("aadhaarCard", files.aadhaarCard);
-      if (files.tc) formData.append("tc", files.tc);
-      if (files.offerLetter) formData.append("offerLetter", files.offerLetter);
-    } else {
-      if (files.aadhaarCard) formData.append("aadhaarCard", files.aadhaarCard);
-      if (files.experienceCertificate) formData.append("experienceCertificate", files.experienceCertificate);
-      if (files.leavingLetter) formData.append("leavingLetter", files.leavingLetter);
-    }
-
-    let urlType  = type.toString().toLowerCase();
-    const response = await api.put(`/employees/personal-details/${id}/${urlType}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    return response.data;
-  },
-
-
+  return response.data;
+},
 
 
   refreshToken: async () => {

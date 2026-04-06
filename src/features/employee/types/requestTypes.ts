@@ -1,53 +1,134 @@
 
 import type { BloodGroup, Gender, MaritalStatus } from "@/shared/types";
 
-export interface PersonalDetails {
+// export interface PersonalDetails {
+//   firstName: string;
+//   lastName: string;
+//   contactNumber: string;
+//   gender: Gender;
+//   maritalStatus: MaritalStatus;
+//   aadharNumber: string;
+//   personalEmail: string;
+//   dateOfBirth: string;
+//   presentAddress: string;
+//   permanentAddress: string;
+//   bloodGroup: BloodGroup;
+//   emergencyContactNumber?: string;
+//   designation: string;
+//   skillSet: string;
+//   accountNumber: string;
+//   bankName: string;
+//   fatherName: string;
+//   fatherDateOfBirth: string;
+//   fatherOccupation: string;
+//   fatherAlive: boolean;
+//   motherName: string;
+//   motherDateOfBirth: string;
+//   motherOccupation: string;
+//   motherAlive: boolean;
+//   uanNumber?: string;
+//   previousRole?: string;
+//   oldCompanyName?: string;
+//   oldCompanyFromDate?: string;
+//   oldCompanyEndDate?: string;
+  
+
+// }
+
+// export type PersonalDetailsRequest = PersonalDetails; 
+
+export interface MultipartFiles {
+  // Common
+  idProof: File;
+  passportPhoto: File;
+
+  // Fresher
+  tenthMarksheet?: File;
+  twelfthMarksheet?: File;
+  degreeCertificate?: File;
+  offerLetter?: File;
+
+  // Experienced
+  experienceCerts?: File[]; 
+  relievingLetter?: File;
+}
+
+export interface BasePersonalDetails {
+  // Name
   firstName: string;
   lastName: string;
+
+  // Contact
   contactNumber: string;
   gender: Gender;
   maritalStatus: MaritalStatus;
-  aadharNumber: string;
+
+  aadharNumber: string; 
   personalEmail: string;
-  dateOfBirth: string;
+  dateOfBirth: string; // YYYY-MM-DD
+
   presentAddress: string;
   permanentAddress: string;
+
   bloodGroup: BloodGroup;
-  emergencyContactNumber?: string;
+  emergencyContactNumber: string;
+
   designation: string;
-  skillSet: string;
+  skillSet?: string;
+
+  // Bank
   accountNumber: string;
   bankName: string;
-  fatherName: string;
-  fatherDateOfBirth: string;
-  fatherOccupation: string;
-  fatherAlive: boolean;
-  motherName: string;
-  motherDateOfBirth: string;
-  motherOccupation: string;
-  motherAlive: boolean;
-  uanNumber?: string;
-  previousRole?: string;
-  oldCompanyName?: string;
-  oldCompanyFromDate?: string;
-  oldCompanyEndDate?: string;
-  
+  ifscCode: string;
+  bankBranchName: string;
 
+  // Father
+  fatherName?: string;
+  fatherDateOfBirth?: string;
+  fatherOccupation?: string;
+  fatherAlive?: boolean;
+
+  // Mother
+  motherName?: string;
+  motherDateOfBirth?: string;
+  motherOccupation?: string;
+  motherAlive?: boolean;
+
+  // Spouse (UPDATED)
+  spouseName?: string;
+  spouseDateOfBirth?: string;
+  spouseOccupation?: string;
+  spouseContactNumber?: string;
+
+  // Children
+  children?: Child[];
 }
 
-export type PersonalDetailsRequest = PersonalDetails; 
-
-export interface MultipartSubmission {
-    data: PersonalDetails;
-    files: {
-        aadhaarCard: File;
-        tc?: File;
-        offerLetter?: File;
-        experienceCertificate?: File;
-        leavingLetter?: File;
-    }
+export interface Child {
+  childName: string;
+  gender: Gender;
+  age: number;
 }
 
+export interface ExperienceEntry {
+  companyName: string;
+  role: string;
+  fromDate: string; 
+  endDate: string;  
+  lastCompany: boolean;
+}
+
+export interface FresherPersonalDetailsRequest extends BasePersonalDetails {}
+export interface ExperiencedPersonalDetailsRequest extends BasePersonalDetails {
+  uanNumber: string;
+  experiences: ExperienceEntry[];
+}
+
+
+
+export type PersonalDetailsRequest =
+  | FresherPersonalDetailsRequest
+  | ExperiencedPersonalDetailsRequest;
 
 export interface CreateUserRequest {
   empId: string;           // Matches private String empId
