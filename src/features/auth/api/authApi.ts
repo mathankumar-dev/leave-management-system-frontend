@@ -136,7 +136,22 @@ export const authService = {
 
   forgotPassword: async (email: string): Promise<void> => {
     await api.post('/password-reset/forgot-password', {
-      email
+      email 
     });
-  }
+  },
+
+  
+  verifyOtp: async (data:{
+    email:string,
+    otp:string,
+    newPassword:string
+}) => {
+
+    return api.post(
+        "/password-reset/verify-otp",
+        data
+    );
+
+}
+
 };

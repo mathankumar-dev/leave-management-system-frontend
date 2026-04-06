@@ -261,9 +261,9 @@ const EmployeeCalendarView: React.FC = () => {
 
                     <div
                       key={i}
-                      className="text-[9px] bg-indigo-50 mt-1 p-1 rounded"
+                      className="text-[15px] bg-red-500 text-white mt-1 p-1 rounded"
                     >
-                      {r.leaveType || "Present"}
+                      {r.leaveType || "Leave"}
                     </div>
 
                   ))}

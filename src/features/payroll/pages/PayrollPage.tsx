@@ -115,54 +115,74 @@ const PayrollView: React.FC = () => {
     `₹ ${Number(val || 0).toLocaleString("en-IN")}`;
 
 
+  // const downloadPDF = async () => {
+  //   const element = document.getElementById("payslip-container");
+  //   if (!element) return;
+
+  //   setLoadingPDF(true);
+
+  //   try {
+  //     const dataUrl = await toPng(element, {
+  //       cacheBust: true,
+  //       pixelRatio: 3,
+  //       backgroundColor: "#ffffff",
+  //     });
+
+  //     const pdf = new jsPDF("p", "mm", "a4");
+
+  //     const img = new Image();
+  //     img.src = dataUrl;
+
+  //     img.onload = () => {
+  //       const pageWidth = 210;
+  //       const pageHeight = 297;
+
+  //       const imgWidth = pageWidth;
+  //       const imgHeight = (img.height * imgWidth) / img.width;
+
+  //       let heightLeft = imgHeight;
+  //       let position = 0;
+
+  //       // First page
+  //       pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+  //       heightLeft -= pageHeight;
+
+  //       // Remaining pages
+  //       while (heightLeft > 0) {
+  //         position = heightLeft - imgHeight;
+  //         pdf.addPage();
+  //         pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+  //         heightLeft -= pageHeight;
+  //       }
+
+  //       pdf.save(`Payslip-${month}-${year}.pdf`);
+  //     };
+  //   } catch (err) {
+  //     console.error(err);
+  //   } finally {
+  //     setLoadingPDF(false);
+  //   }
+  // };
+
   const downloadPDF = async () => {
-    const element = document.getElementById("payslip-container");
-    if (!element) return;
+  try {
+    const response = await api.get(
+      `/payslip/download/${year}/${month}`,
+      { responseType: "blob" }
+    );
 
-    setLoadingPDF(true);
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
 
-    try {
-      const dataUrl = await toPng(element, {
-        cacheBust: true,
-        pixelRatio: 3,
-        backgroundColor: "#ffffff",
-      });
+    link.href = url;
+    link.setAttribute("download", `Payslip-${month}-${year}.pdf`);
+    document.body.appendChild(link);
+    link.click();
 
-      const pdf = new jsPDF("p", "mm", "a4");
-
-      const img = new Image();
-      img.src = dataUrl;
-
-      img.onload = () => {
-        const pageWidth = 210;
-        const pageHeight = 297;
-
-        const imgWidth = pageWidth;
-        const imgHeight = (img.height * imgWidth) / img.width;
-
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        // First page
-        pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        // Remaining pages
-        while (heightLeft > 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-        }
-
-        pdf.save(`Payslip-${month}-${year}.pdf`);
-      };
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingPDF(false);
-    }
-  };
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const salaryRows = [
     ["Basic Salary", payslip?.basicSalary, "PF", profile?.pfNumber],
@@ -415,7 +435,7 @@ const PayrollView: React.FC = () => {
               )}
             </div>
 
-            <div className="mt-2 text-sm italic">
+            <div className="mt-2 text-m italic">
               In Words:{" "}
               {numberToWords(
                 viewMode === "monthly"
@@ -425,7 +445,7 @@ const PayrollView: React.FC = () => {
               ONLY
             </div>
 
-            <div className="flex justify-between mt-8 text-xl">
+            <div className="flex justify-between mt-8 text-m">
               <div>Employee Signature: ______________________</div>
               <div>This payslip is computer generated</div>
             </div>
