@@ -148,8 +148,8 @@ const EmployeesView = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-neutral-800 text-white">
               <tr>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Employee ID</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Name</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Employee ID</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Role</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Status</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Options</th>

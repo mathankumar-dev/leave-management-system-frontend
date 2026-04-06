@@ -1,3 +1,4 @@
+import logo from '@/assets/images/bg-rm-logo-HRES.png';
 import { authService } from "@/features/auth/api/authApi";
 import type {
     ExperiencedPersonalDetailsRequest,
@@ -91,51 +92,51 @@ const PersonalDetailsModal = () => {
     };
 
     const handleSubmit = async () => {
-    try {
-        if (!user?.id) return;
+        try {
+            if (!user?.id) return;
 
-        // 1. Determine required files based on type
-        const requiredFiles = submissionType === "FRESHER"
-            ? ["idProof", "passportPhoto", "tenthMarksheet", "twelfthMarksheet", "degreeCertificate", "offerLetter"]
-            : ["idProof", "passportPhoto", "relievingLetter"];
+            // 1. Determine required files based on type
+            const requiredFiles = submissionType === "FRESHER"
+                ? ["idProof", "passportPhoto", "tenthMarksheet", "twelfthMarksheet", "degreeCertificate", "offerLetter"]
+                : ["idProof", "passportPhoto", "relievingLetter"];
 
-        const missing = requiredFiles.filter(k => !files[k]);
-        if (missing.length > 0) {
-            setErrorMessage(`Missing required files: ${missing.join(", ")}`);
+            const missing = requiredFiles.filter(k => !files[k]);
+            if (missing.length > 0) {
+                setErrorMessage(`Missing required files: ${missing.join(", ")}`);
+                setShowFailure(true);
+                return;
+            }
+
+            setLoaderState({ active: true, finished: false });
+
+            // 2. CREATE A CLEAN DATA OBJECT
+            // We spread the current formData but explicitly handle the conditional fields
+            const { experiences, uanNumber, ...restOfData } = formData;
+
+            const payload = submissionType === "EXPERIENCED"
+                ? { ...formData } // Include everything for experienced
+                : { ...restOfData }; // EXCLUDE experiences and uanNumber for freshers
+
+            console.log("Submitting payload:", payload);
+
+            // 3. Send the cleaned payload
+            await authService.submitMultipartDetails(
+                user.id,
+                submissionType,
+                payload, // Use the cleaned object here
+                files
+            );
+
+            setLoaderState({ active: true, finished: true });
+        } catch (err: any) {
+            setLoaderState({ active: false, finished: false });
+            setErrorMessage(err.response?.data?.message || "Submission failed. Please check all fields.");
             setShowFailure(true);
-            return;
         }
-
-        setLoaderState({ active: true, finished: false });
-
-        // 2. CREATE A CLEAN DATA OBJECT
-        // We spread the current formData but explicitly handle the conditional fields
-        const { experiences, uanNumber, ...restOfData } = formData;
-
-        const payload = submissionType === "EXPERIENCED" 
-            ? { ...formData } // Include everything for experienced
-            : { ...restOfData }; // EXCLUDE experiences and uanNumber for freshers
-
-        console.log("Submitting payload:", payload);
-
-        // 3. Send the cleaned payload
-        await authService.submitMultipartDetails(
-            user.id,
-            submissionType,
-            payload, // Use the cleaned object here
-            files
-        );
-
-        setLoaderState({ active: true, finished: true });
-    } catch (err: any) {
-        setLoaderState({ active: false, finished: false });
-        setErrorMessage(err.response?.data?.message || "Submission failed. Please check all fields.");
-        setShowFailure(true);
-    }
-};
+    };
 
     const InputLabel = ({ children }: { children: React.ReactNode }) => (
-        <label className="text-[10px] font-black text-neutral-500 tracking-widest mb-1 block uppercase">
+        <label className="text-[10px] font-black text-neutral-500 tracking-widest mb-1 block ">
             {children}
         </label>
     );
@@ -147,7 +148,7 @@ const PersonalDetailsModal = () => {
                     <HiOutlineDocumentText size={18} />
                 </div>
                 <div className="overflow-hidden">
-                    <p className="text-[11px] font-bold text-neutral-700 uppercase tracking-tight">{label} {required && <span className="text-red-500">*</span>}</p>
+                    <p className="text-[11px] font-bold text-neutral-700  tracking-tight">{label} {required && <span className="text-red-500">*</span>}</p>
                     <p className="text-[10px] text-neutral-400 truncate">
                         {Array.isArray(files[fileKey]) ? `${(files[fileKey] as File[]).length} files` : (files[fileKey] as File)?.name || "Not uploaded"}
                     </p>
@@ -163,7 +164,7 @@ const PersonalDetailsModal = () => {
     return (
         <>
             {loaderState.active && (
-                <Loader message="Syncing WorkSphere Profile..." isFinished={loaderState.finished} onFinished={() => window.location.reload()} />
+                <Loader message="Syncing WeHRM Profile..." isFinished={loaderState.finished} onFinished={() => window.location.reload()} />
             )}
 
             <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
@@ -172,10 +173,11 @@ const PersonalDetailsModal = () => {
                     {/* HEADER */}
                     <div className="p-6 border-b flex justify-between items-center bg-neutral-50 shrink-0">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-indigo-200 text-xl">W</div>
+                            <div className="w-10 h-10  rounded-xl flex items-center justify-center"><img src={logo} alt="" /></div>
+                            {/* <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-indigo-200 text-xl">W</div> */}
                             <div>
                                 <h3 className="text-xl font-black text-neutral-900 tracking-tight">Onboarding Profile</h3>
-                                <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest italic">Secure Data Sync</p>
+                                <p className="text-[10px] text-indigo-600 font-bold  tracking-widest italic">Secure Data Sync</p>
                             </div>
                         </div>
                         <span className="px-4 py-1.5 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-full uppercase tracking-tighter border border-indigo-200">
@@ -409,14 +411,14 @@ const PersonalDetailsModal = () => {
                         <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t pt-10">
                             <div className="md:col-span-1 border-r border-neutral-100 pr-6">
                                 <div className="flex items-center gap-2 text-indigo-600 mb-2">
-                                    <HiOutlineBanknotes size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Banking</span>
+                                    <HiOutlineBanknotes size={22} /> <span className="font-bold text-xs  tracking-widest">Banking</span>
                                 </div>
                                 <p className="text-xs text-neutral-400 italic">Accurate bank details ensure automated salary credits.</p>
                             </div>
                             <div className="md:col-span-2 grid grid-cols-2 gap-4">
                                 <div className="col-span-2"><InputLabel>Bank Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankName} onChange={e => handleInputChange('bankName', e.target.value)} /></div>
                                 <div><InputLabel>Account Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono" value={formData.accountNumber} onChange={e => handleInputChange('accountNumber', e.target.value)} /></div>
-                                <div><InputLabel>IFSC Code</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono uppercase" value={formData.ifscCode} onChange={e => handleInputChange('ifscCode', e.target.value)} /></div>
+                                <div><InputLabel>IFSC Code</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono uppercase" value={formData.ifscCode} onChange={e => handleInputChange('ifscCode', e.target.value.toUpperCase())} /></div>
                                 <div className="col-span-2"><InputLabel>Branch Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankBranchName} onChange={e => handleInputChange('bankBranchName', e.target.value)} /></div>
                             </div>
                         </section>
@@ -425,7 +427,7 @@ const PersonalDetailsModal = () => {
                     {/* SUBMIT BUTTON */}
                     <div className="p-6 border-t bg-neutral-50 shrink-0">
                         <button onClick={handleSubmit} className="w-full bg-neutral-900 text-white font-black py-5 rounded-2xl text-[10px] tracking-widest uppercase hover:bg-black transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2">
-                            Finalize Profile & Sync with WorkSphere
+                            Finalize Profile & Sync with WeHRM
                         </button>
                     </div>
                 </div>
