@@ -117,7 +117,6 @@ const PersonalDetailsModal = () => {
                 ? { ...formData } // Include everything for experienced
                 : { ...restOfData }; // EXCLUDE experiences and uanNumber for freshers
 
-            console.log("Submitting payload:", payload);
 
             // 3. Send the cleaned payload
             await authService.submitMultipartDetails(

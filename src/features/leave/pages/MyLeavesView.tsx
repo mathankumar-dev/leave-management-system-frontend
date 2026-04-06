@@ -12,10 +12,9 @@ import { FaCalendarAlt, FaEdit, FaEllipsisV, FaInfoCircle, FaTimes } from "react
 
 const MyRequestsView: React.FC = () => {
   const { fetchMyLeaves } = useLeave();
-
   const { cancelLeave, editLeave, loading } = useLeaveAction();
   const { user } = useAuth();
-  const [history, setHistory] = useState<(LeaveRecord)[]>([]);
+  const [history, setHistory] = useState<LeaveRecord[]>([]);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const [editingLeave, setEditingLeave] = useState<LeaveRecord | null>(null);
@@ -29,17 +28,12 @@ const MyRequestsView: React.FC = () => {
   const loadAllHistory = async () => {
     if (!user?.id) return;
     try {
-      const [leavesData] = await Promise.all([
-        fetchMyLeaves(user.id),
-        // fetchMyOD(user.id)
-      ]);
+      const [leavesData] = await Promise.all([fetchMyLeaves(user.id)]);
       setHistory([...(leavesData || [])]);
     } catch (error) {
       console.error("Failed to fetch history:", error);
     }
   };
-
-
 
   useEffect(() => {
     loadAllHistory();
@@ -79,11 +73,16 @@ const MyRequestsView: React.FC = () => {
       const end = new Date(item.endDate);
       const isSameDay = item.startDate === item.endDate;
 
-      let calculatedDays = 0;
-      if (!calculatedDays || calculatedDays === 0) {
+      let calculatedDays = item.days || 0;
+      if (calculatedDays === 0) {
         const diffTime = Math.abs(end.getTime() - start.getTime());
         calculatedDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
       }
+
+      // Updated Logic: If days are less than 1, show "Partial Day"
+      const durationLabel = calculatedDays < 1 
+        ? "Half Day" 
+        : `${calculatedDays} ${calculatedDays === 1 ? 'Day' : 'Days'}`;
 
       const dateOptions: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short" };
       const displayRange = isSameDay
@@ -93,6 +92,7 @@ const MyRequestsView: React.FC = () => {
       return {
         ...item,
         days: calculatedDays,
+        durationLabel,
         displayType: item.leaveTypeName ? item.leaveTypeName : "N/A",
         displayRange,
       };
@@ -140,7 +140,7 @@ const MyRequestsView: React.FC = () => {
                       {item.displayType}
                     </span>
                     <h3 className="text-base font-bold text-slate-900">
-                      {item.days} {item.days === 1 ? 'Day' : 'Days'} {item.leaveTypeName === 'ON_DUTY' ? 'OD' : 'Leave'}
+                      {item.durationLabel} {item.leaveTypeName === 'ON_DUTY' ? 'OD' : 'Leave'}
                     </h3>
                   </div>
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -190,7 +190,7 @@ const MyRequestsView: React.FC = () => {
               <React.Fragment key={`${item.leaveTypeName}-${item.id}`}>
                 <tr onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} className={`transition-colors cursor-pointer ${expandedId === item.id ? 'bg-indigo-50/40' : 'hover:bg-slate-50/50'}`}>
                   <td className={`px-6 py-4 font-bold uppercase text-xs ${item.leaveTypeName === 'ON_DUTY' ? 'text-amber-600' : 'text-slate-900'}`}>{item.displayType}</td>
-                  <td className="px-6 py-4 text-indigo-600 font-bold text-sm">{item.days} Days</td>
+                  <td className="px-6 py-4 text-indigo-600 font-bold text-sm">{item.durationLabel}</td>
                   <td className="px-6 py-4 text-slate-600 text-xs font-bold">{item.displayRange}</td>
                   <td className="px-6 py-4"><StatusBadge status={item.status} /></td>
                   <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
@@ -234,29 +234,19 @@ const DetailContent = ({ item }: { item: any }) => {
   useEffect(() => {
     const resolveNames = async () => {
       try {
-        // Fetch and extract Level 1 Name
         if (item.firstApproverId) {
           const response1 = await fetchEmployeeName(item.firstApproverId);
-          // Extract empName from the object { empId, empName }
-          const name1 = response1?.empName || item.firstApproverId;
-          setFirstApproverName(name1);
+          setFirstApproverName(response1?.empName || item.firstApproverId);
         }
-
-        // Fetch and extract Level 2 Name
         if (item.secondApproverId) {
           const response2 = await fetchEmployeeName(item.secondApproverId);
-          // Extract empName from the object { empId, empName }
-          const name2 = response2?.empName || item.secondApproverId;
-          setSecondApproverName(name2);
+          setSecondApproverName(response2?.empName || item.secondApproverId);
         }
       } catch (err) {
-        console.error("Failed to fetch approver names", err);
-        // Fallback to IDs if the API fails
         setFirstApproverName(item.firstApproverId || "Unknown");
         setSecondApproverName(item.secondApproverId || "Unknown");
       }
     };
-
     resolveNames();
   }, [item.firstApproverId, item.secondApproverId]);
 
@@ -270,9 +260,10 @@ const DetailContent = ({ item }: { item: any }) => {
     });
   };
 
+  const showSecondLevel = !!item.secondApproverId && item.firstApproverDecision !== 'REJECTED';
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {/* Reason & Metadata */}
       <div className="space-y-3">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
           <FaInfoCircle className="text-indigo-400" /> Request Details
@@ -294,7 +285,6 @@ const DetailContent = ({ item }: { item: any }) => {
         </div>
       </div>
 
-      {/* Date Range & Duration */}
       <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm h-fit">
         <div className="p-2.5 flex justify-between items-center">
           <span className="text-[9px] font-black text-slate-500 uppercase">Start Date</span>
@@ -306,18 +296,15 @@ const DetailContent = ({ item }: { item: any }) => {
         </div>
         <div className="p-2.5 flex justify-between items-center bg-slate-50/50">
           <span className="text-[9px] font-black text-slate-500 uppercase">Duration</span>
-          <span className="text-xs font-black text-indigo-600">{item.days} Day(s)</span>
+          <span className="text-xs font-black text-indigo-600">{item.durationLabel}</span>
         </div>
       </div>
 
-      {/* Approval Timeline mapping to your JSON keys */}
       <div className="space-y-3">
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
           Approval Workflow
         </h4>
         <div className="space-y-6 relative before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
-
-          {/* First Approver Step */}
           <div className="relative pl-6">
             <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors 
               ${item.firstApproverDecision === 'APPROVED' ? 'bg-emerald-500' : item.firstApproverDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`}
@@ -332,21 +319,29 @@ const DetailContent = ({ item }: { item: any }) => {
             </p>
           </div>
 
-          {/* Second Approver Step */}
-          <div className="relative pl-6">
-            <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors 
-              ${item.secondApproverDecision === 'APPROVED' ? 'bg-emerald-500' : item.secondApproverDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`}
-            />
-            <p className="text-[11px] font-black text-slate-700 uppercase leading-none">
-              Level 2: {secondApproverName}
-            </p>
-            <p className="text-[10px] text-slate-500 mt-1">
-              {item.secondApproverDecision
-                ? `${item.secondApproverDecision} • ${formatDate(item.secondApproverDecidedAt)}`
-                : (item.firstApproverDecision === 'APPROVED' ? 'Awaiting Secondary Review' : 'Pending Level 1')}
-            </p>
-          </div>
+          {showSecondLevel && (
+            <div className="relative pl-6">
+              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors 
+                ${item.secondApproverDecision === 'APPROVED' ? 'bg-emerald-500' : item.secondApproverDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`}
+              />
+              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">
+                Level 2: {secondApproverName}
+              </p>
+              <p className="text-[10px] text-slate-500 mt-1">
+                {item.secondApproverDecision
+                  ? `${item.secondApproverDecision} • ${formatDate(item.secondApproverDecidedAt)}`
+                  : (item.firstApproverDecision === 'APPROVED' ? 'Awaiting Secondary Review' : 'Pending Level 1')}
+              </p>
+            </div>
+          )}
 
+          {item.status !== 'PENDING' && (
+            <div className="relative pl-6">
+              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.status === 'APPROVED' ? 'bg-emerald-600' : 'bg-rose-600'}`} />
+              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Request Finalized</p>
+              <p className="text-[10px] text-slate-500 mt-1">Status: {item.status}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -152,7 +152,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
                   </span>
 
                   {!isCollapsed && (
-                    <span className="text-[11px] font-black uppercase tracking-tight whitespace-nowrap">
+                    <span className="text-[14px] font-black  tracking-tight whitespace-nowrap">
                       {tab.name}
                     </span>
                   )}
