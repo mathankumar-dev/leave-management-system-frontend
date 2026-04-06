@@ -301,7 +301,7 @@ export function Footer() {
         <div>
           <h4 className="text-white font-bold text-xs uppercase tracking-widest mb-6">Quick Links</h4>
           <ul className="space-y-3 text-sm">
-            {["Home", "Features", "About", "Contact"].map((l) => (
+            {["Home", "About", "Contact"].map((l) => (
               <li key={l}>
                 <a href="#" className="hover:text-brand transition-all hover:pl-2">{l}</a>
               </li>
