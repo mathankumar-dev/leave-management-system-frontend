@@ -3,7 +3,6 @@ import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import type { ProfileData } from "@/features/employee/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CustomLoader, FailureModal } from "@/shared/components";
-import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
 import { BloodGroupMap, GenderMap, MaritalStatusMap } from "@/shared/types";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState } from "react";
