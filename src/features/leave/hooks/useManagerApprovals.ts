@@ -1,12 +1,11 @@
 
+import { employeeService } from "@/features/employee/services/employeeService";
 import { leaveService } from "@/features/leave/services/leaveService";
 import { requestService } from "@/features/leave/services/requestService";
-import type { AccessResponse, CompOffResponse, LeaveDecision, LeaveDecisionRequest, LeaveType, ManagerAccessDecision, ODResponse } from "@/features/leave/types";
-import { onboardingServices } from "@/features/onboarding/services/onboardingService";
-import api from "@/services/apiClient";
+import type { LeaveDecision, LeaveDecisionRequest, LeaveType, ManagerAccessDecision } from "@/features/leave/types";
 import { useEffect, useState } from "react";
 
-export const useManagerApprovals = (userId: number, role?: string) => {
+export const useManagerApprovals = (userId: string, role?: string) => {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -14,88 +13,38 @@ export const useManagerApprovals = (userId: number, role?: string) => {
     if (!userId) return;
     setLoading(true);
     try {
-      const isTeamLeader = role?.toUpperCase() === 'TEAM_LEADER';
-      const isHR = role?.toUpperCase() === 'HR';
+      const [leaveData] = await Promise.all([
+        leaveService.getPendingApprovals(userId),
+      ]);
 
-      // ─── HR role → HR pending leaves endpoint ─────────────────
-      if (isHR) {
-        const res = await api.get('/leave-approvals/pending/hr');
-        const hrLeaves = (res.data?.content || []).map((item: any) => ({
-          ...item.leaveApplication,
-          id: item.leaveApplication.id,
-          employeeName: item.leaveApplication.employeeName,
-          leaveType: item.leaveApplication.leaveType,
-          startDate: item.leaveApplication.startDate,
-          endDate: item.leaveApplication.endDate,
-          reason: item.leaveApplication.reason,
-          days: item.leaveApplication.days,
-          createdAt: item.leaveApplication.createdAt,
-          halfDayType: item.leaveApplication.halfDayType,
-          startDateHalfDayType: item.leaveApplication.startDateHalfDayType,
-          endDateHalfDayType: item.leaveApplication.endDateHalfDayType,
-          attachments: item.attachments || [],
-          attachmentCount: item.attachmentCount || 0,
-          isHRLeave: true,
-        }));
-        setRequests(hrLeaves);
-        return;
-      }
-
-      // ─── Team Leader ───────────────────────────────────────────
-      if (isTeamLeader) {
-        // const [tlRequests, tlODRequests] = await Promise.all([]);
-      }
-      // 1. Fetch data from services
-      const [leaveData, compOffs, ods, accessReqs] = isTeamLeader
-        ? await Promise.all([leaveService.getPendingApprovals(userId),
-          null, // Team leaders might not have comp-offs in your logic
-        // leaveService.getPendingODApprovalsForTeamLeader(userId),
-          null
-        ])
-        : await Promise.all([
-          leaveService.getPendingApprovals(userId),
-          leaveService.getPendingCompOffs(userId),
-          leaveService.getPendingODApprovals(userId),
-          onboardingServices.getPendingAccessRequests(userId)
-        ]);
-      const formattedLeaves = (leaveData || []).map((item: any) => ({
-        ...item.leaveApplication, // This spreads id, employeeName, startDate, etc.
-        attachments: item.attachments,
-        attachmentCount: item.attachmentCount,
-        isLeave: true // Helper flag for conditional rendering
+      // 1. Map the basic data first
+      const rawLeaves = (leaveData || []).map((item: any) => ({
+        ...item.leaveApplicationResponseDTO,
+        leaveType: item.leaveApplicationResponseDTO.leaveTypeName,
+        attachments: item.attachments || [],
+        attachmentCount: item.attachmentCount || 0,
+        isLeave: true
       }));
 
-      // 3. Format CompOffs (Note: compOffs comes as a direct array usually)
-      const formattedCompOffs = (compOffs || []).map((co: CompOffResponse) => ({
-        ...co,
-        id: co.compoffId,
-        leaveType: 'COMP_OFF',
-        startDate: co.workedDate,
-        endDate: co.workedDate,
-        isCompOff: true,
-        createdAt: co.createdAt || new Date().toISOString()
-      }));
+      // 2. Resolve all names in parallel
+      // Inside useManagerApprovals.ts -> fetchRequests function
+      const formattedLeaves = await Promise.all(
+        rawLeaves.map(async (req: any) => {
+          const response = await employeeService.getNameByID(req.employeeId);
+          
 
+          // CRITICAL: Ensure this is a string
+          // If response is { fullName: "..." }, use response.fullName
+          // If response is just the string, use response || "Unknown"
+          const nameString = typeof response === 'string'
+            ? response
+            : (response?.fullName || response?.empName || "Unknown Employee");
 
+          return { ...req, employeeName: nameString };
+        })
+      );
 
-      // 4. Format ODs
-      const formattedODs = (ods || []).map((od: ODResponse) => ({
-        ...od,
-        leaveType: 'ON_DUTY',
-        isOD: true,
-      }));
-
-
-      console.log(accessReqs);
-
-
-      const formatedAccessReqs = (accessReqs || []).map((areq: AccessResponse) => ({
-        ...areq,
-        leaveType: areq.accessType,
-      }));
-
-      // 5. Combine and Sort
-      const combined = [...formattedLeaves, ...formattedCompOffs, ...formattedODs, ...formatedAccessReqs].sort(
+      const combined = formattedLeaves.sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
@@ -125,26 +74,26 @@ export const useManagerApprovals = (userId: number, role?: string) => {
   ) => {
     try {
       setLoading(true);
-      const isHR = role?.toUpperCase() === 'HR';
+      // const isHR = role?.toUpperCase() === 'HR';
 
       // ─── HR leave decision ────────────────────────────────────
-      if (isHR) {
-        if (status === 'APPROVED') {
-          await api.patch(`/leave-approvals/${requestId}/approve`);
-        } else {
-          await api.patch(`/leave-approvals/${requestId}/reject`, {
-            comments: reason
-          });
-        }
-      }
-      else if (type === 'ON_DUTY') {
-        if (status === 'APPROVED') {
-          await requestService.approveOD(requestId, userId);
-        } else {
-          await requestService.rejectOD(requestId, userId, reason);
-        }
-      }
-      else if (type === 'COMP_OFF') {
+      // if (isHR) {
+      //   if (status === 'APPROVED') {
+      //     await api.patch(`/leave-approvals/${requestId}/approve`);
+      //   } else {
+      //     await api.patch(`/leave-approvals/${requestId}/reject`, {
+      //       comments: reason
+      //     });
+      //   }
+      // }
+      // else if (type === 'ON_DUTY') {
+      //   if (status === 'APPROVED') {
+      //     await requestService.approveOD(requestId, userId);
+      //   } else {
+      //     await requestService.rejectOD(requestId, userId, reason);
+      //   }
+      // }
+      if (type === 'COMP_OFF') {
         if (status === 'APPROVED') {
           await leaveService.approveCompOff(requestId);
         } else {

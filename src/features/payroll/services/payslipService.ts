@@ -11,7 +11,7 @@ export const PayslipService = {
   updatePayslip: async (data: PayslipUpdateRequest): Promise<Payslip> =>
     (await api.put<Payslip>('/payslip/update', data)).data,
 
-  deletePayslip: async (employeeId: number, year: number, month: number): Promise<void> =>
+  deletePayslip: async (employeeId: string, year: number, month: number): Promise<void> =>
     void (await api.delete(`/payslip/${employeeId}/${year}/${month}`)),
 
   generatePayroll: async (year: number, month: number): Promise<void> =>
@@ -28,7 +28,7 @@ export const PayslipService = {
   exportPayrollCSV: async (year: number, month: number): Promise<string> =>
     (await api.get<string>(`/payslip/export/${year}/${month}`)).data,
 
-  // getPrefill: async (employeeId: number, year: number, month: number): Promise<Payslip> =>
+  // getPrefill: async (employeeId: string, year: number, month: number): Promise<Payslip> =>
   //   (await api.get<Payslip>(`/payslip/prefill?employeeId=${employeeId}&year=${year}&month=${month}`)).data,
 
 };

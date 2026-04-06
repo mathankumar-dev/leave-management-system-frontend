@@ -1,26 +1,31 @@
-
 import Cookies from "js-cookie";
 
-export const getToken = () => Cookies.get("lms_token");
+const TOKEN_KEY = "lms_token";
+const USER_ID_KEY = "lms_user_id";
 
-export const setToken = ( id: string , token?: string,) => {
-  // Cookies.set("lms_token", token, {
-  //   secure: true,
-  //   sameSite: "Lax",
-  //   expires: 1,
-  //   path: "/",
-  // });
-  Cookies.set("lms_user_id", id);
-}
 
-export const clearToken = () => {
-  Cookies.remove("lms_token");
-  Cookies.remove("lms_user_id");
+export const setAuthData = (id: string, token: string) => {
+  Cookies.set(USER_ID_KEY, id, { expires: 1, path: "/" });
+  Cookies.set(TOKEN_KEY, token, { 
+    expires: 1, 
+    path: "/", 
+    secure: true, 
+    sameSite: "Lax" 
+  });
+};
+
+export const clearAuthData = () => {
+  Cookies.remove(TOKEN_KEY);
+  Cookies.remove(USER_ID_KEY);
 };
 
 export const logout = () => {
-  clearToken();
+  clearAuthData();
   if (window.location.pathname !== "/login") {
     window.location.href = "/login";
   }
 };
+
+// authStorage.ts
+export const getUserId = () => Cookies.get(USER_ID_KEY); // Add this
+export const getToken = () => Cookies.get(TOKEN_KEY);

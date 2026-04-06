@@ -1,5 +1,6 @@
 export interface Payslip {
-  employeeId: number;
+  employeeId: string;
+  employeeName? : string;
   month: number;
   year: number;
   basicSalary: number;
@@ -22,7 +23,7 @@ export interface Payslip {
 }
 
 export interface PayslipCreateRequest {
-  employeeId: number;
+  employeeId: string;
   month: number;
   year: number;
   basicSalary: number;

@@ -6,7 +6,7 @@ import api from '../../../services/apiClient';
 
 export const dashboardService = {
 
-  getManagerDashboard: async (managerId: number) => {
+  getManagerDashboard: async (managerId: string) => {
 
     const response = await api.get(`/dashboard/manager/summary/${managerId}`);
 
@@ -14,14 +14,14 @@ export const dashboardService = {
 
   },
 
-  getTeamLeaderDashboard: async (teamLeaderId: number) => {
+  getTeamLeaderDashboard: async (teamLeaderId: string) => {
 
     const response = await api.get(`/dashboard/teamleader/${teamLeaderId}`);
 
     return response.data;
 
   },
-  getAdminDashboard: async (adminId: number) => {
+  getAdminDashboard: async (adminId: string) => {
 
     const response = await api.get(`/dashboard/admin/${adminId}`);
 
@@ -29,7 +29,7 @@ export const dashboardService = {
 
   },
 
-  getManagerTeamStats: async (managerId: number): Promise<Employee[]> => {
+  getManagerTeamStats: async (managerId: string): Promise<Employee[]> => {
     const currentYear = new Date().getFullYear();
 
     const response = await api.get(`/dashboard/manager/team-balances/${managerId}`, {
@@ -43,7 +43,7 @@ export const dashboardService = {
 
 
 
-  // getEmployeeDashboard: async (employeeId: number): Promise<Employee> => {
+  // getEmployeeDashboard: async (employeeId: string): Promise<Employee> => {
   //   const id = employeeId;
   //   if (!id) {
   //     console.error("Employee ID is missing! Cannot fetch dashboard.");
@@ -58,7 +58,7 @@ export const dashboardService = {
   //   }
   // },
 
-  getEmpDashboard: async (employeeId: number) => {
+  getEmpDashboard: async (employeeId: string) => {
 
     const response = await api.get(`/dashboard/employee/${employeeId}`);
 

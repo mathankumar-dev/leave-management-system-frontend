@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCalendar } from "@/features/attendance/hooks/useCalendar";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
   FaSpinner,
-  FaUserCheck,
   FaUserAlt,
+  FaUserCheck,
 } from "react-icons/fa";
 import { useAuth } from "../../../shared/auth/useAuth";
 import { PUBLIC_HOLIDAYS_2026 } from "../../../shared/constants/holidays";
-import { useCalendar } from "@/features/attendance/hooks/useCalendar";
 
 const TeamCalendarView: React.FC = () => {
   const { user } = useAuth();
@@ -151,7 +151,7 @@ const TeamCalendarView: React.FC = () => {
                     )}
 
                     {/* Render Personal Leave/Status (Yellow) */}
-                    {myDailyStatus.map(( i) => (
+                    {myDailyStatus.map((i) => (
                       <div key={`my-${i}`} className="px-1.5 py-0.5 bg-amber-100 border border-amber-200 text-amber-700 text-[8px] font-black uppercase rounded-sm truncate">
                         ME: Leave
                       </div>

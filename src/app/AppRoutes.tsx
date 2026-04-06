@@ -32,7 +32,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/employee/*" element={<DashboardLayout />} />
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={["MANAGER", "TEAM_LEADER"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["MANAGER", "CTO","COO","ADMIN","CEO","CFO"]} />}>
           <Route path="/manager/*" element={<DashboardLayout />} />
         </Route>
 
