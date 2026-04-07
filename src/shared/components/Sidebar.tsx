@@ -1,5 +1,4 @@
 import logoSVG from "@/assets/svg/logo.svg";
-import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { useAuth } from "@/shared/auth/useAuth";
 import {
   FaBell,
@@ -7,9 +6,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaCog,
-  FaDollarSign,
   FaExclamationTriangle,
-  FaFileInvoiceDollar,
   FaFileSignature,
   FaHistory,
   FaThLarge,

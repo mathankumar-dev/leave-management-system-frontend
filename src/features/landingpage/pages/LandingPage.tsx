@@ -38,6 +38,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+console.log(scrolled);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 28);
