@@ -75,11 +75,7 @@ const PersonalDetailsModal = () => {
         useRef<HTMLInputElement>(null)
     ];
 
-    const today = new Date().toISOString().split("T")[0];
-    const isInvalidDate = (dateStr: any) => {
-        const year = parseInt(dateStr?.split('-')[0], 10);
-        return year > 0 && (year < 1900 || year > 2026);
-    };
+
 
     useEffect(() => {
         const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;

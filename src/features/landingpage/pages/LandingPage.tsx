@@ -1,6 +1,6 @@
 import logo from "@/assets/images/bg-rm-logo-HRES.png";
-import wenxtdashboard from "@/assets/images/wenxtimage.png";
 import wehrm from "@/assets/images/logoWeHRM.png";
+import wenxtdashboard from "@/assets/images/wenxtimage.png";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -38,6 +38,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  console.log(scrolled);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 28);
@@ -100,7 +101,7 @@ export function Hero({ featuresRef }: { featuresRef: React.RefObject<HTMLDivElem
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10">
         <div>
           {/* WeHRM product logo above headline */}
-          <img src={wehrm} alt="WeHRM" height={100} width={100} className="mb-4 slate-1000"  />
+          <img src={wehrm} alt="WeHRM" height={100} width={100} className="mb-4 slate-1000" />
 
           <h1 className="text-3xl md:text-3xl font-bold text-slate-800 leading-[1.1] mb-6">
             Simplifying{" "}
@@ -210,32 +211,32 @@ export function HomeStats() {
 
 /* ── Features ── */
 export function Features({ featuresRef }: { featuresRef: React.RefObject<HTMLDivElement | null> }) {
- const features = [
-  {
-    icon: "👤",
-    title: "Role-Based Access",
-    desc: "Secure dashboards for Employee, Manager, HR, Admin and CFO.",
-    color: "bg-blue-50 text-blue-600",
-  },
-  {
-    icon: "📅",
-    title: "Leave Management",
-    desc: "Apply, track and approve leaves with full audit trail.",
-    color: "bg-emerald-50 text-emerald-600",
-  },
-  {
-    icon: "💳",
-    title: "Payslip Module",
-    desc: "Generate and download monthly payslips with tax breakdown.",
-    color: "bg-violet-50 text-violet-600",
-  },
-  // {
-  //   icon: "🛡️",
-  //   title: "Secure & Compliant",
-  //   desc: "JWT-based authentication and role-level data protection.",
-  //   color: "bg-rose-50 text-rose-600",
-  // },
-];
+  const features = [
+    {
+      icon: "👤",
+      title: "Role-Based Access",
+      desc: "Secure dashboards for Employee, Manager, HR, Admin and CFO.",
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
+      icon: "📅",
+      title: "Leave Management",
+      desc: "Apply, track and approve leaves with full audit trail.",
+      color: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      icon: "💳",
+      title: "Payslip Module",
+      desc: "Generate and download monthly payslips with tax breakdown.",
+      color: "bg-violet-50 text-violet-600",
+    },
+    // {
+    //   icon: "🛡️",
+    //   title: "Secure & Compliant",
+    //   desc: "JWT-based authentication and role-level data protection.",
+    //   color: "bg-rose-50 text-rose-600",
+    // },
+  ];
   return (
     <section ref={featuresRef} id="features" className="py-24 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6">
