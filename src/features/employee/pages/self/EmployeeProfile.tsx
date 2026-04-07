@@ -122,7 +122,7 @@ const EmployeeProfile: React.FC = () => {
         spouseContactNumber: (backendProfile as any).spouseContactNumber || "",
         children: (backendProfile as any).children || [],
         experiences: isExp
-          ? ((backendProfile as any).experiences || [{ companyName: "", role: "", fromDate: "", endDate: "", lastCompany: true }])
+          ? ((backendProfile as any).experiencedDocuments || [{ companyName: "", role: "", fromDate: "", endDate: "", lastCompany: true }])
           : [],
         uanNumber: (backendProfile as any).uanNumber || "",
       });
@@ -194,6 +194,7 @@ const EmployeeProfile: React.FC = () => {
     }
   };
 
+  
   if (loading || !profile) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
@@ -315,7 +316,7 @@ const EmployeeProfile: React.FC = () => {
                       <FormField label="Role" value={(profile as any).role} />
                       <FormField label="Manager" value={profile.reportingName} />
                       <FormField label="Joining Date" value={formatDate(profile.joiningDate)} />
-                      <FormField label="Employment Type" value={(profile as any).employeeType} />
+                      <FormField label="Experience Type" value={(profile as any).employeeExperience} />
                       <FormField label="Biometric Status" value={(profile as any).biometricStatus} />
                     </div>
                     <div className="pt-2">
@@ -419,7 +420,7 @@ const EmployeeProfile: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <EditableField label="Designation" field="designation" isEditing={isEditing} formData={formData} onChange={handleInputChange} />
                     <FormField label="Joining Date" value={formatDate(profile.joiningDate)} />
-                    <FormField label="Employment Type" value={(profile as any).employeeType} />
+                    <FormField label="Experience Type" value={(profile as any).employeeExperience} />
                     <FormField label="Manager" value={profile.reportingName} />
                     <FormField label="Biometric Status" value={(profile as any).biometricStatus} />
                     <FormField label="VPN Status" value={(profile as any).vpnStatus} />

@@ -254,11 +254,11 @@ const DashboardView = () => {
         onClick={() => handleNavigate('request-center')}
       />
 
-      <MyFloatingActionButton
+      {/* <MyFloatingActionButton
         icon={<FaPlus />}
         onClick={() => handleNavigate('request-center')}
         title="Apply Leave"
-      />
+      /> */}
     </motion.div>
   );
 };
