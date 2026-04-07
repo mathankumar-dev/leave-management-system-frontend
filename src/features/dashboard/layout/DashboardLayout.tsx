@@ -42,8 +42,7 @@ const DashboardLayout: React.FC = () => {
         />
 
         <div
-          className={`flex-1 flex flex-col h-full min-w-0 transition-all duration-300 ease-in-out
-            ${isCollapsed ? "md:ml-20" : "md:ml-80"}`}
+          className={`flex-1 flex flex-col h-full min-w-0 transition-all duration-300 ease-in-out`}
         >
           <Topbar
             onMenuClick={() => setSidebarOpen(true)}

@@ -83,7 +83,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen w-80 ${sidebarWidth} bg-white 
+        className={`fixed md:relative top-0 left-0 z-40 h-screen md:h-full flex-shrink-0 w-80 ${sidebarWidth} bg-white 
         p-4 border-r border-slate-100 flex flex-col
         transition-all duration-300 ease-in-out shadow-2xl shadow-slate-200/50
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
@@ -98,7 +98,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
 
         {/* LOGO AREA */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} mb-10 px-2 py-3 rounded-2xl bg-slate-50/50 transition-all`}>
-          <img src={logoSVG} alt="logo" className="w-8 h-8 min-w-8 p-2" />
+          <img src={logoSVG} alt="logo" className="w-8 h-8 min-w-8" />
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden">
               <span className="text-slate-900 text-xs font-black leading-none uppercase tracking-tighter">WeNxt</span>
