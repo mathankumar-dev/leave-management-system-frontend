@@ -3,7 +3,7 @@ import api from "@/services/apiClient";
 
 
 export const requestService = {
-  createODRequest: async (request: ODRequest, employeeId: number) => {
+  createODRequest: async (request: ODRequest, employeeId: string) => {
 
     const response = await api.post('/od/request', request, {
       params: { employeeId }
@@ -11,7 +11,7 @@ export const requestService = {
     return response.data;
   },
 
-  createMeetingRequest: async (request: MeetingRequest, employeeId: number, attendeeIds?: number[]) => {
+  createMeetingRequest: async (request: MeetingRequest, employeeId: string, attendeeIds?: number[]) => {
     const response = await api.post(`/meetings/create/${employeeId}`, request, {
       params: {
         attendeeIds: attendeeIds?.join(',')
@@ -19,7 +19,7 @@ export const requestService = {
     });
     return response.data;
   },
-  createAccessRequest: async (request: AccessRequest, employeeId: number) => {
+  createAccessRequest: async (request: AccessRequest, employeeId: string) => {
     const response = await api.post(`/access-requests/apply/${employeeId}`, request,);
     return response.data;
   },

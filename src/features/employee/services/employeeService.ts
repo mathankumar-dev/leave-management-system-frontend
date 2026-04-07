@@ -1,9 +1,9 @@
+import type { CreateUserRequest, EmployeeEntity, EmployeeFilters, PaginatedResponse, ProfileData, TeamMember } from '@/features/employee/types';
 import { AxiosError } from 'axios';
 import api from '../../../services/apiClient';
-import type { CreateUserRequest, EmployeeFilters, PaginatedResponse, EmployeeEntity, ProfileData, TeamMember } from '@/features/employee/types';
 
 export interface Employee {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: string;
@@ -17,7 +17,7 @@ export interface Employee {
   updatedAt: string;
   // ─── Optional fields ────────────────────────────────────────
   designation?: string | null;
-  employeeId?: number;
+  employeeId?: string;
   employeeName?: string | null;
 }
 
@@ -43,6 +43,29 @@ const handleError = (err: unknown, context: string): never => {
 
 export const employeeService = {
 
+
+  getNameByID: async (employeeId: string) => {
+    const res = await api.get(`/employees/name/${employeeId}`);
+    return res.data;
+  },
+  getRoleList: async () => {
+    const res = await api.get(`/employees/role/list`);
+    return res.data;
+  },
+  getDepartmentList: async () => {
+    const res = await api.get(`/employees/departments/list`);
+    return res.data;
+  },
+    getAllManagers: async () => {
+    const res = await api.get(`/employees/managers/list`);
+    return res.data;
+  },
+    getAllBranches: async () => {
+    const res = await api.get(`/employees/branch/list`);
+    return res.data;
+  },
+
+
   // ─── HR: paginated list ───────────────────────────────────────
   getAllEmployeesHR: async (
     page = 0,
@@ -64,23 +87,21 @@ export const employeeService = {
   getAllEmployees: async (
     pageOrFilters: number | EmployeeFilters = 0,
     size = 10,
-    signal?: AbortSignal
-  ): Promise<EmployeePageResponse> => {
+  ): Promise<PaginatedResponse<EmployeeEntity>> => { // <--- Changed this
     try {
       const params = typeof pageOrFilters === 'number'
         ? { page: pageOrFilters, size }
         : pageOrFilters;
 
-      const response = await api.get<EmployeePageResponse>('/employees/all', {
-        params,
-        signal,
+      const response = await api.get<PaginatedResponse<EmployeeEntity>>('/employees/all', {
+        params
       });
+
       return response.data;
     } catch (err) {
       throw handleError(err, 'getAllEmployees');
     }
   },
-
   searchEmployees: async (
     query: string,
     signal?: AbortSignal
@@ -96,7 +117,7 @@ export const employeeService = {
     }
   },
 
-  getTeamMembers: async (id: number): Promise<TeamMember[]> => {
+  getTeamMembers: async (id: string): Promise<TeamMember[]> => {
     const res = await api.get(`/dashboard/team-members/${id}`);
     return res.data;
   },
@@ -110,7 +131,7 @@ export const employeeService = {
     }
   },
 
-  deleteUser: async (employeeId: number): Promise<string> => {
+  deleteUser: async (employeeId: string): Promise<string> => {
     try {
       const res = await api.delete(`/employees/${employeeId}`);
       return res.data.message || "Employee deleted successfully";
@@ -119,7 +140,7 @@ export const employeeService = {
     }
   },
 
-  getProfile: async (employeeId: number): Promise<ProfileData> => {
+  getProfile: async (employeeId: string): Promise<ProfileData> => {
     const response = await api.get(`/employees/profile/${employeeId}`);
     return response.data;
   },

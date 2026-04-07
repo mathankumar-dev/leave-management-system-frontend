@@ -1,61 +1,23 @@
-import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
-import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
-import EmptyStateSVG from "@/assets/svg/EmpthyStateSVG";
-import DashboardDrawer from "@/features/dashboard/components/DashBoardDrawer";
-import { useManagerDashboard, useTeamLeaderDashboard } from "@/features/dashboard/hooks";
-import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
-import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
+import { useManagerDashboard } from "@/features/dashboard/hooks";
 import { ManagerStatCardTeam } from "@/features/dashboard/manager/components";
 import type { ManagerDashBoardResponse } from "@/features/dashboard/types";
 import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
 import type { LeaveDecision } from "@/features/leave/types";
 import { notify } from "@/features/notification/utils/notifications";
 import { useAuth } from "@/shared/auth/useAuth";
-import { useAuth } from "@/shared/auth/useAuth";
 import { CommentDialog, CustomLoader, MyFloatingActionButton } from "@/shared/components";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  FaArrowRight,
-  FaCalendarAlt,
-  FaChartPie,
-  FaCommentDots,
-  FaPlus, FaUserShield
-} from "react-icons/fa";
-import { AnimatePresence, motion } from "framer-motion";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  FaArrowRight,
-  FaCalendarAlt,
-  FaChartPie,
-  FaCommentDots,
-  FaPlus, FaUserShield
-} from "react-icons/fa";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FaBriefcaseMedical, FaChartPie, FaPlaneDeparture, FaPlus, FaStethoscope, FaUmbrellaBeach } from "react-icons/fa";
 
 const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = ({ onNavigate }) => {
   const { user, isLoading: authLoading } = useAuth();
   const { fetchManagerDashboard, loading: dashboardLoading } = useManagerDashboard();
-  const { fetchTeamLeaderDashboard } = useTeamLeaderDashboard();
-  const { fetchTeamLeaderDashboard } = useTeamLeaderDashboard();
-
   const { processApproval } = useLeaveAction();
-  const { processApproval } = useLeaveAction();
-
 
   const [dashboardData, setDashboardData] = useState<ManagerDashBoardResponse>();
   const [approvals, setApprovals] = useState<any[]>([]);
-  const attendanceRef = useRef<HTMLDivElement>(null);
   const requestsRef = useRef<HTMLDivElement>(null);
-
-  const [drawerConfig, setDrawerConfig] = useState<{
-    isOpen: boolean;
-    type: 'PERSONAL' | 'TEAM' | null;
-  }>({ isOpen: false, type: null });
-
-  let UserRole = user?.role.toString();
-  if (user?.role === "TEAM_LEADER") {
-    UserRole = "TEAM LEADER";
-  }
 
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean;
@@ -63,16 +25,10 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
     status: LeaveDecision | null
   }>({ isOpen: false, req: null, status: null });
 
-
   const loadAllData = useCallback(async () => {
     if (!user?.id) return;
-
     try {
-
-      const response = user.role === "TEAM_LEADER"
-        ? await fetchManagerDashboard(user.id)
-        : await fetchManagerDashboard(user.id);
-
+      const response = await fetchManagerDashboard(user.id);
       if (response) {
         setDashboardData(response);
         setApprovals(response.pendingTeamRequests || []);
@@ -81,16 +37,18 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       console.error("Failed to sync dashboard:", error);
       notify.error("Failed to fetch dashboard data");
     }
-  }, [user?.id, user?.role, fetchManagerDashboard, fetchTeamLeaderDashboard]);
+  }, [user?.id, fetchManagerDashboard]);
 
   useEffect(() => {
     if (!authLoading) loadAllData();
   }, [authLoading, loadAllData]);
 
   const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
+    console.log(status);
+    
     const success = await processApproval({
       leaveId: req.leaveId,
-      approverId: Number(user?.id),
+      approverId: user!.id,
       decision: status,
       comments: commentText
     });
@@ -98,7 +56,6 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
     if (success) {
       notify.leaveAction(status, req.employeeName || req.employee);
       setApprovals((prev) => prev.filter((item) => item.leaveId !== req.leaveId));
-
       setDashboardData((prev: any) => ({
         ...prev,
         approvedCount: status === 'APPROVED' ? (prev.approvedCount || 0) + 1 : (prev.approvedCount || 0),
@@ -106,8 +63,19 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       setDialogConfig({ isOpen: false, req: null, status: null });
     }
   };
-  console.log(dashboardData);
 
+  const getLeaveIcon = (type: string) => {
+    const t = type.toUpperCase();
+    if (t.includes('SICK')) return <FaStethoscope className="text-rose-500" />;
+    if (t.includes('ANNUAL')) return <FaUmbrellaBeach className="text-blue-500" />;
+    if (t.includes('CASUAL')) return <FaPlaneDeparture className="text-amber-500" />;
+    return <FaBriefcaseMedical className="text-indigo-500" />;
+  };
+
+  const formatLeaveType = (type?: string) => {
+    if (!type) return "General Leave";
+    return type.replace(/_/g, " ");
+  };
 
   if (dashboardLoading || authLoading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -115,8 +83,10 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
     </div>
   );
 
+  const stats = dashboardData?.personalStats;
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 max-w-7xl mx-auto pb-20">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 max-w-7xl mx-auto pb-20">
       <CommentDialog
         isOpen={dialogConfig.isOpen}
         onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
@@ -124,363 +94,173 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
         onSubmit={(comment: string) => executeDecision(dialogConfig.req, dialogConfig.status!, comment)}
       />
 
-
-      <DashboardDrawer
-        isOpen={drawerConfig.isOpen}
-        onClose={() => setDrawerConfig({ isOpen: false, type: null })}
-        title={drawerConfig.type === 'PERSONAL' ? 'My Leave Ledger' : 'Team Governance Details'}
-        subtitle={drawerConfig.type === 'PERSONAL' ? user?.name || '' : 'Direct Reports Overview'}
-      >
-        {drawerConfig.type === 'PERSONAL' ? (
-          <div className="space-y-6">
-            <div className="p-4 bg-slate-900 text-white rounded-sm   ">
-              <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Status: Active</p>
-              <p className="text-xs font-bold">You have {dashboardData?.personalStats.yearlyBalance} days remaining in your annual quota.</p>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Balance Breakdown</h4>
-              <div className="grid grid-cols-1 gap-3">
-                {/* Reusing StatCard visual logic manually for drawer consistency */}
-                {dashboardData?.personalStats.breakdown.map((item) => (
-                  <div
-                    key={item.leaveType}
-                    className="flex flex-col gap-2 p-4 border-2 border-slate-100 hover:border-slate-200 transition-all bg-white"
-                  >
-                    {/* Leave Type Title */}
-                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                      {item.leaveType.replace('_', ' ')}
-                    </span>
-
-                    <div className="flex justify-between items-end">
-                      {/* Left Side: Used / Total */}
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">
-                          Used / Total
-                        </span>
-                        <span className="text-lg font-black   text-slate-900">
-                          {item.usedDays}
-                          <span className="text-slate-300 font-medium mx-1">/</span>
-                          {item.allocatedDays}
-                        </span>
-                      </div>
-
-                      {/* Right Side: Remaining */}
-                      <div className="text-right flex flex-col">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">
-                          Remaining
-                        </span>
-                        <span className={`text-lg font-black   ${item.remainingDays <= 1 ? 'text-red-500' : 'text-indigo-600'}`}>
-                          {item.remainingDays}
-                        </span>
-                      </div>
-                    </div>
-                    {item.halfDayCount > 0 && (
-                      <span className="text-[9px] font-bold text-slate-400">
-                        Includes {item.halfDayCount} half-day{item.halfDayCount > 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </div>
-                ))}
-                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
-                  <span className="text-[10px] font-black uppercase text-slate-400">Comp-Off Bank</span>
-                  <span className="text-lg font-black  ">{dashboardData?.personalStats.compoffBalance || 0}d</span>
-                </div>
-                <div className="flex justify-between items-center p-4 border-2 border-slate-100">
-                  <span className="text-[10px] font-black uppercase text-slate-400">Carry Forward</span>
-                  <span className="text-lg font-black  ">{dashboardData?.personalStats.carryForwardRemaining || 0}d</span>
-                </div>
-                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
-                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Monthly Stats</span>
-                  <div className="flex justify-between items-end">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
-                      <span className="text-lg font-black   text-slate-900">
-                        {dashboardData?.personalStats.monthlyAnnualUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.monthlyAnnualAllocated}d
-                      </span>
-                    </div>
-                    <div className="text-right flex flex-col">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
-                      <span className="text-lg font-black   text-indigo-600">
-                        {dashboardData?.personalStats.monthlyAnnualBalance || 0}d
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 p-4 border-2 border-slate-100">
-                  <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Yearly Stats</span>
-                  <div className="flex justify-between items-end">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Used / Total</span>
-                      <span className="text-lg font-black   text-slate-900">
-                        {dashboardData?.personalStats.yearlyUsed}d <span className="text-slate-300 font-medium">/</span> {dashboardData?.personalStats.yearlyAllocated}d
-                      </span>
-                    </div>
-                    <div className="text-right flex flex-col">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Remaining</span>
-                      <span className="text-lg font-black   text-indigo-600">
-                        {dashboardData?.personalStats.yearlyBalance || 0}d
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center p-4 border-2 border-slate-100 bg-rose-50 border-rose-100">
-                  <span className="text-[10px] font-black uppercase text-rose-400">Loss of Pay (%)</span>
-                  <span className="text-lg font-black   text-rose-600">{dashboardData?.personalStats.lossOfPayPercentage || 0}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="p-4 border-2 border-slate-900  bg-white">
-              <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Managed Reports</p>
-              <p className="text-3xl font-black   tracking-tighter">{dashboardData?.teamSize} Members</p>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="text-[10px] font-black uppercase text-slate-400 border-b pb-2 tracking-widest">Team Performance</h4>
-              <div className="flex justify-between p-4 border border-slate-200">
-                <span className="text-[10px] font-black uppercase">Approved this year</span>
-                <span className="text-sm font-black   text-emerald-600">{dashboardData?.personalStats.approvedCount!}</span>
-              </div>
-              <div className="flex justify-between p-4 border border-slate-200">
-                <span className="text-[10px] font-black uppercase">Rejected this year</span>
-                <span className="text-sm font-black   text-rose-600">{dashboardData?.personalStats.rejectedCount}</span>
-              </div>
-            </div>
-          </div>
-        )}
-      </DashboardDrawer >
       {/* HEADER */}
-      <div className="flex justify-between items-center border-b border-slate-200 pb-1 gap-4">
-        <div>
-          <h2 className="text-2xl font-black  text-slate-900 uppercase  ">WELCOME BACK</h2>
-          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-[0.2em]">{UserRole}: {user?.name}</p>
+      {/* <div className="bg-white/70 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white shadow-2xl shadow-slate-200/50 flex justify-between items-center"> */}
+      {/* <div>
+          <p className="text-brand font-black uppercase tracking-[0.3em] text-[10px] mb-1">
+            {user?.role.replace('_', ' ')} Terminal
+          </p>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+            Welcome back, <span className="text-slate-500 font-bold">{user?.name?.split(' ')[0]}</span>
+          </h2>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => onNavigate?.("Team Calendar")}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-900 rounded-sm text-[10px] font-black uppercase tracking-widest text-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:shadow-none"
+          className="flex items-center gap-2 px-6 py-3 bg-brand text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-brand/20 transition-all"
         >
           <FaCalendarAlt /> Team Calendar
-        </button>
-      </div>
+        </motion.button>*/}
+      {/* </div>  */}
 
-      <section className="space-y-4 pt-4">
-        {/* Header Area */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FaChartPie className="text-indigo-600" size={14} />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-              My Leave Credits
-            </h3>
+      {/* MONTHLY HIGHLIGHTS */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <MonthlyCard
+          label="Monthly Annual"
+          val={stats?.monthlyAnnualBalance || 0}
+          sub={`Used ${stats?.monthlyAnnualUsed || 0} of ${stats?.monthlyAnnualAllocated || 0}`}
+          color="bg-blue-600"
+        />
+        <MonthlyCard
+          label="Monthly Sick"
+          val={stats?.monthlySickBalance || 0}
+          sub={`Used ${stats?.monthlySickUsed || 0} of ${stats?.monthlySickAllocated || 0}`}
+          color="bg-rose-500"
+        />
+        <div className="bg-gray-900 rounded-2xl p-6 text-white flex flex-col justify-between shadow-xl">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Monthly Balance</span>
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-4xl font-black">{stats?.monthlyTotalBalance || 0}</h2>
+            <span className="text-sm font-bold text-gray-400">Days Remaining</span>
           </div>
-          <button
-            onClick={() => setDrawerConfig({ isOpen: true, type: 'PERSONAL' })}
-            className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
-          >
-            View Details
-          </button>
-        </div>
-
-        {/* Table Container */}
-        <div className="w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                  Leave Category
-                </th>
-                <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                  Allocated
-                </th>
-                <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                  Used
-                </th>
-                <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">
-                  Balance
-                </th>
-                <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">
-                  Pending
-                </th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-100">
-              {dashboardData?.personalStats.breakdown.map((leave, index) => {
-                const balance = leave.allocatedDays - leave.usedDays;
-
-                return (
-                  <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <span className="text-xs font-bold text-slate-900 uppercase tracking-tight">
-                        {leave.leaveType.replace(/_/g, " ")}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs font-medium text-slate-400">
-                        {leave.allocatedDays} 
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-xs font-bold text-slate-700">
-                        {leave.usedDays} 
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className={`px-2.5 py-1 rounded text-[10px] font-black ${balance <= 2 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'
-                        }`}>
-                        {balance} 
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-xs font-bold text-indigo-600">
-                        {leave.pendingCount! > 0 ? leave.pendingCount : "—"}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-
-              {/* Highlighted Monthly Quota Row */}
-              <tr className="bg-indigo-50/30 border-t border-indigo-100">
-                <td className="px-6 py-4">
-                  <span className="text-[10px] font-black text-indigo-600 uppercase">
-                    Current Month Quota
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-xs text-indigo-400 font-medium">
-                  {dashboardData?.personalStats.monthlyAnnualAllocated!} 
-                </td>
-                <td className="px-6 py-4 text-xs text-indigo-900 font-bold">
-                  {dashboardData?.personalStats.monthlyAnnualUsed} 
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span className="text-xs font-black text-indigo-700">
-                    {dashboardData?.personalStats.monthlyAnnualAllocated! - dashboardData?.personalStats.monthlyAnnualUsed!} 
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">—</td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </section>
-      <section className="space-y-4 pt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FaUserShield className="text-indigo-600" size={14} />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Team Governance</h3>
+
+      {/* STRIPED FLOATING ROW TABLE */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 px-2">
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+            <FaChartPie size={14} />
           </div>
-          <button
-            onClick={() => setDrawerConfig({ isOpen: true, type: 'TEAM' })}
-            className="text-[9px] font-black uppercase text-indigo-600 hover:underline tracking-widest"
-          >
-            View Details
-          </button>
+          <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">
+            Personal Leave Inventory
+          </h3>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="grid grid-cols-12 px-6 py-4 bg-brand/10 border-b border-gray-200 text-[14px] font-bold text-black tracking-wider">
+            <div className="col-span-4">Leave Category</div>
+            <div className="col-span-2 text-center">Allocated (Y)</div>
+            <div className="col-span-2 text-center">Used</div>
+            <div className="col-span-2 text-center">Balance</div>
+            <div className="col-span-2 text-right pr-4">Pending</div>
+          </div>
+
+          <div className="divide-y divide-gray-100">
+            {stats?.breakdown.map((item, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ backgroundColor: "#F3F4F6" }}
+                className={`grid grid-cols-12 items-center px-6 py-4 transition-colors cursor-pointer group ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                  }`}
+              >
+                <div className="col-span-4 flex items-center gap-4">
+                  <div className="w-9 h-9 rounded-full bg-white border border-gray-100 flex items-center justify-center text-sm shadow-sm">
+                    {getLeaveIcon(item.leaveTypeName)}
+                  </div>
+                  <span className="font-semibold text-gray-700 text-sm uppercase tracking-tight">
+                    {formatLeaveType(item.leaveTypeName)}
+                  </span>
+                </div>
+                <div className="col-span-2 text-center text-sm text-gray-600 font-medium">{item.allocatedDays}d</div>
+                <div className="col-span-2 text-center text-sm font-semibold text-gray-700">{item.usedDays}d</div>
+                <div className="col-span-2 text-center">
+                  <span className="text-sm font-bold text-blue-600">{item.remainingDays}</span>
+                </div>
+                <div className="col-span-2 flex justify-end items-center pr-4">
+                  <span className="text-gray-300 text-xs">—</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TEAM GOVERNANCE CARDS */}
+      <section className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 flex items-center gap-2">
+            <div className="w-2 h-6 bg-brand rounded-full" /> Team Intelligence
+          </h3>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           <ManagerStatCardTeam label="Direct Reports" value={dashboardData?.teamSize || 0} iconType="team" onClick={() => onNavigate?.("Team Members")} />
-          <ManagerStatCardTeam label="Pending Approval Req." value={approvals.length} iconType="pending" colorClass="text-amber-600" onClick={() => requestsRef.current?.scrollIntoView({ behavior: 'smooth' })} />
-          <ManagerStatCardTeam label="Away Today" value={dashboardData?.teamOnLeaveCount || 0} iconType="calendar" colorClass="text-indigo-600" onClick={() => attendanceRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCardTeam label="Pending" value={approvals.length} iconType="pending" colorClass="text-amber-600" onClick={() => requestsRef.current?.scrollIntoView({ behavior: 'smooth' })} />
+          <ManagerStatCardTeam label="Away Today" value={dashboardData?.teamOnLeaveCount || 0} iconType="calendar" colorClass="text-indigo-600" />
           <ManagerStatCardTeam label="Approved YTD" value={dashboardData?.personalStats.approvedCount || 0} iconType="processed" colorClass="text-emerald-600" />
         </div>
       </section>
 
-      <section className="space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Action Required</h3>
-          </div>
-          <button onClick={() => onNavigate?.("Pending Approvals")} className="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">
-            Manage All <FaArrowRight className="inline ml-1" />
-          </button>
+      {/* PENDING ACTIONS */}
+      <section ref={requestsRef} className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-xs font-black uppercase tracking-widest text-slate-800">Pending Governance Decisions</h3>
         </div>
-
-        <div ref={requestsRef} className="space-y-3">
+        <div className="space-y-4">
           <AnimatePresence mode="popLayout">
             {approvals.length > 0 ? (
-              approvals.slice(0, 3).map((req) => (
-                <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={req.leaveId} className="bg-white border border-slate-200 rounded-sm p-4 flex flex-col md:flex-row md:items-center gap-4 hover:border-slate-900 transition-all">
-                  <div className="flex items-center gap-3 min-w-50">
-                    <div className="w-10 h-10 bg-slate-900 text-white rounded-sm flex items-center justify-center font-black text-xs ">
-                      {(req.employeeName || "E").charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-black text-xs text-slate-900 uppercase ">{req.employeeName}</p>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase  ">{req.leaveType}</p>
-                    </div>
+              approvals.map((req) => (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  key={req.leaveId}
+                  className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6 shadow-xl shadow-slate-100"
+                >
+                  <div className="w-14 h-14 bg-brand rounded-2xl text-white flex items-center justify-center font-black text-xl shadow-lg shadow-brand/20">
+                    {(req.employeeName || "E").charAt(0)}
                   </div>
-                  <div className="flex-1 bg-slate-50 p-2 border border-slate-100 rounded-sm   text-[10px] text-slate-600 flex items-center gap-2">
-                    <FaCommentDots className="text-slate-300" /> "{req.reason || "No reason provided."}"
+                  <div className="flex-1">
+                    <p className="font-black text-sm text-slate-800 uppercase tracking-tight">{req.employeeName}</p>
+                    <p className="text-[10px] text-brand font-black uppercase tracking-widest">{formatLeaveType(req.leaveType)}</p>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'MEETING_REQUIRED' })} className="px-4 py-2 border border-slate-200 rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-orange-100 hover:text-rose-600 transition-all">Discuss</button>
-                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'REJECTED' })} className="px-4 py-2 border border-slate-200 rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 transition-all">Deny</button>
-                    <button onClick={() => executeDecision(req, 'APPROVED')} className="px-4 py-2 bg-slate-900 text-white rounded-sm text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-[2px_2px_0px_0px_rgba(79,70,229,0.3)]">Approve</button>
+                  <div className="flex-2 bg-slate-50/50 p-4 rounded-2xl text-xs text-slate-500 font-medium italic border border-slate-100">
+                    "{req.reason || "Operational requirement not specified."}"
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'REJECTED' })} className="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-all">Deny</button>
+                    <button onClick={() => executeDecision(req, 'APPROVED')} className="px-8 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand transition-all shadow-lg">Approve</button>
                   </div>
                 </motion.div>
               ))
             ) : (
-              <div className="py-16 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-400 bg-slate-50/30">
-                <EmptyStateSVG />
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">All caught up</p>
-                <p className="text-[9px] font-bold uppercase text-slate-300 mt-1">No pending requests to process</p>
+              <div className="py-20 bg-white/40 backdrop-blur-sm border border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center text-center">
+                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400">Governance Clear</p>
               </div>
             )}
           </AnimatePresence>
-
-          <section ref={attendanceRef} className="space-y-4 pt-4">
-            <div className="flex items-center gap-2">
-              <FaCalendarAlt className="text-indigo-600" size={14} />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-                Attendance Overview
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {dashboardData?.teamOnLeaveToday?.length! > 0 ? (
-                dashboardData?.teamOnLeaveToday.map((emp: any, idx: number) => (
-                  <div key={idx} className="bg-white p-5 rounded-sm border border-slate-200 shadow-sm flex items-center justify-between group relative overflow-hidden transition-all hover:border-slate-900">
-                    <div className="relative z-10">
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-slate-500">
-                        {emp.leaveType}
-                      </p>
-                      <p className="text-xl font-black text-slate-900 tracking-tight   transition-transform group-hover:-translate-y-0.5 uppercase">
-                        {emp.employeeName}
-                      </p>
-                      <p className="text-[9px] font-bold text-emerald-600 uppercase mt-1  ">
-                        Currently Away
-                      </p>
-                    </div>
-                    <div className="text-slate-100 group-hover:text-slate-200 transition-all duration-300 text-3xl absolute right-4 opacity-40">
-                      <FaCalendarAlt />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-full py-16 border border-dashed border-slate-200 rounded-sm flex flex-col items-center justify-center text-slate-400 bg-slate-50/30">
-                  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-20 mb-4">
-                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                  </svg>
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Full Attendance Today</p>
-                  <p className="text-[9px] font-bold uppercase text-slate-300 mt-1">No one is on leave today</p>
-                </div>
-              )}
-            </div>
-          </section>
         </div>
       </section>
 
-      {
-        !drawerConfig.isOpen &&
-        <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Request center")} title="New Request" />}
+      <MyFloatingActionButton icon={<FaPlus />} onClick={() => onNavigate?.("Request center")} title="New Request" />
     </motion.div>
   );
 };
+
+// --- Sub-components ---
+
+const MonthlyCard = ({ label, val, sub, color }: any) => (
+  <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</span>
+    <div className="flex justify-between items-end mt-2">
+      <h3 className="text-3xl font-black text-gray-900">{val} <span className="text-xs font-bold text-gray-400">Days</span></h3>
+      <p className="text-[10px] font-bold text-gray-400 mb-1">{sub}</p>
+    </div>
+    <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4 overflow-hidden">
+      <div className={`h-full ${color}`} style={{ width: '65%' }} />
+    </div>
+  </div>
+);
 
 export default ManagerDashboardView;

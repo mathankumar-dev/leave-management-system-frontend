@@ -1,8 +1,14 @@
-
 import type { InternalAxiosRequestConfig } from "axios";
+import { getToken } from "../auth/authStorage";
 
 export const requestInterceptor = (config: InternalAxiosRequestConfig) => {
-  config.withCredentials = true;
+  
+
+  const token = getToken();
+  
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
   return config;
 };

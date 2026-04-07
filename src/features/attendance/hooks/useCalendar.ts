@@ -10,21 +10,24 @@ export const useCalendar = () => {
     const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
     const [employeeCalendar, setEmployeeCalendar] = useState<TeamCalendarResponse>({});
 
-    const fetchTeamSchedule = useCallback(async (id: number) => {
+    const fetchTeamSchedule = useCallback(async (employeeId: string) => {
         setLoading(true);
         try {
-            const data = await attendanceService.getTeamCalendar(id);
+            const data = await attendanceService.getTeamCalendar(employeeId);
             setTeamCalendar(data);
             return data;
         } catch (error) {
             console.error("Failed to fetch team calendar", error);
+
+
+            
             return null;
         } finally {
             setLoading(false);
         }
     }, []);
 
-    const fetchEmployeeCalendar = useCallback(async (employeeId: number) => {
+    const fetchEmployeeCalendar = useCallback(async (employeeId: string) => {
         try {
             setLoading(true);
 

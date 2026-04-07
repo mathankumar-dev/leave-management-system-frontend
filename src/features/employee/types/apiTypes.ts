@@ -1,20 +1,19 @@
-import type { UserRole } from "@/shared/auth/authTypes";
 
 export interface EmployeeEntity {
-  id: number;
-  teamId: number | null;
-  teamLeaderId: number | null;
+  empId: string;        
   name: string;
   email: string;
-  role: UserRole;
-  managerId: number | null;
+  roleName: string;       
+  departmentName: string;  
+  branchName: string;      
+  reportingId: string | null; 
+  teamId: number | null;
   active: boolean;
-
+  employeeExperience: string;
   joiningDate: string;
   biometricStatus: string;
   vpnStatus: string;
   onboardingCompletedAt: string | null;
-
   createdAt: string;
   updatedAt: string;
 }
@@ -28,5 +27,5 @@ export interface PaginatedResponse<T> {
   first: boolean;
   last: boolean;
   numberOfElements: number;
-  empty: boolean;
+  // empty: boolean;
 }

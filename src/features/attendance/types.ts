@@ -1,5 +1,5 @@
 export interface TeamMemberBalance {
-  employeeId: number;
+  employeeId: string;
   employeeName: string;
   totalAllocated: number | null;
   totalUsed: number | null;
