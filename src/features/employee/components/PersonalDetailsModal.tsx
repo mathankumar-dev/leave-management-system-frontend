@@ -6,6 +6,7 @@ import type {
 } from "@/features/employee/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { FailureModal, Loader } from "@/shared/components";
+import type { Gender } from '@/shared/types';
 import { useEffect, useState } from "react";
 import {
     HiOutlineBanknotes,
@@ -68,6 +69,10 @@ const PersonalDetailsModal = () => {
     const [errorMessage, setErrorMessage] = useState("");
 
     const today = new Date().toISOString().split("T")[0];
+    const isInvalidDate = (dateStr: any) => {
+        const year = parseInt(dateStr?.split('-')[0], 10);
+        return year > 0 && (year < 1900 || year > 2026);
+    };
 
     useEffect(() => {
         const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
@@ -123,8 +128,6 @@ const PersonalDetailsModal = () => {
 
             setLoaderState({ active: true, finished: false });
 
-            // 2. CREATE A CLEAN DATA OBJECT
-            // We spread the current formData but explicitly handle the conditional fields
             const { experiences, uanNumber, ...restOfData } = formData;
 
             const payload = submissionType === "EXPERIENCED"
@@ -143,7 +146,7 @@ const PersonalDetailsModal = () => {
             await authService.submitMultipartDetails(
                 user.id,
                 submissionType,
-                payload, // Use the cleaned object here
+                payload,
                 files
             );
 
@@ -160,7 +163,6 @@ const PersonalDetailsModal = () => {
             {children}
         </label>
     );
-
     const FileRow = ({ label, fileKey, required = false, multiple = false }: { label: string, fileKey: string, required?: boolean, multiple?: boolean }) => (
         <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-2xl group hover:border-indigo-200 transition-all">
             <div className="flex items-center gap-3 overflow-hidden">
@@ -267,10 +269,11 @@ const PersonalDetailsModal = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div><InputLabel>Personal Email</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.personalEmail} onChange={e => handleInputChange('personalEmail', e.target.value)} /></div>
                                     <div><InputLabel>Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.contactNumber} onChange={e => handleInputChange('contactNumber', e.target.value)} /></div>
+                                    <div><InputLabel>Emergency Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.emergencyContactNumber} onChange={e => handleInputChange('emergencyContactNumber', e.target.value)} /></div>
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div><InputLabel>DOB</InputLabel><input type="date" min="1900-01-01"
-                                        max={today} className="w-full border rounded-xl p-3 text-sm" value={formData.dateOfBirth} onChange={e => handleInputChange('dateOfBirth', e.target.value)} /></div>
+                                        max={today} className="w-full border rounded-xl p-3 text-sm " value={formData.dateOfBirth} onChange={e => handleInputChange('dateOfBirth', e.target.value)} /></div>
                                     <div>
                                         <InputLabel>Gender</InputLabel>
                                         <select className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.gender} onChange={e => handleInputChange('gender', e.target.value as any)}>
@@ -305,8 +308,13 @@ const PersonalDetailsModal = () => {
                                     <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                                         <div className="flex justify-between items-center mb-3"><InputLabel>Father's Details</InputLabel> <input type="checkbox" checked={formData.fatherAlive} onChange={e => handleInputChange('fatherAlive', e.target.checked)} /></div>
                                         <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.fatherName} onChange={e => handleInputChange('fatherName', e.target.value)} />
-                                        <input type="date" min="1900-01-01"
-                                            max={today} className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.fatherDateOfBirth} onChange={e => handleInputChange('fatherDateOfBirth', e.target.value)} />
+                                        <input
+                                            type="date"
+                                            className={`w-full border rounded-xl p-3 text-sm bg-white ${isInvalidDate(formData.fatherDateOfBirth) ? 'border-red-500 ring-1 ring-red-500' : 'border-neutral-200'
+                                                }`}
+                                            value={formData.fatherDateOfBirth}
+                                            onChange={e => handleInputChange('fatherDateOfBirth', e.target.value)}
+                                        />
                                     </div>
                                     <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                                         <div className="flex justify-between items-center mb-3"><InputLabel>Mother's Details</InputLabel> <input type="checkbox" checked={formData.motherAlive} onChange={e => handleInputChange('motherAlive', e.target.checked)} /></div>
@@ -319,14 +327,61 @@ const PersonalDetailsModal = () => {
                                 <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                                     <div className="flex justify-between items-center mb-4">
                                         <InputLabel>Marital Status</InputLabel>
-                                        <select className="border rounded-lg px-2 py-1 text-xs font-bold" value={formData.maritalStatus} onChange={e => handleInputChange('maritalStatus', e.target.value as any)}>
-                                            <option value="SINGLE">SINGLE</option><option value="MARRIED">MARRIED</option>
+                                        <select
+                                            className="border rounded-lg px-2 py-1 text-xs font-bold"
+                                            value={formData.maritalStatus}
+                                            onChange={e => handleInputChange('maritalStatus', e.target.value as any)}
+                                        >
+                                            <option value="SINGLE">SINGLE</option>
+                                            <option value="MARRIED">MARRIED</option>
                                         </select>
                                     </div>
+
                                     {formData.maritalStatus === "MARRIED" && (
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <input placeholder="Spouse Name" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseName} onChange={e => handleInputChange('spouseName', e.target.value)} />
-                                            <input placeholder="Spouse Contact" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseContactNumber} onChange={e => handleInputChange('spouseContactNumber', e.target.value)} />
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <InputLabel>Spouse Name</InputLabel>
+                                                    <input
+                                                        placeholder="Name"
+                                                        className="w-full border rounded-xl p-3 text-sm bg-white"
+                                                        value={formData.spouseName}
+                                                        onChange={e => handleInputChange('spouseName', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <InputLabel>Spouse Contact</InputLabel>
+                                                    <input
+                                                        placeholder="Contact Number"
+                                                        className="w-full border rounded-xl p-3 text-sm bg-white"
+                                                        value={formData.spouseContactNumber}
+                                                        onChange={e => handleInputChange('spouseContactNumber', e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <InputLabel>Spouse Date of Birth</InputLabel>
+                                                    <input
+                                                        type="date"
+                                                        max={today}
+                                                        className={`w-full border rounded-xl p-3 text-sm bg-white ${isInvalidDate(formData.spouseDateOfBirth) ? 'border-red-500 ring-1 ring-red-500' : 'border-neutral-200'
+                                                            }`}
+                                                        value={formData.spouseDateOfBirth}
+                                                        onChange={e => handleInputChange('spouseDateOfBirth', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <InputLabel>Spouse Occupation</InputLabel>
+                                                    <input
+                                                        placeholder="Occupation"
+                                                        className="w-full border rounded-xl p-3 text-sm bg-white"
+                                                        value={formData.spouseOccupation}
+                                                        onChange={e => handleInputChange('spouseOccupation', e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -358,6 +413,16 @@ const PersonalDetailsModal = () => {
                                                         setFormData({ ...formData, children });
                                                     }}
                                                 />
+                                            </div>
+                                            <div>
+                                                <InputLabel>Gender</InputLabel>
+                                                <select className="w-full border rounded-xl p-3 text-sm bg-white" value={child.gender} onChange={e => {
+                                                    const children = [...(formData.children || [])];
+                                                    children[idx].gender = e.target.value as Gender;
+                                                    setFormData({ ...formData, children });
+                                                }}>
+                                                    <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
+                                                </select>
                                             </div>
                                             <button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button>
                                         </div>
