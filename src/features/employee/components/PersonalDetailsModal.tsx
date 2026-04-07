@@ -67,6 +67,8 @@ const PersonalDetailsModal = () => {
     const [showFailure, setShowFailure] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
+    const today = new Date().toISOString().split("T")[0];
+
     useEffect(() => {
         const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
         setFormData(prev => ({ ...prev, aadharNumber: combined }));
@@ -78,6 +80,18 @@ const PersonalDetailsModal = () => {
     };
 
     const handleInputChange = (field: keyof PersonalDetailsForm, value: any) => {
+        // Check if the field is a Date of Birth field
+        if (field.toLowerCase().includes('dateofbirth') || field === 'dateOfBirth') {
+            const selectedDate = new Date(value);
+            const year = selectedDate.getFullYear();
+            const currentYear = new Date().getFullYear();
+            if (value !== "") {
+                if (year > currentYear || (year < 1900 && year.toString().length === 4)) {
+
+                    return;
+                }
+            }
+        }
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
@@ -116,7 +130,14 @@ const PersonalDetailsModal = () => {
             const payload = submissionType === "EXPERIENCED"
                 ? { ...formData } // Include everything for experienced
                 : { ...restOfData }; // EXCLUDE experiences and uanNumber for freshers
+            const dobYear = new Date(formData.dateOfBirth || "").getFullYear();
+            const fatherYear = new Date(formData.fatherDateOfBirth || "").getFullYear();
 
+            if (dobYear < 1920 || fatherYear < 1900) {
+                setErrorMessage("Please enter a valid birth year (after 1900).");
+                setShowFailure(true);
+                return;
+            }
 
             // 3. Send the cleaned payload
             await authService.submitMultipartDetails(
@@ -166,7 +187,7 @@ const PersonalDetailsModal = () => {
                 <Loader message="Syncing WeHRM Profile..." isFinished={loaderState.finished} onFinished={() => window.location.reload()} />
             )}
 
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
                 <div className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full flex flex-col max-h-[90vh] overflow-hidden">
 
                     {/* HEADER */}
@@ -248,7 +269,8 @@ const PersonalDetailsModal = () => {
                                     <div><InputLabel>Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.contactNumber} onChange={e => handleInputChange('contactNumber', e.target.value)} /></div>
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
-                                    <div><InputLabel>DOB</InputLabel><input type="date" className="w-full border rounded-xl p-3 text-sm" value={formData.dateOfBirth} onChange={e => handleInputChange('dateOfBirth', e.target.value)} /></div>
+                                    <div><InputLabel>DOB</InputLabel><input type="date" min="1900-01-01"
+                                        max={today} className="w-full border rounded-xl p-3 text-sm" value={formData.dateOfBirth} onChange={e => handleInputChange('dateOfBirth', e.target.value)} /></div>
                                     <div>
                                         <InputLabel>Gender</InputLabel>
                                         <select className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.gender} onChange={e => handleInputChange('gender', e.target.value as any)}>
@@ -283,12 +305,14 @@ const PersonalDetailsModal = () => {
                                     <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                                         <div className="flex justify-between items-center mb-3"><InputLabel>Father's Details</InputLabel> <input type="checkbox" checked={formData.fatherAlive} onChange={e => handleInputChange('fatherAlive', e.target.checked)} /></div>
                                         <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.fatherName} onChange={e => handleInputChange('fatherName', e.target.value)} />
-                                        <input type="date" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.fatherDateOfBirth} onChange={e => handleInputChange('fatherDateOfBirth', e.target.value)} />
+                                        <input type="date" min="1900-01-01"
+                                            max={today} className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.fatherDateOfBirth} onChange={e => handleInputChange('fatherDateOfBirth', e.target.value)} />
                                     </div>
                                     <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                                         <div className="flex justify-between items-center mb-3"><InputLabel>Mother's Details</InputLabel> <input type="checkbox" checked={formData.motherAlive} onChange={e => handleInputChange('motherAlive', e.target.checked)} /></div>
                                         <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.motherName} onChange={e => handleInputChange('motherName', e.target.value)} />
-                                        <input type="date" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.motherDateOfBirth} onChange={e => handleInputChange('motherDateOfBirth', e.target.value)} />
+                                        <input type="date" min="1900-01-01"
+                                            max={today} className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.motherDateOfBirth} onChange={e => handleInputChange('motherDateOfBirth', e.target.value)} />
                                     </div>
                                 </div>
 
@@ -389,16 +413,18 @@ const PersonalDetailsModal = () => {
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <div><InputLabel>From Date</InputLabel><input type="date" className="w-full border rounded-xl p-3 text-sm" value={exp.fromDate} onChange={e => {
-                                                    const exps = [...(formData.experiences || [])];
-                                                    exps[idx].fromDate = e.target.value;
-                                                    setFormData({ ...formData, experiences: exps });
-                                                }} /></div>
-                                                <div><InputLabel>End Date</InputLabel><input type="date" className="w-full border rounded-xl p-3 text-sm" value={exp.endDate} onChange={e => {
-                                                    const exps = [...(formData.experiences || [])];
-                                                    exps[idx].endDate = e.target.value;
-                                                    setFormData({ ...formData, experiences: exps });
-                                                }} /></div>
+                                                <div><InputLabel>From Date</InputLabel><input type="date" min="1900-01-01"
+                                                    max={today} className="w-full border rounded-xl p-3 text-sm" value={exp.fromDate} onChange={e => {
+                                                        const exps = [...(formData.experiences || [])];
+                                                        exps[idx].fromDate = e.target.value;
+                                                        setFormData({ ...formData, experiences: exps });
+                                                    }} /></div>
+                                                <div><InputLabel>End Date</InputLabel><input type="date" min="1900-01-01"
+                                                    max={today} className="w-full border rounded-xl p-3 text-sm" value={exp.endDate} onChange={e => {
+                                                        const exps = [...(formData.experiences || [])];
+                                                        exps[idx].endDate = e.target.value;
+                                                        setFormData({ ...formData, experiences: exps });
+                                                    }} /></div>
                                             </div>
                                         </div>
                                     ))}
