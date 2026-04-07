@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "../../../shared/auth/useAuth";
 
-import logoSVG from '@/assets/images/bg-rm-logo-HRES.png';
-import wehrm from '@/assets/images/logoWeHRM.png';
+
+import wehrm from '@/assets/images/LogoWeHRM2.png';
 
 
 import Loader from "../../../shared/components/Loader";

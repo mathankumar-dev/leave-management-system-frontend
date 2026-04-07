@@ -2,7 +2,7 @@ import { useEmployeeDashboard } from "@/features/dashboard/hooks";
 import LeaveDetailsDrawer from "@/features/leave/components/LeaveDetailsDrawer";
 import type { LeaveTypeBreakDown } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
-import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
+import { CustomLoader } from "@/shared/components";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState, type JSX } from "react";
 import {
