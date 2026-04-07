@@ -110,11 +110,20 @@ const PersonalDetailsModal = () => {
         }
     };
 
+    const handleExperienceFileChange = (index: number, file: File | null) => {
+        if (!file) return;
+        const newExperiences = [...(formData.experiences || [])];
+        // We store the file temporarily in the experience object
+        // You may need to update your TypeScript interface to allow this property locally
+        (newExperiences[index] as any).tempCert = file;
+        setFormData({ ...formData, experiences: newExperiences });
+    };
+
     const handleSubmit = async () => {
         try {
             if (!user?.id) return;
 
-            // 1. Determine required files based on type
+            // 1. Validation for common required files
             const requiredFiles = submissionType === "FRESHER"
                 ? ["idProof", "passportPhoto", "tenthMarksheet", "twelfthMarksheet", "degreeCertificate", "offerLetter"]
                 : ["idProof", "passportPhoto", "relievingLetter"];
@@ -128,26 +137,34 @@ const PersonalDetailsModal = () => {
 
             setLoaderState({ active: true, finished: false });
 
+            const experienceFiles: File[] = [];
+            const cleanedExperiences = formData.experiences?.map((exp: any) => {
+                if (exp.tempCert) {
+                    experienceFiles.push(exp.tempCert);
+                }
+                const { tempCert, ...rest } = exp; // Destructure to remove tempCert from the object
+                return rest;
+            });
+
+            // 3. Prepare Cleaned Payload
             const { experiences, uanNumber, ...restOfData } = formData;
 
             const payload = submissionType === "EXPERIENCED"
-                ? { ...formData } // Include everything for experienced
-                : { ...restOfData }; // EXCLUDE experiences and uanNumber for freshers
-            const dobYear = new Date(formData.dateOfBirth || "").getFullYear();
-            const fatherYear = new Date(formData.fatherDateOfBirth || "").getFullYear();
+                ? { ...formData, experiences: cleanedExperiences }
+                : { ...restOfData };
 
-            if (dobYear < 1920 || fatherYear < 1900) {
-                setErrorMessage("Please enter a valid birth year (after 1900).");
-                setShowFailure(true);
-                return;
-            }
+            // 4. Merge all files (Global + Extracted from Experience rows)
+            const finalFiles = {
+                ...files,
+                experienceCerts: experienceFiles.length > 0 ? experienceFiles : null
+            };
 
-            // 3. Send the cleaned payload
+            // 5. Send to Service
             await authService.submitMultipartDetails(
                 user.id,
                 submissionType,
                 payload,
-                files
+                finalFiles
             );
 
             setLoaderState({ active: true, finished: true });
@@ -163,25 +180,56 @@ const PersonalDetailsModal = () => {
             {children}
         </label>
     );
-    const FileRow = ({ label, fileKey, required = false, multiple = false }: { label: string, fileKey: string, required?: boolean, multiple?: boolean }) => (
-        <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-2xl group hover:border-indigo-200 transition-all">
-            <div className="flex items-center gap-3 overflow-hidden">
-                <div className={`p-2 rounded-lg shrink-0 ${files[fileKey] ? 'bg-green-100 text-green-600' : 'bg-neutral-100 text-neutral-400 group-hover:bg-indigo-50 group-hover:text-indigo-500'}`}>
-                    <HiOutlineDocumentText size={18} />
+    const FileRow = ({
+        label,
+        fileKey,
+        required = false,
+        multiple = false,
+        customFile = null, // New Prop
+        onCustomChange // New Prop
+    }: {
+        label: string,
+        fileKey: string,
+        required?: boolean,
+        multiple?: boolean,
+        customFile?: File | File[] | null,
+        onCustomChange?: (file: File | null) => void
+    }) => {
+        // Logic: Use customFile if provided, otherwise fallback to the global files state
+        const displayFile = customFile !== undefined ? customFile : files[fileKey];
+
+        return (
+            <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-2xl group hover:border-indigo-200 transition-all">
+                <div className="flex items-center gap-3 overflow-hidden">
+                    <div className={`p-2 rounded-lg shrink-0 ${displayFile ? 'bg-green-100 text-green-600' : 'bg-neutral-100 text-neutral-400 group-hover:bg-indigo-50 group-hover:text-indigo-500'}`}>
+                        <HiOutlineDocumentText size={18} />
+                    </div>
+                    <div className="overflow-hidden">
+                        <p className="text-[11px] font-bold text-neutral-700 tracking-tight">{label} {required && <span className="text-red-500">*</span>}</p>
+                        <p className="text-[10px] text-neutral-400 truncate">
+                            {Array.isArray(displayFile) ? `${(displayFile as File[]).length} files` : (displayFile as File)?.name || "Not uploaded"}
+                        </p>
+                    </div>
                 </div>
-                <div className="overflow-hidden">
-                    <p className="text-[11px] font-bold text-neutral-700  tracking-tight">{label} {required && <span className="text-red-500">*</span>}</p>
-                    <p className="text-[10px] text-neutral-400 truncate">
-                        {Array.isArray(files[fileKey]) ? `${(files[fileKey] as File[]).length} files` : (files[fileKey] as File)?.name || "Not uploaded"}
-                    </p>
-                </div>
+                <label className="cursor-pointer shrink-0 bg-neutral-50 hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all border border-neutral-200">
+                    {displayFile ? "CHANGE" : "UPLOAD"}
+                    <input
+                        type="file"
+                        hidden
+                        multiple={multiple}
+                        onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            if (onCustomChange) {
+                                onCustomChange(file); // Handle local experience file
+                            } else {
+                                multiple ? handleMultiFileChange(fileKey, e.target.files) : handleFileChange(fileKey, file); // Handle global file
+                            }
+                        }}
+                    />
+                </label>
             </div>
-            <label className="cursor-pointer shrink-0 bg-neutral-50 hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all border border-neutral-200">
-                {files[fileKey] ? "CHANGE" : "UPLOAD"}
-                <input type="file" hidden multiple={multiple} onChange={(e) => multiple ? handleMultiFileChange(fileKey, e.target.files) : handleFileChange(fileKey, e.target.files?.[0] || null)} />
-            </label>
-        </div>
-    );
+        );
+    };
 
     return (
         <>
@@ -222,15 +270,20 @@ const PersonalDetailsModal = () => {
                                 <FileRow label="Passport Photo" fileKey="passportPhoto" required />
 
                                 {/* Shared required for Freshers / Optional for experienced as per your logic */}
-                                <FileRow label="10th Marksheet" fileKey="tenthMarksheet" required={!isExperienced} />
-                                <FileRow label="12th Marksheet" fileKey="twelfthMarksheet" required={!isExperienced} />
-                                <FileRow label="Degree Certificate" fileKey="degreeCertificate" required={!isExperienced} />
-                                <FileRow label="Offer Letter" fileKey="offerLetter" required={!isExperienced} />
+                                {!isExperienced && (
+                                    <>
+                                        <FileRow label="10th Marksheet" fileKey="tenthMarksheet" required={!isExperienced} />
+                                        <FileRow label="12th Marksheet" fileKey="twelfthMarksheet" required={!isExperienced} />
+                                        <FileRow label="Degree Certificate" fileKey="degreeCertificate" required={!isExperienced} />
+                                        <FileRow label="Offer Letter" fileKey="offerLetter" required={!isExperienced} /></>
+                                )
+
+                                }
+
 
                                 {isExperienced && (
                                     <>
                                         <FileRow label="Relieving Letter" fileKey="relievingLetter" required />
-                                        <FileRow label="Exp. Certificates" fileKey="experienceCerts" multiple />
                                     </>
                                 )}
                             </div>
@@ -476,6 +529,7 @@ const PersonalDetailsModal = () => {
                                                         setFormData({ ...formData, experiences: exps });
                                                     }} /> IS LAST COMPANY
                                                 </div>
+
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div><InputLabel>From Date</InputLabel><input type="date" min="1900-01-01"
@@ -490,6 +544,15 @@ const PersonalDetailsModal = () => {
                                                         exps[idx].endDate = e.target.value;
                                                         setFormData({ ...formData, experiences: exps });
                                                     }} /></div>
+                                            </div>
+                                            <div>
+                                                <InputLabel>Experience Certificate</InputLabel>
+                                                <FileRow
+                                                    label="Experience Certificate"
+                                                    fileKey={`exp_cert_${idx}`} // Key is technically arbitrary here since we use customFile
+                                                    customFile={exp.tempCert}
+                                                    onCustomChange={(file) => handleExperienceFileChange(idx, file)}
+                                                />
                                             </div>
                                         </div>
                                     ))}
@@ -506,7 +569,7 @@ const PersonalDetailsModal = () => {
                                 <p className="text-xs text-neutral-400 italic">Accurate bank details ensure automated salary credits.</p>
                             </div>
                             <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                                <div className="col-span-2"><InputLabel>Bank Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankName} onChange={e => handleInputChange('bankName', e.target.value)} /></div>
+                                <div className="col-span-2"><InputLabel>Bank Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankName} onChange={e => handleInputChange('bankName', e.target.value.toUpperCase())} /></div>
                                 <div><InputLabel>Account Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono" value={formData.accountNumber} onChange={e => handleInputChange('accountNumber', e.target.value)} /></div>
                                 <div><InputLabel>IFSC Code</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono uppercase" value={formData.ifscCode} onChange={e => handleInputChange('ifscCode', e.target.value.toUpperCase())} /></div>
                                 <div className="col-span-2"><InputLabel>Branch Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankBranchName} onChange={e => handleInputChange('bankBranchName', e.target.value)} /></div>
