@@ -205,7 +205,7 @@ const DashboardView = () => {
             >
               {/* Category Column */}
               <div className="col-span-4 flex items-center gap-4">
-                <div className={`w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-sm ${item.color}`}>
+                <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-sm ${item.color}`}>
                   {item.icon}
                 </div>
                 <div className="flex flex-col">
