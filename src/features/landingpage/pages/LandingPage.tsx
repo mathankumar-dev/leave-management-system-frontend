@@ -1,6 +1,6 @@
 import logo from "@/assets/images/bg-rm-logo-HRES.png";
 import wenxtdashboard from "@/assets/images/wenxtimage.png";
-import wehrm from "@/assets/images/logoWeHRM.png";
+import wehrm from "@/assets/images/LogoWeHRM2.png";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -100,7 +100,7 @@ export function Hero({ featuresRef }: { featuresRef: React.RefObject<HTMLDivElem
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10">
         <div>
           {/* WeHRM product logo above headline */}
-          <img src={wehrm} alt="WeHRM" height={100} width={100} className="mb-4 slate-1000"  />
+          <img src={wehrm} alt="WeHRM" height={120} width={120} className="mb-4 object-contain filter contrast-125 brightness-95"  />
 
           <h1 className="text-3xl md:text-3xl font-bold text-slate-800 leading-[1.1] mb-6">
             Simplifying{" "}
@@ -240,7 +240,7 @@ export function Features({ featuresRef }: { featuresRef: React.RefObject<HTMLDiv
     <section ref={featuresRef} id="features" className="py-24 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <p className="text-brand uppercase tracking-widest font-bold text-sm mb-3">WHY WeHRM PORTAL?</p>
+          <p className="text-brand uppercase tracking-widest font-bold text-sm mb-3">WHY ?</p>
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900">Everything an Organization needs in one platform</h2>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
