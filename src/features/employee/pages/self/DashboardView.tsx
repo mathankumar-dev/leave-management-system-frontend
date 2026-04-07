@@ -153,13 +153,13 @@ const DashboardView = () => {
       {/* MONTHLY HIGHLIGHTS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <MonthlyCard
-          label="Monthly Annual"
+          label="Monthly - Annual Leave"
           val={monthly.annualBalance}
           sub={`Used ${monthly.annualUsed} of ${monthly.annualAllocated}`}
           color="bg-blue-600"
         />
         <MonthlyCard
-          label="Monthly Sick"
+          label="Monthly - Sick Leave"
           val={monthly.sickBalance}
           sub={`Used ${monthly.sickUsed} of ${monthly.sickAllocated}`}
           color="bg-rose-500"

@@ -1,4 +1,5 @@
 import logoSVG from "@/assets/svg/logo.svg";
+import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { useAuth } from "@/shared/auth/useAuth";
 import {
   FaBell,
@@ -10,7 +11,8 @@ import {
   FaFileSignature,
   FaHistory,
   FaThLarge,
-  FaUsers
+  FaUsers,
+  FaMoneyBillWave
 } from "react-icons/fa";
 import { MdVerifiedUser } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -47,7 +49,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   const tabs = [
     { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "CTO", "COO"] },
-    { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO"] },
+    { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO","EMPLOYEE"] },
     // { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO"] },
     // { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
     { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR", "CFO"] },
@@ -58,6 +60,8 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
     { name: "Notifications", path: "notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     // { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "ADMIN"] },
     // { name: "Flash News", path: "flash-news", icon: <FaNewspaper />, roles: ["ADMIN"] },
+
+     { name: "Pay Slip", path: "payslip", icon: <FaMoneyBillWave/>, roles: ["EMPLOYEE","MANAGER"] },
   ];
 
   const visibleTabs = tabs.filter((tab) =>
