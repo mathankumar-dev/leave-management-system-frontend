@@ -27,5 +27,5 @@ export interface PaginatedResponse<T> {
   first: boolean;
   last: boolean;
   numberOfElements: number;
-  empty: boolean;
+  // empty: boolean;
 }

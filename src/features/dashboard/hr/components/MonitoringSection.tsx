@@ -17,7 +17,7 @@ interface Props {
   employeesOnLeave: any[];
 }
 
-export default function MonitoringSection({
+export function MonitoringSection({
   onboardingList,
   employeesOnLeave,
 }: Props) {
@@ -58,19 +58,21 @@ export default function MonitoringSection({
 
                 <div className="flex flex-col items-end gap-1">
                   <Badge
-                    className={`font-bold border-none shadow-none ${emp.biometricStatus === 'PENDING'
-                      ? 'bg-amber-50 text-amber-600'
-                      : 'bg-emerald-50 text-emerald-600'
-                      }`}
+                    className={`font-bold border-none shadow-none ${
+                      emp.biometricStatus === 'PENDING'
+                        ? 'bg-amber-50 text-amber-600'
+                        : 'bg-emerald-50 text-emerald-600'
+                    }`}
                   >
                     Biometric: {emp.biometricStatus}
                   </Badge>
 
                   <Badge
-                    className={`font-bold border-none shadow-none ${emp.vpnStatus === 'PENDING'
-                      ? 'bg-rose-50 text-rose-600'
-                      : 'bg-emerald-50 text-emerald-600'
-                      }`}
+                    className={`font-bold border-none shadow-none ${
+                      emp.vpnStatus === 'PENDING'
+                        ? 'bg-rose-50 text-rose-600'
+                        : 'bg-emerald-50 text-emerald-600'
+                    }`}
                   >
                     VPN: {emp.vpnStatus}
                   </Badge>

@@ -27,11 +27,11 @@ export default function DepartmentChart({ data, topDepartment }: DepartmentChart
 
       <CardContent>
         {data.length === 0 ? (
-          <div className="h-[250px] flex items-center justify-center text-slate-400 text-sm">
+          <div className="h-62.5 flex items-center justify-center text-slate-400 text-sm">
             No team data available
           </div>
         ) : (
-          <div className="h-[250px] w-full">
+          <div className="h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={data}

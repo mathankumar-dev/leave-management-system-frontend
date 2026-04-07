@@ -15,7 +15,7 @@ import type { LoginCredentials } from "@/shared/auth/authTypes";
 const LoginForm: React.FC = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [useEmailLogin, setuseEmailLogin] = useState(false);
+  const [logintype, setLogintype] = useState<"id" | "email">("id");
 
 
 
@@ -68,10 +68,50 @@ const LoginForm: React.FC = () => {
           </p>
         </div>
 
+      {/*Radio option */}
+        <div className="flex items-center gap-6">
+        <span className="text-xs font-semibold text-neutral-600">
+              Login with :
+            </span>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="loginType"
+              value="id"
+              checked={logintype === "id"}
+              onChange={() => {
+                setLogintype("id");
+                setIdentifier("");
+              }}
+              className="accent-primary-500"
+            />
+            <span className="text-xs font-semibold text-neutral-600">
+              Employee ID
+            </span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="loginType"
+              value="email"
+              checked={logintype === "email"}
+              onChange={() => {
+                setLogintype("email");
+                setIdentifier("");
+              }}
+              className="accent-primary-500"
+            />
+            <span className="text-xs font-semibold text-neutral-600">
+              Email
+            </span>
+          </label>
+        </div>
+
         {/* EMAIL */}
         <div className="space-y-2">
           <label className="text-[11px] font-bold uppercase tracking-widest text-neutral-700 ml-1">
-            {useEmailLogin ? "Company Email" : "Employee ID"}
+            {logintype === "email" ? "Company Email" : "Employee ID"}
           </label>
 
           <div className="relative group">
@@ -83,27 +123,13 @@ const LoginForm: React.FC = () => {
               value={identifier}
               onChange={(e) => {
                 const value = e.target.value;
-                setIdentifier(useEmailLogin ? value : value.toUpperCase());
+                setIdentifier(logintype === "id" ? value : value.toUpperCase());
               }}
-              placeholder={useEmailLogin ? "name@wenxttech.com" : "WENXT011"}
-              className={`w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm ${!useEmailLogin ? "uppercase" : ""
+              placeholder={logintype === "email" ? "name@wenxttech.com" : "WENXT011"}
+              className={`w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm ${logintype === "id" ? "uppercase" : ""
                 }`}
             />
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={useEmailLogin}
-            onChange={(e) => {
-              setuseEmailLogin(e.target.checked);
-              setIdentifier(""); // reset when switching
-            }}
-            className="accent-primary-500"
-          />
-          <label className="text-xs text-neutral-600 font-semibold">
-            Login using Email instead
-          </label>
         </div>
 
         {/* PASSWORD */}

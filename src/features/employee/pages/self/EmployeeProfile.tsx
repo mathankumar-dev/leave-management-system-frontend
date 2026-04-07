@@ -4,11 +4,12 @@ import type { ProfileData } from "@/features/employee/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CustomLoader, FailureModal } from "@/shared/components";
 import { BloodGroupMap, GenderMap, MaritalStatusMap } from "@/shared/types";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import React, { useEffect, useState } from "react";
-import { FaEdit, FaEnvelope, FaPhone, FaPrint, FaSave, FaTimes } from "react-icons/fa";
+import { FaEnvelope, FaPhone, FaPrint, FaEdit, FaSave, FaTimes } from "react-icons/fa";
 import { HiOutlineLocationMarker, HiOutlineOfficeBuilding } from "react-icons/hi";
-import { HiCheckCircle, HiOutlineCreditCard, HiOutlineIdentification, HiOutlineShieldCheck } from "react-icons/hi2";
+import { HiOutlineShieldCheck, HiOutlineIdentification, HiOutlineCreditCard } from "react-icons/hi2";
+import { HiCheckCircle } from "react-icons/hi2";
 
 type ExperienceType = 'FRESHER' | 'EXPERIENCED';
 
@@ -75,7 +76,6 @@ const EmployeeProfile: React.FC = () => {
 
   // ─── Aadhar parts ─────────────────────────────────────────────
   const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
-  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     if (user?.id) fetchEmployeeProfile(user.id);
@@ -345,12 +345,7 @@ const EmployeeProfile: React.FC = () => {
                     {isEditing ? (
                       <div className="flex flex-col gap-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date of Birth</label>
-                        <input
-                          type="date"
-                          min="1900-01-01"
-                          max={today}
-                          className="bg-slate-50 border border-indigo-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none" value={formData.dateOfBirth} onChange={e => handleInputChange('dateOfBirth', e.target.value)}
-                        />
+                        <input type="date" className="bg-slate-50 border border-indigo-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 focus:outline-none" value={formData.dateOfBirth} onChange={e => handleInputChange('dateOfBirth', e.target.value)} />
                       </div>
                     ) : (
                       <FormField label="Date of Birth" value={formatDate(profile.dateOfBirth)} />

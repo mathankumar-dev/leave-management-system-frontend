@@ -1,7 +1,7 @@
 import { DashboardFilters, DepartmentChart, SummarySection } from '@/features/dashboard/components';
 import DashboardSkeleton from '@/features/dashboard/components/Dashboardskeleton';
 import { useHRDashboard } from '@/features/dashboard/hooks';
-import { ManagerTrackingTable, OnboardingStats } from '@/features/dashboard/hr/components';
+import { ManagerTrackingTable, MonitoringSection, OnboardingStats } from '@/features/dashboard/hr/components';
 // import LowBalanceTable from '@/features/dashboard/hr/components/LowBalanceTable';
 import { useCallback, useState } from 'react';
 
@@ -9,13 +9,13 @@ interface HRDashboardProps {
   userName?: string;
 }
 
-export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
+export default function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
   const {
     data,
     departmentStats,
-    // lowBalanceData,
-    // lowBalanceError,
-    // lowBalanceLoading,
+    lowBalanceData,
+    lowBalanceError,
+    lowBalanceLoading,
     loading,
     error,
     // reload,wwww
@@ -107,11 +107,11 @@ export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
       </div>
 
       {/* Low Balance Table */}
-      {/* <LowBalanceTable
+      <LowBalanceTable
         data={lowBalanceData}
         loading={lowBalanceLoading}
         error={lowBalanceError}
-      /> */}
+      />
 
       {/* Manager Tracking */}
       <ManagerTrackingTable
@@ -120,10 +120,10 @@ export function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
       />
 
       {/* Monitoring */}
-      {/* <MonitoringSection
+      <MonitoringSection
         onboardingList={data.onboardingPendingList}
         employeesOnLeave={data.employeesOnLeave}
-      /> */}
+      />
 
       {/* Export */}
       
