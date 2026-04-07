@@ -18,6 +18,9 @@ export const useCalendar = () => {
             return data;
         } catch (error) {
             console.error("Failed to fetch team calendar", error);
+
+
+            
             return null;
         } finally {
             setLoading(false);

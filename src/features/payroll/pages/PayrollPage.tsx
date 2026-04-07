@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import jsPDF from "jspdf";
-import { toPng } from "html-to-image";
 import logo from "@/assets/images/bg-rm-logo-HRES.png";
 import { usePayroll } from "@/features/payroll/hooks/usePayroll";
 import { useAuth } from "@/shared/auth/useAuth";
@@ -18,7 +16,7 @@ const PayrollView: React.FC = () => {
   const [viewMode, setViewMode] = useState<"monthly" | "yearly">("monthly");
 
   const [loading, setLoading] = useState(false);
-  const [loadingPDF, setLoadingPDF] = useState(false);
+  const [loadingPDF] = useState(false);
   const [, setLoadingProfile] = useState(false);
 
   const now = new Date();

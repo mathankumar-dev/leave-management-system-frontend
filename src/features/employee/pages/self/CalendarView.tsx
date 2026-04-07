@@ -349,27 +349,16 @@ const EmployeeCalendarView: React.FC = () => {
               <p className="font-semibold">
 
                 {r.leaveType || "Present"}
-
               </p>
-
               <p className="text-xs text-gray-500">
-
                 {r.employeeName}
-
               </p>
-
             </div>
-
           ))}
-
         </div>
-
       )}
-
     </div>
-
   );
-
 };
 
 export default EmployeeCalendarView;
