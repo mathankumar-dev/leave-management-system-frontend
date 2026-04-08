@@ -1,5 +1,4 @@
 import logo from "@/assets/images/bg-rm-logo-HRES.png";
-import wehrm from "@/assets/images/logoWeHRM.png";
 import wenxtdashboard from "@/assets/images/wenxtimage.png";
 import wehrm from "@/assets/images/LogoWeHRM2.png";
 import { useEffect, useRef, useState } from "react";
