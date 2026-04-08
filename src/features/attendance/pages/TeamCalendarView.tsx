@@ -208,7 +208,7 @@ const TeamCalendarView: React.FC = () => {
                           {/* MINE */}
                           {mine.length > 0 && (
                             <div className="px-1 py-0.5 bg-amber-100 border border-amber-200 text-amber-700 text-[7px] font-black uppercase rounded-sm truncate">
-                              ME: LEAVE
+                              
                             </div>
                           )}
 

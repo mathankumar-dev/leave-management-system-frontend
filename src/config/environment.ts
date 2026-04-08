@@ -8,5 +8,5 @@ export const ENV: EnvironmentConfig = {
   // API_BASE_URL: '/api',
   API_BASE_URL: "https://jgpq493j-8111.inc1.devtunnels.ms/api",
   // API_BASE_URL: "https://fqkvs6nm-8111.inc1.devtunnels.ms/api",
-  // API_BASE_URL: "https://fqkvs6nm-8080.inc1.devtunnels.ms/api",
+ 
 };  
