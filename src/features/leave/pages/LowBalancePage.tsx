@@ -1,4 +1,5 @@
-// import LowBalanceTable from "@/features/dashboard/hr/components/LowBalanceTable";
+
+// import LowBalanceTable from "@/features/dashboard/hr/components/Lowbalancetable";
 // import { dashboardService } from "@/features/dashboard/services/dashboardService";
 // import type { LowBalanceEmployee } from "@/features/leave/types";
 // import { useEffect as useEff, useRef, useState as useSt, type SetStateAction, } from "react";
@@ -38,7 +39,6 @@
 
 
 // export default LowBalancePage;
-
 
 
 

@@ -6,7 +6,10 @@ import type {
 } from "@/features/employee/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import { FailureModal, Loader } from "@/shared/components";
-import { useEffect, useState } from "react";
+import CustomDatePicker from '@/shared/components/CustomDatePicker';
+import InputLabel from '@/shared/components/InputLabel';
+import type { Gender } from '@/shared/types';
+import { useEffect, useRef, useState } from "react";
 import {
     HiOutlineBanknotes,
     HiOutlineBriefcase,
@@ -66,36 +69,87 @@ const PersonalDetailsModal = () => {
     const [loaderState, setLoaderState] = useState({ active: false, finished: false });
     const [showFailure, setShowFailure] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const aadharRefs = [
+        useRef<HTMLInputElement>(null),
+        useRef<HTMLInputElement>(null),
+        useRef<HTMLInputElement>(null)
+    ];
+
 
     useEffect(() => {
         const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
         setFormData(prev => ({ ...prev, aadharNumber: combined }));
     }, [aadharParts]);
 
-    const handleAadharChange = (part: keyof typeof aadharParts, value: string) => {
+    const handleAadharChange = (part: 'p1' | 'p2' | 'p3', value: string) => {
         const sanitized = value.replace(/\D/g, "").slice(0, 4);
         setAadharParts(prev => ({ ...prev, [part]: sanitized }));
+
+
+        if (sanitized.length === 4) {
+            if (part === 'p1') {
+                aadharRefs[1].current?.focus();
+            } else if (part === 'p2') {
+                aadharRefs[2].current?.focus();
+            }
+        }
+    };
+    const handleAadharKeyDown = (part: 'p1' | 'p2' | 'p3', e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Backspace' && !aadharParts[part]) {
+            if (part === 'p2') {
+                aadharRefs[0].current?.focus();
+            } else if (part === 'p3') {
+                aadharRefs[1].current?.focus();
+            }
+        }
     };
 
     const handleInputChange = (field: keyof PersonalDetailsForm, value: any) => {
+        // Check if the field is a Date of Birth field
+        if (field.toLowerCase().includes('dateofbirth') || field === 'dateOfBirth') {
+            const selectedDate = new Date(value);
+            const year = selectedDate.getFullYear();
+            const currentYear = new Date().getFullYear();
+            if (value !== "") {
+                if (year > currentYear || (year < 1900 && year.toString().length === 4)) {
+
+                    return;
+                }
+            }
+        }
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
     const handleFileChange = (key: string, file: File | null) => {
-        setFiles(prev => ({ ...prev, [key]: file }));
+        setFiles(prev => ({
+            ...prev,
+            [key]: file  // This creates a new object reference, triggering a re-render
+        }));
     };
 
     const handleMultiFileChange = (key: string, fileList: FileList | null) => {
         if (fileList) {
-            setFiles(prev => ({ ...prev, [key]: Array.from(fileList) }));
+            setFiles(prev => ({
+                ...prev,
+                [key]: Array.from(fileList) // Creates a new object reference
+            }));
         }
+    };
+
+    const handleExperienceFileChange = (index: number, file: File | null) => {
+        if (!file) return;
+        const newExperiences = [...(formData.experiences || [])];
+        // We store the file temporarily in the experience object
+        // You may need to update your TypeScript interface to allow this property locally
+        (newExperiences[index] as any).tempCert = file;
+        setFormData({ ...formData, experiences: newExperiences });
     };
 
     const handleSubmit = async () => {
         try {
             if (!user?.id) return;
 
-            // 1. Determine required files based on type
+            // 1. Validation for common required files
             const requiredFiles = submissionType === "FRESHER"
                 ? ["idProof", "passportPhoto", "tenthMarksheet", "twelfthMarksheet", "degreeCertificate", "offerLetter"]
                 : ["idProof", "passportPhoto", "relievingLetter"];
@@ -109,21 +163,34 @@ const PersonalDetailsModal = () => {
 
             setLoaderState({ active: true, finished: false });
 
-            // 2. CREATE A CLEAN DATA OBJECT
-            // We spread the current formData but explicitly handle the conditional fields
+            const experienceFiles: File[] = [];
+            const cleanedExperiences = formData.experiences?.map((exp: any) => {
+                if (exp.tempCert) {
+                    experienceFiles.push(exp.tempCert);
+                }
+                const { tempCert, ...rest } = exp; // Destructure to remove tempCert from the object
+                return rest;
+            });
+
+            // 3. Prepare Cleaned Payload
             const { experiences, uanNumber, ...restOfData } = formData;
 
             const payload = submissionType === "EXPERIENCED"
-                ? { ...formData } // Include everything for experienced
-                : { ...restOfData }; // EXCLUDE experiences and uanNumber for freshers
+                ? { ...formData, experiences: cleanedExperiences }
+                : { ...restOfData };
 
+            // 4. Merge all files (Global + Extracted from Experience rows)
+            const finalFiles = {
+                ...files,
+                experienceCerts: experienceFiles.length > 0 ? experienceFiles : null
+            };
 
-            // 3. Send the cleaned payload
+            // 5. Send to Service
             await authService.submitMultipartDetails(
                 user.id,
                 submissionType,
-                payload, // Use the cleaned object here
-                files
+                payload,
+                finalFiles
             );
 
             setLoaderState({ active: true, finished: true });
@@ -134,31 +201,74 @@ const PersonalDetailsModal = () => {
         }
     };
 
-    const InputLabel = ({ children }: { children: React.ReactNode }) => (
-        <label className="text-[10px] font-black text-neutral-500 tracking-widest mb-1 block ">
-            {children}
-        </label>
-    );
 
-    const FileRow = ({ label, fileKey, required = false, multiple = false }: { label: string, fileKey: string, required?: boolean, multiple?: boolean }) => (
-        <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-2xl group hover:border-indigo-200 transition-all">
-            <div className="flex items-center gap-3 overflow-hidden">
-                <div className={`p-2 rounded-lg shrink-0 ${files[fileKey] ? 'bg-green-100 text-green-600' : 'bg-neutral-100 text-neutral-400 group-hover:bg-indigo-50 group-hover:text-indigo-500'}`}>
-                    <HiOutlineDocumentText size={18} />
+    const FileRow = ({
+        label,
+        fileKey,
+        required = false,
+        multiple = false,
+        customFile = undefined, // Changed from null to undefined for clearer fallback
+        onCustomChange
+    }: {
+        label: string,
+        fileKey: string,
+        required?: boolean,
+        multiple?: boolean,
+        customFile?: any,
+        onCustomChange?: (file: File | null) => void
+    }) => {
+        const inputId = `file-input-${fileKey}`;
+
+        // Explicitly check the global 'files' state if customFile isn't provided
+        const displayFile = customFile !== undefined ? customFile : files[fileKey];
+
+        return (
+            <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-2xl group hover:border-indigo-200 transition-all">
+                <div className="flex items-center gap-3 overflow-hidden">
+                    <div className={`p-2 rounded-lg shrink-0 ${displayFile ? 'bg-green-100 text-green-600' : 'bg-neutral-100 text-neutral-400 group-hover:bg-indigo-50 group-hover:text-indigo-500'}`}>
+                        <HiOutlineDocumentText size={18} />
+                    </div>
+                    <div className="overflow-hidden">
+                        <p className="text-[11px] font-bold text-neutral-700 tracking-tight">{label} {required && <span className="text-red-500">*</span>}</p>
+                        <p className="text-[10px] text-neutral-400 truncate">
+                            {/* Logic to show the filename once selected */}
+                            {Array.isArray(displayFile)
+                                ? `${displayFile.length} files`
+                                : (displayFile as File)?.name || "Not uploaded"}
+                        </p>
+                    </div>
                 </div>
-                <div className="overflow-hidden">
-                    <p className="text-[11px] font-bold text-neutral-700  tracking-tight">{label} {required && <span className="text-red-500">*</span>}</p>
-                    <p className="text-[10px] text-neutral-400 truncate">
-                        {Array.isArray(files[fileKey]) ? `${(files[fileKey] as File[]).length} files` : (files[fileKey] as File)?.name || "Not uploaded"}
-                    </p>
-                </div>
+
+                <label
+                    htmlFor={inputId}
+                    className="cursor-pointer shrink-0 bg-neutral-50 hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all border border-neutral-200"
+                >
+                    {displayFile ? "CHANGE" : "UPLOAD"}
+                </label>
+
+                <input
+                    id={inputId}
+                    type="file"
+                    className="hidden"
+                    multiple={multiple}
+                    onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        if (onCustomChange) {
+                            onCustomChange(file);
+                        } else {
+                            // This triggers handleFileChange which updates the global 'files' state
+                            if (multiple) {
+                                handleMultiFileChange(fileKey, e.target.files);
+                            } else {
+                                handleFileChange(fileKey, file);
+                            }
+                        }
+                        e.target.value = '';
+                    }}
+                />
             </div>
-            <label className="cursor-pointer shrink-0 bg-neutral-50 hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl text-[10px] font-black transition-all border border-neutral-200">
-                {files[fileKey] ? "CHANGE" : "UPLOAD"}
-                <input type="file" hidden multiple={multiple} onChange={(e) => multiple ? handleMultiFileChange(fileKey, e.target.files) : handleFileChange(fileKey, e.target.files?.[0] || null)} />
-            </label>
-        </div>
-    );
+        );
+    };
 
     return (
         <>
@@ -166,7 +276,7 @@ const PersonalDetailsModal = () => {
                 <Loader message="Syncing WeHRM Profile..." isFinished={loaderState.finished} onFinished={() => window.location.reload()} />
             )}
 
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+            <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
                 <div className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full flex flex-col max-h-[90vh] overflow-hidden">
 
                     {/* HEADER */}
@@ -199,15 +309,20 @@ const PersonalDetailsModal = () => {
                                 <FileRow label="Passport Photo" fileKey="passportPhoto" required />
 
                                 {/* Shared required for Freshers / Optional for experienced as per your logic */}
-                                <FileRow label="10th Marksheet" fileKey="tenthMarksheet" required={!isExperienced} />
-                                <FileRow label="12th Marksheet" fileKey="twelfthMarksheet" required={!isExperienced} />
-                                <FileRow label="Degree Certificate" fileKey="degreeCertificate" required={!isExperienced} />
-                                <FileRow label="Offer Letter" fileKey="offerLetter" required={!isExperienced} />
+                                {!isExperienced && (
+                                    <>
+                                        <FileRow label="10th Marksheet" fileKey="tenthMarksheet" required={!isExperienced} />
+                                        <FileRow label="12th Marksheet" fileKey="twelfthMarksheet" required={!isExperienced} />
+                                        <FileRow label="Degree Certificate" fileKey="degreeCertificate" required={!isExperienced} />
+                                        <FileRow label="Offer Letter" fileKey="offerLetter" required={!isExperienced} /></>
+                                )
+
+                                }
+
 
                                 {isExperienced && (
                                     <>
                                         <FileRow label="Relieving Letter" fileKey="relievingLetter" required />
-                                        <FileRow label="Exp. Certificates" fileKey="experienceCerts" multiple />
                                     </>
                                 )}
                             </div>
@@ -227,8 +342,16 @@ const PersonalDetailsModal = () => {
                                     <div>
                                         <InputLabel>Aadhar Number</InputLabel>
                                         <div className="flex gap-2">
-                                            {(['p1', 'p2', 'p3'] as const).map((p) => (
-                                                <input key={p} className="w-full text-center border rounded-xl p-3 font-mono text-sm outline-none focus:border-indigo-500" maxLength={4} value={aadharParts[p]} onChange={e => handleAadharChange(p, e.target.value)} />
+                                            {(['p1', 'p2', 'p3'] as const).map((p, idx) => (
+                                                <input
+                                                    key={p}
+                                                    ref={aadharRefs[idx]} // Attach the ref
+                                                    className="w-full text-center border rounded-xl p-3 font-mono text-sm outline-none focus:border-indigo-500"
+                                                    maxLength={4}
+                                                    value={aadharParts[p]}
+                                                    onChange={e => handleAadharChange(p, e.target.value)}
+                                                    onKeyDown={e => handleAadharKeyDown(p, e)} // Optional backspace jump
+                                                />
                                             ))}
                                         </div>
                                     </div>
@@ -246,9 +369,14 @@ const PersonalDetailsModal = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div><InputLabel>Personal Email</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.personalEmail} onChange={e => handleInputChange('personalEmail', e.target.value)} /></div>
                                     <div><InputLabel>Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.contactNumber} onChange={e => handleInputChange('contactNumber', e.target.value)} /></div>
+                                    <div><InputLabel>Emergency Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.emergencyContactNumber} onChange={e => handleInputChange('emergencyContactNumber', e.target.value)} /></div>
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
-                                    <div><InputLabel>DOB</InputLabel><input type="date" className="w-full border rounded-xl p-3 text-sm" value={formData.dateOfBirth} onChange={e => handleInputChange('dateOfBirth', e.target.value)} /></div>
+                                    <CustomDatePicker
+                                        label="Date of Birth"
+                                        value={formData.dateOfBirth}
+                                        onChange={(val: string) => handleInputChange('dateOfBirth', val)}
+                                    />
                                     <div>
                                         <InputLabel>Gender</InputLabel>
                                         <select className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.gender} onChange={e => handleInputChange('gender', e.target.value as any)}>
@@ -283,26 +411,77 @@ const PersonalDetailsModal = () => {
                                     <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                                         <div className="flex justify-between items-center mb-3"><InputLabel>Father's Details</InputLabel> <input type="checkbox" checked={formData.fatherAlive} onChange={e => handleInputChange('fatherAlive', e.target.checked)} /></div>
                                         <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.fatherName} onChange={e => handleInputChange('fatherName', e.target.value)} />
-                                        <input type="date" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.fatherDateOfBirth} onChange={e => handleInputChange('fatherDateOfBirth', e.target.value)} />
+
+                                        <CustomDatePicker
+                                            label="Date of Birth"
+                                            value={formData.fatherDateOfBirth}
+                                            onChange={(val: string) => handleInputChange('fatherDateOfBirth', val)}
+                                        />
                                     </div>
                                     <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                                         <div className="flex justify-between items-center mb-3"><InputLabel>Mother's Details</InputLabel> <input type="checkbox" checked={formData.motherAlive} onChange={e => handleInputChange('motherAlive', e.target.checked)} /></div>
                                         <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.motherName} onChange={e => handleInputChange('motherName', e.target.value)} />
-                                        <input type="date" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.motherDateOfBirth} onChange={e => handleInputChange('motherDateOfBirth', e.target.value)} />
+
+                                        <CustomDatePicker
+                                            label="Date of Birth"
+                                            value={formData.motherDateOfBirth}
+                                            onChange={(val: string) => handleInputChange('motherDateOfBirth', val)}
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                                     <div className="flex justify-between items-center mb-4">
                                         <InputLabel>Marital Status</InputLabel>
-                                        <select className="border rounded-lg px-2 py-1 text-xs font-bold" value={formData.maritalStatus} onChange={e => handleInputChange('maritalStatus', e.target.value as any)}>
-                                            <option value="SINGLE">SINGLE</option><option value="MARRIED">MARRIED</option>
+                                        <select
+                                            className="border rounded-lg px-2 py-1 text-xs font-bold"
+                                            value={formData.maritalStatus}
+                                            onChange={e => handleInputChange('maritalStatus', e.target.value as any)}
+                                        >
+                                            <option value="SINGLE">SINGLE</option>
+                                            <option value="MARRIED">MARRIED</option>
                                         </select>
                                     </div>
+
                                     {formData.maritalStatus === "MARRIED" && (
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <input placeholder="Spouse Name" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseName} onChange={e => handleInputChange('spouseName', e.target.value)} />
-                                            <input placeholder="Spouse Contact" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseContactNumber} onChange={e => handleInputChange('spouseContactNumber', e.target.value)} />
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <InputLabel>Spouse Name</InputLabel>
+                                                    <input
+                                                        placeholder="Name"
+                                                        className="w-full border rounded-xl p-3 text-sm bg-white"
+                                                        value={formData.spouseName}
+                                                        onChange={e => handleInputChange('spouseName', e.target.value)}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <InputLabel>Spouse Contact</InputLabel>
+                                                    <input
+                                                        placeholder="Contact Number"
+                                                        className="w-full border rounded-xl p-3 text-sm bg-white"
+                                                        value={formData.spouseContactNumber}
+                                                        onChange={e => handleInputChange('spouseContactNumber', e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <CustomDatePicker
+                                                    label="Spouse Date of Birth"
+                                                    value={formData.spouseDateOfBirth}
+                                                    onChange={(val: string) => handleInputChange('spouseDateOfBirth', val)}
+                                                />
+                                                <div>
+                                                    <InputLabel>Spouse Occupation</InputLabel>
+                                                    <input
+                                                        placeholder="Occupation"
+                                                        className="w-full border rounded-xl p-3 text-sm bg-white"
+                                                        value={formData.spouseOccupation}
+                                                        onChange={e => handleInputChange('spouseOccupation', e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -334,6 +513,16 @@ const PersonalDetailsModal = () => {
                                                         setFormData({ ...formData, children });
                                                     }}
                                                 />
+                                            </div>
+                                            <div>
+                                                <InputLabel>Gender</InputLabel>
+                                                <select className="w-full border rounded-xl p-3 text-sm bg-white" value={child.gender} onChange={e => {
+                                                    const children = [...(formData.children || [])];
+                                                    children[idx].gender = e.target.value as Gender;
+                                                    setFormData({ ...formData, children });
+                                                }}>
+                                                    <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
+                                                </select>
                                             </div>
                                             <button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button>
                                         </div>
@@ -387,18 +576,38 @@ const PersonalDetailsModal = () => {
                                                         setFormData({ ...formData, experiences: exps });
                                                     }} /> IS LAST COMPANY
                                                 </div>
+
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <div><InputLabel>From Date</InputLabel><input type="date" className="w-full border rounded-xl p-3 text-sm" value={exp.fromDate} onChange={e => {
-                                                    const exps = [...(formData.experiences || [])];
-                                                    exps[idx].fromDate = e.target.value;
-                                                    setFormData({ ...formData, experiences: exps });
-                                                }} /></div>
-                                                <div><InputLabel>End Date</InputLabel><input type="date" className="w-full border rounded-xl p-3 text-sm" value={exp.endDate} onChange={e => {
-                                                    const exps = [...(formData.experiences || [])];
-                                                    exps[idx].endDate = e.target.value;
-                                                    setFormData({ ...formData, experiences: exps });
-                                                }} /></div>
+                                                <CustomDatePicker
+                                                    label="From Date"
+                                                    value={exp.fromDate}
+                                                    onChange={(val: string) => {
+                                                        const exps = [...(formData.experiences || [])];
+                                                        exps[idx].fromDate = val;
+                                                        setFormData({ ...formData, experiences: exps });
+                                                    }}
+                                                />
+
+                                                <CustomDatePicker
+                                                    label="End Date"
+                                                    value={exp.endDate}
+                                                    onChange={(val: string) => {
+                                                        const exps = [...(formData.experiences || [])];
+                                                        exps[idx].endDate = val;
+                                                        setFormData({ ...formData, experiences: exps });
+                                                    }}
+                                                />
+
+                                            </div>
+                                            <div>
+                                                <InputLabel>Experience Certificate</InputLabel>
+                                                <FileRow
+                                                    label="Experience Certificate"
+                                                    fileKey={`exp_cert_${idx}`} // Key is technically arbitrary here since we use customFile
+                                                    customFile={exp.tempCert}
+                                                    onCustomChange={(file) => handleExperienceFileChange(idx, file)}
+                                                />
                                             </div>
                                         </div>
                                     ))}
@@ -415,7 +624,7 @@ const PersonalDetailsModal = () => {
                                 <p className="text-xs text-neutral-400 italic">Accurate bank details ensure automated salary credits.</p>
                             </div>
                             <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                                <div className="col-span-2"><InputLabel>Bank Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankName} onChange={e => handleInputChange('bankName', e.target.value)} /></div>
+                                <div className="col-span-2"><InputLabel>Bank Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankName} onChange={e => handleInputChange('bankName', e.target.value.toUpperCase())} /></div>
                                 <div><InputLabel>Account Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono" value={formData.accountNumber} onChange={e => handleInputChange('accountNumber', e.target.value)} /></div>
                                 <div><InputLabel>IFSC Code</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono uppercase" value={formData.ifscCode} onChange={e => handleInputChange('ifscCode', e.target.value.toUpperCase())} /></div>
                                 <div className="col-span-2"><InputLabel>Branch Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankBranchName} onChange={e => handleInputChange('bankBranchName', e.target.value)} /></div>

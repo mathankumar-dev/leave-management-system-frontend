@@ -2,7 +2,8 @@ import AddEmployeePopup from "@/features/employee/components/AddEmployeeForm";
 import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import type { EmployeeEntity } from "@/features/employee/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -10,6 +11,7 @@ import {
   FaFilter,
   FaRegAddressCard,
   FaSearch,
+  FaTimes,
   FaUserCheck,
   FaUserPlus,
   FaUserSlash
@@ -19,40 +21,69 @@ const EmployeesView = () => {
   const { getEmployees, loading, addUser, deleteUser } = useEmployee();
 
   const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
+  const [allEmployees, setAllEmployees] = useState<EmployeeEntity[]>([]); // manager name lookup
   const [pagination, setPagination] = useState({ totalElements: 0, totalPages: 0 });
-  const [searchTerm, setSearchTerm] = useState("");
+
+  const [searchInput, setSearchInput] = useState(""); // live input
+  const [searchTerm, setSearchTerm] = useState("");   // debounced
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(0);
   const [openAddEmployee, setOpenAddEmployee] = useState(false);
 
-  // Changed activeMenu and confirmState to use string | null because empId is "WENXT..."
+  const isSearchMode = !!searchTerm;
+
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
     empId: string | null;
-    mode: 'DEACTIVATE' | 'REACTIVATE'
-  }>({
-    isOpen: false,
-    empId: null,
-    mode: 'DEACTIVATE'
-  });
+    mode: 'DEACTIVATE' | 'REACTIVATE';
+  }>({ isOpen: false, empId: null, mode: 'DEACTIVATE' });
 
+  // ─── Manager name lookup ──────────────────────────────────────
+  useEffect(() => {
+    const loadAll = async () => {
+      try {
+        const result = await getEmployees({ page: 0, size: 1000 });
+        if (result?.content) setAllEmployees(result.content);
+      } catch { /* silent */ }
+    };
+    loadAll();
+  }, []);
+
+  const managerMap = useMemo(() => {
+    const map: Record<string, string> = {};
+
+    allEmployees.forEach(emp => {
+      map[emp.empId] = emp.name;
+    });
+
+    return map;
+  }, [allEmployees]);
+
+  const getManagerName = (managerId: string | null) => {
+    if (!managerId) return '—';
+    return managerMap[managerId] || `#${managerId}`;
+  };
+
+
+  // ─── Load employees ───────────────────────────────────────────
   const loadEmployeeData = useCallback(async () => {
-    // Pass filters to the hook
     const result = await getEmployees({
       page: currentPage,
       size: 10,
-      searchTerm: searchTerm,
-      role: roleFilter !== "ALL" ? roleFilter : undefined,
-      status: statusFilter !== "ALL" ? statusFilter : undefined
+      searchTerm,
+      // role: roleFilter !== "ALL" ? roleFilter : undefined,
+      status: statusFilter !== "ALL" ? statusFilter : undefined,
     });
 
     if (result && Array.isArray(result.content)) {
       setEmployees(result.content);
       setPagination({
         totalElements: result.totalElements || 0,
-        totalPages: result.totalPages || 0
+        totalPages: result.totalPages || 0,
       });
     } else {
       setEmployees([]);
@@ -65,18 +96,62 @@ const EmployeesView = () => {
     return () => clearTimeout(delay);
   }, [loadEmployeeData]);
 
+  // ─── Debounced search ─────────────────────────────────────────
+ const handleSearchInput = (value: string) => {
+  setSearchInput(value);
+
+  if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+  searchTimeout.current = setTimeout(() => {
+    setSearchTerm(value);
+    setCurrentPage(0);
+  }, 300);
+};
+
+  const clearSearch = () => {
+    setSearchInput("");
+    setSearchTerm("");
+    setCurrentPage(0);
+  };
+
+  // ─── Actions ──────────────────────────────────────────────────
   const handleAction = async () => {
     if (confirmState.empId) {
-      // Assuming deleteUser handles the string empId
       await deleteUser(confirmState.empId);
       setConfirmState({ ...confirmState, isOpen: false });
       loadEmployeeData();
     }
   };
 
+  // ─── Skeleton rows ────────────────────────────────────────────
+  const SkeletonRow = () => (
+    <tr>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <td key={i} className="px-6 py-4">
+          <div className="h-3 bg-slate-100 rounded animate-pulse w-full" />
+        </td>
+      ))}
+    </tr>
+  );
+
+
+  const filteredEmployees = employees.filter(emp => {
+      console.log("EMP DATA 👉", emp);
+
+    const matchRole =
+      roleFilter === "ALL" || emp.roleName === roleFilter;
+
+    const matchStatus =
+      statusFilter === "ALL" ||
+      (statusFilter === "ACTIVE" ? emp.active : !emp.active);
+
+    return matchRole && matchStatus;
+  });
+
   return (
     <div className="space-y-6 max-w-400 mx-auto pb-10">
-      {/* Header Section */}
+
+      {/* ── Header ── */}
       <div className="flex flex-col xl:flex-row justify-between items-end xl:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-slate-900 rounded-sm text-white">
@@ -85,22 +160,32 @@ const EmployeesView = () => {
           <div>
             <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Personnel Directory</h2>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-              {pagination.totalElements} Total Records
+              {isSearchMode ? (
+                <>Search Results for "{searchTerm}"</>
+              ) : (
+                <>{pagination.totalElements} Total Records</>
+              )}
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-          {/* Search */}
+
+          {/* Search with clear button */}
           <div className="relative flex-1 min-w-50">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
             <input
               type="text"
               placeholder="Search name..."
-              value={searchTerm}
-              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(0); }}
-              className="w-full bg-slate-50 border border-slate-200 pl-10 pr-4 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 uppercase"
+              value={searchInput}
+              onChange={(e) => handleSearchInput(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 pl-10 pr-8 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 uppercase"
             />
+            {searchInput && (
+              <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <FaTimes size={10} />
+              </button>
+            )}
           </div>
 
           {/* Status Filter */}
@@ -112,7 +197,7 @@ const EmployeesView = () => {
             >
               <option value="ALL">All Status</option>
               <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
+              <option value="Disabled">Disabled</option>
             </select>
             <FaFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" />
           </div>
@@ -125,10 +210,10 @@ const EmployeesView = () => {
               className="appearance-none bg-slate-50 border border-slate-200 pl-10 pr-8 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 cursor-pointer uppercase"
             >
               <option value="ALL">All Roles</option>
-              <option value="ADMIN">Admins</option>
+              <option value="ADMIN">Admin</option>
               <option value="HR">HR</option>
-              <option value="MANAGER">Managers</option>
-              <option value="EMPLOYEE">Employees</option>
+              <option value="MANAGER">Manager</option>
+              <option value="EMPLOYEE">Employee</option>
             </select>
             <FaFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" />
           </div>
@@ -142,8 +227,8 @@ const EmployeesView = () => {
         </div>
       </div>
 
-      {/* Table Section */}
-      <div className="relative w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm min-h-[450px]">
+      {/* ── Table ── */}
+      <div className="relative w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm min-h-112.5">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="bg-neutral-800 text-white">
@@ -151,16 +236,21 @@ const EmployeesView = () => {
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Name</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Employee ID</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Role</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Manager</th>
+                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Joining Date</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Status</th>
                 <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Options</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100">
-              {employees.length > 0 ? (
-                employees.map((emp) => (
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+              ) : filteredEmployees.length > 0 ? (
+                filteredEmployees.map((emp) => (
                   <tr key={emp.empId} className={`transition-colors duration-150 group ${!emp.active ? 'bg-slate-50/50' : 'hover:bg-slate-50'}`}>
 
+                    {/* Name */}
                     <td className="px-6 py-4">
                       <div className={`flex items-center gap-3 ${!emp.active ? 'opacity-60' : ''}`}>
                         <div className={`h-9 w-9 rounded-sm flex items-center justify-center text-[11px] font-black border transition-all ${emp.active ? 'bg-slate-100 text-slate-500 border-slate-200 group-hover:bg-slate-900 group-hover:text-white' : 'bg-slate-200 text-slate-400 border-slate-300'}`}>
@@ -169,28 +259,48 @@ const EmployeesView = () => {
                         <div>
                           <p className="text-xs font-bold text-slate-900 uppercase">
                             {emp.name}
-                            {!emp.active && <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-black rounded-sm">INACTIVE</span>}
+                            {!emp.active && <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-black rounded-sm">
+                              Disabled</span>}
                           </p>
                           <p className="text-[10px] font-medium text-slate-400 lowercase">{emp.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className={`flex items-center gap-3 ${!emp.active ? 'opacity-60' : ''}`}>
 
-                        <div>
-                          <p className="text-xs font-bold text-slate-900 uppercase">
-                            {emp.empId}
-                          </p>
-                        </div>
-                      </div>
+                    {/* Employee ID */}
+                    <td className="px-6 py-4">
+                      <p className="text-xs font-bold text-slate-900 uppercase">{emp.empId}</p>
                     </td>
+
+                    {/* Role */}
                     <td className="px-6 py-4 text-center">
                       <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-sm text-[10px] font-black uppercase">
-                        {/* FIX: Use roleName and Optional Chaining */}
                         {emp.roleName?.replace(/_/g, " ") || "UNASSIGNED"}
                       </span>
                     </td>
+
+                    {/* Manager — from HREmployeesPage */}
+                    <td className="px-6 py-4 text-center">
+                      {emp.reportingId ? (
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="text-xs font-semibold text-slate-700">{getManagerName(emp.reportingId)}</span>
+                          <span className="text-[10px] text-slate-400">#{emp.reportingId}</span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 text-xs">—</span>
+                      )}
+                    </td>
+
+                    {/* Joining Date — from HREmployeesPage */}
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-xs text-slate-500 font-medium">
+                        {(emp as any).joiningDate
+                          ? new Date((emp as any).joiningDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                          : '—'}
+                      </span>
+                    </td>
+
+                    {/* Status */}
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <div className={`h-2 w-2 rounded-full ${emp.active ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-red-400"}`} />
@@ -199,6 +309,8 @@ const EmployeesView = () => {
                         </span>
                       </div>
                     </td>
+
+                    {/* Options */}
                     <td className="px-6 py-4 text-right relative overflow-visible">
                       <button
                         onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === emp.empId ? null : emp.empId); }}
@@ -211,7 +323,12 @@ const EmployeesView = () => {
                         {activeMenu === emp.empId && (
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
-                            <motion.div initial={{ opacity: 0, scale: 0.95, x: 5 }} animate={{ opacity: 1, scale: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95, x: 5 }} className="absolute right-14 top-1/2 -translate-y-1/2 z-50 min-w-[180px] bg-white border border-slate-200 shadow-2xl rounded-sm p-1">
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95, x: 5 }}
+                              animate={{ opacity: 1, scale: 1, x: 0 }}
+                              exit={{ opacity: 0, scale: 0.95, x: 5 }}
+                              className="absolute right-14 top-1/2 -translate-y-1/2 z-50 min-w-45 bg-white border border-slate-200 shadow-2xl rounded-sm p-1"
+                            >
                               {emp.active ? (
                                 <button
                                   onClick={() => { setConfirmState({ isOpen: true, empId: emp.empId, mode: 'DEACTIVATE' }); setActiveMenu(null); }}
@@ -234,16 +351,18 @@ const EmployeesView = () => {
                     </td>
                   </tr>
                 ))
-              ) : !loading && (
+              ) : (
                 <tr>
-                  <td colSpan={4} className="py-32 text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">No Personnel Records Match Filters</td>
+                  <td colSpan={7} className="py-32 text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">
+                    No Personnel Records Match Filters
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Syncing Overlay */}
+        {/* Loading overlay */}
         <AnimatePresence>
           {loading && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center z-10">
@@ -254,30 +373,43 @@ const EmployeesView = () => {
         </AnimatePresence>
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-between items-center px-2 pt-4">
-        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          Showing Page {currentPage + 1} of {pagination.totalPages || 1}
-        </span>
-        <div className="flex gap-2">
-          <button
-            disabled={currentPage === 0 || loading}
-            onClick={() => setCurrentPage(p => p - 1)}
-            className="p-3 rounded-sm border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-20 transition-all"
-          >
-            <FaChevronLeft size={10} />
-          </button>
-          <button
-            disabled={currentPage >= (pagination.totalPages - 1) || loading}
-            onClick={() => setCurrentPage(p => p + 1)}
-            className="p-3 rounded-sm border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-20 transition-all"
-          >
-            <FaChevronRight size={10} />
-          </button>
+      {/* ── Pagination ── */}
+      {!isSearchMode && (
+        <div className="flex justify-between items-center px-2 pt-4">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Showing Page {currentPage + 1} of {pagination.totalPages || 1}
+            {searchTerm && <span className="ml-2 text-indigo-500">— "{searchTerm}"</span>}
+          </span>
+          <div className="flex gap-2">
+            {/* Page number buttons — from HREmployeesPage */}
+            {pagination.totalPages > 1 && Array.from({ length: Math.min(pagination.totalPages, 7) }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i)}
+                className={`px-3 py-2 rounded-sm border text-[10px] font-black transition-all ${i === currentPage ? 'bg-slate-900 text-white border-slate-900' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'}`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              disabled={currentPage === 0 || loading}
+              onClick={() => setCurrentPage(p => p - 1)}
+              className="p-3 rounded-sm border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-20 transition-all"
+            >
+              <FaChevronLeft size={10} />
+            </button>
+            <button
+              disabled={currentPage >= (pagination.totalPages - 1) || loading}
+              onClick={() => setCurrentPage(p => p + 1)}
+              className="p-3 rounded-sm border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-20 transition-all"
+            >
+              <FaChevronRight size={10} />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Modals */}
+      {/* ── Modals ── */}
       <AddEmployeePopup
         open={openAddEmployee}
         addUser={addUser}
@@ -300,6 +432,8 @@ const EmployeesView = () => {
 };
 
 export default EmployeesView;
+
+// ─── ConfirmDialog (unchanged) ────────────────────────────────────
 interface ConfirmDialogProps {
   isOpen: boolean; title: string; message: string; confirmText: string;
   isDanger: boolean; onConfirm: () => void; onCancel: () => void;

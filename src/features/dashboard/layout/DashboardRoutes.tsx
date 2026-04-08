@@ -4,9 +4,11 @@ import FlashNewsForm from "@/features/notification/pages/FlashNewsCreate";
 
 /* COMMON */
 import TeamCalendarView from "@/features/attendance/pages/TeamCalendarView";
+// import AdminDashboardView from "@/features/dashboard/admin/pages/AdminDashboardView";
+// import { HRDashboard } from "@/features/dashboard/hr/pages/HRDashboard";
 import ManagerDashboardView from "@/features/dashboard/manager/pages/ManagerDashboardView";
 import RequestCenter from "@/features/employee/components/RequestCenter";
-import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
+// import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
 import { HRVerificationPage } from "@/features/employee/pages/hr/Hrverificationpage";
 import CalendarView from "@/features/employee/pages/self/CalendarView";
 import DashboardView from "@/features/employee/pages/self/DashboardView";
@@ -18,6 +20,8 @@ import PendingApprovalsView from "@/features/leave/pages/PendingApprovalsView";
 import NotificationsView from "@/features/notification/pages/NotificationsView";
 import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { useAuth } from "@/shared/auth/useAuth";
+import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
+// import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
 
 const DashboardRoutes = () => {
 

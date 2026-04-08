@@ -2,7 +2,7 @@ import { useEmployeeDashboard } from "@/features/dashboard/hooks";
 import LeaveDetailsDrawer from "@/features/leave/components/LeaveDetailsDrawer";
 import type { LeaveTypeBreakDown } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
-import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
+import { CustomLoader } from "@/shared/components";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState, type JSX } from "react";
 import {
@@ -205,7 +205,7 @@ const DashboardView = () => {
             >
               {/* Category Column */}
               <div className="col-span-4 flex items-center gap-4">
-                <div className={`w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-sm ${item.color}`}>
+                <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-sm ${item.color}`}>
                   {item.icon}
                 </div>
                 <div className="flex flex-col">
@@ -254,11 +254,11 @@ const DashboardView = () => {
         onClick={() => handleNavigate('request-center')}
       />
 
-      <MyFloatingActionButton
+      {/* <MyFloatingActionButton
         icon={<FaPlus />}
         onClick={() => handleNavigate('request-center')}
         title="Apply Leave"
-      />
+      /> */}
     </motion.div>
   );
 };

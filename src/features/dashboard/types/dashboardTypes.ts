@@ -25,8 +25,8 @@ export interface OnboardingEmployee {
   employeeName: string;
   email: string;
   joiningDate: string;
-  biometricStatus: OnboardingStatus;
-  vpnStatus: OnboardingStatus;
+  biometricStatus: string;
+  vpnStatus: string;
   daysInOnboarding: number;
 }
 

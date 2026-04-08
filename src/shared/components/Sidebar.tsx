@@ -1,5 +1,4 @@
 import logoSVG from "@/assets/svg/logo.svg";
-import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { useAuth } from "@/shared/auth/useAuth";
 import {
   FaBell,
@@ -102,7 +101,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
 
         {/* LOGO AREA */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} mb-10 px-2 py-3 rounded-2xl bg-slate-50/50 transition-all`}>
-          <img src={logoSVG} alt="logo" className="w-8 h-8 min-w-8" />
+          <img src={logoSVG} alt="logo" className="w-8 h-8 min-w-8 p-2" />
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden">
               <span className="text-slate-900 text-xs font-black leading-none uppercase tracking-tighter">WeNxt</span>
