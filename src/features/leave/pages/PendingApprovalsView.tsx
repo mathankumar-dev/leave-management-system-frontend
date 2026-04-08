@@ -5,9 +5,10 @@ import type { LeaveDecision, ManagerAccessDecision } from '@/features/leave/type
 import { notify } from '@/features/notification/utils/notifications';
 import api from '@/services/apiClient';
 import { useAuth } from '@/shared/auth/useAuth';
-import { CustomLoader, CommentDialog, MetricTile } from '@/shared/components';
+import { CommentDialog, CustomLoader, MetricTile } from '@/shared/components';
+import { formatDateDisplay } from '@/shared/utils/dateUtils';
 import { formatTimeAgo } from '@/shared/utils/formatTimeAgo';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSearch, FaTimes } from 'react-icons/fa';
 
 
@@ -27,9 +28,6 @@ interface PendingRequest {
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
-    const userRole = user?.role?.toUpperCase();
-    const isManager = userRole === 'MANAGER';
-    const isTeamLeader = userRole === 'TEAM_LEADER';
     const canSeeDashboardMetrics = true;
 
     const {
@@ -42,13 +40,14 @@ const PendingApprovalsView: React.FC = () => {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
+    const [detailModalReq, setDetailModalReq] = useState<any | null>(null);
 
     useEffect(() => {
         if (user?.id && canSeeDashboardMetrics) {
             // fetchWeeklyLeaveSummary(user.id);
             // fetchTeamOnLeave(user.id);
         }
-    }, [ user?.id, canSeeDashboardMetrics]);
+    }, [user?.id, canSeeDashboardMetrics]);
 
     const [dialogConfig, setDialogConfig] = useState<{
         isOpen: boolean;
@@ -90,60 +89,28 @@ const PendingApprovalsView: React.FC = () => {
     }, [requests, searchQuery, timeFilter]);
 
     const onActionTriggered = (req: PendingRequest, status: LeaveDecision) => {
-        const isAccessRequest = req.leaveType === 'VPN' || req.leaveType === 'BIOMETRIC';
-
-        if (status === 'REJECTED' || status === 'MEETING_REQUIRED' || (isAccessRequest && status === 'APPROVED')) {
-            setDialogConfig({ isOpen: true, req, status });
-            return;
-        }
-        handleConfirmDecision(req, status);
+        setDialogConfig({ isOpen: true, req, status });
     };
 
-    // const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-    //     let result;
-    //     if (req.isCompOff) {
-    //         if (status === 'APPROVED') {
-    //             result = await handleCompOffApprove(req.id);
-    //         } else if (status === 'REJECTED') {
-    //             result = await handleCompOffReject(req.id, commentText || "");
-    //         }
-    //     } else {
-    //         const decisionPayload: LeaveDecisionRequest = {
-    //             leaveId: req.id,
-    //             approverId: Number(user?.id),
-    //             decision: status,
-    //             comments: commentText
-    //         };
-    //         result = await handleDecision(decisionPayload);
-    //     }
-
-    //     if (result?.success) {
-    //         notify.leaveAction(status, req.employeeName, !!req.isCompOff);
-    //         setDialogConfig({ isOpen: false, req: null, status: null });
-    //     } else {
-    //         notify.error("Update Failed", "Please check your connection and try again.");
-    //     }
-    // };
 
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-
         let accessDecisionBody: ManagerAccessDecision | undefined = undefined;
 
+        // Handle special Access requests (VPN/Biometric)
         if (req.leaveType === 'VPN' || req.leaveType === 'BIOMETRIC') {
             accessDecisionBody = {
                 decision: status,
-                remarks: commentText || "Approved",
+                remarks: commentText || "Approved", // Default if blank
                 managerId: user!.id,
             };
         }
 
-        // 2. Pass it as the 5th argument
         const result = await handleDecision(
             req.id,
             status,
-            commentText || "",
+            commentText || (status === 'APPROVED' ? "Approved" : ""), // Default for leave remarks
             req.leaveType,
-            accessDecisionBody // Pass the object here
+            accessDecisionBody
         );
 
         if (result?.success) {
@@ -154,6 +121,7 @@ const PendingApprovalsView: React.FC = () => {
         }
     };
 
+console.log(requests);
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -167,16 +135,36 @@ const PendingApprovalsView: React.FC = () => {
 
     return (
         <div className='flex flex-col gap-4 w-full max-w-full overflow-x-hidden'>
+
+            <DetailedRequestModal
+                isOpen={!!detailModalReq}
+                req={detailModalReq}
+                onClose={() => setDetailModalReq(null)}
+                onAction={(status) => {
+                    const req = detailModalReq;
+                    setDetailModalReq(null);
+                    onActionTriggered(req, status);
+                }}
+            />
             <CommentDialog
                 isOpen={dialogConfig.isOpen}
                 onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
-                title={dialogConfig.status === 'REJECTED' ? 'Reject Request' : 'Request Meeting'}
-                placeholder={
-                    dialogConfig.status === 'REJECTED'
-                        ? `Provide a reason for rejecting ${dialogConfig.req?.employeeName}'s request...`
-                        : `Enter notes regarding the meeting with ${dialogConfig.req?.employeeName}...`
+                title={
+                    dialogConfig.status === 'APPROVED' ? 'Approve Request' :
+                        dialogConfig.status === 'REJECTED' ? 'Reject Request' : 'Request Meeting'
                 }
-                confirmLabel={dialogConfig.status === 'REJECTED' ? 'Reject' : 'Schedule Discussion'}
+                placeholder={
+                    dialogConfig.status === 'APPROVED'
+                        ? `Add an optional approval note for ${dialogConfig.req?.employeeName}...`
+                        : dialogConfig.status === 'REJECTED'
+                            ? `Provide a reason for rejecting ${dialogConfig.req?.employeeName}'s request...`
+                            : `Enter notes regarding the meeting with ${dialogConfig.req?.employeeName}...`
+                }
+                confirmLabel={
+                    dialogConfig.status === 'APPROVED' ? 'Confirm Approval' :
+                        dialogConfig.status === 'REJECTED' ? 'Reject' : 'Schedule Discussion'
+                }
+                // This calls the confirm logic ONLY when the user clicks the button in the dialog
                 onSubmit={(comment) => handleConfirmDecision(dialogConfig.req, dialogConfig.status!, comment)}
             />
 
@@ -247,24 +235,28 @@ const PendingApprovalsView: React.FC = () => {
             <div className='flex flex-col gap-3 bg-[#F1F5F9] py-4 px-2 md:px-4 rounded-sm border border-slate-200'>
                 {filteredRequests.length > 0 ? (
                     filteredRequests.map((req) => (
-                        <RequestTile
-                            key={req.id}
-                            employeeName={req.employeeName}
-                            leaveType={req.leaveType}
-                            reasonMessage={req.isCompOff ? "Comp-Off Credit Request" : req.reason}
-                            dateRange={formatDateRange(req.startDate, req.endDate)}
-                            startDate={req.startDate}
-                            endDate={req.endDate}
-                            startDateHalfDayType={req.startDateHalfDayType || req.halfDayType}
-                            endDateHalfDayType={req.endDateHalfDayType}
-                            days={req.days}
-                            createdAt={formatTimeAgo(req.createdAt)}
-                            onAccept={() => onActionTriggered(req, 'APPROVED')}
-                            onReject={() => onActionTriggered(req, 'REJECTED')}
-                            onDiscuss={((isManager || isTeamLeader) && !req.isCompOff && !req.isOD) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
-                            attachments={req.attachments}
-                            onViewAttachment={(attachment) => setSelectedAttachment(attachment)}
-                        />
+                        <div key={req.id}
+                            onClick={() => setDetailModalReq(req)}
+                            className="cursor-pointer transition-transform active:scale-[0.99]">
+                            <RequestTile
+                                key={req.id}
+                                employeeName={req.employeeName}
+                                leaveType={req.leaveType}
+                                reasonMessage={req.isCompOff ? "Comp-Off Credit Request" : req.reason}
+                                dateRange={formatDateRange(req.startDate, req.endDate)}
+                                startDate={req.startDate}
+                                endDate={req.endDate}
+                                startDateHalfDayType={req.startDateHalfDayType || req.halfDayType}
+                                endDateHalfDayType={req.endDateHalfDayType}
+                                days={req.days}
+                                createdAt={formatTimeAgo(req.createdAt)}
+                                onAccept={() => onActionTriggered(req, 'APPROVED')}
+                                onReject={() => onActionTriggered(req, 'REJECTED')}
+                                attachments={req.attachments}
+                                onViewAttachment={(attachment) => setSelectedAttachment(attachment)}
+                            />
+                        </div>
+
                     ))
                 ) : (
                     <div className="py-16 bg-white rounded-sm border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400">
@@ -353,8 +345,82 @@ const PendingApprovalsView: React.FC = () => {
 
 export default PendingApprovalsView;
 
+const DetailedRequestModal: React.FC<{
+    req: any;
+    isOpen: boolean;
+    onClose: () => void;
+    onAction: (status: 'APPROVED' | 'REJECTED') => void;
+}> = ({ req, isOpen, onClose, onAction }) => {
+    if (!req || !isOpen) return null;
 
-// Your Axios instance
+    return (
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                {/* Header */}
+                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <div>
+                        <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">Application Details</h2>
+                        <p className="text-xs text-slate-500">
+                            Leave ID: #{req.id} • Applied on {formatDateDisplay(req.createdAt)}
+                        </p>                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
+                        <FaTimes size={20} />
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <DetailItem label="Employee Name" value={req.employeeName} subValue={req.employeeId} />
+                    <DetailItem label="Leave Type" value={req.leaveTypeName} className="text-indigo-600" />
+                    <DetailItem
+                        label="Period"
+                        value={
+                            formatDateDisplay(req.startDate) === formatDateDisplay(req.endDate)
+                                ? formatDateDisplay(req.startDate)
+                                : `${formatDateDisplay(req.startDate)} to ${formatDateDisplay(req.endDate)}`
+                        }
+                        subValue={`${req.days} Day(s) Total`}
+                    />                    <DetailItem label="Approval Status" value={req.currentApprovalLevel.replace('_', ' ')} className="text-amber-600" />
+
+                    <div className="col-span-full p-4 bg-slate-50 rounded-lg border border-slate-100">
+                        <p className="text-[10px] text-slate-400 uppercase font-black mb-1">Reason for Leave</p>
+                        <p className="text-sm text-slate-700 leading-relaxed italic">"{req.reason || 'No reason provided'}"</p>
+                    </div>
+
+                    <div className="col-span-full grid grid-cols-3 gap-4 border-t border-slate-100 pt-4">
+                        <DetailItem label="Year" value={req.year} />
+                        <DetailItem label="Comp-Off Used" value={req.compOffUsed} />
+                        <DetailItem label="LOP Applied" value={req.lossOfPayApplied} />
+                    </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div className="px-6 py-4 bg-slate-50 border-t flex gap-3">
+                    <button
+                        onClick={() => onAction('REJECTED')}
+                        className="flex-1 py-3 bg-white border border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors uppercase text-xs tracking-widest"
+                    >
+                        Reject
+                    </button>
+                    <button
+                        onClick={() => onAction('APPROVED')}
+                        className="flex-2 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] uppercase text-xs tracking-widest"
+                    >
+                        Approve Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const DetailItem = ({ label, value, subValue, className = "" }: any) => (
+    <div className="flex flex-col">
+        <p className="text-[9px] text-slate-400 uppercase font-black tracking-widest mb-0.5">{label}</p>
+        <p className={`text-slate-800 font-bold ${className}`}>{value}</p>
+        {subValue && <p className="text-[10px] text-slate-500 font-medium">{subValue}</p>}
+    </div>
+);
 
 interface AuthenticatedImageProps {
     fileUrl: string;
@@ -369,8 +435,7 @@ const AuthenticatedImage: React.FC<AuthenticatedImageProps> = ({ fileUrl, classN
         const fetchImage = async () => {
             try {
                 setLoading(true);
-                // Use your API instance to handle the 403/Auth headers automatically
-                const response = await api.get(`/files/download/${encodeURIComponent(fileUrl)}`, {
+                const response = await api.get(`/documents/view/${encodeURIComponent(fileUrl)}`, {
                     responseType: "blob",
                 });
 

@@ -47,23 +47,37 @@ export const authService = {
 
     // 3. Conditional Keys based on Employee Type
     if (type === "FRESHER") {
-      // Keys must match Spring Boot @RequestPart names exactly
       if (files.tenthMarksheet) formData.append("tenthMarksheet", files.tenthMarksheet as File);
       if (files.twelfthMarksheet) formData.append("twelfthMarksheet", files.twelfthMarksheet as File);
       if (files.degreeCertificate) formData.append("degreeCertificate", files.degreeCertificate as File);
       if (files.offerLetter) formData.append("offerLetter", files.offerLetter as File);
     } else {
-      // Experienced: handle List<MultipartFile> for experienceCerts
-      if (files.relievingLetter) formData.append("relievingLetter", files.relievingLetter as File);
+      // Experienced: handle List<MultipartFile> for certificates
 
+      // ✅ Handle Experience Certificates Array
       if (Array.isArray(files.experienceCerts)) {
         files.experienceCerts.forEach((file) => {
           formData.append("experienceCerts", file);
         });
       }
+
+      // ✅ NEW: Handle Joining Letters Array
+      // Ensure the key name "joiningLetter" matches your Spring Boot @RequestPart exactly
+      if (Array.isArray(files.joiningLetter)) {
+        files.joiningLetter.forEach((file) => {
+          formData.append("joiningLetters", file);
+        });
+      }
+      if (Array.isArray(files.relievingLetter)) {
+        files.relievingLetter.forEach((file) => {
+          formData.append("relievingLetters", file);
+        });
+      }
     }
 
-    // POST endpoint only
+    console.log(formData);
+    
+
     const response = await api.post(
       `/employees/personal-details/${id}/${type.toLowerCase()}`,
       formData,
@@ -136,22 +150,22 @@ export const authService = {
 
   forgotPassword: async (email: string): Promise<void> => {
     await api.post('/password-reset/forgot-password', {
-      email 
+      email
     });
   },
 
-  
-  verifyOtp: async (data:{
-    email:string,
-    otp:string,
-    newPassword:string
-}) => {
+
+  verifyOtp: async (data: {
+    email: string,
+    otp: string,
+    newPassword: string
+  }) => {
 
     return api.post(
-        "/password-reset/verify-otp",
-        data
+      "/password-reset/verify-otp",
+      data
     );
 
-}
+  }
 
 };

@@ -44,7 +44,13 @@ const ChangePasswordDialog: React.FC = () => {
 
     try {
       setLoaderState({ active: true, finished: false });
+      console.log("Going to call change password");
+      
       await authService.changePassword(newPassword);
+
+      
+      console.log("after calling change password");
+      
       setLoaderState({ active: true, finished: true });
     } catch (err) {
       setLoaderState({ active: false, finished: false });
@@ -57,6 +63,10 @@ const ChangePasswordDialog: React.FC = () => {
     if (user) {
       try {
         const updatedProfile = await authService.getEmployeeProfile(user.id);
+        console.log("updated profile");
+        
+        console.log(updatedProfile);
+        
         setUser(updatedProfile);
       } catch (err) {
         window.location.reload();
@@ -79,7 +89,7 @@ const ChangePasswordDialog: React.FC = () => {
           <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-neutral-100">
             
             {/* Header Section */}
-            <div className="pt-10 pb-6 px-8 text-center bg-gradient-to-b from-red-50 to-white">
+            <div className="pt-10 pb-6 px-8 text-center bg-linear-to-b from-red-50 to-white">
               <div className="mx-auto w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mb-4 text-2xl text-white shadow-lg shadow-red-200 rotate-3">
                 <FaLock />
               </div>
