@@ -42,7 +42,7 @@ const AuthPage: React.FC = () => {
                       Users can edit their profile details from
                       <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">06.04.2026</span>
                       to
-                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">11.06.2026</span>.
+                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">11.04.2026</span>.
                     </span>
                   </p>
                   <button

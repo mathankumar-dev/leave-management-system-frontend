@@ -25,7 +25,6 @@ const TeamCalendarView: React.FC = () => {
     fetchEmployeeCalendar,
     employeeCalendar
   } = useCalendar();
-  const { fetchEmployeeName } = useEmployee();
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
