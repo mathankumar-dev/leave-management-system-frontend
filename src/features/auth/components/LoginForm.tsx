@@ -122,7 +122,7 @@ const LoginForm: React.FC = () => {
               value={identifier}
               onChange={(e) => {
                 const value = e.target.value;
-                setIdentifier(logintype === "id" ? value : value.toUpperCase());
+                setIdentifier(logintype === "id" ?  value.toUpperCase() : value);
               }}
               placeholder={logintype === "email" ? "name@wenxttech.com" : "WENXT011"}
               className={`w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm ${logintype === "id" ? "uppercase" : ""
