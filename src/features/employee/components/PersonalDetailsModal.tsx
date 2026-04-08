@@ -76,7 +76,6 @@ const PersonalDetailsModal = () => {
     ];
 
 
-
     useEffect(() => {
         const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
         setFormData(prev => ({ ...prev, aadharNumber: combined }));

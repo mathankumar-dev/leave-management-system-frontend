@@ -1,4 +1,5 @@
 import { useCalendar } from "@/features/attendance/hooks/useCalendar";
+import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -24,7 +25,6 @@ const TeamCalendarView: React.FC = () => {
     fetchEmployeeCalendar,
     employeeCalendar
   } = useCalendar();
-
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
@@ -80,6 +80,10 @@ const TeamCalendarView: React.FC = () => {
   const dailyTeam = teamCalendar[dailyKey] || [];
   const dailyMine = employeeCalendar[dailyKey] || [];
   const dailyHoliday = PUBLIC_HOLIDAYS_2026[dailyKey];
+
+  console.log(teamCalendar);
+
+
 
   // ---------------- NAVIGATION ----------------
   const handleMove = (direction: number) => {
@@ -215,7 +219,7 @@ const TeamCalendarView: React.FC = () => {
                           {/* TEAM NAMES (Show first 2-3 then a +count) */}
                           {team.slice(0, 2).map((emp: any, idx: number) => (
                             <div key={idx} className="px-1 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[7px] font-black uppercase rounded-sm truncate">
-                              {emp.employeeName}
+                              <TeamMemberName employeeId={emp.employeeId} />
                             </div>
                           ))}
 
@@ -248,8 +252,13 @@ const TeamCalendarView: React.FC = () => {
                     <div className="space-y-2 flex-1">
                       {d.holiday && <StatusBadge color="rose" label={d.holiday} />}
                       {d.mine.map((_, idx) => <StatusBadge key={idx} color="amber" label="My Leave" />)}
-                      {d.team.map((r: any, idx: number) => <StatusBadge key={idx} color="indigo" label={r.employeeName} />)}
-                      {(!d.holiday && d.mine.length === 0 && d.team.length === 0) && (
+                      {d.team.map((r: any, idx: number) => (
+                        <StatusBadge
+                          key={idx}
+                          color="indigo"
+                          label={<TeamMemberName employeeId={r.employeeId} />}
+                        />
+                      ))}                      {(!d.holiday && d.mine.length === 0 && d.team.length === 0) && (
                         <div className="flex flex-col items-center justify-center h-full opacity-20">
                           <FaUserCheck size={20} />
                         </div>
@@ -265,7 +274,6 @@ const TeamCalendarView: React.FC = () => {
               <motion.div key="day" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-8 max-w-2xl mx-auto">
                 <div className="bg-slate-900 text-white p-6 rounded-sm mb-6 flex justify-between items-center shadow-md">
                   <div>
-                    {/* DYNAMIC TEXT HERE */}
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">
                       {viewMode === 'day' ? 'Daily Schedule' : viewMode === 'week' ? 'Weekly Overview' : 'Monthly Summary'}
                     </p>
@@ -280,11 +288,22 @@ const TeamCalendarView: React.FC = () => {
                   {dailyHoliday && <DayRecord title="Public Holiday" content={dailyHoliday} color="rose" />}
 
                   {dailyMine.map((r: any, i: number) => (
-                    <DayRecord key={`mine-${i}`} title="My Attendance" content={r.leaveTypeName || "Out of Office"} color="amber" />
+                    <DayRecord
+                      key={`mine-${i}`}
+                      title="My Attendance"
+                      content={r.leaveTypeName || "Out of Office"}
+                      color="amber"
+                    />
                   ))}
 
+                  {/* UPDATED TEAM SECTION */}
                   {dailyTeam.map((r: any, i: number) => (
-                    <DayRecord key={`team-${i}`} title={r.employeeName} content={r.leaveTypeName || "Team Absence"} color="indigo" />
+                    <DayRecord
+                      key={`team-${i}`}
+                      title={<TeamMemberName employeeId={r.employeeId} />}
+                      content={r.leaveTypeName || "Team Absence"}
+                      color="indigo"
+                    />
                   ))}
 
                   {(dailyTeam.length === 0 && dailyMine.length === 0 && !dailyHoliday) && (
@@ -303,7 +322,9 @@ const TeamCalendarView: React.FC = () => {
       {/* SIDE DETAILS PANEL (Remains consistent across views) */}
       <div className="w-full lg:w-80 space-y-3 shrink-0">
         <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden p-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 border-b pb-2 border-slate-100">Quick Detail: {selectedDay} {monthName.slice(0, 3)}</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 border-b pb-2 border-slate-100">
+            Quick Detail: {selectedDay} {monthName.slice(0, 3)}
+          </p>
           <div className="space-y-3 min-h-[150px]">
             {selectedDayHoliday && (
               <div className="p-3 bg-rose-50 border border-rose-100 rounded-sm">
@@ -311,25 +332,42 @@ const TeamCalendarView: React.FC = () => {
                 <p className="text-xs font-bold text-rose-900">{selectedDayHoliday}</p>
               </div>
             )}
+
             {selectedDayMyStatus.map((_, i) => (
               <div key={i} className="flex items-center gap-3 p-3 bg-amber-50/50 border border-amber-100 rounded-sm">
-                <div className="w-8 h-8 bg-amber-100 text-amber-600 flex items-center justify-center rounded-sm"><FaUserAlt size={12} /></div>
+                <div className="w-8 h-8 bg-amber-100 text-amber-600 flex items-center justify-center rounded-sm">
+                  <FaUserAlt size={12} />
+                </div>
                 <p className="text-xs font-black text-slate-900 uppercase truncate">My Leave</p>
               </div>
             ))}
+
             {selectedDayTeamLeaves.length > 0 ? (
               selectedDayTeamLeaves.map((emp: any) => (
                 <div key={emp.employeeId} className="flex items-center gap-3 p-3 border border-slate-100 rounded-sm">
-                  <div className="w-8 h-8 bg-slate-100 text-slate-500 flex items-center justify-center rounded-sm text-[10px] font-black uppercase">{emp.employeeName.charAt(0)}</div>
-                  <p className="text-xs font-black text-slate-900 uppercase truncate">{emp.employeeName}</p>
+                  {/* Using a generic icon because the name is fetched asynchronously */}
+                  <div className="w-8 h-8 bg-slate-100 text-slate-500 flex items-center justify-center rounded-sm">
+                    <FaUserAlt size={10} />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <p className="text-xs font-black text-slate-900 uppercase truncate">
+                      <TeamMemberName employeeId={emp.employeeId} />
+                    </p>
+                    {/* Optional: Add a sub-label if your data includes leave types */}
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                      Team Member
+                    </p>
+                  </div>
                 </div>
               ))
-            ) : (!selectedDayHoliday && selectedDayMyStatus.length === 0 && (
-              <div className="flex flex-col items-center py-10 opacity-30">
-                <FaUserCheck size={20} />
-                <p className="text-[9px] font-black uppercase tracking-widest mt-2">No Records</p>
-              </div>
-            ))}
+            ) : (
+              !selectedDayHoliday && selectedDayMyStatus.length === 0 && (
+                <div className="flex flex-col items-center py-10 opacity-30">
+                  <FaUserCheck size={20} />
+                  <p className="text-[9px] font-black uppercase tracking-widest mt-2">No Records</p>
+                </div>
+              )
+            )}
           </div>
         </div>
 
@@ -379,7 +417,7 @@ const ViewTab = ({ active, onClick, icon, label }: any) => (
   </button>
 );
 
-const StatusBadge = ({ color, label }: { color: 'rose' | 'amber' | 'indigo', label: string }) => {
+const StatusBadge = ({ color, label }: { color: 'rose' | 'amber' | 'indigo', label: React.ReactNode }) => {
   const styles = {
     rose: "bg-rose-50 border-rose-100 text-rose-600",
     amber: "bg-amber-50 border-amber-100 text-amber-600",
@@ -388,7 +426,7 @@ const StatusBadge = ({ color, label }: { color: 'rose' | 'amber' | 'indigo', lab
   return <div className={`px-2 py-1 border text-[8px] font-black uppercase rounded-sm truncate ${styles[color]}`}>{label}</div>;
 };
 
-const DayRecord = ({ title, content, color }: { title: string, content: string, color: 'rose' | 'amber' | 'indigo' }) => {
+const DayRecord = ({ title, content, color }: { title: React.ReactNode, content: string, color: 'rose' | 'amber' | 'indigo' }) => {
   const styles = {
     rose: "bg-rose-50/50 border-rose-200",
     amber: "bg-amber-50/50 border-amber-200",
@@ -396,7 +434,7 @@ const DayRecord = ({ title, content, color }: { title: string, content: string, 
   };
   return (
     <div className={`p-4 border-l-4 rounded-sm shadow-sm bg-white ${styles[color]}`}>
-      <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.1em]">{title}</p>
+      <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.1em]">{title}</p>
       <p className="text-sm font-bold text-slate-900 uppercase tracking-tight mt-0.5">{content}</p>
     </div>
   );
@@ -416,5 +454,29 @@ const CountBadge = ({ color, count }: { color: 'indigo' | 'amber', count: number
       {count}
     </span>
   );
+};
+const TeamMemberName = ({ employeeId }: { employeeId: string }) => {
+  const [name, setName] = useState<string>("Loading...");
+  const { fetchEmployeeName } = useEmployee();
+
+  useEffect(() => {
+    const getName = async () => {
+      try {
+        const result = await fetchEmployeeName(employeeId);
+
+        // CHECK: If result is an object, grab the 'empName' property
+        if (result && typeof result === 'object') {
+          setName(result.empName || "Unknown");
+        } else {
+          setName(result || "Unknown");
+        }
+      } catch (err) {
+        setName("Error");
+      }
+    };
+    if (employeeId) getName();
+  }, [employeeId, fetchEmployeeName]);
+
+  return <>{name}</>;
 };
 export default TeamCalendarView;
