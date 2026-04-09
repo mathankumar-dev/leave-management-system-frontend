@@ -10,6 +10,7 @@ export const attendanceService = {
         const response = await api.get<TeamCalendarResponse>(
             `/dashboard/team-calendar/${id}`
         );
+        
         return response.data;
     },
 }

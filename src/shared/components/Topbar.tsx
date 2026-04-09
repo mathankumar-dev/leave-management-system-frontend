@@ -24,7 +24,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { notifications, isLoading, unreadCount } = useNotifications(String(user?.id));
+  const { notifications, unreadCount } = useNotifications(String(user?.id));
 
   // 1. Normalize Role (Matching Sidebar Logic)
   const userRole = user?.role?.toUpperCase();

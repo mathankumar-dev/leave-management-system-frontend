@@ -116,6 +116,8 @@ export interface ExperienceEntry {
   fromDate: string; 
   endDate: string;  
   lastCompany: boolean;
+  tempCert?: File | null; 
+
 }
 
 export interface FresherPersonalDetailsRequest extends BasePersonalDetails {}

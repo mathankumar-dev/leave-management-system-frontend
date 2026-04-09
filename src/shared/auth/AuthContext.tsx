@@ -67,7 +67,6 @@ useEffect(() => {
 
       const profile = await authService.getEmployeeProfile(data.employeeId);
       setUser(profile);
-      console.log(profile);
       
     } catch (e) {
       console.error("Login initialization failed:", e);

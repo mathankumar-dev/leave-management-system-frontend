@@ -41,6 +41,7 @@ export interface LeaveRecord {
   managerDecision: string | null;
   managerDecidedAt: string | null;
   hrDecision: string | null;
+  rejectionReason? : string | null;
   carryForwardUsed: number;
   compOffUsed: number;
   lossOfPayApplied: number;

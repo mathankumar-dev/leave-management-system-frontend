@@ -1,4 +1,19 @@
 export interface ProfileData {
+  ifscCode: string;
+  bankBranchName: string;
+  fatherDateOfBirth: string;
+  fatherOccupation: string;
+  fatherAlive: boolean;
+  motherDateOfBirth: string;
+  motherOccupation: string;
+  motherAlive: boolean;
+  spouseName: string;
+  spouseOccupation: string;
+  spouseContactNumber: string;
+  children: never[];
+  experiences: never[];
+  uanNumber: string;
+  spouseDateOfBirth: string;
   id: number;
   name: string;
   email: string;

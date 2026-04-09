@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from "react";
 import { useCalendar } from "@/features/attendance/hooks/useCalendar";
 import { useAuth } from "@/shared/auth/useAuth";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -23,6 +23,9 @@ const EmployeeCalendarView: React.FC = () => {
       fetchEmployeeCalendar(employeeId);
     }
   }, [employeeId]);
+
+  console.log(employeeCalendar);
+  
 
 
   // date formatter
@@ -219,7 +222,7 @@ const EmployeeCalendarView: React.FC = () => {
 
           <div className="grid grid-cols-7 text-center text-xs font-bold mb-2">
 
-            {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => (
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
 
               <div key={d}>{d}</div>
 
@@ -239,10 +242,8 @@ const EmployeeCalendarView: React.FC = () => {
 
             {monthDays.map(day => {
 
-              const date = new Date(year, month, day);
-
+              const date = new Date(year, month, day, 12, 0, 0);
               const key = formatKey(date);
-
               const records = employeeCalendar?.[key] || [];
 
               return (
@@ -257,13 +258,13 @@ const EmployeeCalendarView: React.FC = () => {
                   </p>
 
 
-                  {records.slice(0,2).map((r:any,i:number)=>(
+                  {records.slice(0, 2).map((r: any, i: number) => (
 
                     <div
                       key={i}
-                      className="text-[9px] bg-indigo-50 mt-1 p-1 rounded"
+                      className="text-[15px] bg-red-500 text-white mt-1 p-1 rounded"
                     >
-                      {r.leaveType || "Present"}
+                      {r.leaveType || "Leave"}
                     </div>
 
                   ))}
@@ -304,14 +305,14 @@ const EmployeeCalendarView: React.FC = () => {
 
               )}
 
-              {d.records.map((r:any,idx:number)=>(
+              {d.records.map((r: any, idx: number) => (
 
                 <div
                   key={idx}
                   className="text-[10px] bg-indigo-50 p-1 rounded mt-1"
                 >
 
-                  {r.leaveType || "Present"}
+                  {r.leaveTypeName || "Leave"}
 
                 </div>
 
@@ -341,34 +342,23 @@ const EmployeeCalendarView: React.FC = () => {
 
           )}
 
-          {dailyData.map((r:any,i:number)=>(
+          {dailyData.map((r: any, i: number) => (
 
             <div key={i} className="border p-3 rounded mb-2">
 
               <p className="font-semibold">
 
                 {r.leaveType || "Present"}
-
               </p>
-
               <p className="text-xs text-gray-500">
-
                 {r.employeeName}
-
               </p>
-
             </div>
-
           ))}
-
         </div>
-
       )}
-
     </div>
-
   );
-
 };
 
 export default EmployeeCalendarView;

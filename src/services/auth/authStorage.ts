@@ -9,7 +9,7 @@ export const setAuthData = (id: string, token: string) => {
   Cookies.set(TOKEN_KEY, token, { 
     expires: 1, 
     path: "/", 
-    secure: true, 
+    secure: false, 
     sameSite: "Lax" 
   });
 };

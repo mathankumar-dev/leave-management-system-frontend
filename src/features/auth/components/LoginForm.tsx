@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "../../../shared/auth/useAuth";
 
-import logoSVG from '@/assets/images/bg-rm-logo-HRES.png';
+
+import wehrm from '@/assets/images/LogoWeHRM2.png';
 
 
 import Loader from "../../../shared/components/Loader";
@@ -57,7 +58,7 @@ const LoginForm: React.FC = () => {
         />
       )}
       {/* LOGO */}
-      <img src={logoSVG} alt="Company logo" className="w-20 h-20 mb-4" />
+      <img src={wehrm} alt="Company logo" className="w-25 h-25 mb-4" />
 
       <form onSubmit={handleLogin} className="space-y-6 w-full">
         <div className="flex flex-col gap-2 items-center">
@@ -147,7 +148,7 @@ const LoginForm: React.FC = () => {
               className="w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm"
             />
           </div>
-          <Link to="/forgot-password" intrinsic-size="11" className="text-[11px] font-bold text-primary-600 hover:underline flex justify-end">
+          <Link to="/forgot-password" intrinsic-size="11" className="text-[11px] font-bold text-red-400 hover:underline flex justify-end">
             Forgot Password?
           </Link>
         </div>

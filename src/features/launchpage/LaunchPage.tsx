@@ -1,4 +1,4 @@
-import logo from "@/assets/images/wenxt-W-only-logo.png";
+import logo from "@/assets/images/LogoWeHRM2.png";
 import CalendarSVG from "@/assets/svg/calendar-svg.svg";
 import moneySVG from "@/assets/svg/money-svg.svg";
 import { useAuth } from "@/shared/auth/useAuth";
@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import React, { useState } from "react";
 import { FaChevronDown, FaSignOutAlt, FaUserCog } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+
 
 
 const LaunchPage: React.FC = () => {
@@ -32,7 +33,7 @@ const LaunchPage: React.FC = () => {
     navigate(`${basePath}/${path}`);
   };
   const goToProfile = () => {
-    handleNavigate("profile");
+    handleNavigate("/profile");
     setIsProfileOpen(false);
   };
   // useEffect(() => {
@@ -86,8 +87,6 @@ const LaunchPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-brand-bg text-slate-900 font-sans selection:bg-brand selection:text-white overflow-hidden relative">
-
-      {/* BACKGROUND BLOBS - CONSISTENCY */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute -top-40 -right-40 w-160 h-160 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute top-1/2 -left-20 w-100 h-100 bg-emerald-500/5 rounded-full blur-3xl" />
@@ -124,7 +123,7 @@ const LaunchPage: React.FC = () => {
                       Users can edit their profile details from
                       <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">06.04.2026</span>
                       to
-                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">11.06.2026</span>.
+                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">11.04.2026</span>.
                     </span>
                   </p>
                   <button
@@ -156,7 +155,7 @@ const LaunchPage: React.FC = () => {
             className="flex items-center space-x-3 cursor-pointer group"
             onClick={() => navigate("/")}
           >
-            <img src={logo} alt="logo" className="h-10 w-10 object-contain transition-transform group-hover:scale-110" />
+            <img src={logo} alt="logo" className="h-15 w-15 object-contain transition-transform group-hover:scale-110" />
             <span className="text-xl font-black text-slate-800 tracking-tight">
               WeNxt <span className="text-brand">Technologies</span>
             </span>

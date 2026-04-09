@@ -13,9 +13,6 @@ export default function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
   const {
     data,
     departmentStats,
-    lowBalanceData,
-    lowBalanceError,
-    lowBalanceLoading,
     loading,
     error,
     // reload,wwww
@@ -107,11 +104,11 @@ export default function HRDashboard({ userName = 'HR' }: HRDashboardProps) {
       </div>
 
       {/* Low Balance Table */}
-      <LowBalanceTable
+      {/* <LowBalanceTable
         data={lowBalanceData}
         loading={lowBalanceLoading}
         error={lowBalanceError}
-      />
+      /> */}
 
       {/* Manager Tracking */}
       <ManagerTrackingTable

@@ -6,13 +6,12 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaCog,
-  FaDollarSign,
   FaExclamationTriangle,
-  FaFileInvoiceDollar,
   FaFileSignature,
   FaHistory,
   FaThLarge,
-  FaUsers
+  FaUsers,
+  FaMoneyBillWave
 } from "react-icons/fa";
 import { MdVerifiedUser } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -49,7 +48,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   const tabs = [
     { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "CTO", "COO"] },
-    { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO"] },
+    { name: "Team Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO","EMPLOYEE"] },
     // { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO"] },
     // { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
     { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR", "CFO"] },
@@ -60,6 +59,8 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
     { name: "Notifications", path: "notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     // { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "ADMIN"] },
     // { name: "Flash News", path: "flash-news", icon: <FaNewspaper />, roles: ["ADMIN"] },
+
+     { name: "Pay Slip", path: "payslip", icon: <FaMoneyBillWave/>, roles: ["EMPLOYEE","MANAGER"] },
   ];
 
   const visibleTabs = tabs.filter((tab) =>
@@ -100,7 +101,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
 
         {/* LOGO AREA */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} mb-10 px-2 py-3 rounded-2xl bg-slate-50/50 transition-all`}>
-          <img src={logoSVG} alt="logo" className="w-8 h-8 min-w-8" />
+          <img src={logoSVG} alt="logo" className="w-8 h-8 min-w-8 p-2" />
           {!isCollapsed && (
             <div className="flex flex-col overflow-hidden">
               <span className="text-slate-900 text-xs font-black leading-none uppercase tracking-tighter">WeNxt</span>
@@ -154,7 +155,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
                   </span>
 
                   {!isCollapsed && (
-                    <span className="text-[11px] font-black uppercase tracking-tight whitespace-nowrap">
+                    <span className="text-[14px] font-black  tracking-tight whitespace-nowrap">
                       {tab.name}
                     </span>
                   )}

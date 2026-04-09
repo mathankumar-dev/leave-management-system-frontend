@@ -2,26 +2,36 @@ import { useEmployeeDashboard } from "@/features/dashboard/hooks";
 import LeaveDetailsDrawer from "@/features/leave/components/LeaveDetailsDrawer";
 import type { LeaveTypeBreakDown } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
-import { CustomLoader, Divider, MyFloatingActionButton } from "@/shared/components";
+import { CustomLoader } from "@/shared/components";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
-import { FaCheckCircle, FaPlus, FaTimesCircle } from "react-icons/fa";
+import { useCallback, useEffect, useState, type JSX } from "react";
+import {
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaClock,
+  FaForward,
+  FaHourglassHalf,
+  FaPlus,
+  FaStethoscope,
+  FaTimesCircle,
+  FaUmbrellaBeach
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
-
 
 interface StatItem {
   title: string;
   used: number;
   total?: number;
   pendingCount?: number;
-  balance? : number;
+  balance?: number;
+  icon: JSX.Element;
+  color: string;
 }
 
 const DashboardView = () => {
-
   const { fetchDashboard, setError } = useEmployeeDashboard();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [monthly, setMonthly] = useState({
     annualAllocated: 0,
@@ -38,30 +48,16 @@ const DashboardView = () => {
   const [rejected, setRejected] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedCard, setSelectedCard] = useState<StatItem | null>(null);
-  const navigate = useNavigate();
 
   const loadDashboard = useCallback(async () => {
-
     if (!user?.id) return;
-
     try {
-
       setLoading(true);
-
       const data = await fetchDashboard(user.id);
-      console.log(data);
-      
-
       const breakdown: LeaveTypeBreakDown[] = data.breakdown || [];
 
       const sick = breakdown.find(b => b.leaveTypeName?.includes("SICK"));
-     
-      
-
       const annual = breakdown.find(b => b.leaveTypeName?.includes("ANNUAL"));
-
-
-      
 
       setMonthly({
         annualAllocated: data.monthlyAnnualAllocated || 0,
@@ -75,239 +71,181 @@ const DashboardView = () => {
 
       setStats([
         {
-          title: "Sick Leave",
-          used: sick?.usedDays ?? 0,
-          total: sick?.allocatedDays ?? 0,
-          pendingCount: sick?.pendingCount ?? 0,
-          balance : sick?.remainingDays ?? 0
-        },
-        {
           title: "Annual Leave",
           used: annual?.usedDays ?? 0,
           total: annual?.allocatedDays ?? 0,
           pendingCount: annual?.pendingCount ?? 0,
-          balance : annual?.remainingDays ?? 0
+          balance: annual?.remainingDays ?? 0,
+          icon: <FaUmbrellaBeach />,
+          color: "text-blue-500 bg-blue-50"
         },
         {
-          title: "Total Leave Count",
-          used: data.yearlyUsed,
-          total: data.yearlyAllocated
+          title: "Sick Leave",
+          used: sick?.usedDays ?? 0,
+          total: sick?.allocatedDays ?? 0,
+          pendingCount: sick?.pendingCount ?? 0,
+          balance: sick?.remainingDays ?? 0,
+          icon: <FaStethoscope />,
+          color: "text-rose-500 bg-rose-50"
         },
         {
           title: "Carry Forward",
           used: (data.carryForwardTotal || 0) - (data.carryForwardRemaining || 0),
-          total: data.carryForwardTotal
+          total: data.carryForwardTotal,
+          balance: data.carryForwardRemaining,
+          icon: <FaForward />,
+          color: "text-amber-500 bg-amber-50"
         },
         {
           title: "Comp Off",
-          used: data.compoffBalance,
-          total: data.compoffBalance
+          used: 0,
+          total: data.compoffBalance,
+          balance: data.compoffBalance,
+          icon: <FaHourglassHalf />,
+          color: "text-purple-500 bg-purple-50"
         }
       ]);
 
       setApproved(data.approvedCount);
       setRejected(data.rejectedCount);
-
     } catch (e: any) {
-
       setError(e.message);
-
     } finally {
-
       setLoading(false);
-
     }
-
-  }, [user?.id]);
-
+  }, [user?.id, fetchDashboard, setError]);
 
   useEffect(() => { loadDashboard(); }, [loadDashboard]);
-  const userRole = user?.role?.toUpperCase();
 
-  const basePathMap = {
-    EMPLOYEE: "/employee",
-    MANAGER: "/manager",
-    TEAM_LEADER: "/manager",
-    HR: "/hr",
-    ADMIN: "/manager",
-    CFO: "/manager",
-  };
-
-  const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
   const handleNavigate = (path: string) => {
-    const finalPath = path.startsWith('/') ? path : `${basePath}/${path}`;
-    console.log("Navigating to:", finalPath);
-    navigate(finalPath);
+    const roleBase = user?.role?.toLowerCase() === 'admin' ? '/manager' : '/employee';
+    navigate(`${roleBase}/${path}`);
   };
 
-  if (loading) return <CustomLoader label="Loading dashboard..." />;
-
+  if (loading) return <CustomLoader label="Loading your workspace..." />;
 
   return (
-
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto  space-y-6"
+      className="max-w-7xl mx-auto px-6 py-8 space-y-8 bg-[#F9FAFB] min-h-screen"
     >
-
-      {/* HEADER */}
-
-      <div className="flex justify-between items-center">
-
+      {/* SaaS HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-
-          <h1 className="text-xl font-semibold">
-            Welcome, {user?.name}
-          </h1>
-
-          <p className="text-xs text-gray-500">
-            Track leave balances & requests
-          </p>
-
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Overview</h1>
+          <p className="text-sm text-gray-500 font-medium">Welcome back, {user?.name}</p>
         </div>
-
-
-      </div>
-
-
-      {/* MONTHLY */}
-      <div className="flex gap-2 flex-col rounded p-2" >
-        <span className="font-bold text-2xl" >Monthly Stats</span>
-        <div className="grid md:grid-cols-3 gap-4">
-
-          <MiniCard
-            title="Annual Leave"
-            used={monthly.annualUsed}
-            balance={monthly.annualBalance}
-            total={monthly.annualAllocated}
-            color="indigo"
-
-
-          />
-
-          <MiniCard
-            title="Sick Leave"
-            used={monthly.sickUsed}
-            total={monthly.sickAllocated}
-            balance={monthly.sickBalance}
-
-            color="pink"
-          />
-
-          <HighlightCard
-            title="Total Monthly Balance"
-            value={monthly.totalBalance}
-          />
-
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex bg-white border border-gray-200 rounded-lg px-3 py-2 items-center gap-2 text-xs font-bold text-gray-500 shadow-sm">
+            <FaCalendarAlt className="text-blue-600" />
+            {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          </div>
+          <button
+            onClick={() => handleNavigate('request-center')}
+            className="bg-[#0052FF] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
+          >
+            <FaPlus /> Apply Leave
+          </button>
         </div>
       </div>
 
-
-
-      {/* STATUS */}
-
-      <div className="grid md:grid-cols-3 gap-4">
-
-        <StatCard
-          title="Approved"
-          value={approved}
-          icon={<FaCheckCircle />}
-          color="green"
+      {/* MONTHLY HIGHLIGHTS */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <MonthlyCard
+          label="Monthly - Annual Leave"
+          val={monthly.annualBalance}
+          sub={`Used ${monthly.annualUsed} of ${monthly.annualAllocated}`}
+          color="bg-blue-600"
         />
-
-        <StatCard
-          title="Rejected"
-          value={rejected}
-          icon={<FaTimesCircle />}
-          color="red"
+        <MonthlyCard
+          label="Monthly - Sick Leave"
+          val={monthly.sickBalance}
+          sub={`Used ${monthly.sickUsed} of ${monthly.sickAllocated}`}
+          color="bg-rose-500"
         />
+        <div className="bg-gray-900 rounded-2xl p-6 text-white flex flex-col justify-between shadow-xl">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Monthly Balance</span>
+          <div className="flex items-baseline gap-2">
+            <h2 className="text-4xl font-black">{monthly.totalBalance}</h2>
+            <span className="text-sm font-bold text-gray-400">Days Remaining</span>
+          </div>
+        </div>
+      </section>
 
-        {/* <StatCard
-          title="LOP In Days"
-          value={lopPercent}
-          icon={<FaClock />}
-          color="yellow"
-        /> */}
-
+      {/* STATUS COUNTERS */}
+      <div className="flex flex-wrap gap-4">
+        <StatusBadge icon={<FaCheckCircle />} label="Approved" count={approved} color="text-emerald-600 bg-emerald-50" />
+        <StatusBadge icon={<FaTimesCircle />} label="Rejected" count={rejected} color="text-rose-600 bg-rose-50" />
+        <StatusBadge icon={<FaClock />} label="Pending" count={stats.reduce((a, b) => a + (b.pendingCount || 0), 0)} color="text-amber-600 bg-amber-50" />
       </div>
 
+      {/* FLOATING ROW TABLE */}
+      <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Header row labels */}
+        <div className="grid grid-cols-12 px-6 py-4 bg-brand/10 border-b border-gray-200 text-[16px] font-bold text-black tracking-wider">
+          <div className="col-span-4">Leave Category</div>
+          <div className="col-span-2 text-center">Allocated (Y)</div>
+          <div className="col-span-2 text-center">Used</div>
+          <div className="col-span-2 text-center">Balance</div>
+          <div className="col-span-2 text-right pr-4">Pending</div>
+        </div>
 
+        {/* The Rows */}
+        <div className="divide-y divide-gray-100">
+          {stats.map((item, idx) => (
+            <motion.div
+              key={idx}
+              whileHover={{ backgroundColor: "#F3F4F6" }} // Slightly darker gray on hover
+              onClick={() => setSelectedCard(item)}
+              className={`
+          grid grid-cols-12 items-center px-6 py-4 transition-colors cursor-pointer group
+          ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-100/50'} 
+        `}
+            >
+              {/* Category Column */}
+              <div className="col-span-4 flex items-center gap-4">
+                <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-sm ${item.color}`}>
+                  {item.icon}
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-gray-700 text-sm">{item.title}</span>
+                </div>
+              </div>
 
-      {/* TABLE */}
+              {/* Allocated Column */}
+              <div className="col-span-2 text-center text-sm text-gray-600 font-medium">
+                {item.total ?? "—"}
+              </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="bg-white rounded-xl border shadow-sm overflow-hidden"
-      >
+              {/* Used Column */}
+              <div className="col-span-2 text-center">
+                <span className="text-sm font-semibold text-gray-700">
+                  {item.used}
+                </span>
+              </div>
 
-        <table className="w-full text-sm">
+              {/* Balance Column */}
+              <div className="col-span-2 text-center">
+                <span className="text-sm font-bold text-blue-600">
+                  {item.balance}
+                </span>
+              </div>
 
-          <thead className="text-xs text-white border-b bg-gray-50">
-
-            <tr className="bg-black">
-              <th className="p-3 text-left">Type</th>
-              <th className="p-3 text-center">Allocated (yearly)</th>
-              <th className="p-3 text-center">Used</th>
-              <th className="p-3 text-center">Balance</th>
-              <th className="p-3 text-center">Pending</th>
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-
-            {stats.map((s, i) => {
-
-              return (
-
-                <motion.tr
-                  key={i}
-                  whileHover={{ backgroundColor: "#f8fafc" }}
-                  onClick={() => setSelectedCard(s)}
-                  className="border-b cursor-pointer"
-                >
-                  <td className="p-3 font-medium">
-                    {s.title}
-                  </td>
-                  <td className="text-center text-black">
-                    {s.total ?? "-"}
-                  </td>
-                  <td className="text-center font-semibold text-indigo-600">
-                    {s.used}
-                  </td>
-                  <td className="text-center font-semibold text-indigo-600">
-                    {s.balance}
-                  </td>
-
-                  <td className="text-center">
-
-                    {s.pendingCount ? (
-
-                      <span className="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-700">
-                        {s.pendingCount}
-                      </span>
-
-                    ) : "-"}
-
-                  </td>
-
-                </motion.tr>
-
-              );
-
-            })}
-
-          </tbody>
-
-        </table>
-
-      </motion.div>
-
-
+              {/* Pending Column */}
+              <div className="col-span-2 flex justify-end items-center pr-4">
+                {item.pendingCount ? (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">
+                    {item.pendingCount}
+                  </span>
+                ) : (
+                  <span className="text-gray-300 text-xs">—</span>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
 
       <LeaveDetailsDrawer
         open={!!selectedCard}
@@ -316,143 +254,35 @@ const DashboardView = () => {
         onClick={() => handleNavigate('request-center')}
       />
 
-
-     
-
-        <MyFloatingActionButton
-          icon={<FaPlus />}
-          onClick={() => handleNavigate('request-center')}
-          title="Apply Leave"
-        />
-
-      
-
+      {/* <MyFloatingActionButton
+        icon={<FaPlus />}
+        onClick={() => handleNavigate('request-center')}
+        title="Apply Leave"
+      /> */}
     </motion.div>
-
   );
-
 };
 
-export default DashboardView;
+// --- Styled Sub-components ---
 
-
-
-// progress card
-const MiniCard = ({ title, used, total, balance, color = "indigo" }: any) => {
-
-  const percent = total ? (used / total) * 100 : 0;
-
-  const colorMap: any = {
-
-    indigo: "bg-indigo-500",
-    pink: "bg-pink-500",
-    green: "bg-green-200",
-    yellow: "bg-yellow-500"
-
-  };
-
-  return (
-
-    <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
-      className="bg-white border rounded-xl p-4 shadow-sm"
-    >
-      <p className="text-xs text-gray-500">
-        {title}
-      </p>
-      <div className="flex justify-between mt-1 text-sm">
-
-        <span className="text-gray-400">
-          {used} used
-        </span>
-        <Divider />
-        <span className="font-semibold">
-          {total} total
-        </span>
-        <Divider />
-        <span className="font-semibold">
-          {balance} balance
-        </span>
-
-
-
-      </div>
-
-      <div className="h-2 bg-gray-100 rounded mt-3 overflow-hidden">
-
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${percent}%` }}
-          transition={{ duration: 0.8 }}
-          className={`h-2 rounded ${colorMap[color]}`}
-        />
-
-      </div>
-
-    </motion.div>
-
-  );
-
-};
-
-
-// highlight card
-const HighlightCard = ({ title, value }: any) => (
-
-  <motion.div
-    whileHover={{ scale: 1.04 }}
-    className="bg-white border rounded-xl p-4 shadow-sm"
-  >
-
-    <p className="text-xs opacity-80">
-      {title}
-    </p>
-
-    <h2 className="text-3xl font-bold mt-1">
-      {value}
-    </h2>
-
-  </motion.div>
-
+const MonthlyCard = ({ label, val, sub, color }: any) => (
+  <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</span>
+    <div className="flex justify-between items-end mt-2">
+      <h3 className="text-3xl font-black text-gray-900">{val} <span className="text-xs font-bold text-gray-400">Days</span></h3>
+      <p className="text-[10px] font-bold text-gray-400 mb-1">{sub}</p>
+    </div>
+    <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4 overflow-hidden">
+      <div className={`h-full ${color}`} style={{ width: '65%' }} />
+    </div>
+  </div>
 );
 
+const StatusBadge = ({ icon, label, count, color }: any) => (
+  <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border border-transparent font-bold text-xs ${color} shadow-sm`}>
+    <span className="opacity-70">{icon}</span>
+    <span>{count} {label}</span>
+  </div>
+);
 
-// stat card
-const StatCard = ({ title, value, color, icon }: any) => {
-
-  const colorMap: any = {
-
-    green: "text-green-600 bg-green-50",
-    red: "text-red-600 bg-red-50",
-    yellow: "text-yellow-600 bg-yellow-50"
-
-  };
-
-  return (
-
-    <motion.div
-      whileHover={{ y: -4 }}
-      className={`border rounded-xl p-4 shadow-sm ${colorMap[color]}`}
-    >
-
-      <div className="flex justify-between items-center">
-
-        <p className="text-xs font-medium">
-          {title}
-        </p>
-
-        <div className="opacity-70">
-          {icon}
-        </div>
-
-      </div>
-
-      <h2 className="text-2xl font-bold mt-2">
-        {value}
-      </h2>
-
-    </motion.div>
-
-  );
-
-};
+export default DashboardView;
