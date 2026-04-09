@@ -241,7 +241,7 @@ const PendingApprovalsView: React.FC = () => {
                             <RequestTile
                                 key={req.id}
                                 employeeName={req.employeeName}
-                                leaveType={req.leaveType}
+                                leaveType={req.leaveTypeName}
                                 reasonMessage={req.isCompOff ? "Comp-Off Credit Request" : req.reason}
                                 dateRange={formatDateRange(req.startDate, req.endDate)}
                                 startDate={req.startDate}

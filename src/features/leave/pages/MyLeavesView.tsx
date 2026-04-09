@@ -8,7 +8,7 @@ import { CustomLoader } from "@/shared/components";
 import { formatTimeAgo } from "@/shared/utils/formatTimeAgo";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import React, { useEffect, useMemo, useState } from "react";
-import { FaCalendarAlt, FaEdit, FaEllipsisV, FaInfoCircle, FaTimes } from "react-icons/fa";
+import { FaCalendarAlt, FaEdit, FaEllipsisV, FaInfoCircle, FaTimes, FaUserCheck } from "react-icons/fa";
 
 const MyRequestsView: React.FC = () => {
   const { fetchMyLeaves } = useLeave();
@@ -250,7 +250,7 @@ const DetailContent = ({ item }: { item: any }) => {
       }
     };
     resolveNames();
-  }, [item.firstApproverId, item.secondApproverId]);
+  }, [item.firstApproverId, item.secondApproverId, fetchEmployeeName]);
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "";
@@ -262,26 +262,32 @@ const DetailContent = ({ item }: { item: any }) => {
     });
   };
 
+  /** * CRITICAL UPDATE: 
+   * Hide second level if it doesn't exist OR if the first level already rejected it.
+   */
   const showSecondLevel = !!item.secondApproverId && item.firstApproverDecision !== 'REJECTED';
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_0.7fr_1.3fr] gap-6">
+
       {/* COLUMN 1: REQUEST INFO & REJECTION */}
       <div className="space-y-4">
         <div>
           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-2">
             <FaInfoCircle className="text-indigo-400" /> Request Details
           </h4>
-          <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-[60px]">
-            <p className="text-xs text-slate-600 leading-relaxed mb-2 italic">
+          <div className="bg-white p-3 rounded-sm border border-slate-200 shadow-sm min-h-[80px] flex flex-col justify-between">
+            <p className="text-xs text-slate-600 leading-relaxed italic">
               {item.reason ? `"${item.reason}"` : "No reason provided."}
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mt-3">
               {item.isAppointment && (
-                <span className="bg-blue-50 text-blue-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase">Appointment</span>
+                <span className="bg-blue-50 text-blue-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase border border-blue-100">
+                  Appointment
+                </span>
               )}
               {item.startDateHalfDayType && (
-                <span className="bg-orange-50 text-orange-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase">
+                <span className="bg-orange-50 text-orange-600 text-[9px] font-black px-2 py-0.5 rounded-sm uppercase border border-orange-100">
                   {item.startDateHalfDayType.replace('_', ' ')}
                 </span>
               )}
@@ -289,79 +295,129 @@ const DetailContent = ({ item }: { item: any }) => {
           </div>
         </div>
 
-        {/* REJECTION REASON SECTION */}
         {(item.status === 'REJECTED' || item.firstApproverDecision === 'REJECTED' || item.secondApproverDecision === 'REJECTED') && (
-          <div className="bg-rose-50 border border-rose-200 p-3 rounded-sm">
+          <div className="bg-rose-50 border border-rose-200 p-3 rounded-sm animate-in slide-in-from-top-1">
             <h5 className="text-[9px] font-black text-rose-600 uppercase tracking-tighter mb-1">
               Reason for Rejection
             </h5>
-            <p className="text-xs font-bold text-rose-900 leading-normal whitespace-pre-wrap wrap-break-word">
+            <p className="text-xs font-bold text-rose-900 leading-normal whitespace-pre-wrap">
               {item.rejectionReason || "No specific rejection reason provided."}
             </p>
           </div>
         )}
       </div>
 
-      {/* COLUMN 2: DATE SUMMARY */}
-      <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm h-fit self-start mt-6">
-        <div className="p-2.5 flex justify-between items-center">
-          <span className="text-[9px] font-black text-slate-500 uppercase">Start Date</span>
-          <span className="text-xs font-black text-slate-700">{item.startDate}</span>
-        </div>
-        <div className="p-2.5 flex justify-between items-center">
-          <span className="text-[9px] font-black text-slate-500 uppercase">End Date</span>
-          <span className="text-xs font-black text-slate-700">{item.endDate}</span>
-        </div>
-        <div className="p-2.5 flex justify-between items-center bg-slate-50/50">
-          <span className="text-[9px] font-black text-slate-500 uppercase">Duration</span>
-          <span className="text-xs font-black text-indigo-600">{item.durationLabel}</span>
+      {/* COLUMN 2: SHRUNK DATES */}
+      <div className="space-y-4">
+        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-2">
+          Dates
+        </h4>
+        <div className="bg-white rounded-sm border border-slate-200 divide-y divide-slate-100 shadow-sm h-fit">
+          <div className="p-2.5 flex justify-between items-center">
+            <span className="text-[9px] font-black text-slate-400 uppercase">Start</span>
+            <span className="text-[11px] font-bold text-slate-700">{item.startDate}</span>
+          </div>
+          <div className="p-2.5 flex justify-between items-center">
+            <span className="text-[9px] font-black text-slate-400 uppercase">End</span>
+            <span className="text-[11px] font-bold text-slate-700">{item.endDate}</span>
+          </div>
+          <div className="p-2.5 flex justify-between items-center bg-slate-50/50">
+            <span className="text-[9px] font-black text-slate-400 uppercase">Total</span>
+            <span className="text-[11px] font-black text-indigo-600">{item.durationLabel}</span>
+          </div>
         </div>
       </div>
 
-      {/* COLUMN 3: WORKFLOW */}
-      <div className="space-y-3">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-          Approval Workflow
+      {/* COLUMN 3: EXPANDED WORKFLOW */}
+      <div className="space-y-4">
+        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-2">
+          <FaUserCheck className="text-emerald-400" /> Approval Workflow
         </h4>
-        <div className="space-y-6 relative before:absolute before:left-1.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 ml-1">
-          <div className="relative pl-6">
-            <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors 
-              ${item.firstApproverDecision === 'APPROVED' ? 'bg-emerald-500' : item.firstApproverDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`}
+
+        <div className="bg-slate-50/30 border border-slate-200 rounded-sm p-4 h-[125px] flex flex-col justify-center shadow-inner relative overflow-hidden">
+          <div className="relative flex justify-between items-start w-full mx-auto px-2">
+
+            {/* Gray Line Background */}
+            <div className="absolute top-4 left-4 right-4 h-1 bg-slate-200 rounded-full z-0" />
+
+            {/* Green Progress Line - Logic updated for rejection */}
+            <div
+              className="absolute top-4 left-4 h-1 bg-primary-500 rounded-full transition-all duration-700 z-0"
+              style={{
+                width: (item.status === 'APPROVED' || item.status === 'REJECTED') ? 'calc(100% - 32px)' :
+                  (item.firstApproverDecision === 'APPROVED' && showSecondLevel) ? '50%' : '0%'
+              }}
             />
-            <p className="text-[11px] font-black text-slate-700 uppercase leading-none">
-              Level 1: {firstApproverName}
-            </p>
-            <p className="text-[10px] text-slate-500 mt-1">
-              {item.firstApproverDecision
-                ? `${item.firstApproverDecision} • ${formatDate(item.firstApproverDecidedAt)}`
-                : 'Awaiting Action'}
-            </p>
-          </div>
 
-          {showSecondLevel && (
-            <div className="relative pl-6">
-              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors 
-                ${item.secondApproverDecision === 'APPROVED' ? 'bg-emerald-500' : item.secondApproverDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`}
+            {/* Step 1: Applied */}
+            <CompactNode
+              label="Applied"
+              sub={formatDate(item.createdAt).split(',')[0]}
+              status="APPROVED"
+            />
+
+            {/* Step 2: Level 1 Approver */}
+            <CompactNode
+              label={firstApproverName}
+              sub={item.firstApproverDecision || 'Pending'}
+              status={item.firstApproverDecision}
+            />
+
+            {/* Step 3: Level 2 Approver (Conditionally Hidden) */}
+            {showSecondLevel && (
+              <CompactNode
+                label={secondApproverName}
+                sub={item.secondApproverDecision || 'Waiting'}
+                status={item.secondApproverDecision}
               />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">
-                Level 2: {secondApproverName}
-              </p>
-              <p className="text-[10px] text-slate-500 mt-1">
-                {item.secondApproverDecision
-                  ? `${item.secondApproverDecision} • ${formatDate(item.secondApproverDecidedAt)}`
-                  : (item.firstApproverDecision === 'APPROVED' ? 'Awaiting Secondary Review' : 'Pending Level 1')}
-              </p>
-            </div>
-          )}
+            )}
 
-          {item.status !== 'PENDING' && (
-            <div className="relative pl-6">
-              <div className={`absolute left-0 top-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm ${item.status === 'APPROVED' ? 'bg-emerald-600' : 'bg-rose-600'}`} />
-              <p className="text-[11px] font-black text-slate-700 uppercase leading-none">Request Finalized</p>
-              <p className="text-[10px] text-slate-500 mt-1">Status: {item.status}</p>
-            </div>
-          )}
+            {/* Step 4: Outcome */}
+            <CompactNode
+              label="Outcome"
+              sub={item.status}
+              status={item.status}
+              isFinal
+            />
+          </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const CompactNode = ({ label, sub, status, isFinal }: any) => {
+  const getColors = () => {
+    if (status === 'APPROVED' || status === 'COMPLETED') return 'bg-emerald-400 text-white ring-emerald-100';
+    if (status === 'REJECTED') return 'bg-rose-500 text-white ring-rose-100';
+    return 'bg-white text-slate-300 ring-transparent';
+  };
+
+  return (
+    <div className="relative flex flex-col items-center z-10 w-24 px-0">
+      <div className={`w-8 h-8 rounded-full border-[3px] border-white shadow-sm flex items-center justify-center transition-all duration-300 ring-2 ${getColors()}`}>
+        {status === 'APPROVED' || status === 'COMPLETED' ? (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          </svg>
+        ) : status === 'REJECTED' ? (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : isFinal && status === 'PENDING' ? (
+          <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-pulse" />
+        ) : (
+          <span className="text-[12px] text-slate-300">•</span>
+        )}
+      </div>
+
+      <div className="mt-2 text-center w-full px-1">
+        <p className="text-[9px] font-black text-slate-800 uppercase tracking-tighter leading-[1.1] wrap-break-word line-clamp-2 min-h-5">
+          {label}
+        </p>
+        <p className={`text-[8px] font-bold uppercase mt-0.5 leading-tight ${status === 'REJECTED' ? 'text-rose-500' : 'text-slate-400'}`}>
+          {sub}
+        </p>
       </div>
     </div>
   );

@@ -66,6 +66,10 @@ export const leaveService = {
 
   getPendingApprovals: async (managerId: string) => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
+    console.log("response");
+    console.log(response);
+    
+    
     return response.data.content || response.data;
   },
 

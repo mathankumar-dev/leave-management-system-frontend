@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
 import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import { formatDateDisplay } from "@/shared/utils/dateUtils";
+import React, { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 
 const DetailedRequestModal: React.FC<{
@@ -72,48 +72,80 @@ const DetailedRequestModal: React.FC<{
                     </div>
 
                     {/* Horizontal Approval Workflow */}
-                    <div className="py-2">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+                    {/* Horizontal Approval Workflow */}
+                    <div className="py-6 px-2">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 text-center">
                             Approval Workflow
                         </h4>
 
-                        <div className="relative flex justify-between items-start w-full">
-                            {/* The Connecting Line */}
-                            <div className="absolute top-1.75 left-0 w-full h-0.5 bg-slate-100 -z-0" />
+                        <div className="relative flex justify-between items-start w-full max-w-xl mx-auto">
+                            {/* Background Gray Line */}
+                            <div className="absolute top-4 left-0 w-full h-1.5 bg-slate-100 rounded-full -z-0" />
 
-                            {/* Level 1 */}
-                            <div className="relative flex flex-col items-start bg-white pr-4 z-10">
-                                <div className={`w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors 
-                                    ${req.firstApproverDecision === 'APPROVED' ? 'bg-emerald-500' : req.firstApproverDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`}
-                                />
-                                <p className="text-[10px] font-black text-slate-700 uppercase mt-2">L1: {approverNames.l1}</p>
-                                <p className="text-[9px] text-slate-500">
-                                    {String(req.firstApproverDecision || 'Awaiting Action')}
+                            {/* Active Progress Line (Green) */}
+                            <div
+                                className="absolute top-4 left-0 h-1.5 bg-emerald-400 rounded-full transition-all duration-500 -z-0"
+                                style={{
+                                    width: req.status === 'APPROVED' ? '100%' :
+                                        req.firstApproverDecision === 'APPROVED' ? '50%' : '0%'
+                                }}
+                            />
+
+                            {/* Stage: Submission (Always Complete) */}
+                            <div className="relative flex flex-col items-center z-10 w-24">
+                                <div className="w-9 h-9 rounded-full bg-emerald-400 border-4 border-white shadow-sm flex items-center justify-center text-white">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <p className="text-[10px] font-black text-slate-700 uppercase mt-3">Applied</p>
+                                <p className="text-[9px] text-slate-400 font-bold">{formatDateDisplay(req.createdAt)}</p>
+                            </div>
+
+                            {/* Stage: Level 1 */}
+                            <div className="relative flex flex-col items-center z-10 w-24">
+                                <div className={`w-9 h-9 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-all duration-300
+                                        ${req.firstApproverDecision === 'APPROVED' ? 'bg-emerald-400 text-white' :
+                                        req.firstApproverDecision === 'REJECTED' ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
+                                    {req.firstApproverDecision === 'APPROVED' ? (
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                    ) : <span className="text-xs font-bold">L1</span>}
+                                </div>
+                                <p className="text-[10px] font-black text-slate-700 uppercase mt-3 truncate w-full text-center">{approverNames.l1}</p>
+                                <p className={`text-[9px] font-bold uppercase ${req.firstApproverDecision === 'REJECTED' ? 'text-rose-500' : 'text-slate-400'}`}>
+                                    {req.firstApproverDecision || 'Pending'}
                                 </p>
                             </div>
 
-                            {/* Level 2 (Optional) */}
                             {showSecondLevel && (
-                                <div className="relative flex flex-col items-center bg-white px-4 z-10">
-                                    <div className={`w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors 
-                                        ${req.secondApproverDecision === 'APPROVED' ? 'bg-emerald-500' : req.secondApproverDecision === 'REJECTED' ? 'bg-rose-500' : 'bg-slate-300'}`}
-                                    />
-                                    <p className="text-[10px] font-black text-slate-700 uppercase mt-2 text-center">L2: {approverNames.l2}</p>
-                                    <p className="text-[9px] text-slate-500 text-center">
-                                        {req.secondApproverDecision
-                                            ? String(req.secondApproverDecision)
-                                            : (req.firstApproverDecision === 'APPROVED' ? 'Secondary Review' : 'Pending L1')}
+                                <div className="relative flex flex-col items-center z-10 w-24">
+                                    <div className={`w-9 h-9 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-all duration-300
+                                    ${req.secondApproverDecision === 'APPROVED' ? 'bg-emerald-400 text-white' :
+                                            req.secondApproverDecision === 'REJECTED' ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-300'}`}>
+                                        {req.secondApproverDecision === 'APPROVED' ? (
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                        ) : <span className="text-xs font-bold">L2</span>}
+                                    </div>
+                                    <p className="text-[10px] font-black text-slate-700 uppercase mt-3 truncate w-full text-center">{approverNames.l2}</p>
+                                    <p className={`text-[9px] font-bold uppercase ${req.secondApproverDecision === 'REJECTED' ? 'text-rose-500' : 'text-slate-400'}`}>
+                                        {req.secondApproverDecision || (req.firstApproverDecision === 'APPROVED' ? 'Waiting' : 'Locked')}
                                     </p>
                                 </div>
                             )}
 
-                            {/* Final Status */}
-                            <div className="relative flex flex-col items-end bg-white pl-4 z-10 text-right">
-                                <div className={`w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm 
-                                    ${req.status === 'APPROVED' ? 'bg-emerald-600' : req.status === 'REJECTED' ? 'bg-rose-600' : 'bg-slate-300'}`}
-                                />
-                                <p className="text-[10px] font-black text-slate-700 uppercase mt-2">Final Outcome</p>
-                                <p className="text-[9px] text-slate-500 font-bold">{String(req.status)}</p>
+                            {/* Stage: Final Outcome */}
+                            <div className="relative flex flex-col items-center z-10 w-24">
+                                <div className={`w-9 h-9 rounded-full border-4 border-white shadow-sm flex items-center justify-center transition-all duration-300
+        ${req.status === 'APPROVED' ? 'bg-emerald-500 text-white ring-4 ring-emerald-50/50' :
+                                        req.status === 'REJECTED' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-300'}`}>
+                                    {req.status === 'APPROVED' ? (
+                                        <span className="text-[10px] font-black">100%</span>
+                                    ) : <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" /></svg>}
+                                </div>
+                                <p className="text-[10px] font-black text-slate-700 uppercase mt-3">Outcome</p>
+                                <p className={`text-[9px] font-bold uppercase ${req.status === 'APPROVED' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                    {req.status}
+                                </p>
                             </div>
                         </div>
                     </div>
