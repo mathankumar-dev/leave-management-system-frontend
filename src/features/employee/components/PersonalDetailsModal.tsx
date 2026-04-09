@@ -506,49 +506,52 @@ const PersonalDetailsModal = () => {
                                         </div>
                                     )}
                                 </div>
-
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <InputLabel>Children ({formData.children?.length || 0})</InputLabel>
-                                        <button onClick={() => setFormData(p => ({ ...p, children: [...(p.children || []), { childName: "", gender: "MALE", age: 0 }] }))} className="text-indigo-600 text-[10px] font-black flex items-center gap-1 hover:underline"><HiPlus /> ADD CHILD</button>
-                                    </div>
-                                    {formData.children?.map((child, idx) => (
-                                        <div key={idx} className="flex gap-4 items-end bg-neutral-50 p-4 rounded-2xl relative border border-neutral-100">
-                                            <div className="flex-1">
-                                                <InputLabel>Name</InputLabel>
-                                                <input className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.childName} onChange={e => {
-                                                    const children = [...(formData.children || [])];
-                                                    children[idx].childName = e.target.value;
-                                                    setFormData({ ...formData, children });
-                                                }} />
-                                            </div>
-                                            <div className="w-24">
-                                                <InputLabel>Age</InputLabel>
-                                                <input
-                                                    type="number"
-                                                    className="w-full border rounded-xl p-2.5 text-xs bg-white"
-                                                    value={child.age}
-                                                    onChange={e => {
-                                                        const children = [...(formData.children || [])];
-                                                        children[idx].age = Number(e.target.value);
-                                                        setFormData({ ...formData, children });
-                                                    }}
-                                                />
-                                            </div>
-                                            <div>
-                                                <InputLabel>Gender</InputLabel>
-                                                <select className="w-full border rounded-xl p-3 text-sm bg-white" value={child.gender} onChange={e => {
-                                                    const children = [...(formData.children || [])];
-                                                    children[idx].gender = e.target.value as Gender;
-                                                    setFormData({ ...formData, children });
-                                                }}>
-                                                    <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
-                                                </select>
-                                            </div>
-                                            <button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button>
+                                {formData.maritalStatus === "MARRIED" && (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <InputLabel>Children ({formData.children?.length || 0})</InputLabel>
+                                            <button onClick={() => setFormData(p => ({ ...p, children: [...(p.children || []), { childName: "", gender: "MALE", age: 0 }] }))} className="text-indigo-600 text-[10px] font-black flex items-center gap-1 hover:underline"><HiPlus /> ADD CHILD</button>
                                         </div>
-                                    ))}
-                                </div>
+                                        {formData.children?.map((child, idx) => (
+                                            <div key={idx} className="flex gap-4 items-end bg-neutral-50 p-4 rounded-2xl relative border border-neutral-100">
+                                                <div className="flex-1">
+                                                    <InputLabel>Name</InputLabel>
+                                                    <input className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.childName} onChange={e => {
+                                                        const children = [...(formData.children || [])];
+                                                        children[idx].childName = e.target.value;
+                                                        setFormData({ ...formData, children });
+                                                    }} />
+                                                </div>
+                                                <div className="w-24">
+                                                    <InputLabel>Age</InputLabel>
+                                                    <input
+                                                        type="number"
+                                                        className="w-full border rounded-xl p-2.5 text-xs bg-white"
+                                                        value={child.age}
+                                                        onChange={e => {
+                                                            const children = [...(formData.children || [])];
+                                                            children[idx].age = Number(e.target.value);
+                                                            setFormData({ ...formData, children });
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <InputLabel>Gender</InputLabel>
+                                                    <select className="w-full border rounded-xl p-3 text-sm bg-white" value={child.gender} onChange={e => {
+                                                        const children = [...(formData.children || [])];
+                                                        children[idx].gender = e.target.value as Gender;
+                                                        setFormData({ ...formData, children });
+                                                    }}>
+                                                        <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
+                                                    </select>
+                                                </div>
+                                                <button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                )}
+
                             </div>
                         </section>
 

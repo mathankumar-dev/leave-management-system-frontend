@@ -22,7 +22,7 @@ export const responseInterceptor = async (error: AxiosError) => {
     switch (status) {
       case 401:
         toast.error("Session Expired", { description: "Please log in again." });
-        // logout();
+        logout();
         break;
 
       case 400:
