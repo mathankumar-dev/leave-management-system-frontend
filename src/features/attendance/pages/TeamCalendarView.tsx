@@ -34,9 +34,11 @@ const TeamCalendarView: React.FC = () => {
   const {
     fetchTeamSchedule,
     teamCalendar,
-    loading,
     fetchEmployeeCalendar,
-    employeeCalendar
+    fetchAttendanceCalendar,
+    employeeCalendar,
+    attendanceCalendar,
+  loading
   } = useCalendar();
 
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
@@ -46,12 +48,19 @@ const TeamCalendarView: React.FC = () => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  useEffect(() => {
-    if (typeof id === 'string') {
-      fetchTeamSchedule(id);
-      fetchEmployeeCalendar(id);
-    }
-  }, [year, month, id]);
+ useEffect(() => {
+
+  if (typeof id === "string") {
+
+    fetchTeamSchedule(id);
+
+    fetchEmployeeCalendar(id);
+
+    fetchAttendanceCalendar(id,year,month); // NEW API CALL
+
+  }
+
+}, [id,year,month]);
 
   const formatKey = (date: Date) => {
     const y = date.getFullYear();
@@ -75,16 +84,19 @@ const TeamCalendarView: React.FC = () => {
     const diff = d.getDate() - d.getDay();
     const start = new Date(d.setDate(diff));
 
+
+
     return Array.from({ length: 7 }).map((_, i) => {
       const day = new Date(start);
       day.setDate(start.getDate() + i);
       const key = formatKey(day);
       return {
-        date: day,
-        team: teamCalendar[key] || [],
-        mine: employeeCalendar[key] || [],
-        holiday: PUBLIC_HOLIDAYS_2026[key]
-      };
+  date: day,
+  team: teamCalendar[key] || [],
+  mine: employeeCalendar[key] || [],
+  attendance: attendanceCalendar[key],
+  holiday: PUBLIC_HOLIDAYS_2026[key]
+};
     });
   }, [currentDate, teamCalendar, employeeCalendar]);
 
@@ -93,6 +105,27 @@ const TeamCalendarView: React.FC = () => {
   const dailyMine = employeeCalendar[dailyKey] || [];
   const dailyHoliday = PUBLIC_HOLIDAYS_2026[dailyKey];
 
+  console.log(teamCalendar);
+
+  const formatTimeRange = (attendance:any) => {
+
+  if (!attendance?.checkIn || !attendance?.checkOut) {
+    return "ABSENT";
+  }
+
+  const start = new Date(`1970-01-01T${attendance.checkIn}`);
+  const end   = new Date(`1970-01-01T${attendance.checkOut}`);
+
+  const diffMs = end.getTime() - start.getTime();
+
+  const hours = (diffMs / (1000 * 60 * 60)).toFixed(2);
+
+  return `${attendance.checkIn.slice(0,5)} - ${attendance.checkOut.slice(0,5)} (${hours}h)`;
+};
+
+
+
+  // ---------------- NAVIGATION ----------------
   const handleMove = (direction: number) => {
     const newDate = new Date(currentDate);
     if (viewMode === "month") newDate.setMonth(newDate.getMonth() + direction);
@@ -161,6 +194,7 @@ const TeamCalendarView: React.FC = () => {
                     const key = getFormattedDateKey(day);
                     const team = teamCalendar[key] || [];
                     const mine = employeeCalendar[key] || [];
+                    const attendance = attendanceCalendar[key];
                     const holiday = PUBLIC_HOLIDAYS_2026[key];
                     const isSelected = selectedDay === day;
 
@@ -187,12 +221,21 @@ const TeamCalendarView: React.FC = () => {
                             </div>
                           )}
 
-                          {/* MINE */}
-                          {mine.length > 0 && (
-                            <div className="px-1 py-0.5 bg-amber-100 border border-amber-200 text-amber-700 text-[7px] font-black uppercase rounded-sm truncate">
-                              
+                        {attendance && (
+                          attendance.checkIn && attendance.checkOut ? (
+
+                            <div className="px-1 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[7px] font-black rounded-sm truncate">
+                              {attendance.checkIn.slice(0,5)} - {attendance.checkOut.slice(0,5)}
                             </div>
-                          )}
+
+                          ) : (
+
+                            <div className="px-1 py-0.5 bg-red-50 border border-red-200 text-red-700 text-[7px] font-black rounded-sm truncate">
+                              ABSENT
+                            </div>
+
+                          )
+                        )}
 
                           {/* TEAM NAMES (Show first 2-3 then a +count) */}
                           {team.slice(0, 2).map((emp: any, idx: number) => (
@@ -221,7 +264,14 @@ const TeamCalendarView: React.FC = () => {
                     <p className="text-xl font-black text-slate-900 mb-4">{d.date.getDate()}</p>
                     <div className="space-y-2 flex-1">
                       {d.holiday && <StatusBadge color="rose" label={d.holiday} />}
-                      {d.mine.map((r: any, idx) => <StatusBadge key={idx} status={r.status} label="My Leave" />)}
+                      {d.attendance && (
+
+              <StatusBadge
+  color={d.attendance?.checkIn && d.attendance?.checkOut ? "amber" : "rose"}
+  label={formatTimeRange(d.attendance)}
+/>
+
+              )}
                       {d.team.map((r: any, idx: number) => (
                         <StatusBadge key={idx} status={r.status} label={<TeamMemberName employeeId={r.employeeId} />} />
                       ))}
@@ -245,9 +295,30 @@ const TeamCalendarView: React.FC = () => {
                 </div>
                 <div className="space-y-4">
                   {dailyHoliday && <DayRecord title="Public Holiday" content={dailyHoliday} color="rose" />}
-                  {dailyMine.map((r: any, i: number) => (
-                    <DayRecord key={`mine-${i}`} title="My Attendance" content={r.leaveTypeName || "Out of Office"} status={r.status} />
-                  ))}
+
+                  {attendanceCalendar[dailyKey] && (
+
+  <DayRecord
+
+    title="My Attendance"
+
+    content={
+
+      `IN ${attendanceCalendar[dailyKey].checkIn?.slice(0,5)}
+
+       OUT ${attendanceCalendar[dailyKey].checkOut?.slice(0,5)}
+
+       ${attendanceCalendar[dailyKey].workingHours} hrs`
+
+    }
+
+    color="amber"
+
+  />
+
+)}
+
+                  {/* UPDATED TEAM SECTION */}
                   {dailyTeam.map((r: any, i: number) => (
                     <DayRecord key={`team-${i}`} title={<TeamMemberName employeeId={r.employeeId} />} content={r.leaveTypeName || "Team Absence"} status={r.status} />
                   ))}
@@ -275,15 +346,47 @@ const TeamCalendarView: React.FC = () => {
                 <p className="text-xs font-bold text-rose-900">{selectedDayHoliday}</p>
               </div>
             )}
-            {selectedDayMyStatus.map((r: any, i: number) => (
-              <div key={i} className="flex items-center gap-3 p-3 bg-amber-50/50 border border-amber-100 rounded-sm">
-                <div className="w-8 h-8 bg-amber-100 text-amber-600 flex items-center justify-center rounded-sm"><FaUserAlt size={12} /></div>
-                <div className="flex flex-col">
-                  <p className="text-xs font-black text-slate-900 uppercase truncate">My Leave</p>
-                  <StatusBadge label={r.status} status={r.status} />
-                </div>
-              </div>
-            ))}
+
+            {attendanceCalendar[selectedDateKey] && (
+
+<div className="flex flex-col gap-1 p-3 bg-emerald-50 border border-emerald-100 rounded-sm">
+
+  <div className="flex items-center gap-3">
+
+    <div className="w-8 h-8 bg-emerald-100 text-emerald-600 flex items-center justify-center rounded-sm">
+
+      <FaUserAlt size={12} />
+
+    </div>
+
+    <p className="text-xs font-black text-slate-900 uppercase">
+
+      Attendance
+
+    </p>
+
+  </div>
+
+  <p className="text-[10px] font-bold text-slate-700 ml-11">
+
+    {attendanceCalendar[selectedDateKey].checkIn?.slice(0,5)}
+
+    {" → "}
+
+    {attendanceCalendar[selectedDateKey].checkOut?.slice(0,5)}
+
+  </p>
+
+  <p className="text-[9px] text-slate-400 ml-11">
+
+    {attendanceCalendar[selectedDateKey].workingHours} hrs
+
+  </p>
+
+</div>
+
+)}
+
             {selectedDayTeamLeaves.length > 0 ? (
               selectedDayTeamLeaves.map((emp: any) => (
                 <div key={emp.employeeId} className="flex items-center gap-3 p-3 border border-slate-100 rounded-sm">
