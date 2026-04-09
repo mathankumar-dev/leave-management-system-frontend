@@ -52,6 +52,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/profile" element={<EmployeeProfile />} />
       </Route>
 
+
       {/* 2. PUBLIC ROUTES */}
       <Route path="/" element={isAuthenticated ? <Navigate to="/portal" replace /> : <LandingPage />} />
       <Route path="/login" element={!isAuthenticated ? <AuthPage /> : <Navigate to="/portal" replace />} />

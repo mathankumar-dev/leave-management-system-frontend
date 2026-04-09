@@ -60,7 +60,7 @@ const PersonalDetailsModal = () => {
         spouseOccupation: "",
         spouseContactNumber: "",
         children: [],
-        experiences: isExperienced ? [{ companyName: "", role: "", fromDate: "", endDate: "", lastCompany: true }] : [],
+        experiences: isExperienced ? [{ companyName: "", role: "", fromDate: "", endDate: "" }] : [],
         uanNumber: ""
     });
 
@@ -139,9 +139,20 @@ const PersonalDetailsModal = () => {
     const handleExperienceFileChange = (index: number, file: File | null) => {
         if (!file) return;
         const newExperiences = [...(formData.experiences || [])];
-        // We store the file temporarily in the experience object
-        // You may need to update your TypeScript interface to allow this property locally
         (newExperiences[index] as any).tempCert = file;
+        setFormData({ ...formData, experiences: newExperiences });
+    };
+    // Add this near handleExperienceFileChange
+    const handleJoiningLetterFileChange = (index: number, file: File | null) => {
+        if (!file) return;
+        const newExperiences = [...(formData.experiences || [])];
+        (newExperiences[index] as any).tempJoiningLetter = file;
+        setFormData({ ...formData, experiences: newExperiences });
+    };
+    const handleRelievingLetterFileChange = (index: number, file: File | null) => {
+        if (!file) return;
+        const newExperiences = [...(formData.experiences || [])];
+        (newExperiences[index] as any).tempRelievingLetter = file;
         setFormData({ ...formData, experiences: newExperiences });
     };
 
@@ -152,7 +163,7 @@ const PersonalDetailsModal = () => {
             // 1. Validation for common required files
             const requiredFiles = submissionType === "FRESHER"
                 ? ["idProof", "passportPhoto", "tenthMarksheet", "twelfthMarksheet", "degreeCertificate", "offerLetter"]
-                : ["idProof", "passportPhoto", "relievingLetter"];
+                : ["idProof", "passportPhoto"];
 
             const missing = requiredFiles.filter(k => !files[k]);
             if (missing.length > 0) {
@@ -164,11 +175,16 @@ const PersonalDetailsModal = () => {
             setLoaderState({ active: true, finished: false });
 
             const experienceFiles: File[] = [];
+            const joiningLetterFiles: File[] = []; // <-- Add this
+            const relievingLetterFiles: File[] = [];
+
             const cleanedExperiences = formData.experiences?.map((exp: any) => {
-                if (exp.tempCert) {
-                    experienceFiles.push(exp.tempCert);
-                }
-                const { tempCert, ...rest } = exp; // Destructure to remove tempCert from the object
+                if (exp.tempCert) experienceFiles.push(exp.tempCert);
+                if (exp.tempJoiningLetter) joiningLetterFiles.push(exp.tempJoiningLetter);
+                if (exp.tempRelievingLetter) relievingLetterFiles.push(exp.tempRelievingLetter); // 2. Collect
+
+                // 3. Clean all temp fields
+                const { tempCert, tempJoiningLetter, tempRelievingLetter, ...rest } = exp;
                 return rest;
             });
 
@@ -182,9 +198,10 @@ const PersonalDetailsModal = () => {
             // 4. Merge all files (Global + Extracted from Experience rows)
             const finalFiles = {
                 ...files,
-                experienceCerts: experienceFiles.length > 0 ? experienceFiles : null
+                experienceCerts: experienceFiles.length > 0 ? experienceFiles : null,
+                joiningLetter: joiningLetterFiles.length > 0 ? joiningLetterFiles : null,
+                relievingLetter: relievingLetterFiles.length > 0 ? relievingLetterFiles : null // 4. Map it
             };
-
             // 5. Send to Service
             await authService.submitMultipartDetails(
                 user.id,
@@ -207,7 +224,7 @@ const PersonalDetailsModal = () => {
         fileKey,
         required = false,
         multiple = false,
-        customFile = undefined, // Changed from null to undefined for clearer fallback
+        customFile = undefined,
         onCustomChange
     }: {
         label: string,
@@ -320,11 +337,7 @@ const PersonalDetailsModal = () => {
                                 }
 
 
-                                {isExperienced && (
-                                    <>
-                                        <FileRow label="Relieving Letter" fileKey="relievingLetter" required />
-                                    </>
-                                )}
+
                             </div>
                         </section>
 
@@ -417,6 +430,10 @@ const PersonalDetailsModal = () => {
                                             value={formData.fatherDateOfBirth}
                                             onChange={(val: string) => handleInputChange('fatherDateOfBirth', val)}
                                         />
+                                        <div>
+                                            <InputLabel>Occupation</InputLabel>
+                                            <input className="w-full border rounded-xl p-3 text-sm  bg-white font-bold" value={formData.fatherOccupation} onChange={e => handleInputChange('fatherOccupation', e.target.value)} />
+                                        </div>
                                     </div>
                                     <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
                                         <div className="flex justify-between items-center mb-3"><InputLabel>Mother's Details</InputLabel> <input type="checkbox" checked={formData.motherAlive} onChange={e => handleInputChange('motherAlive', e.target.checked)} /></div>
@@ -427,6 +444,10 @@ const PersonalDetailsModal = () => {
                                             value={formData.motherDateOfBirth}
                                             onChange={(val: string) => handleInputChange('motherDateOfBirth', val)}
                                         />
+                                        <div>
+                                            <InputLabel>Occupation</InputLabel>
+                                            <input className="w-full border rounded-xl p-3 text-sm bg-white font-bold" value={formData.motherOccupation} onChange={e => handleInputChange('motherOccupation', e.target.value)} />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -485,49 +506,52 @@ const PersonalDetailsModal = () => {
                                         </div>
                                     )}
                                 </div>
-
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <InputLabel>Children ({formData.children?.length || 0})</InputLabel>
-                                        <button onClick={() => setFormData(p => ({ ...p, children: [...(p.children || []), { childName: "", gender: "MALE", age: 0 }] }))} className="text-indigo-600 text-[10px] font-black flex items-center gap-1 hover:underline"><HiPlus /> ADD CHILD</button>
-                                    </div>
-                                    {formData.children?.map((child, idx) => (
-                                        <div key={idx} className="flex gap-4 items-end bg-neutral-50 p-4 rounded-2xl relative border border-neutral-100">
-                                            <div className="flex-1">
-                                                <InputLabel>Name</InputLabel>
-                                                <input className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.childName} onChange={e => {
-                                                    const children = [...(formData.children || [])];
-                                                    children[idx].childName = e.target.value;
-                                                    setFormData({ ...formData, children });
-                                                }} />
-                                            </div>
-                                            <div className="w-24">
-                                                <InputLabel>Age</InputLabel>
-                                                <input
-                                                    type="number"
-                                                    className="w-full border rounded-xl p-2.5 text-xs bg-white"
-                                                    value={child.age}
-                                                    onChange={e => {
-                                                        const children = [...(formData.children || [])];
-                                                        children[idx].age = Number(e.target.value);
-                                                        setFormData({ ...formData, children });
-                                                    }}
-                                                />
-                                            </div>
-                                            <div>
-                                                <InputLabel>Gender</InputLabel>
-                                                <select className="w-full border rounded-xl p-3 text-sm bg-white" value={child.gender} onChange={e => {
-                                                    const children = [...(formData.children || [])];
-                                                    children[idx].gender = e.target.value as Gender;
-                                                    setFormData({ ...formData, children });
-                                                }}>
-                                                    <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
-                                                </select>
-                                            </div>
-                                            <button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button>
+                                {formData.maritalStatus === "MARRIED" && (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <InputLabel>Children ({formData.children?.length || 0})</InputLabel>
+                                            <button onClick={() => setFormData(p => ({ ...p, children: [...(p.children || []), { childName: "", gender: "MALE", age: 0 }] }))} className="text-indigo-600 text-[10px] font-black flex items-center gap-1 hover:underline"><HiPlus /> ADD CHILD</button>
                                         </div>
-                                    ))}
-                                </div>
+                                        {formData.children?.map((child, idx) => (
+                                            <div key={idx} className="flex gap-4 items-end bg-neutral-50 p-4 rounded-2xl relative border border-neutral-100">
+                                                <div className="flex-1">
+                                                    <InputLabel>Name</InputLabel>
+                                                    <input className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.childName} onChange={e => {
+                                                        const children = [...(formData.children || [])];
+                                                        children[idx].childName = e.target.value;
+                                                        setFormData({ ...formData, children });
+                                                    }} />
+                                                </div>
+                                                <div className="w-24">
+                                                    <InputLabel>Age</InputLabel>
+                                                    <input
+                                                        type="number"
+                                                        className="w-full border rounded-xl p-2.5 text-xs bg-white"
+                                                        value={child.age}
+                                                        onChange={e => {
+                                                            const children = [...(formData.children || [])];
+                                                            children[idx].age = Number(e.target.value);
+                                                            setFormData({ ...formData, children });
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <InputLabel>Gender</InputLabel>
+                                                    <select className="w-full border rounded-xl p-3 text-sm bg-white" value={child.gender} onChange={e => {
+                                                        const children = [...(formData.children || [])];
+                                                        children[idx].gender = e.target.value as Gender;
+                                                        setFormData({ ...formData, children });
+                                                    }}>
+                                                        <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
+                                                    </select>
+                                                </div>
+                                                <button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                )}
+
                             </div>
                         </section>
 
@@ -545,7 +569,7 @@ const PersonalDetailsModal = () => {
                                 </div>
                                 <div className="md:col-span-2 space-y-4">
                                     <div className="flex justify-end">
-                                        <button onClick={() => setFormData(p => ({ ...p, experiences: [...(p.experiences || []), { companyName: "", role: "", fromDate: "", endDate: "", lastCompany: false }] }))} className="px-4 py-2 bg-neutral-900 text-white text-[10px] font-black rounded-xl uppercase tracking-widest hover:bg-black transition-all">Add Company</button>
+                                        <button onClick={() => setFormData(p => ({ ...p, experiences: [...(p.experiences || []), { companyName: "", role: "", fromDate: "", endDate: "" }] }))} className="px-4 py-2 bg-neutral-900 text-white text-[10px] font-black rounded-xl uppercase tracking-widest hover:bg-black transition-all">Add Company</button>
                                     </div>
                                     {formData.experiences?.map((exp, idx) => (
                                         <div key={idx} className="bg-white p-6 rounded-2xl border border-neutral-200 space-y-4 relative">
@@ -569,13 +593,13 @@ const PersonalDetailsModal = () => {
                                                         setFormData({ ...formData, experiences: exps });
                                                     }} />
                                                 </div>
-                                                <div className="flex items-center gap-2 pt-6 italic font-bold text-indigo-600 text-[10px] uppercase">
+                                                {/* <div className="flex items-center gap-2 pt-6 italic font-bold text-indigo-600 text-[10px] uppercase">
                                                     <input type="checkbox" checked={exp.lastCompany} onChange={e => {
                                                         const exps = [...(formData.experiences || [])].map(item => ({ ...item, lastCompany: false }));
                                                         exps[idx].lastCompany = e.target.checked;
                                                         setFormData({ ...formData, experiences: exps });
                                                     }} /> IS LAST COMPANY
-                                                </div>
+                                                </div> */}
 
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
@@ -607,6 +631,24 @@ const PersonalDetailsModal = () => {
                                                     fileKey={`exp_cert_${idx}`} // Key is technically arbitrary here since we use customFile
                                                     customFile={exp.tempCert}
                                                     onCustomChange={(file) => handleExperienceFileChange(idx, file)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <InputLabel>Joining Letter</InputLabel>
+                                                <FileRow
+                                                    label="Joining Letter"
+                                                    fileKey={`joining_letter_${idx}`}
+                                                    customFile={exp.tempJoiningLetter}
+                                                    onCustomChange={(file) => handleJoiningLetterFileChange(idx, file)}
+                                                />
+                                            </div>
+                                            <div>
+                                                <InputLabel>Relieving Letter</InputLabel>
+                                                <FileRow
+                                                    label="Relieving Letter"
+                                                    fileKey={`relieving_letter_${idx}`}
+                                                    customFile={exp.tempRelievingLetter}
+                                                    onCustomChange={(file) => handleRelievingLetterFileChange(idx, file)}
                                                 />
                                             </div>
                                         </div>

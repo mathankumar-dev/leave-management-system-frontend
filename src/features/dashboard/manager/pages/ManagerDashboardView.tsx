@@ -68,7 +68,6 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
     const t = type.toUpperCase();
     if (t.includes('SICK')) return <FaStethoscope className="text-rose-500" />;
     if (t.includes('ANNUAL')) return <FaUmbrellaBeach className="text-blue-500" />;
-    if (t.includes('CASUAL')) return <FaPlaneDeparture className="text-amber-500" />;
     return <FaBriefcaseMedical className="text-indigo-500" />;
   };
 
@@ -216,7 +215,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   key={req.leaveId}
-                  className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] p-6 flex flex-col md:flex-row items-center gap-6 shadow-xl shadow-slate-100"
+                  className="bg-white/80 backdrop-blur-xl border border-white rounded-4xl p-6 flex flex-col md:flex-row items-center gap-6 shadow-xl shadow-slate-100"
                 >
                   <div className="w-14 h-14 bg-brand rounded-2xl text-white flex items-center justify-center font-black text-xl shadow-lg shadow-brand/20">
                     {(req.employeeName || "E").charAt(0)}
@@ -229,7 +228,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
                     "{req.reason || "Operational requirement not specified."}"
                   </div>
                   <div className="flex gap-3">
-                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'REJECTED' })} className="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-all">Deny</button>
+                    <button onClick={() => setDialogConfig({ isOpen: true, req, status: 'REJECTED' })} className="px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 border border-red-400 hover:text-rose-500 transition-all">Deny</button>
                     <button onClick={() => executeDecision(req, 'APPROVED')} className="px-8 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand transition-all shadow-lg">Approve</button>
                   </div>
                 </motion.div>
@@ -257,9 +256,9 @@ const MonthlyCard = ({ label, val, sub, color }: any) => (
       <h3 className="text-3xl font-black text-gray-900">{val} <span className="text-xs font-bold text-gray-400">Days</span></h3>
       <p className="text-[10px] font-bold text-gray-400 mb-1">{sub}</p>
     </div>
-    <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4 overflow-hidden">
-      <div className={`h-full ${color}`} style={{ width: '65%' }} />
-    </div>
+      {/* <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4 overflow-hidden">
+        <div className={`h-full ${color}`} style={{ width: '65%' }} />
+      </div> */}
   </div>
 );
 

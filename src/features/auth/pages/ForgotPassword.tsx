@@ -56,7 +56,6 @@ const ForgotPassword: React.FC = () => {
         try {
 
             await authService.verifyOtp({
-
                 email,
                 otp,
                 newPassword

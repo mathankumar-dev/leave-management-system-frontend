@@ -66,14 +66,19 @@ useEffect(() => {
       setAuthData(data.employeeId, data.token);
 
       const profile = await authService.getEmployeeProfile(data.employeeId);
-      setUser(profile);
+      console.log(profile);
       
+      setUser(profile);      
     } catch (e) {
       console.error("Login initialization failed:", e);
       logout();
       throw e;
     }
   }, []);
+
+  console.log("user");
+  
+console.log(user);
 
   return (
     <AuthContext.Provider

@@ -125,6 +125,7 @@ const EmployeeProfile: React.FC = () => {
           ? ((backendProfile as any).experiencedDocuments || [{ companyName: "", role: "", fromDate: "", endDate: "", lastCompany: true }])
           : [],
         uanNumber: (backendProfile as any).uanNumber || "",
+        
       });
 
       // Pre-fill aadhar parts
@@ -136,6 +137,9 @@ const EmployeeProfile: React.FC = () => {
       });
     }
   }, [backendProfile]);
+
+  console.log(backendProfile);
+  
 
   // Sync aadhar parts → formData (same as PersonalDetailsModal)
   useEffect(() => {
