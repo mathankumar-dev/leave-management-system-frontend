@@ -66,8 +66,6 @@ export const leaveService = {
 
   getPendingApprovals: async (managerId: string) => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
-    // If the response is a direct array, use response.data. 
-    // If it's paged, use response.data.content.
     return response.data.content || response.data;
   },
 

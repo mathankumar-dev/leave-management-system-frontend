@@ -1,8 +1,6 @@
 import type { User } from "@/features/employee/types";
 import api from "@/services/apiClient";
 import type { AuthResponse, LoginCredentials } from "@/shared/auth/authTypes";
-import axios from "axios";
-import Cookies from "js-cookie";
 
 export const authService = {
 
@@ -11,8 +9,11 @@ export const authService = {
     return response.data;
   },
 
+  
+
   getEmployeeProfile: async (id: string): Promise<User> => {
     const response = await api.get<User>(`/employees/profile/${id}`);
+    
     return response.data;
   },
 
@@ -25,6 +26,12 @@ export const authService = {
     const response = await api.get<User>(`/employees/profile/${id}`);
     return response.data;
   },
+  // getProfileByID: async (id  : number): Promise<User> => {
+  //   const response = await api.get<User>(`/employees/profile/${id}`);
+  //   console.log(response);
+    
+  //   return response.data;
+  // },
 
   // ─── POST — first time submission ────────────────────────────
   submitMultipartDetails: async (
@@ -40,12 +47,11 @@ export const authService = {
     if (files.passportPhoto) formData.append("passportPhoto", files.passportPhoto as File);
 
     if (type === "FRESHER") {
-      if (files.tenthMarksheet)    formData.append("tenthMarksheet",    files.tenthMarksheet as File);
-      if (files.twelfthMarksheet)  formData.append("twelfthMarksheet",  files.twelfthMarksheet as File);
+      if (files.tenthMarksheet) formData.append("tenthMarksheet", files.tenthMarksheet as File);
+      if (files.twelfthMarksheet) formData.append("twelfthMarksheet", files.twelfthMarksheet as File);
       if (files.degreeCertificate) formData.append("degreeCertificate", files.degreeCertificate as File);
       if (files.offerLetter)       formData.append("offerLetter",       files.offerLetter as File);
     } else {
-      // experienceCerts — List<MultipartFile> → multiple appends with same key
       if (Array.isArray(files.experienceCerts)) {
         files.experienceCerts.forEach(f => formData.append("experienceCerts", f));
       }
@@ -57,9 +63,18 @@ export const authService = {
       if (Array.isArray(files.relievingLetter)) {
         files.relievingLetter.forEach(f => formData.append("relievingLetter", f));
       }
+      if (Array.isArray(files.joiningLetter)) {
+        files.joiningLetter.forEach((file) => {
+          formData.append("joiningLetters", file);
+        });
+      }
+      if (Array.isArray(files.relievingLetter)) {
+        files.relievingLetter.forEach((file) => {
+          formData.append("relievingLetters", file);
+        });
+      }
     }
-
-    const response = await api.post(
+     const response = await api.post(
       `/employees/personal-details/${id}/${type.toLowerCase()}`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }
@@ -87,72 +102,104 @@ updateProfileDetails: async (
   id: string,
   type: "FRESHER" | "EXPERIENCED",
   data: any,
-  files: Record<string, File | File[] | null>
+  files: Record<string, any>
 ): Promise<any> => {
+
   const formData = new FormData();
 
   // ── 1. JSON payload ───────────────────────────────────────────
   formData.append("data", JSON.stringify(data));
 
-  // ── 2. Common files (optional — only if user selected new file) ──
-  if (files.idProof)       formData.append("idProof",       files.idProof as File);
-  if (files.passportPhoto) formData.append("passportPhoto", files.passportPhoto as File);
+  // ── 2. Common files ───────────────────────────────────────────
+  if (files.idProof)
+    formData.append("idProof", files.idProof);
 
-  // ── 3. Type-specific files ────────────────────────────────────
+  if (files.passportPhoto)
+    formData.append("passportPhoto", files.passportPhoto);
+
+  // ── 3. Fresher files ──────────────────────────────────────────
   if (type === "FRESHER") {
-    // Backend patchFresherDocFiles — only replaces if file sent
-    if (files.tenthMarksheet)    formData.append("tenthMarksheet",    files.tenthMarksheet as File);
-    if (files.twelfthMarksheet)  formData.append("twelfthMarksheet",  files.twelfthMarksheet as File);
-    if (files.degreeCertificate) formData.append("degreeCertificate", files.degreeCertificate as File);
-    if (files.offerLetter)       formData.append("offerLetter",       files.offerLetter as File);
 
-  } else {
-    // EXPERIENCED — Backend expects arrays for ALL experience entries
-    // Send arrays matching experiences.length - null/empty for unchanged entries
-    const experiences = data.experiences || [];
-    
-    // experienceCerts[] — one per experience entry
-    experiences.forEach((_: any, i: number) => {
-      const certFile = (files as any)[`experienceCerts_${i}`];
-      if (certFile) formData.append("experienceCerts", certFile);
-    });
+    if (files.tenthMarksheet)
+      formData.append("tenthMarksheet", files.tenthMarksheet);
 
-    // joiningLetters[] — one per experience entry  
-    experiences.forEach((_: any, i: number) => {
-      const joiningFile = (files as any)[`joiningLetters_${i}`];
-      if (joiningFile) formData.append("joiningLetters", joiningFile);
-    });
+    if (files.twelfthMarksheet)
+      formData.append("twelfthMarksheet", files.twelfthMarksheet);
 
-    // relievingLetters[] — one per experience entry (backend param: relievingLetters)
-    experiences.forEach((_: any, i: number) => {
-      const relievingFile = (files as any)[`relievingLetters_${i}`];
-      if (relievingFile) formData.append("relievingLetters", relievingFile);
-    });
+    if (files.degreeCertificate)
+      formData.append("degreeCertificate", files.degreeCertificate);
+
+    if (files.offerLetter)
+      formData.append("offerLetter", files.offerLetter);
+
   }
 
+  // ── 4. Experienced files (🔥 FIXED) ───────────────────────────
+  else {
+
+    // ✅ experienceCerts[]
+    if (files.experienceCerts?.length) {
+      files.experienceCerts.forEach((file: File) => {
+        formData.append("experienceCerts", file);
+      });
+    }
+
+    // ✅ joiningLetters[]
+    if (files.joiningLetters?.length) {
+      files.joiningLetters.forEach((file: File) => {
+        formData.append("joiningLetters", file);
+      });
+    }
+
+    // ✅ relievingLetters[]
+    if (files.relievingLetters?.length) {
+      files.relievingLetters.forEach((file: File) => {
+        formData.append("relievingLetters", file);
+      });
+    }
+  }
+
+  // ── 5. API call ───────────────────────────────────────────────
   const response = await api.put(
     `/employees/profile/${id}`,
     formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
+
   return response.data;
 },
 
-  refreshToken: async () => {
-    const refreshToken = Cookies.get("lms_refresh_token");
-    if (!refreshToken) throw new Error("No refresh token found");
-    return axios.post("/refresh-token", { refreshToken });
-  },
+  
 
   changePassword: async (newPassword: string): Promise<void> => {
     await api.post('/auth/force-change', { newPassword });
+    await api.put('/auth/change-password', {
+      newPassword,
+    });
   },
 
   forgotPassword: async (email: string): Promise<void> => {
-    await api.post('/password-reset/forgot-password', { email });
+    await api.post('/password-reset/forgot-password', {
+      email
+    });
   },
 
-  verifyOtp: async (data: { email: string; otp: string; newPassword: string }) => {
-    return api.post("/password-reset/verify-otp", data);
-  },
+
+  verifyOtp: async (data: {
+    email: string,
+    otp: string,
+    newPassword: string
+  }) => {
+
+    return api.post(
+      "/password-reset/verify-otp",
+      data
+    );
+
+  }
+
 };

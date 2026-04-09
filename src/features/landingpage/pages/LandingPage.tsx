@@ -211,32 +211,32 @@ export function HomeStats() {
 
 /* ── Features ── */
 export function Features({ featuresRef }: { featuresRef: React.RefObject<HTMLDivElement | null> }) {
- const features = [
-  {
-    icon: "👤",
-    title: "Role-Based Access",
-    desc: "Secure dashboards for Employee, Manager, HR, Admin and CFO.",
-    color: "bg-blue-50 text-blue-600",
-  },
-  {
-    icon: "📅",
-    title: "Leave Management",
-    desc: "Apply, track and approve leaves with full audit trail.",
-    color: "bg-emerald-50 text-emerald-600",
-  },
-  {
-    icon: "💳",
-    title: "Payslip Module",
-    desc: "Generate and download monthly payslips with tax breakdown.",
-    color: "bg-violet-50 text-violet-600",
-  },
-  // {
-  //   icon: "🛡️",
-  //   title: "Secure & Compliant",
-  //   desc: "JWT-based authentication and role-level data protection.",
-  //   color: "bg-rose-50 text-rose-600",
-  // },
-];
+  const features = [
+    {
+      icon: "👤",
+      title: "Role-Based Access",
+      desc: "Secure dashboards for Employee, Manager, HR, Admin and CFO.",
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
+      icon: "📅",
+      title: "Leave Management",
+      desc: "Apply, track and approve leaves with full audit trail.",
+      color: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      icon: "💳",
+      title: "Payslip Module",
+      desc: "Generate and download monthly payslips with tax breakdown.",
+      color: "bg-violet-50 text-violet-600",
+    },
+    // {
+    //   icon: "🛡️",
+    //   title: "Secure & Compliant",
+    //   desc: "JWT-based authentication and role-level data protection.",
+    //   color: "bg-rose-50 text-rose-600",
+    // },
+  ];
   return (
     <section ref={featuresRef} id="features" className="py-24 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6">

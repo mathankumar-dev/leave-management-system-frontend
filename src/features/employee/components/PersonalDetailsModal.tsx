@@ -11,6 +11,9 @@ import InputLabel from '@/shared/components/InputLabel';
 import type { Gender } from '@/shared/types';
 import { useEffect, useRef, useState } from "react";
 import {
+    // --- ADDED THESE NEW ICONS ---
+    HiCheck,
+    HiCircleStack,
     HiOutlineBanknotes,
     HiOutlineBriefcase,
     HiOutlineCloudArrowUp,
@@ -27,6 +30,27 @@ const PersonalDetailsModal = () => {
     const { user } = useAuth();
     const isExperienced = user?.employeeExperience === "EXPERIENCED";
     const submissionType = isExperienced ? "EXPERIENCED" : "FRESHER";
+
+    // --- NEW: Step State and Definition ---
+    const [activeStep, setActiveStep] = useState(1);
+
+    const steps = [
+        { id: 1, title: 'Document Upload', description: 'Digital Vault', icon: <HiOutlineCloudArrowUp size={22} /> },
+        { id: 2, title: 'Identity & Info', description: 'Core Profile Details', icon: <HiOutlineUserCircle size={22} /> },
+        { id: 3, title: 'Family Details', description: 'Payroll & Benefits', icon: <HiOutlineUsers size={22} /> },
+        { id: 4, title: 'Banking Details', description: 'Salary Credits', icon: <HiOutlineBanknotes size={22} /> },
+    ];
+
+    if (isExperienced) {
+        // Experience is step 4, banking becomes step 5
+        steps.splice(3, 0, { id: 4, title: 'Work History', description: 'Experience History', icon: <HiOutlineBriefcase size={22} /> });
+        // Update Banking to be the last step
+        steps[4].id = 5;
+    }
+
+    const totalSteps = steps.length;
+    // --- End Step Definitions ---
+
 
     const [formData, setFormData] = useState<Partial<PersonalDetailsForm>>({
         firstName: "",
@@ -60,8 +84,9 @@ const PersonalDetailsModal = () => {
         spouseOccupation: "",
         spouseContactNumber: "",
         children: [],
-        experiences: isExperienced ? [{ companyName: "", role: "", fromDate: "", endDate: "", lastCompany: true }] : [],
-        uanNumber: ""
+        experiences: isExperienced ? [{ companyName: "", role: "", fromDate: "", endDate: "" }] : [],
+        uanNumber: "",
+        
     });
 
     const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
@@ -139,9 +164,20 @@ const PersonalDetailsModal = () => {
     const handleExperienceFileChange = (index: number, file: File | null) => {
         if (!file) return;
         const newExperiences = [...(formData.experiences || [])];
-        // We store the file temporarily in the experience object
-        // You may need to update your TypeScript interface to allow this property locally
         (newExperiences[index] as any).tempCert = file;
+        setFormData({ ...formData, experiences: newExperiences });
+    };
+    // Add this near handleExperienceFileChange
+    const handleJoiningLetterFileChange = (index: number, file: File | null) => {
+        if (!file) return;
+        const newExperiences = [...(formData.experiences || [])];
+        (newExperiences[index] as any).tempJoiningLetter = file;
+        setFormData({ ...formData, experiences: newExperiences });
+    };
+    const handleRelievingLetterFileChange = (index: number, file: File | null) => {
+        if (!file) return;
+        const newExperiences = [...(formData.experiences || [])];
+        (newExperiences[index] as any).tempRelievingLetter = file;
         setFormData({ ...formData, experiences: newExperiences });
     };
 
@@ -152,7 +188,7 @@ const PersonalDetailsModal = () => {
             // 1. Validation for common required files
             const requiredFiles = submissionType === "FRESHER"
                 ? ["idProof", "passportPhoto", "tenthMarksheet", "twelfthMarksheet", "degreeCertificate", "offerLetter"]
-                : ["idProof", "passportPhoto", "relievingLetter"];
+                : ["idProof", "passportPhoto"];
 
             const missing = requiredFiles.filter(k => !files[k]);
             if (missing.length > 0) {
@@ -164,11 +200,16 @@ const PersonalDetailsModal = () => {
             setLoaderState({ active: true, finished: false });
 
             const experienceFiles: File[] = [];
+            const joiningLetterFiles: File[] = []; // <-- Add this
+            const relievingLetterFiles: File[] = [];
+
             const cleanedExperiences = formData.experiences?.map((exp: any) => {
-                if (exp.tempCert) {
-                    experienceFiles.push(exp.tempCert);
-                }
-                const { tempCert, ...rest } = exp; // Destructure to remove tempCert from the object
+                if (exp.tempCert) experienceFiles.push(exp.tempCert);
+                if (exp.tempJoiningLetter) joiningLetterFiles.push(exp.tempJoiningLetter);
+                if (exp.tempRelievingLetter) relievingLetterFiles.push(exp.tempRelievingLetter); // 2. Collect
+
+                // 3. Clean all temp fields
+                const { tempCert, tempJoiningLetter, tempRelievingLetter, ...rest } = exp;
                 return rest;
             });
 
@@ -182,9 +223,10 @@ const PersonalDetailsModal = () => {
             // 4. Merge all files (Global + Extracted from Experience rows)
             const finalFiles = {
                 ...files,
-                experienceCerts: experienceFiles.length > 0 ? experienceFiles : null
+                experienceCerts: experienceFiles.length > 0 ? experienceFiles : null,
+                joiningLetter: joiningLetterFiles.length > 0 ? joiningLetterFiles : null,
+                relievingLetter: relievingLetterFiles.length > 0 ? relievingLetterFiles : null // 4. Map it
             };
-
             // 5. Send to Service
             await authService.submitMultipartDetails(
                 user.id,
@@ -207,7 +249,7 @@ const PersonalDetailsModal = () => {
         fileKey,
         required = false,
         multiple = false,
-        customFile = undefined, // Changed from null to undefined for clearer fallback
+        customFile = undefined,
         onCustomChange
     }: {
         label: string,
@@ -270,6 +312,20 @@ const PersonalDetailsModal = () => {
         );
     };
 
+    // --- NEW: Next/Prev handlers ---
+    const handleNext = () => {
+        if (activeStep < totalSteps) {
+            setActiveStep(prev => prev + 1);
+        }
+    };
+
+    const handlePrev = () => {
+        if (activeStep > 1) {
+            setActiveStep(prev => prev - 1);
+        }
+    };
+    // --- End Next/Prev handlers ---
+
     return (
         <>
             {loaderState.active && (
@@ -277,366 +333,253 @@ const PersonalDetailsModal = () => {
             )}
 
             <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-                <div className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full flex flex-col max-h-[90vh] overflow-hidden">
-
+                <div className="bg-white rounded-3xl shadow-2xl w-[98vw] h-[96vh] flex flex-col overflow-hidden">
                     {/* HEADER */}
                     <div className="p-6 border-b flex justify-between items-center bg-neutral-50 shrink-0">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10  rounded-xl flex items-center justify-center"><img src={logo} alt="" /></div>
-                            {/* <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black italic shadow-lg shadow-indigo-200 text-xl">W</div> */}
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center"><img src={logo} alt="" /></div>
                             <div>
-                                <h3 className="text-xl font-black text-neutral-900 tracking-tight">Onboarding Profile</h3>
-                                <p className="text-[10px] text-indigo-600 font-bold  tracking-widest italic">Secure Data Sync</p>
+                                <h3 className="text-xl font-black text-neutral-900 tracking-tight">Profile Data Mapping</h3>
+                                <p className="text-[10px] text-indigo-600 font-bold tracking-widest italic">Sync with WeHRM</p>
                             </div>
                         </div>
-                        <span className="px-4 py-1.5 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-full uppercase tracking-tighter border border-indigo-200">
-                            {submissionType} MODE
+                        <span className="px-4 py-1.5 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-full capitalize tracking-tighter border border-indigo-200">
+                            {submissionType} Employee
                         </span>
                     </div>
 
-                    <div className="p-8 overflow-y-auto space-y-12 custom-scrollbar bg-white">
+                    {/* --- REFACTORED MAIN CONTENT: 2-column layout --- */}
+                    <div className="flex flex-1 overflow-hidden">
 
-                        {/* 1. DOCUMENTS SECTION */}
-                        <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <div className="md:col-span-1 border-r border-neutral-100 pr-6">
-                                <div className="flex items-center gap-2 text-indigo-600 mb-2">
-                                    <HiOutlineCloudArrowUp size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Digital Vault</span>
-                                </div>
-                                <p className="text-xs text-neutral-400 leading-relaxed italic">Upload required documentation. All files are encrypted during transit.</p>
+                        {/* LEFT COLUMN: The Steps Sidebar (New Component) */}
+                        <aside className="w-[300px] bg-neutral-50 border-r border-neutral-100 p-8 pt-10 shrink-0 custom-scrollbar overflow-y-auto">
+                            <div className="flex items-center gap-2 text-indigo-600 mb-8 border-b pb-6 border-neutral-100">
+                                <HiCircleStack size={22} />
+                                <span className="font-bold text-xs uppercase tracking-widest text-neutral-800">Migration Steps</span>
                             </div>
-                            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FileRow label="ID Proof (Aadhar/PAN)" fileKey="idProof" required />
-                                <FileRow label="Passport Photo" fileKey="passportPhoto" required />
 
-                                {/* Shared required for Freshers / Optional for experienced as per your logic */}
-                                {!isExperienced && (
-                                    <>
-                                        <FileRow label="10th Marksheet" fileKey="tenthMarksheet" required={!isExperienced} />
-                                        <FileRow label="12th Marksheet" fileKey="twelfthMarksheet" required={!isExperienced} />
-                                        <FileRow label="Degree Certificate" fileKey="degreeCertificate" required={!isExperienced} />
-                                        <FileRow label="Offer Letter" fileKey="offerLetter" required={!isExperienced} /></>
-                                )
+                            <div className="relative space-y-10">
+                                {/* Vertical connector line */}
+                                <div className="absolute left-[17px] top-2 bottom-2 w-0.5 bg-neutral-100 z-0"></div>
 
-                                }
+                                {steps.map((step, idx) => {
+                                    const isCurrent = step.id === activeStep;
+                                    const isCompleted = step.id < activeStep;
 
+                                    return (
+                                        <div key={step.id} className={`flex items-start gap-4 z-10 relative group transition-opacity duration-300 ${isCurrent ? 'opacity-100' : 'opacity-60'}`}>
+                                            {/* Number/Icon Bubble */}
+                                            <div className={`w-9 h-9 shrink-0 rounded-full border-2 flex items-center justify-center font-bold text-sm transition-colors duration-300 z-10
+                                                ${isCurrent ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg' :
+                                                    (isCompleted ? 'bg-green-100 border-green-200 text-green-700' :
+                                                        'bg-white border-neutral-200 text-neutral-400')}`}
+                                            >
+                                                {isCompleted ? <HiCheck size={18} /> : (isCurrent ? step.id : step.id)}
+                                            </div>
 
-                                {isExperienced && (
-                                    <>
-                                        <FileRow label="Relieving Letter" fileKey="relievingLetter" required />
-                                    </>
-                                )}
+                                            {/* Step text */}
+                                            <div className="overflow-hidden pt-0.5">
+                                                <p className={`text-[11px] font-bold uppercase tracking-tight leading-snug ${isCurrent ? 'text-indigo-600' : (isCompleted ? 'text-neutral-700' : 'text-neutral-400')}`}>
+                                                    {step.title}
+                                                </p>
+                                                <p className={`text-[10px] italic leading-tight ${isCurrent ? 'text-indigo-500' : (isCompleted ? 'text-neutral-500' : 'text-neutral-400')}`}>
+                                                    {step.description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
-                        </section>
+                        </aside>
 
-                        {/* 2. CORE IDENTITY */}
-                        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t pt-10">
-                            <div className="md:col-span-1 border-r border-neutral-100 pr-6">
-                                <div className="flex items-center gap-2 text-indigo-600 mb-6">
-                                    <HiOutlineUserCircle size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Core Identity</span>
+
+                        {/* RIGHT COLUMN: The current form section (Conditional Rendering) */}
+                        <div className="flex-1 p-10 overflow-y-auto custom-scrollbar bg-white">
+
+                            {/* Section Header (Icon and bold title from step) */}
+                            <div className="flex items-center gap-3 mb-12 border-b border-neutral-100 pb-8">
+                                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100">
+                                    {steps[activeStep - 1].icon}
                                 </div>
-                                <div className="space-y-6">
-                                    <div>
-                                        <InputLabel>Designation</InputLabel>
-                                        <input className="w-full border rounded-xl p-3 text-sm bg-neutral-50 font-bold" value={formData.designation} onChange={e => handleInputChange('designation', e.target.value)} />
-                                    </div>
-                                    <div>
-                                        <InputLabel>Aadhar Number</InputLabel>
-                                        <div className="flex gap-2">
-                                            {(['p1', 'p2', 'p3'] as const).map((p, idx) => (
-                                                <input
-                                                    key={p}
-                                                    ref={aadharRefs[idx]} // Attach the ref
-                                                    className="w-full text-center border rounded-xl p-3 font-mono text-sm outline-none focus:border-indigo-500"
-                                                    maxLength={4}
-                                                    value={aadharParts[p]}
-                                                    onChange={e => handleAadharChange(p, e.target.value)}
-                                                    onKeyDown={e => handleAadharKeyDown(p, e)} // Optional backspace jump
-                                                />
-                                            ))}
+                                <div>
+                                    <h2 className="text-2xl font-black text-neutral-900 tracking-tight">{steps[activeStep - 1].title}</h2>
+                                    <p className="text-xs text-neutral-400 leading-relaxed italic">Confirm details to proceed.</p>
+                                </div>
+                            </div>
+
+                            {/* --- Start CONDITIONAL RENDERING --- */}
+
+                            {/* STEP 1: Documents */}
+                            {activeStep === 1 && (
+                                <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <FileRow label="ID Proof (Aadhar/PAN/Driving License/Voter ID)" fileKey="idProof" required />
+                                    <FileRow label="Passport Size Photo" fileKey="passportPhoto" required />
+
+                                    {!isExperienced && (
+                                        <>
+                                            <FileRow label="10th Marksheet" fileKey="tenthMarksheet" required />
+                                            <FileRow label="12th Marksheet" fileKey="twelfthMarksheet" required />
+                                            <FileRow label="Degree Certificate" fileKey="degreeCertificate" required />
+                                            <FileRow label="Offer Letter" fileKey="offerLetter" required />
+                                        </>
+                                    )}
+                                </section>
+                            )}
+
+                            {/* STEP 2: Core Identity */}
+                            {activeStep === 2 && (
+                                <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    <div className="md:col-span-1 space-y-6">
+                                        <div>
+                                            <InputLabel>Designation</InputLabel>
+                                            <input className="w-full border rounded-xl p-3 text-sm bg-neutral-50 font-bold" value={formData.designation} onChange={e => handleInputChange('designation', e.target.value)} />
+                                        </div>
+                                        <div>
+                                            <InputLabel>Aadhar Number</InputLabel>
+                                            <div className="flex gap-2">
+                                                {(['p1', 'p2', 'p3'] as const).map((p, idx) => (
+                                                    <input
+                                                        key={p}
+                                                        ref={aadharRefs[idx]}
+                                                        className="w-full text-center border rounded-xl p-3 font-mono text-sm outline-none focus:border-indigo-500"
+                                                        maxLength={4}
+                                                        value={aadharParts[p]}
+                                                        onChange={e => handleAadharChange(p, e.target.value)}
+                                                        onKeyDown={e => handleAadharKeyDown(p, e)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <InputLabel>Skills (Comma separated)</InputLabel>
+                                            <input className="w-full border rounded-xl p-3 text-sm" placeholder="React, Spring, etc" value={formData.skillSet} onChange={e => handleInputChange('skillSet', e.target.value)} />
                                         </div>
                                     </div>
-                                    <div>
-                                        <InputLabel>Skills (Comma separated)</InputLabel>
-                                        <input className="w-full border rounded-xl p-3 text-sm" placeholder="React, Spring, etc" value={formData.skillSet} onChange={e => handleInputChange('skillSet', e.target.value)} />
+                                    <div className="md:col-span-2 space-y-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div><InputLabel>First Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.firstName} onChange={e => handleInputChange('firstName', e.target.value)} /></div>
+                                            <div><InputLabel>Last Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.lastName} onChange={e => handleInputChange('lastName', e.target.value)} /></div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div><InputLabel>Personal Email</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.personalEmail} onChange={e => handleInputChange('personalEmail', e.target.value)} /></div>
+                                            <div><InputLabel>Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.contactNumber} onChange={e => handleInputChange('contactNumber', e.target.value)} /></div>
+                                            <div><InputLabel>Emergency Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.emergencyContactNumber} onChange={e => handleInputChange('emergencyContactNumber', e.target.value)} /></div>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <CustomDatePicker label="Date of Birth" value={formData.dateOfBirth} onChange={(val: string) => handleInputChange('dateOfBirth', val)} />
+                                            <div>
+                                                <InputLabel>Gender</InputLabel>
+                                                <select className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.gender} onChange={e => handleInputChange('gender', e.target.value as any)}>
+                                                    <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <InputLabel>Blood Group</InputLabel>
+                                                <select className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.bloodGroup} onChange={e => handleInputChange('bloodGroup', e.target.value as any)}>
+                                                    <option value="O_POSITIVE">O+</option><option value="O_NEGATIVE">O-</option>
+                                                    <option value="A_POSITIVE">A+</option><option value="A_NEGATIVE">A-</option>
+                                                    <option value="B_POSITIVE">B+</option><option value="B_NEGATIVE">B-</option>
+                                                    <option value="AB_POSITIVE">AB+</option><option value="AB_NEGATIVE">AB-</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div><InputLabel>Present Address</InputLabel><textarea rows={2} className="w-full border rounded-xl p-3 text-sm" value={formData.presentAddress} onChange={e => handleInputChange('presentAddress', e.target.value)} /></div>
+                                        <div><InputLabel>Permanent Address</InputLabel><textarea rows={2} className="w-full border rounded-xl p-3 text-sm" value={formData.permanentAddress} onChange={e => handleInputChange('permanentAddress', e.target.value)} /></div>
                                     </div>
-                                </div>
-                            </div>
-                            <div className="md:col-span-2 space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div><InputLabel>First Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.firstName} onChange={e => handleInputChange('firstName', e.target.value)} /></div>
-                                    <div><InputLabel>Last Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.lastName} onChange={e => handleInputChange('lastName', e.target.value)} /></div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div><InputLabel>Personal Email</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.personalEmail} onChange={e => handleInputChange('personalEmail', e.target.value)} /></div>
-                                    <div><InputLabel>Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.contactNumber} onChange={e => handleInputChange('contactNumber', e.target.value)} /></div>
-                                    <div><InputLabel>Emergency Contact Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.emergencyContactNumber} onChange={e => handleInputChange('emergencyContactNumber', e.target.value)} /></div>
-                                </div>
-                                <div className="grid grid-cols-3 gap-4">
-                                    <CustomDatePicker
-                                        label="Date of Birth"
-                                        value={formData.dateOfBirth}
-                                        onChange={(val: string) => handleInputChange('dateOfBirth', val)}
-                                    />
-                                    <div>
-                                        <InputLabel>Gender</InputLabel>
-                                        <select className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.gender} onChange={e => handleInputChange('gender', e.target.value as any)}>
-                                            <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <InputLabel>Blood Group</InputLabel>
-                                        <select className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.bloodGroup} onChange={e => handleInputChange('bloodGroup', e.target.value as any)}>
-                                            <option value="O_POSITIVE">O+</option><option value="O_NEGATIVE">O-</option>
-                                            <option value="A_POSITIVE">A+</option><option value="A_NEGATIVE">A-</option>
-                                            <option value="B_POSITIVE">B+</option><option value="B_NEGATIVE">B-</option>
-                                            <option value="AB_POSITIVE">AB+</option><option value="AB_NEGATIVE">AB-</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div><InputLabel>Present Address</InputLabel><textarea rows={2} className="w-full border rounded-xl p-3 text-sm" value={formData.presentAddress} onChange={e => handleInputChange('presentAddress', e.target.value)} /></div>
-                                <div><InputLabel>Permanent Address</InputLabel><textarea rows={2} className="w-full border rounded-xl p-3 text-sm" value={formData.permanentAddress} onChange={e => handleInputChange('permanentAddress', e.target.value)} /></div>
-                            </div>
-                        </section>
+                                </section>
+                            )}
 
-                        {/* 3. FAMILY */}
-                        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t pt-10">
-                            <div className="md:col-span-1 border-r border-neutral-100 pr-6">
-                                <div className="flex items-center gap-2 text-indigo-600 mb-2">
-                                    <HiOutlineUsers size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Family</span>
-                                </div>
-                                <p className="text-xs text-neutral-400 italic">Beneficiary details for payroll and health insurance.</p>
-                            </div>
-                            <div className="md:col-span-2 space-y-8">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* STEP 3: Family */}
+                            {activeStep === 3 && (
+                                <section className="space-y-8">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
+                                            <div className="flex justify-between items-center mb-3"><InputLabel>Father's Details</InputLabel> <input type="checkbox" checked={formData.fatherAlive} onChange={e => handleInputChange('fatherAlive', e.target.checked)} /></div>
+                                            <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.fatherName} onChange={e => handleInputChange('fatherName', e.target.value)} />
+                                            <CustomDatePicker label="Date of Birth" value={formData.fatherDateOfBirth} onChange={(val: string) => handleInputChange('fatherDateOfBirth', val)} />
+                                            <div><InputLabel>Occupation</InputLabel><input className="w-full border rounded-xl p-3 text-sm bg-white font-bold" value={formData.fatherOccupation} onChange={e => handleInputChange('fatherOccupation', e.target.value)} /></div>
+                                        </div>
+                                        <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
+                                            <div className="flex justify-between items-center mb-3"><InputLabel>Mother's Details</InputLabel> <input type="checkbox" checked={formData.motherAlive} onChange={e => handleInputChange('motherAlive', e.target.checked)} /></div>
+                                            <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.motherName} onChange={e => handleInputChange('motherName', e.target.value)} />
+                                            <CustomDatePicker label="Date of Birth" value={formData.motherDateOfBirth} onChange={(val: string) => handleInputChange('motherDateOfBirth', val)} />
+                                            <div><InputLabel>Occupation</InputLabel><input className="w-full border rounded-xl p-3 text-sm bg-white font-bold" value={formData.motherOccupation} onChange={e => handleInputChange('motherOccupation', e.target.value)} /></div>
+                                        </div>
+                                    </div>
+
                                     <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
-                                        <div className="flex justify-between items-center mb-3"><InputLabel>Father's Details</InputLabel> <input type="checkbox" checked={formData.fatherAlive} onChange={e => handleInputChange('fatherAlive', e.target.checked)} /></div>
-                                        <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.fatherName} onChange={e => handleInputChange('fatherName', e.target.value)} />
-
-                                        <CustomDatePicker
-                                            label="Date of Birth"
-                                            value={formData.fatherDateOfBirth}
-                                            onChange={(val: string) => handleInputChange('fatherDateOfBirth', val)}
-                                        />
-                                    </div>
-                                    <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
-                                        <div className="flex justify-between items-center mb-3"><InputLabel>Mother's Details</InputLabel> <input type="checkbox" checked={formData.motherAlive} onChange={e => handleInputChange('motherAlive', e.target.checked)} /></div>
-                                        <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white mb-3" value={formData.motherName} onChange={e => handleInputChange('motherName', e.target.value)} />
-
-                                        <CustomDatePicker
-                                            label="Date of Birth"
-                                            value={formData.motherDateOfBirth}
-                                            onChange={(val: string) => handleInputChange('motherDateOfBirth', val)}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <InputLabel>Marital Status</InputLabel>
-                                        <select
-                                            className="border rounded-lg px-2 py-1 text-xs font-bold"
-                                            value={formData.maritalStatus}
-                                            onChange={e => handleInputChange('maritalStatus', e.target.value as any)}
-                                        >
-                                            <option value="SINGLE">SINGLE</option>
-                                            <option value="MARRIED">MARRIED</option>
-                                        </select>
+                                        <div className="flex justify-between items-center mb-4"><InputLabel>Marital Status</InputLabel><select className="border rounded-lg px-2 py-1 text-xs font-bold" value={formData.maritalStatus} onChange={e => handleInputChange('maritalStatus', e.target.value as any)}><option value="SINGLE">SINGLE</option><option value="MARRIED">MARRIED</option></select></div>
+                                        {formData.maritalStatus === "MARRIED" && (
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4"><div><InputLabel>Spouse Name</InputLabel><input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseName} onChange={e => handleInputChange('spouseName', e.target.value)} /></div><div><InputLabel>Spouse Contact</InputLabel><input placeholder="Contact Number" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseContactNumber} onChange={e => handleInputChange('spouseContactNumber', e.target.value)} /></div></div>
+                                                <div className="grid grid-cols-2 gap-4"><CustomDatePicker label="Spouse Date of Birth" value={formData.spouseDateOfBirth} onChange={(val: string) => handleInputChange('spouseDateOfBirth', val)} /><div><InputLabel>Spouse Occupation</InputLabel><input placeholder="Occupation" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseOccupation} onChange={e => handleInputChange('spouseOccupation', e.target.value)} /></div></div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {formData.maritalStatus === "MARRIED" && (
                                         <div className="space-y-4">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <InputLabel>Spouse Name</InputLabel>
-                                                    <input
-                                                        placeholder="Name"
-                                                        className="w-full border rounded-xl p-3 text-sm bg-white"
-                                                        value={formData.spouseName}
-                                                        onChange={e => handleInputChange('spouseName', e.target.value)}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <InputLabel>Spouse Contact</InputLabel>
-                                                    <input
-                                                        placeholder="Contact Number"
-                                                        className="w-full border rounded-xl p-3 text-sm bg-white"
-                                                        value={formData.spouseContactNumber}
-                                                        onChange={e => handleInputChange('spouseContactNumber', e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <CustomDatePicker
-                                                    label="Spouse Date of Birth"
-                                                    value={formData.spouseDateOfBirth}
-                                                    onChange={(val: string) => handleInputChange('spouseDateOfBirth', val)}
-                                                />
-                                                <div>
-                                                    <InputLabel>Spouse Occupation</InputLabel>
-                                                    <input
-                                                        placeholder="Occupation"
-                                                        className="w-full border rounded-xl p-3 text-sm bg-white"
-                                                        value={formData.spouseOccupation}
-                                                        onChange={e => handleInputChange('spouseOccupation', e.target.value)}
-                                                    />
-                                                </div>
-                                            </div>
+                                            <div className="flex justify-between items-center"><InputLabel>Children ({formData.children?.length || 0})</InputLabel><button onClick={() => setFormData(p => ({ ...p, children: [...(p.children || []), { childName: "", gender: "MALE", age: 0 }] }))} className="text-indigo-600 text-[10px] font-black flex items-center gap-1 hover:underline"><HiPlus /> ADD CHILD</button></div>
+                                            {formData.children?.map((child, idx) => (
+                                                <div key={idx} className="flex gap-4 items-end bg-neutral-50 p-4 rounded-2xl relative border border-neutral-100"><div className="flex-1"><InputLabel>Name</InputLabel><input className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.childName} onChange={e => { const children = [...(formData.children || [])]; children[idx].childName = e.target.value; setFormData({ ...formData, children }); }} /></div><div className="w-24"><InputLabel>Age</InputLabel><input type="number" className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.age} onChange={e => { const children = [...(formData.children || [])]; children[idx].age = Number(e.target.value); setFormData({ ...formData, children }); }} /></div><div><InputLabel>Gender</InputLabel><select className="w-full border rounded-xl p-3 text-sm bg-white" value={child.gender} onChange={e => { const children = [...(formData.children || [])]; children[idx].gender = e.target.value as Gender; setFormData({ ...formData, children }); }}><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option></select></div><button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button></div>
+                                            ))}
                                         </div>
                                     )}
-                                </div>
+                                </section>
+                            )}
 
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <InputLabel>Children ({formData.children?.length || 0})</InputLabel>
-                                        <button onClick={() => setFormData(p => ({ ...p, children: [...(p.children || []), { childName: "", gender: "MALE", age: 0 }] }))} className="text-indigo-600 text-[10px] font-black flex items-center gap-1 hover:underline"><HiPlus /> ADD CHILD</button>
-                                    </div>
-                                    {formData.children?.map((child, idx) => (
-                                        <div key={idx} className="flex gap-4 items-end bg-neutral-50 p-4 rounded-2xl relative border border-neutral-100">
-                                            <div className="flex-1">
-                                                <InputLabel>Name</InputLabel>
-                                                <input className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.childName} onChange={e => {
-                                                    const children = [...(formData.children || [])];
-                                                    children[idx].childName = e.target.value;
-                                                    setFormData({ ...formData, children });
-                                                }} />
-                                            </div>
-                                            <div className="w-24">
-                                                <InputLabel>Age</InputLabel>
-                                                <input
-                                                    type="number"
-                                                    className="w-full border rounded-xl p-2.5 text-xs bg-white"
-                                                    value={child.age}
-                                                    onChange={e => {
-                                                        const children = [...(formData.children || [])];
-                                                        children[idx].age = Number(e.target.value);
-                                                        setFormData({ ...formData, children });
-                                                    }}
-                                                />
-                                            </div>
-                                            <div>
-                                                <InputLabel>Gender</InputLabel>
-                                                <select className="w-full border rounded-xl p-3 text-sm bg-white" value={child.gender} onChange={e => {
-                                                    const children = [...(formData.children || [])];
-                                                    children[idx].gender = e.target.value as Gender;
-                                                    setFormData({ ...formData, children });
-                                                }}>
-                                                    <option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option>
-                                                </select>
-                                            </div>
-                                            <button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* 4. EXPERIENCE HISTORY (EXPERIENCED ONLY) */}
-                        {isExperienced && (
-                            <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t pt-10">
-                                <div className="md:col-span-1 border-r border-neutral-100 pr-6">
-                                    <div className="flex items-center gap-2 text-indigo-600 mb-2">
-                                        <HiOutlineBriefcase size={22} /> <span className="font-bold text-xs uppercase tracking-widest">Experience</span>
-                                    </div>
-                                    <div className="mt-6">
-                                        <InputLabel>UAN Number</InputLabel>
-                                        <input placeholder="10XXXXXXXXXX" className="w-full border rounded-xl p-3 text-sm font-mono" value={formData.uanNumber} onChange={e => handleInputChange('uanNumber', e.target.value)} />
-                                    </div>
-                                </div>
-                                <div className="md:col-span-2 space-y-4">
-                                    <div className="flex justify-end">
-                                        <button onClick={() => setFormData(p => ({ ...p, experiences: [...(p.experiences || []), { companyName: "", role: "", fromDate: "", endDate: "", lastCompany: false }] }))} className="px-4 py-2 bg-neutral-900 text-white text-[10px] font-black rounded-xl uppercase tracking-widest hover:bg-black transition-all">Add Company</button>
-                                    </div>
+                            {/* STEP 4 (Experienced Only): Work History */}
+                            {isExperienced && activeStep === 4 && (
+                                <section className="space-y-6">
+                                    <div><InputLabel>UAN Number</InputLabel><input placeholder="10XXXXXXXXXX" className="w-full border rounded-xl p-3 text-sm font-mono" value={formData.uanNumber} onChange={e => handleInputChange('uanNumber', e.target.value)} /></div>
+                                    <div className="flex justify-end"><button onClick={() => setFormData(p => ({ ...p, experiences: [...(p.experiences || []), { companyName: "", role: "", fromDate: "", endDate: "" }] }))} className="px-4 py-2 bg-neutral-900 text-white text-[10px] font-black rounded-xl uppercase tracking-widest hover:bg-black transition-all">Add Company</button></div>
                                     {formData.experiences?.map((exp, idx) => (
-                                        <div key={idx} className="bg-white p-6 rounded-2xl border border-neutral-200 space-y-4 relative">
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex-1 mr-4">
-                                                    <InputLabel>Company Name</InputLabel>
-                                                    <input className="w-full border rounded-xl p-3 text-sm" value={exp.companyName} onChange={e => {
-                                                        const exps = [...(formData.experiences || [])];
-                                                        exps[idx].companyName = e.target.value;
-                                                        setFormData({ ...formData, experiences: exps });
-                                                    }} />
-                                                </div>
-                                                <button onClick={() => setFormData(p => ({ ...p, experiences: p.experiences?.filter((_, i) => i !== idx) }))} className="p-3 text-neutral-400 hover:text-red-500 transition-colors"><HiTrash size={18} /></button>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <InputLabel>Role</InputLabel>
-                                                    <input className="w-full border rounded-xl p-3 text-sm" value={exp.role} onChange={e => {
-                                                        const exps = [...(formData.experiences || [])];
-                                                        exps[idx].role = e.target.value;
-                                                        setFormData({ ...formData, experiences: exps });
-                                                    }} />
-                                                </div>
-                                                <div className="flex items-center gap-2 pt-6 italic font-bold text-indigo-600 text-[10px] uppercase">
-                                                    <input type="checkbox" checked={exp.lastCompany} onChange={e => {
-                                                        const exps = [...(formData.experiences || [])].map(item => ({ ...item, lastCompany: false }));
-                                                        exps[idx].lastCompany = e.target.checked;
-                                                        setFormData({ ...formData, experiences: exps });
-                                                    }} /> IS LAST COMPANY
-                                                </div>
-
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <CustomDatePicker
-                                                    label="From Date"
-                                                    value={exp.fromDate}
-                                                    onChange={(val: string) => {
-                                                        const exps = [...(formData.experiences || [])];
-                                                        exps[idx].fromDate = val;
-                                                        setFormData({ ...formData, experiences: exps });
-                                                    }}
-                                                />
-
-                                                <CustomDatePicker
-                                                    label="End Date"
-                                                    value={exp.endDate}
-                                                    onChange={(val: string) => {
-                                                        const exps = [...(formData.experiences || [])];
-                                                        exps[idx].endDate = val;
-                                                        setFormData({ ...formData, experiences: exps });
-                                                    }}
-                                                />
-
-                                            </div>
-                                            <div>
-                                                <InputLabel>Experience Certificate</InputLabel>
-                                                <FileRow
-                                                    label="Experience Certificate"
-                                                    fileKey={`exp_cert_${idx}`} // Key is technically arbitrary here since we use customFile
-                                                    customFile={exp.tempCert}
-                                                    onCustomChange={(file) => handleExperienceFileChange(idx, file)}
-                                                />
-                                            </div>
-                                        </div>
+                                        <div key={idx} className="bg-white p-6 rounded-2xl border border-neutral-200 space-y-4 relative"><div className="flex justify-between items-start"><div className="flex-1 mr-4"><InputLabel>Company Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={exp.companyName} onChange={e => { const exps = [...(formData.experiences || [])]; exps[idx].companyName = e.target.value; setFormData({ ...formData, experiences: exps }); }} /></div><button onClick={() => setFormData(p => ({ ...p, experiences: p.experiences?.filter((_, i) => i !== idx) }))} className="p-3 text-neutral-400 hover:text-red-500 transition-colors"><HiTrash size={18} /></button></div><div className="grid grid-cols-2 gap-4"><div><InputLabel>Role</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={exp.role} onChange={e => { const exps = [...(formData.experiences || [])]; exps[idx].role = e.target.value; setFormData({ ...formData, experiences: exps }); }} /></div></div><div className="grid grid-cols-2 gap-4"><CustomDatePicker label="From Date" value={exp.fromDate} onChange={(val: string) => { const exps = [...(formData.experiences || [])]; exps[idx].fromDate = val; setFormData({ ...formData, experiences: exps }); }} /><CustomDatePicker label="End Date" value={exp.endDate} onChange={(val: string) => { const exps = [...(formData.experiences || [])]; exps[idx].endDate = val; setFormData({ ...formData, experiences: exps }); }} /></div><div><InputLabel>Experience Certificate</InputLabel><FileRow label="Experience Certificate" fileKey={`exp_cert_${idx}`} customFile={exp.tempCert} onCustomChange={(file) => handleExperienceFileChange(idx, file)} /></div><div><InputLabel>Joining Letter</InputLabel><FileRow label="Joining Letter" fileKey={`joining_letter_${idx}`} customFile={exp.tempJoiningLetter} onCustomChange={(file) => handleJoiningLetterFileChange(idx, file)} /></div><div><InputLabel>Relieving Letter</InputLabel><FileRow label="Relieving Letter" fileKey={`relieving_letter_${idx}`} customFile={exp.tempRelievingLetter} onCustomChange={(file) => handleRelievingLetterFileChange(idx, file)} /></div></div>
                                     ))}
-                                </div>
-                            </section>
-                        )}
+                                </section>
+                            )}
 
-                        {/* 5. BANKING */}
-                        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t pt-10">
-                            <div className="md:col-span-1 border-r border-neutral-100 pr-6">
-                                <div className="flex items-center gap-2 text-indigo-600 mb-2">
-                                    <HiOutlineBanknotes size={22} /> <span className="font-bold text-xs  tracking-widest">Banking</span>
-                                </div>
-                                <p className="text-xs text-neutral-400 italic">Accurate bank details ensure automated salary credits.</p>
-                            </div>
-                            <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                                <div className="col-span-2"><InputLabel>Bank Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankName} onChange={e => handleInputChange('bankName', e.target.value.toUpperCase())} /></div>
-                                <div><InputLabel>Account Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono" value={formData.accountNumber} onChange={e => handleInputChange('accountNumber', e.target.value)} /></div>
-                                <div><InputLabel>IFSC Code</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono uppercase" value={formData.ifscCode} onChange={e => handleInputChange('ifscCode', e.target.value.toUpperCase())} /></div>
-                                <div className="col-span-2"><InputLabel>Branch Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankBranchName} onChange={e => handleInputChange('bankBranchName', e.target.value)} /></div>
-                            </div>
-                        </section>
+                            {/* STEP 4 (Fresher) or STEP 5 (Experienced): Banking */}
+                            {((!isExperienced && activeStep === 4) || (isExperienced && activeStep === 5)) && (
+                                <section className="grid grid-cols-2 gap-4">
+                                    <div className="col-span-2"><InputLabel>Bank Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankName} onChange={e => handleInputChange('bankName', e.target.value.toUpperCase())} /></div>
+                                    <div><InputLabel>Account Number</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono" value={formData.accountNumber} onChange={e => handleInputChange('accountNumber', e.target.value)} /></div>
+                                    <div><InputLabel>IFSC Code</InputLabel><input className="w-full border rounded-xl p-3 text-sm font-mono uppercase" value={formData.ifscCode} onChange={e => handleInputChange('ifscCode', e.target.value.toUpperCase())} /></div>
+                                    <div className="col-span-2"><InputLabel>Branch Name</InputLabel><input className="w-full border rounded-xl p-3 text-sm" value={formData.bankBranchName} onChange={e => handleInputChange('bankBranchName', e.target.value)} /></div>
+                                </section>
+                            )}
+                            {/* --- End CONDITIONAL RENDERING --- */}
+
+                        </div>
                     </div>
 
-                    {/* SUBMIT BUTTON */}
-                    <div className="p-6 border-t bg-neutral-50 shrink-0">
-                        <button onClick={handleSubmit} className="w-full bg-neutral-900 text-white font-black py-5 rounded-2xl text-[10px] tracking-widest uppercase hover:bg-black transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2">
-                            Finalize Profile & Sync with WeHRM
+                    {/* --- REFACTORED FOOTER: Context-aware buttons --- */}
+                    <div className="p-6 border-t bg-neutral-50 shrink-0 flex items-center justify-between gap-4">
+                        <button
+                            onClick={handlePrev}
+                            disabled={activeStep === 1}
+                            className="bg-neutral-100 text-neutral-600 font-bold px-10 py-4 rounded-xl text-[10px] tracking-widest uppercase hover:bg-neutral-200 disabled:opacity-50 transition-all border border-neutral-200 flex items-center gap-1.5"
+                        >
+                            <span className="text-sm">←</span> Prev
                         </button>
+
+                        {activeStep === totalSteps ? (
+                            // Submit button (unchanged logic) shown only on the last step
+                            <button
+                                onClick={handleSubmit}
+                                className="bg-indigo-600 text-white font-black px-10 py-4 rounded-xl text-[10px] tracking-widest uppercase hover:bg-indigo-700 transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2"
+                            >
+                                <HiCheck size={16} /> Finalize Profile & Sync
+                            </button>
+                        ) : (
+                            // Next button shown on all steps except the last
+                            <button
+                                onClick={handleNext}
+                                className="bg-neutral-900 text-white font-black px-10 py-4 rounded-xl text-[10px] tracking-widest uppercase hover:bg-black transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-1.5"
+                            >
+                                Next <span className="text-sm">→</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

@@ -67,6 +67,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
     <div className="sticky top-0 z-30 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 border-b border-neutral-200 w-full">
 
       {/* LEFT */}
+      
       <div className="flex items-center gap-3 min-w-0">
         <button onClick={onMenuClick} className="md:hidden p-2.5 rounded-lg text-slate-500 active:bg-slate-100">
           <FaBars size={18} />

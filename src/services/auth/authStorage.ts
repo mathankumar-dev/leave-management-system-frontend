@@ -9,7 +9,6 @@ export const setAuthData = (id: string, token: string) => {
   Cookies.set(TOKEN_KEY, token, { 
     expires: 1, 
     path: "/", 
-    secure: false, 
     sameSite: "Lax" 
   });
 };
@@ -26,6 +25,5 @@ export const logout = () => {
   }
 };
 
-// authStorage.ts
-export const getUserId = () => Cookies.get(USER_ID_KEY); // Add this
+export const getUserId = () => Cookies.get(USER_ID_KEY); 
 export const getToken = () => Cookies.get(TOKEN_KEY);

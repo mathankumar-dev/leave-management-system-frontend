@@ -12,7 +12,6 @@ declare module 'axios' {
 
 const api = axios.create({
   baseURL: ENV.API_BASE_URL,
-  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
