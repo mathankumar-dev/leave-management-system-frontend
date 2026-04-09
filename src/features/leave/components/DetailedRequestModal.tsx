@@ -46,7 +46,7 @@ const DetailedRequestModal: React.FC<{
                     <div>
                         <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">Application Details</h2>
                         <p className="text-xs text-slate-500">
-                            Leave Applied on {formatDateDisplay(req.createdAt)}
+                            Leave Applied on {formatDateDisplay(req.createdAt)} {req.id}
                         </p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">

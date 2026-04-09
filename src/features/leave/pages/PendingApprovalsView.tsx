@@ -7,7 +7,6 @@ import { notify } from '@/features/notification/utils/notifications';
 import api from '@/services/apiClient';
 import { useAuth } from '@/shared/auth/useAuth';
 import { CommentDialog, CustomLoader, MetricTile } from '@/shared/components';
-import { formatDateDisplay } from '@/shared/utils/dateUtils';
 import { formatTimeAgo } from '@/shared/utils/formatTimeAgo';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSearch, FaTimes } from 'react-icons/fa';
@@ -122,7 +121,7 @@ const PendingApprovalsView: React.FC = () => {
         }
     };
 
-console.log(requests);
+    console.log(requests);
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -360,7 +359,7 @@ const AuthenticatedImage: React.FC<AuthenticatedImageProps> = ({ fileUrl, classN
         const fetchImage = async () => {
             try {
                 setLoading(true);
-                const response = await api.get(`/documents/view/${encodeURIComponent(fileUrl)}`, {
+                const response = await api.get(`/files/view?path=${encodeURIComponent(fileUrl)}`, {
                     responseType: "blob",
                 });
 
