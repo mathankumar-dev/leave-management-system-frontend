@@ -1,6 +1,7 @@
 import { authService } from "@/features/auth/api/authApi";
 import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import type { ProfileData } from "@/features/employee/types";
+import api from "@/services/apiClient";
 import { useAuth } from "@/shared/auth/useAuth";
 import { CustomLoader, FailureModal } from "@/shared/components";
 import { BloodGroupMap, GenderMap, MaritalStatusMap } from "@/shared/types";
@@ -92,6 +93,26 @@ const TA: React.FC<{ label: string; field: string } & FP> =
       )}
     </div>
   );
+const viewDocument = async (path: string) => {
+  try {
+    const response = await api.get(
+      `/documents/view?path=${encodeURIComponent(path)}`,
+      { responseType: "blob" }
+    );
+
+    const file = new Blob([response.data], {
+      type: response.headers["content-type"],
+    });
+
+    const fileURL = URL.createObjectURL(file);
+
+    // open in new tab
+    window.open(fileURL);
+
+  } catch (error) {
+    console.error("Error viewing document:", error);
+  }
+};
 
 // Doc path display
 const DocPath: React.FC<{ label: string; path?: string | null }> = ({ label, path }) => (
@@ -106,10 +127,12 @@ const DocPath: React.FC<{ label: string; path?: string | null }> = ({ label, pat
       </div>
     </div>
     {path && (
-      <a href={`/${path}`} target="_blank" rel="noreferrer"
-        className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline shrink-0 ml-2 transition-colors">
-        View
-      </a>
+      <button
+  onClick={() => viewDocument(path)}
+  className="text-[10px] font-bold text-indigo-600 hover:underline"
+>
+  View
+</button>
     )}
   </div>
 );
@@ -339,7 +362,7 @@ const EmployeeProfile: React.FC = () => {
 
     setFormData({
       name: bp.name || "",
-      joiningDate : bp.joiningDate || "",
+      joiningDate: bp.joiningDate || "",
       firstName: bp.firstName || "",
       lastName: bp.lastName || "",
       contactNumber: bp.contactNumber || "",
@@ -436,7 +459,7 @@ const EmployeeProfile: React.FC = () => {
       name: formData.name,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      joiningDate : formData.joiningDate || null,
+      joiningDate: formData.joiningDate || null,
       contactNumber: formData.contactNumber,
       gender: formData.gender,
       maritalStatus: formData.maritalStatus,
@@ -492,7 +515,7 @@ const EmployeeProfile: React.FC = () => {
     }
     // Experienced — collect arrays per file type across all experiences
     const experienceCerts = expFilesList.map(e => e.experienceCerts).filter(Boolean) as File[];
-    const joiningLetters  = expFilesList.map(e => e.joiningLetters).filter(Boolean) as File[];
+    const joiningLetters = expFilesList.map(e => e.joiningLetters).filter(Boolean) as File[];
     const relievingLetters = expFilesList.map(e => e.relievingLetters).filter(Boolean) as File[];
     return {
       idProof: commonFiles.idProof,
@@ -533,13 +556,13 @@ const EmployeeProfile: React.FC = () => {
   const fp = { formData, isEditing, onChange };
 
   const TABS = [
-    { id: "details",    label: "Details" },
-    { id: "personal",   label: "Personal" },
-    { id: "address",    label: "Address" },
-    { id: "financial",  label: "Financial" },
+    { id: "details", label: "Details" },
+    { id: "personal", label: "Personal" },
+    { id: "address", label: "Address" },
+    { id: "financial", label: "Financial" },
     { id: "employment", label: "Employment" },
-    { id: "family",     label: "Family" },
-    { id: "documents",  label: "Documents" },
+    { id: "family", label: "Family" },
+    { id: "documents", label: "Documents" },
   ];
 
   return (
@@ -622,11 +645,10 @@ const EmployeeProfile: React.FC = () => {
           <div className="flex min-w-max">
             {TABS.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-all ${
-                  activeTab === tab.id
+                className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-all ${activeTab === tab.id
                     ? "border-indigo-600 text-indigo-600 bg-indigo-50/40"
                     : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                }`}>
+                  }`}>
                 {tab.label}
               </button>
             ))}
@@ -672,8 +694,8 @@ const EmployeeProfile: React.FC = () => {
                         <div className="flex flex-wrap gap-1.5">
                           {bp.skillSet?.length
                             ? bp.skillSet.map((s: string, i: number) => (
-                                <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg border border-indigo-100">{s}</span>
-                              ))
+                              <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg border border-indigo-100">{s}</span>
+                            ))
                             : <span className="text-slate-300 italic text-xs">No skills added</span>}
                         </div>
                       )}
@@ -777,8 +799,8 @@ const EmployeeProfile: React.FC = () => {
                         <div className="flex flex-wrap gap-1.5">
                           {bp.skillSet?.length
                             ? bp.skillSet.map((s: string, i: number) => (
-                                <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg border border-indigo-100">{s}</span>
-                              ))
+                              <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg border border-indigo-100">{s}</span>
+                            ))
                             : <span className="text-slate-300 italic text-xs">No skills added</span>}
                         </div>
                       )}
@@ -887,9 +909,13 @@ const EmployeeProfile: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <DocPath label="Joining Letter" path={bp.offerLetterPath} />
-                        <DocPath label="Relieving Letter" path={bp.relievingLetterPath} />
-                        <DocPath label="Experience Cert" path={bp.experienceCertificatePath} />
+                        {bp.experiencedDocuments?.map((doc: any, i: number) => (
+                          <div key={i} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <DocPath label="Experience Certificate" path={doc.experienceCertPath} />
+                            <DocPath label="Joining Letter" path={doc.joiningLetterPath} />
+                            <DocPath label="Relieving Letter" path={doc.relievingLetterPath} />
+                          </div>
+                        ))}
                       </>
                     )}
                   </div>
