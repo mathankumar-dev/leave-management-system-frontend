@@ -9,8 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import {
   FaEdit, FaEnvelope, FaFileAlt, FaPhone,
-  FaSave, FaTimes, FaTrash, FaPlus, FaPrint
-} from "react-icons/fa";
+  FaSave, FaTimes, FaTrash, FaPlus} from "react-icons/fa";
 import { HiOutlineLocationMarker, HiOutlineOfficeBuilding } from "react-icons/hi";
 import {
   HiCheckCircle, HiOutlineCreditCard,
@@ -295,13 +294,13 @@ const Card: React.FC<{ title: string; icon?: React.ReactNode; cols?: 2 | 3; chil
   );
 
 // Section divider
-const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
-  <div className="col-span-full flex items-center gap-3 pt-2">
-    <div className="h-px flex-1 bg-slate-100" />
-    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">{label}</span>
-    <div className="h-px flex-1 bg-slate-100" />
-  </div>
-);
+// const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
+//   <div className="col-span-full flex items-center gap-3 pt-2">
+//     <div className="h-px flex-1 bg-slate-100" />
+//     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">{label}</span>
+//     <div className="h-px flex-1 bg-slate-100" />
+//   </div>
+// );
 
 // Status badge
 const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
@@ -323,7 +322,7 @@ const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
 // ═══════════════════════════════════════════════════════════════
 
 const EmployeeProfile: React.FC = () => {
-  const { user, isLoading: authLoading, setUser } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { profile: backendProfile, loading, fetchEmployeeProfile } = useEmployee();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [activeTab, setActiveTab] = useState("details");

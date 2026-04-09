@@ -13,17 +13,7 @@ import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSea
 
 
 
-interface PendingRequest {
-    id: number;
-    employeeName: string;
-    leaveType: string;
-    reason?: string;
-    startDate: string;
-    endDate: string;
-    createdAt: string;
-    isCompOff?: boolean;
-    halfDayType?: string;
-}
+
 
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();

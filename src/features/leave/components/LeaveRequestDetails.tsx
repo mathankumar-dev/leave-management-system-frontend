@@ -91,7 +91,7 @@ const DetailItem = ({ label, value, subValue, className = "" }: any) => (
     </div>
 );
 
-const WorkflowStep = ({ label, subLabel, status, isComplete, isFinal, shortLabel, icon }: any) => {
+const WorkflowStep = ({ label, subLabel, status, isComplete, isFinal, shortLabel }: any) => {
     const isApproved = status === 'APPROVED' || isComplete;
     const isRejected = status === 'REJECTED';
     

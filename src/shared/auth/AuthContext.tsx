@@ -66,7 +66,6 @@ useEffect(() => {
       setAuthData(data.employeeId, data.token);
 
       const profile = await authService.getEmployeeProfile(data.employeeId);
-      console.log(profile);
       
       setUser(profile);      
     } catch (e) {
@@ -76,9 +75,7 @@ useEffect(() => {
     }
   }, []);
 
-  console.log("user");
   
-console.log(user);
 
   return (
     <AuthContext.Provider

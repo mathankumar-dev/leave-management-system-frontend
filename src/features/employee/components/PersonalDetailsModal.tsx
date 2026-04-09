@@ -362,7 +362,7 @@ const PersonalDetailsModal = () => {
                                 {/* Vertical connector line */}
                                 <div className="absolute left-[17px] top-2 bottom-2 w-0.5 bg-neutral-100 z-0"></div>
 
-                                {steps.map((step, idx) => {
+                                {steps.map((step) => {
                                     const isCurrent = step.id === activeStep;
                                     const isCompleted = step.id < activeStep;
 

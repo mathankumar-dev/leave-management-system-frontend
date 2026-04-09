@@ -105,7 +105,7 @@ const TeamCalendarView: React.FC = () => {
   const dailyMine = employeeCalendar[dailyKey] || [];
   const dailyHoliday = PUBLIC_HOLIDAYS_2026[dailyKey];
 
-  console.log(teamCalendar);
+  // console.log(teamCalendar);
 
   const formatTimeRange = (attendance:any) => {
 

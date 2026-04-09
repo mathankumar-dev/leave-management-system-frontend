@@ -24,7 +24,6 @@ const EmployeeCalendarView: React.FC = () => {
     }
   }, [employeeId]);
 
-  console.log(employeeCalendar);
   
 
 
