@@ -86,7 +86,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen w-80 ${sidebarWidth} bg-white 
+        className={`fixed top-0 left-0 z-50 h-screen w-80 ${sidebarWidth} bg-white 
         p-4 border-r border-slate-100 flex flex-col
         transition-all duration-300 ease-in-out shadow-2xl shadow-slate-200/50
         ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}

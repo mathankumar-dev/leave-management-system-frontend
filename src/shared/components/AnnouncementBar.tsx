@@ -11,7 +11,7 @@ const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ onEditClick }) => {
         initial={{ height: 0, opacity: 0 }}
         animate={{ height: "auto", opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="bg-brand overflow-hidden relative z-60 shadow-lg shadow-brand/20 py-2.5 border-b border-white/10"
+        className="bg-brand overflow-hidden relative z-40 shadow-lg shadow-brand/20 py-2.5 border-b border-white/10"
       >
         {/* TICKER CONTAINER */}
         <div className="flex whitespace-nowrap overflow-hidden group">

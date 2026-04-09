@@ -1,3 +1,4 @@
+import DetailedRequestModal from '@/features/leave/components/DetailedRequestModal';
 import RequestTile from '@/features/leave/components/RequestTile';
 import { useLeave } from '@/features/leave/hooks/useLeave';
 import { useManagerApprovals } from '@/features/leave/hooks/useManagerApprovals';
@@ -345,82 +346,6 @@ console.log(requests);
 
 export default PendingApprovalsView;
 
-const DetailedRequestModal: React.FC<{
-    req: any;
-    isOpen: boolean;
-    onClose: () => void;
-    onAction: (status: 'APPROVED' | 'REJECTED') => void;
-}> = ({ req, isOpen, onClose, onAction }) => {
-    if (!req || !isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                    <div>
-                        <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">Application Details</h2>
-                        <p className="text-xs text-slate-500">
-                            Leave ID: #{req.id} • Applied on {formatDateDisplay(req.createdAt)}
-                        </p>                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
-                        <FaTimes size={20} />
-                    </button>
-                </div>
-
-                {/* Content */}
-                <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <DetailItem label="Employee Name" value={req.employeeName} subValue={req.employeeId} />
-                    <DetailItem label="Leave Type" value={req.leaveTypeName} className="text-indigo-600" />
-                    <DetailItem
-                        label="Period"
-                        value={
-                            formatDateDisplay(req.startDate) === formatDateDisplay(req.endDate)
-                                ? formatDateDisplay(req.startDate)
-                                : `${formatDateDisplay(req.startDate)} to ${formatDateDisplay(req.endDate)}`
-                        }
-                        subValue={`${req.days} Day(s) Total`}
-                    />                    <DetailItem label="Approval Status" value={req.currentApprovalLevel.replace('_', ' ')} className="text-amber-600" />
-
-                    <div className="col-span-full p-4 bg-slate-50 rounded-lg border border-slate-100">
-                        <p className="text-[10px] text-slate-400 uppercase font-black mb-1">Reason for Leave</p>
-                        <p className="text-sm text-slate-700 leading-relaxed italic">"{req.reason || 'No reason provided'}"</p>
-                    </div>
-
-                    <div className="col-span-full grid grid-cols-3 gap-4 border-t border-slate-100 pt-4">
-                        <DetailItem label="Year" value={req.year} />
-                        <DetailItem label="Comp-Off Used" value={req.compOffUsed} />
-                        <DetailItem label="LOP Applied" value={req.lossOfPayApplied} />
-                    </div>
-                </div>
-
-                {/* Footer Actions */}
-                <div className="px-6 py-4 bg-slate-50 border-t flex gap-3">
-                    <button
-                        onClick={() => onAction('REJECTED')}
-                        className="flex-1 py-3 bg-white border border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors uppercase text-xs tracking-widest"
-                    >
-                        Reject
-                    </button>
-                    <button
-                        onClick={() => onAction('APPROVED')}
-                        className="flex-2 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] uppercase text-xs tracking-widest"
-                    >
-                        Approve Request
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const DetailItem = ({ label, value, subValue, className = "" }: any) => (
-    <div className="flex flex-col">
-        <p className="text-[9px] text-slate-400 uppercase font-black tracking-widest mb-0.5">{label}</p>
-        <p className={`text-slate-800 font-bold ${className}`}>{value}</p>
-        {subValue && <p className="text-[10px] text-slate-500 font-medium">{subValue}</p>}
-    </div>
-);
 
 interface AuthenticatedImageProps {
     fileUrl: string;
