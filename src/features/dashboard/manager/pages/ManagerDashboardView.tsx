@@ -192,7 +192,8 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
 
       {/* PERSONAL INVENTORY TABLE */}
       <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="grid grid-cols-12 px-6 py-4 bg-gray-50/50 border-b border-gray-200 text-[11px] font-black uppercase text-gray-400 tracking-widest">
+        {/* Header row labels - Updated with bg-brand/10 and larger font */}
+        <div className="grid grid-cols-12 px-6 py-4 bg-brand/10 border-b border-gray-200 text-[16px] font-bold text-black tracking-wider">
           <div className="col-span-4">Personal Leave Category</div>
           <div className="col-span-2 text-center">Allocated (Y)</div>
           <div className="col-span-2 text-center">Used</div>
@@ -200,26 +201,51 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           <div className="col-span-2 text-right pr-4">Pending</div>
         </div>
 
+        {/* The Rows */}
         <div className="divide-y divide-gray-100">
           {personalStats.map((item, idx) => (
             <motion.div
               key={idx}
-              whileHover={{ backgroundColor: "#F9FAFB" }}
+              whileHover={{ backgroundColor: "#F3F4F6" }}
               onClick={() => setSelectedCard(item)}
-              className="grid grid-cols-12 items-center px-6 py-4 transition-colors cursor-pointer group"
+              className={`
+          grid grid-cols-12 items-center px-6 py-4 transition-colors cursor-pointer group
+          ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-100/50'} 
+        `}
             >
+              {/* Category Column */}
               <div className="col-span-4 flex items-center gap-4">
                 <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-sm ${item.color}`}>
                   {item.icon}
                 </div>
-                <span className="font-bold text-gray-700 text-sm">{item.title}</span>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-gray-700 text-sm">{item.title}</span>
+                </div>
               </div>
-              <div className="col-span-2 text-center text-sm text-gray-600 font-medium">{item.total ?? "—"}</div>
-              <div className="col-span-2 text-center text-sm font-bold text-gray-700">{item.used}</div>
-              <div className="col-span-2 text-center text-sm font-bold text-blue-600">{item.balance}</div>
+
+              {/* Allocated Column */}
+              <div className="col-span-2 text-center text-sm text-gray-600 font-medium">
+                {item.total ?? "—"}
+              </div>
+
+              {/* Used Column */}
+              <div className="col-span-2 text-center">
+                <span className="text-sm font-semibold text-gray-700">
+                  {item.used}
+                </span>
+              </div>
+
+              {/* Balance Column */}
+              <div className="col-span-2 text-center">
+                <span className="text-sm font-bold text-blue-600">
+                  {item.balance}
+                </span>
+              </div>
+
+              {/* Pending Column */}
               <div className="col-span-2 flex justify-end items-center pr-4">
                 {item.pendingCount ? (
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-black border border-amber-100">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">
                     {item.pendingCount}
                   </span>
                 ) : (
@@ -238,7 +264,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
           <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Team Intelligence</h3>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <ManagerStatCardTeam label="Direct Reports" value={dashboardData?.teamSize || 0} iconType="team" onClick={() => onNavigate?.("Team Members")} />
+          <ManagerStatCardTeam label="Team Members" value={dashboardData?.teamSize || 0} iconType="team" onClick={() => handleNavigate('team')} />
           <ManagerStatCardTeam label="Pending Requests" value={approvals.length} iconType="pending" colorClass="text-amber-600" onClick={() => requestsRef.current?.scrollIntoView({ behavior: 'smooth' })} />
           <ManagerStatCardTeam label="Away Today" value={dashboardData?.teamOnLeaveCount || 0} iconType="calendar" colorClass="text-indigo-600" />
           <ManagerStatCardTeam label="Processed YTD" value={dashboardData?.personalStats?.approvedCount || 0} iconType="processed" colorClass="text-emerald-600" />
@@ -249,7 +275,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       <section ref={requestsRef} className="space-y-4">
         <div className="flex items-center gap-2 px-2">
           <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-          <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pending Governance Decisions</h3>
+          <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pending Decisions</h3>
         </div>
         <div className="space-y-3">
           <AnimatePresence mode="popLayout">
@@ -326,7 +352,7 @@ const MonthlyCard = ({ label, val, sub, color }: any) => (
   <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</span>
     <div className="flex justify-between items-end mt-2">
-      <h3 className="text-3xl font-black text-gray-900">{val} <span className="text-xs font-bold text-gray-400">Days</span></h3>
+      <h3 className="text-3xl font-black text-gray-900">{val} <span className="text-xs font-bold text-gray-400">Day(s) Remaining</span></h3>
       <p className="text-[10px] font-bold text-gray-400 mb-1">{sub}</p>
     </div>
   </div>
