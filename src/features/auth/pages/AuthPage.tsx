@@ -1,10 +1,10 @@
-import loginAnimation from "@/assets/animations/login.json"; 
-import Lottie from "lottie-react"; 
+import loginAnimation from "@/assets/animations/login.json";
 import { AnimatePresence, motion } from "framer-motion";
+import Lottie from "lottie-react";
 import React from "react";
 import { FaArrowCircleLeft } from "react-icons/fa";
-import LoginForm from "../components/LoginForm";
 import { useNavigate } from "react-router-dom";
+import LoginForm from "../components/LoginForm";
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const AuthPage: React.FC = () => {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="bg-brand overflow-hidden relative z-[60] shadow-lg shadow-brand/20 py-2.5 border-b border-white/10"
+          className="bg-brand overflow-hidden relative z-60 shadow-lg shadow-brand/20 py-2.5 border-b border-white/10"
         >
           <div className="flex whitespace-nowrap overflow-hidden">
             <motion.div
@@ -42,7 +42,7 @@ const AuthPage: React.FC = () => {
                       Users can edit their profile details from
                       <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">06.04.2026</span>
                       to
-                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">11.04.2026</span>.
+                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">16.04.2026</span>.
                     </span>
                   </p>
                   <button
@@ -105,10 +105,10 @@ const AuthPage: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.2, ease: [0, 0.71, 0.2, 1.01] }}
             className="relative z-10 flex items-center justify-center w-full max-w-112.5"
           >
-            <Lottie 
-              animationData={loginAnimation} 
-              loop={true} 
-              autoplay={true} 
+            <Lottie
+              animationData={loginAnimation}
+              loop={true}
+              autoplay={true}
             />
           </motion.div>
 

@@ -52,17 +52,11 @@ export const authService = {
       if (files.degreeCertificate) formData.append("degreeCertificate", files.degreeCertificate as File);
       if (files.offerLetter) formData.append("offerLetter", files.offerLetter as File);
     } else {
-      // Experienced: handle List<MultipartFile> for certificates
-
-      // ✅ Handle Experience Certificates Array
       if (Array.isArray(files.experienceCerts)) {
         files.experienceCerts.forEach((file) => {
           formData.append("experienceCerts", file);
         });
       }
-
-      // ✅ NEW: Handle Joining Letters Array
-      // Ensure the key name "joiningLetter" matches your Spring Boot @RequestPart exactly
       if (Array.isArray(files.joiningLetter)) {
         files.joiningLetter.forEach((file) => {
           formData.append("joiningLetters", file);
@@ -74,11 +68,7 @@ export const authService = {
         });
       }
     }
-
-    console.log(formData);
-    
-
-    const response = await api.post(
+     const response = await api.post(
       `/employees/personal-details/${id}/${type.toLowerCase()}`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }

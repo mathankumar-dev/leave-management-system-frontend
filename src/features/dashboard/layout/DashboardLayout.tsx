@@ -1,9 +1,9 @@
-import DashboardRoutes from "./DashboardRoutes";
 import { useAuth } from "@/shared/auth/useAuth";
-import { useState } from "react";
 import { Sidebar, Topbar } from "@/shared/components";
 import AnnouncementBar from "@/shared/components/AnnouncementBar";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DashboardRoutes from "./DashboardRoutes";
 
 const DashboardLayout: React.FC = () => {
   const { contextLogout: logout, user } = useAuth();
@@ -27,10 +27,7 @@ const DashboardLayout: React.FC = () => {
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
 
-      {/* ✅ Announcement Bar (FIXED) */}
-      <AnnouncementBar
-        onEditClick={() => navigate(`${basePath}/profile`)}
-      />
+
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -45,11 +42,14 @@ const DashboardLayout: React.FC = () => {
           className={`flex-1 flex flex-col h-full min-w-0 transition-all duration-300 ease-in-out
             ${isCollapsed ? "md:ml-20" : "md:ml-80"}`}
         >
+
+          <AnnouncementBar
+            onEditClick={() => navigate(`${basePath}/profile`)}
+          />
           <Topbar
             onMenuClick={() => setSidebarOpen(true)}
             onLogout={logout}
           />
-
           <main className="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar">
             <div className="max-w-7xl mx-auto w-full">
               <DashboardRoutes />
