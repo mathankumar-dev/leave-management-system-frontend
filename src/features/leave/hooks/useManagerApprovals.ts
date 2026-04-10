@@ -20,7 +20,7 @@ export const useManagerApprovals = (userId: string, role?: string) => {
       // 1. Map the basic data first
       const rawLeaves = (leaveData || []).map((item: any) => ({
         ...item.leaveApplicationResponseDTO,
-        leaveType: item.leaveApplicationResponseDTO.leaveTypeName,
+        // leaveType: item.leaveApplicationResponseDTO.leaveTypeName,
         attachments: item.attachments || [],
         attachmentCount: item.attachmentCount || 0,
         isLeave: true

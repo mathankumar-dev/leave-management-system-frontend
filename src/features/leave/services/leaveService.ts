@@ -59,6 +59,11 @@ export const leaveService = {
     return response.data;
   },
 
+  getLeaveApplicationByID: async (leaveId: number) => {
+    const res = await api.get(`/leaves/${leaveId}`);
+    
+    return res.data;
+  },
   // getPendingApprovals: async (managerId: string): Promise<PendingLeaveApplicationApiResponse[]> => {
   //   const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
   //   return response.data.content;
@@ -66,6 +71,10 @@ export const leaveService = {
 
   getPendingApprovals: async (managerId: string) => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
+    console.log("response");
+    console.log(response);
+
+
     return response.data.content || response.data;
   },
 

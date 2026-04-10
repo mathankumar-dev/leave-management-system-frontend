@@ -26,6 +26,17 @@ export const useLeave = () => {
             setLoading(false);
         }
     }, []);
+        const fetchLeaveApplicationById = useCallback(async (leaveId: number) => {
+        setLoading(true);
+        try {
+            return await leaveService.getLeaveApplicationByID(leaveId);
+        } catch (err: any) {
+            setError(err.message || "Failed to fetch leave application");
+            return [];
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     // const fetchMyOD = useCallback(async (employeeId: string): Promise<ODResponse[]> => {
     //     setLoading(true);
@@ -99,6 +110,7 @@ export const useLeave = () => {
         teamOnLeave,
         fetchLeaveBalance,
         leaveBalance,
+        fetchLeaveApplicationById
 
     }
 }
