@@ -8,8 +8,11 @@ import { BloodGroupMap, GenderMap, MaritalStatusMap } from "@/shared/types";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import {
-  FaEdit, FaEnvelope, FaFileAlt, FaPhone,
-  FaSave, FaTimes, FaTrash, FaPlus, FaPrint
+  FaEdit, FaEnvelope,
+  FaEye,
+  FaFileAlt, FaPhone,
+  FaPlus,
+  FaSave, FaTimes, FaTrash
 } from "react-icons/fa";
 import { HiOutlineLocationMarker, HiOutlineOfficeBuilding } from "react-icons/hi";
 import {
@@ -25,10 +28,10 @@ type ExperienceType = 'FRESHER' | 'EXPERIENCED';
 
 interface FP { formData: any; isEditing: boolean; onChange: (f: string, v: any) => void; }
 
-// Text input
-const F: React.FC<{ label: string; field: string; type?: string; span?: boolean } & FP> =
-  ({ label, field, type = "text", span = false, formData, isEditing, onChange }) => (
-    <div className={`flex flex-col gap-1 ${span ? "col-span-full sm:col-span-2" : ""}`}>
+// Text input — always shows, never hides
+const F: React.FC<{ label: string; field: string; type?: string; span?: boolean; fullSpan?: boolean } & FP> =
+  ({ label, field, type = "text", span = false, fullSpan = false, formData, isEditing, onChange }) => (
+    <div className={`flex flex-col gap-1 ${fullSpan ? "col-span-full" : span ? "col-span-full sm:col-span-2" : ""}`}>
       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
       {isEditing ? (
         <input type={type}
@@ -38,13 +41,15 @@ const F: React.FC<{ label: string; field: string; type?: string; span?: boolean 
           placeholder={label} />
       ) : (
         <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center">
-          {formData[field] || <span className="text-slate-300 italic text-xs">Not specified</span>}
+          <span className={formData[field] ? "" : "text-slate-300 italic text-xs"}>
+            {formData[field] || "—"}
+          </span>
         </div>
       )}
     </div>
   );
 
-// Select
+// Select — always shows
 const S: React.FC<{
   label: string; field: string; options: string[];
   formatOpt?: (v: string) => string; displayVal?: string | null;
@@ -60,18 +65,22 @@ const S: React.FC<{
       </select>
     ) : (
       <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center">
-        {displayVal || formData[field] || <span className="text-slate-300 italic text-xs">Not specified</span>}
+        <span className={displayVal || formData[field] ? "" : "text-slate-300 italic text-xs"}>
+          {displayVal || formData[field] || "—"}
+        </span>
       </div>
     )}
   </div>
 );
 
-// Static (always read-only)
-const Static: React.FC<{ label: string; value?: string | null; mono?: boolean }> = ({ label, value, mono }) => (
+// Editable field that is always read-only for sensitive data display
+const ReadOnlyF: React.FC<{ label: string; displayValue: string }> = ({ label, displayValue }) => (
   <div className="flex flex-col gap-1">
     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
-    <div className={`bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center ${mono ? 'font-mono' : ''}`}>
-      {value || <span className="text-slate-300 italic text-xs">Not specified</span>}
+    <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono text-slate-700 min-h-10 flex items-center">
+      <span className={displayValue ? "" : "text-slate-300 italic text-xs font-sans"}>
+        {displayValue || "—"}
+      </span>
     </div>
   </div>
 );
@@ -88,78 +97,84 @@ const TA: React.FC<{ label: string; field: string } & FP> =
           onChange={e => onChange(field, e.target.value)} />
       ) : (
         <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-20">
-          {formData[field] || <span className="text-slate-300 italic text-xs">Not specified</span>}
+          <span className={formData[field] ? "" : "text-slate-300 italic text-xs"}>
+            {formData[field] || "—"}
+          </span>
         </div>
       )}
     </div>
   );
+
+// View document via blob API
 const viewDocument = async (path: string) => {
   try {
-    const response = await api.get(
-      `/documents/view?path=${encodeURIComponent(path)}`,
-      { responseType: "blob" }
-    );
-
-    const file = new Blob([response.data], {
-      type: response.headers["content-type"],
-    });
-
-    const fileURL = URL.createObjectURL(file);
-
-    // open in new tab
+    const response = await api.get(`/documents/view?path=${encodeURIComponent(path)}`, { responseType: "blob" });
+    const fileURL = URL.createObjectURL(new Blob([response.data], { type: response.headers["content-type"] }));
     window.open(fileURL);
-
   } catch (error) {
     console.error("Error viewing document:", error);
   }
 };
 
-// Doc path display
-const DocPath: React.FC<{ label: string; path?: string | null }> = ({ label, path }) => (
-  <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
-    <div className="flex items-center gap-2.5 overflow-hidden">
-      <div className={`p-1.5 rounded-lg shrink-0 ${path ? 'bg-emerald-100' : 'bg-slate-100'}`}>
-        <FaFileAlt className={`text-sm ${path ? 'text-emerald-500' : 'text-slate-300'}`} />
+// Doc card — view mode: show + view button. Edit mode: show + view + change
+const DocCard: React.FC<{
+  label: string; path?: string | null; isEditing: boolean;
+  fileKey: string; files: Record<string, any>;
+  onFile: (key: string, file: File | null) => void;
+}> = ({ label, path, isEditing, fileKey, files, onFile }) => {
+  const selectedFile = files[fileKey] as File | null;
+  const hasUpload = !!selectedFile;
+  const hasExisting = !!path;
+
+  return (
+    <div className="flex flex-col gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
+      <div className="flex items-center gap-2.5">
+        <div className={`p-1.5 rounded-lg shrink-0 ${hasExisting || hasUpload ? 'bg-emerald-100' : 'bg-slate-100'}`}>
+          <FaFileAlt className={`text-sm ${hasExisting || hasUpload ? 'text-emerald-500' : 'text-slate-300'}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">{label}</p>
+          <p className="text-[10px] text-slate-400">
+            {hasUpload ? `New: ${selectedFile!.name}` : hasExisting ? "Uploaded ✓" : "Not uploaded"}
+          </p>
+        </div>
       </div>
-      <div>
-        <p className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">{label}</p>
-        <p className="text-[10px] text-slate-400">{path ? "Uploaded ✓" : "Not uploaded"}</p>
+      <div className="flex gap-2">
+        {hasExisting && (
+          <button onClick={() => viewDocument(path!)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors">
+            <FaEye size={9} /> View
+          </button>
+        )}
+        {isEditing && (
+          <label className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-bold cursor-pointer rounded-lg border transition-all ${hasUpload ? 'text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100' : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50'}`}>
+            {hasUpload ? "Change" : hasExisting ? "Replace" : "Upload"}
+            <input type="file" hidden onChange={e => onFile(fileKey, e.target.files?.[0] || null)} />
+          </label>
+        )}
       </div>
     </div>
-    {path && (
-      <button
-        onClick={() => viewDocument(path)}
-        className="text-[10px] font-bold text-indigo-600 hover:underline"
-      >
-        View
-      </button>
-    )}
-  </div>
-);
+  );
+};
 
-// File upload row
+// File upload row (for non-existing files in edit mode)
 const FileRow: React.FC<{
   label: string; fileKey: string;
   files: Record<string, any>;
   onFile: (key: string, file: File | null) => void;
   multiple?: boolean;
 }> = ({ label, fileKey, files, onFile, multiple = false }) => {
-  const hasFile = multiple
-    ? (files[fileKey]?.length > 0)
-    : !!files[fileKey];
-
+  const hasFile = multiple ? (files[fileKey]?.length > 0) : !!files[fileKey];
   return (
     <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl hover:border-indigo-200 transition-all group">
       <div className="flex items-center gap-2.5 overflow-hidden">
-        <div className={`p-1.5 rounded-lg shrink-0 transition-colors ${hasFile ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+        <div className={`p-1.5 rounded-lg shrink-0 ${hasFile ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
           <HiCheckCircle size={14} />
         </div>
         <div className="overflow-hidden">
           <p className="text-[10px] font-bold text-slate-700 uppercase">{label}</p>
           <p className="text-[10px] text-slate-400 truncate">
-            {multiple
-              ? (files[fileKey]?.length ? `${files[fileKey].length} file(s) selected` : "Not selected")
-              : (files[fileKey]?.name || "Not selected")}
+            {multiple ? (files[fileKey]?.length ? `${files[fileKey].length} file(s)` : "Not selected") : (files[fileKey]?.name || "Not selected")}
           </p>
         </div>
       </div>
@@ -167,14 +182,105 @@ const FileRow: React.FC<{
         {hasFile ? "CHANGE" : "UPLOAD"}
         <input type="file" hidden multiple={multiple}
           onChange={e => {
-            if (multiple) {
-              const fl = e.target.files;
-              onFile(fileKey, fl ? (Array.from(fl) as any) : null);
-            } else {
-              onFile(fileKey, e.target.files?.[0] || null);
-            }
+            if (multiple) { onFile(fileKey, e.target.files ? (Array.from(e.target.files) as any) : null); }
+            else { onFile(fileKey, e.target.files?.[0] || null); }
           }} />
       </label>
+    </div>
+  );
+};
+
+// Child row component
+interface ChildEntry { childName: string; childDateOfBirth?: string; gender: string; age?: number; }
+// Utility to calculate age from DOB string (YYYY-MM-DD)
+const calculateAge = (dob?: string) => {
+  if (!dob) return null;
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age >= 0 ? age : 0;
+};
+
+const ChildCard: React.FC<{
+  child: ChildEntry; index: number; isEditing: boolean; canDelete: boolean;
+  onUpdate: (i: number, field: string, value: any) => void;
+  onDelete: (i: number) => void;
+}> = ({ child, index, isEditing, canDelete, onUpdate, onDelete }) => {
+  const age = calculateAge(child.childDateOfBirth);
+
+  return (
+    <div className="border border-slate-200 rounded-xl p-4 bg-white shadow-sm space-y-3 relative">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-black text-violet-600 bg-violet-50 px-2.5 py-1 rounded-lg uppercase tracking-widest">
+          Child #{index + 1} {age !== null && <span className="ml-1 text-slate-400">({age} Years)</span>}
+        </span>
+        {isEditing && canDelete && (
+          <button onClick={() => onDelete(index)}
+            className="flex items-center gap-1 text-[10px] px-2 py-1 bg-rose-50 text-rose-500 border border-rose-200 rounded-lg hover:bg-rose-500 hover:text-white transition-colors font-bold">
+            <FaTrash size={9} /> Remove
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Name */}
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Name</label>
+          {isEditing ? (
+            <input
+              className="border border-indigo-200 rounded-xl px-3 py-2 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              placeholder="Child's name"
+              value={child.childName || ""}
+              onChange={e => onUpdate(index, "childName", e.target.value)}
+            />
+          ) : (
+            <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 min-h-9 flex items-center">
+              {child.childName || <span className="text-slate-300 italic text-xs">—</span>}
+            </div>
+          )}
+        </div>
+
+        {/* Gender */}
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gender</label>
+          {isEditing ? (
+            <select
+              className="border border-indigo-200 rounded-xl px-3 py-2 text-sm font-medium bg-white focus:outline-none"
+              value={child.gender || "MALE"}
+              onChange={e => onUpdate(index, "gender", e.target.value)}
+            >
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="OTHER">Other</option>
+            </select>
+          ) : (
+            <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 min-h-9 flex items-center">
+              {child.gender || "—"}
+            </div>
+          )}
+        </div>
+
+        {/* Date of Birth */}
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date of Birth</label>
+          {isEditing ? (
+            <input
+              type="date"
+              className="border border-indigo-200 rounded-xl px-3 py-2 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              value={child.childDateOfBirth || ""}
+              onChange={e => onUpdate(index, "childDateOfBirth", e.target.value)}
+            />
+          ) : (
+            <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 min-h-9 flex items-center">
+              {child.childDateOfBirth || <span className="text-slate-300 italic text-xs">—</span>}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -202,82 +308,38 @@ const ExpCard: React.FC<ExpCardProps> = ({ exp, index, isEditing, canDelete, exp
         </button>
       )}
     </div>
-
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {/* Company Name */}
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Company Name</label>
-        {isEditing ? (
-          <input className="border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            placeholder="e.g. Infosys Ltd." value={exp.companyName || ""}
-            onChange={e => onUpdate(index, "companyName", e.target.value)} />
-        ) : (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center">
-            {exp.companyName || <span className="text-slate-300 italic text-xs">Not specified</span>}
-          </div>
-        )}
-      </div>
-
-      {/* Role */}
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Role / Designation</label>
-        {isEditing ? (
-          <input className="border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            placeholder="e.g. Senior Developer" value={exp.role || ""}
-            onChange={e => onUpdate(index, "role", e.target.value)} />
-        ) : (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center">
-            {exp.role || <span className="text-slate-300 italic text-xs">Not specified</span>}
-          </div>
-        )}
-      </div>
-
-      {/* From Date */}
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">From Date</label>
-        {isEditing ? (
-          <input type="date" className="border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            value={exp.fromDate || ""} onChange={e => onUpdate(index, "fromDate", e.target.value)} />
-        ) : (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center">
-            {exp.fromDate || <span className="text-slate-300 italic text-xs">Not specified</span>}
-          </div>
-        )}
-      </div>
-
-      {/* End Date */}
-      <div className="flex flex-col gap-1">
-        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">End Date</label>
-        {isEditing ? (
-          <input type="date" className="border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            value={exp.endDate || ""} onChange={e => onUpdate(index, "endDate", e.target.value)} />
-        ) : (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center">
-            {exp.endDate || <span className="text-slate-300 italic text-xs">Not specified</span>}
-          </div>
-        )}
-      </div>
+      {['companyName', 'role', 'fromDate', 'endDate'].map(field => (
+        <div key={field} className="flex flex-col gap-1">
+          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            {field === 'companyName' ? 'Company Name' : field === 'role' ? 'Role / Designation' : field === 'fromDate' ? 'From Date' : 'End Date'}
+          </label>
+          {isEditing ? (
+            <input
+              type={field.includes('Date') ? 'date' : 'text'}
+              className="border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              placeholder={field === 'companyName' ? 'e.g. Infosys Ltd.' : field === 'role' ? 'e.g. Senior Developer' : ''}
+              value={exp[field] || ""}
+              onChange={e => onUpdate(index, field, e.target.value)} />
+          ) : (
+            <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center">
+              <span className={exp[field] ? "" : "text-slate-300 italic text-xs"}>{exp[field] || "—"}</span>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
-
     {/* Documents */}
     <div className="pt-3 border-t border-slate-100">
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Documents</p>
-      {!isEditing ? (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <DocPath label="Experience Certificate" path={exp.experienceCertPath} />
-          <DocPath label="Joining Letter" path={exp.joiningLetterPath} />
-          <DocPath label="Relieving Letter" path={exp.relievingLetterPath} />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <FileRow label="Experience Cert" fileKey="experienceCerts"
-            files={expFiles as any} onFile={(_, f) => onFile(index, "experienceCerts", f)} />
-          <FileRow label="Joining Letter" fileKey="joiningLetters"
-            files={expFiles as any} onFile={(_, f) => onFile(index, "joiningLetters", f)} />
-          <FileRow label="Relieving Letter" fileKey="relievingLetters"
-            files={expFiles as any} onFile={(_, f) => onFile(index, "relievingLetters", f)} />
-        </div>
-      )}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <DocCard label="Experience Cert" path={exp.experienceCertPath} isEditing={isEditing}
+          fileKey="experienceCerts" files={expFiles as any} onFile={(_, f) => onFile(index, "experienceCerts", f)} />
+        <DocCard label="Joining Letter" path={exp.joiningLetterPath} isEditing={isEditing}
+          fileKey="joiningLetters" files={expFiles as any} onFile={(_, f) => onFile(index, "joiningLetters", f)} />
+        <DocCard label="Relieving Letter" path={exp.relievingLetterPath} isEditing={isEditing}
+          fileKey="relievingLetters" files={expFiles as any} onFile={(_, f) => onFile(index, "relievingLetters", f)} />
+      </div>
     </div>
   </div>
 );
@@ -293,15 +355,6 @@ const Card: React.FC<{ title: string; icon?: React.ReactNode; cols?: 2 | 3; chil
       <div className={`grid grid-cols-1 sm:grid-cols-${cols} gap-4`}>{children}</div>
     </div>
   );
-
-// Section divider
-const SectionLabel: React.FC<{ label: string }> = ({ label }) => (
-  <div className="col-span-full flex items-center gap-3 pt-2">
-    <div className="h-px flex-1 bg-slate-100" />
-    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest shrink-0">{label}</span>
-    <div className="h-px flex-1 bg-slate-100" />
-  </div>
-);
 
 // Status badge
 const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
@@ -323,7 +376,7 @@ const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
 // ═══════════════════════════════════════════════════════════════
 
 const EmployeeProfile: React.FC = () => {
-  const { user, isLoading: authLoading, setUser } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { profile: backendProfile, loading, fetchEmployeeProfile } = useEmployee();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [activeTab, setActiveTab] = useState("details");
@@ -331,11 +384,11 @@ const EmployeeProfile: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [showFailure, setShowFailure] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [formData, setFormData] = useState<any>({});
-  const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
+  const [formData, setFormData] = useState<any>({ experiences: [], children: [] });
   const [originalData, setOriginalData] = useState<any>({});
+  const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
 
-  // Common files (fresher + experienced shared)
+  // Common files
   const [commonFiles, setCommonFiles] = useState<Record<string, any>>({
     idProof: null, passportPhoto: null,
     tenthMarksheet: null, twelfthMarksheet: null,
@@ -352,8 +405,6 @@ const EmployeeProfile: React.FC = () => {
     if (!authLoading && user?.id) fetchEmployeeProfile(user.id);
   }, [fetchEmployeeProfile, user?.id, authLoading]);
 
-  
-
   // Pre-fill form
   useEffect(() => {
     if (!backendProfile) return;
@@ -363,7 +414,7 @@ const EmployeeProfile: React.FC = () => {
     const expDocs = bp.experiencedDocuments;
     const experiences = isExp ? (expDocs?.length ? expDocs : [{}]) : [];
 
-    setFormData({
+    const mapped = {
       name: bp.name || "",
       joiningDate: bp.joiningDate || "",
       firstName: bp.firstName || "",
@@ -371,6 +422,12 @@ const EmployeeProfile: React.FC = () => {
       contactNumber: bp.contactNumber || "",
       gender: bp.gender || "MALE",
       maritalStatus: bp.maritalStatus || "SINGLE",
+      department : bp.departmentName || "",
+      branch : bp.branch || "",
+      country : bp.country || "",
+      biometricStatus : bp.biometricStatus || "",
+      vpnStatus : bp.vpnStatus || "",
+      company : bp.companyName || "",
       aadharNumber: bp.aadharNumber || "",
       personalEmail: bp.personalEmail || "",
       dateOfBirth: bp.dateOfBirth || "",
@@ -384,6 +441,7 @@ const EmployeeProfile: React.FC = () => {
       bankName: bp.bankName || "",
       ifscCode: bp.ifscCode || "",
       bankBranchName: bp.bankBranchName || "",
+      pfNumber: bp.pfNumber || "",
       uanNumber: bp.uanNumber || "",
       fatherName: bp.fatherName || "",
       fatherDateOfBirth: bp.fatherDateOfBirth || "",
@@ -396,78 +454,21 @@ const EmployeeProfile: React.FC = () => {
       spouseName: bp.spouseName || "",
       spouseDateOfBirth: bp.spouseDateOfBirth || "",
       spouseOccupation: bp.spouseOccupation || "",
+      experienceType : bp.employeeExperience || "",
       spouseContactNumber: bp.spouseContactNumber || "",
       children: bp.children || [],
       experiences,
-    });
-
-    setExpFilesList(experiences.map(() => ({
-      experienceCerts: null, joiningLetters: null, relievingLetters: null
-    })));
-
-    const aadhar = bp.aadharNumber || "";
-    setAadharParts({ p1: aadhar.slice(0, 4), p2: aadhar.slice(4, 8), p3: aadhar.slice(8, 12) });
-  }, [backendProfile]);
-
-
-  //edit cancel
-  useEffect(() => {
-    if (!backendProfile) return;
-    setProfile({ ...backendProfile });
-    const bp = backendProfile as any;
-    const isExp = bp.employeeExperience === "EXPERIENCED";
-    const expDocs = bp.experiencedDocuments;
-    const experiences = isExp ? (expDocs?.length ? expDocs : [{}]) : [];
-
-    const mappedData = {
-      name: bp.name || "",
-      joiningDate: bp.joiningDate || "",
-      firstName: bp.firstName || "",
-      lastName: bp.lastName || "",
-      contactNumber: bp.contactNumber || "",
-      gender: bp.gender || "MALE",
-      maritalStatus: bp.maritalStatus || "SINGLE",
-      aadharNumber: bp.aadharNumber || "",
-      personalEmail: bp.personalEmail || "",
-      dateOfBirth: bp.dateOfBirth || "",
-      presentAddress: bp.presentAddress || "",
-      permanentAddress: bp.permanentAddress || "",
-      bloodGroup: bp.bloodGroup || "O_POSITIVE",
-      emergencyContactNumber: bp.emergencyContactNumber || "",
-      designation: bp.designation || "",
-      skillSet: Array.isArray(bp.skillSet) ? bp.skillSet.join(", ") : bp.skillSet || "",
-      accountNumber: bp.accountNumber || "",
-      bankName: bp.bankName || "",
-      ifscCode: bp.ifscCode || "",
-      bankBranchName: bp.bankBranchName || "",
-      uanNumber: bp.uanNumber || "",
-      fatherName: bp.fatherName || "",
-      fatherDateOfBirth: bp.fatherDateOfBirth || "",
-      fatherOccupation: bp.fatherOccupation || "",
-      fatherAlive: bp.fatherAlive ?? true,
-      motherName: bp.motherName || "",
-      motherDateOfBirth: bp.motherDateOfBirth || "",
-      motherOccupation: bp.motherOccupation || "",
-      motherAlive: bp.motherAlive ?? true,
-      spouseName: bp.spouseName || "",
-      spouseDateOfBirth: bp.spouseDateOfBirth || "",
-      spouseOccupation: bp.spouseOccupation || "",
-      spouseContactNumber: bp.spouseContactNumber || "",
-      children: bp.children || [],
-
     };
 
-    setExpFilesList(experiences.map(() => ({
-      experienceCerts: null, joiningLetters: null, relievingLetters: null
-    })));
+    setFormData(mapped);
+    setOriginalData(mapped);
+    setExpFilesList(experiences.map(() => ({ experienceCerts: null, joiningLetters: null, relievingLetters: null })));
 
     const aadhar = bp.aadharNumber || "";
     setAadharParts({ p1: aadhar.slice(0, 4), p2: aadhar.slice(4, 8), p3: aadhar.slice(8, 12) });
-    setFormData(mappedData);
-    setOriginalData(mappedData); 
   }, [backendProfile]);
 
-  // Sync aadhar parts
+  // Sync aadhar
   useEffect(() => {
     const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
     setFormData((prev: any) => ({ ...prev, aadharNumber: combined }));
@@ -489,31 +490,45 @@ const EmployeeProfile: React.FC = () => {
     setCommonFiles(prev => ({ ...prev, [key]: file }));
 
   const handleExpFile = (index: number, key: keyof ExpFiles, file: File | null) =>
-    setExpFilesList(prev => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [key]: file };
-      return updated;
-    });
+    setExpFilesList(prev => { const u = [...prev]; u[index] = { ...u[index], [key]: file }; return u; });
 
+  // Experience handlers
   const updateExperience = (index: number, field: string, value: any) =>
     setFormData((prev: any) => {
-      const updated = [...prev.experiences];
+      const updated = [...(prev.experiences || [])];
       updated[index] = { ...updated[index], [field]: value };
       return { ...prev, experiences: updated };
     });
 
   const addExperience = () => {
-    setFormData((prev: any) => ({ ...prev, experiences: [...prev.experiences, {}] }));
+    setFormData((prev: any) => ({ ...prev, experiences: [...(prev.experiences || []), {}] }));
     setExpFilesList(prev => [...prev, { experienceCerts: null, joiningLetters: null, relievingLetters: null }]);
   };
 
   const deleteExperience = (index: number) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      experiences: prev.experiences.filter((_: any, i: number) => i !== index)
-    }));
+    setFormData((prev: any) => ({ ...prev, experiences: (prev.experiences || []).filter((_: any, i: number) => i !== index) }));
     setExpFilesList(prev => prev.filter((_, i) => i !== index));
   };
+
+  // Children handlers
+  const updateChild = (index: number, field: string, value: any) =>
+    setFormData((prev: any) => {
+      const updated = [...(prev.children || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, children: updated };
+    });
+
+  const addChild = () =>
+    setFormData((prev: any) => ({
+      ...prev,
+      children: [...(prev.children || []), { childName: "", gender: "MALE", childDateOfBirth: "" }]
+    }));
+
+  const deleteChild = (index: number) =>
+    setFormData((prev: any) => ({
+      ...prev,
+      children: (prev.children || []).filter((_: any, i: number) => i !== index)
+    }));
 
   const buildPayload = (isExp: boolean) => {
     const base: any = {
@@ -535,6 +550,7 @@ const EmployeeProfile: React.FC = () => {
       skillSet: formData.skillSet,
       accountNumber: formData.accountNumber,
       bankName: formData.bankName,
+      pfNumber : formData.pfNumber,
       ifscCode: formData.ifscCode,
       bankBranchName: formData.bankBranchName,
       fatherName: formData.fatherName,
@@ -549,15 +565,17 @@ const EmployeeProfile: React.FC = () => {
       spouseDateOfBirth: formData.spouseDateOfBirth || null,
       spouseOccupation: formData.spouseOccupation || null,
       spouseContactNumber: formData.spouseContactNumber || null,
-      children: formData.children || [],
+      children: (formData.children || []).map((c: any) => ({
+        childName: c.childName,
+        gender: c.gender,
+        childDateOfBirth: c.childDateOfBirth || null // Updated to match interface
+      })),
     };
     if (isExp) {
       base.uanNumber = formData.uanNumber;
       base.experiences = (formData.experiences || []).map((exp: any) => ({
-        companyName: exp.companyName || null,
-        role: exp.role || null,
-        fromDate: exp.fromDate || null,
-        endDate: exp.endDate || null,
+        companyName: exp.companyName || null, role: exp.role || null,
+        fromDate: exp.fromDate || null, endDate: exp.endDate || null,
       }));
     }
     return base;
@@ -566,21 +584,16 @@ const EmployeeProfile: React.FC = () => {
   const buildFiles = (isExp: boolean) => {
     if (!isExp) {
       return {
-        idProof: commonFiles.idProof,
-        passportPhoto: commonFiles.passportPhoto,
-        tenthMarksheet: commonFiles.tenthMarksheet,
-        twelfthMarksheet: commonFiles.twelfthMarksheet,
-        degreeCertificate: commonFiles.degreeCertificate,
-        offerLetter: commonFiles.offerLetter,
+        idProof: commonFiles.idProof, passportPhoto: commonFiles.passportPhoto,
+        tenthMarksheet: commonFiles.tenthMarksheet, twelfthMarksheet: commonFiles.twelfthMarksheet,
+        degreeCertificate: commonFiles.degreeCertificate, offerLetter: commonFiles.offerLetter,
       };
     }
-    // Experienced — collect arrays per file type across all experiences
     const experienceCerts = expFilesList.map(e => e.experienceCerts).filter(Boolean) as File[];
     const joiningLetters = expFilesList.map(e => e.joiningLetters).filter(Boolean) as File[];
     const relievingLetters = expFilesList.map(e => e.relievingLetters).filter(Boolean) as File[];
     return {
-      idProof: commonFiles.idProof,
-      passportPhoto: commonFiles.passportPhoto,
+      idProof: commonFiles.idProof, passportPhoto: commonFiles.passportPhoto,
       experienceCerts: experienceCerts.length ? experienceCerts : null,
       joiningLetters: joiningLetters.length ? joiningLetters : null,
       relievingLetters: relievingLetters.length ? relievingLetters : null,
@@ -593,9 +606,7 @@ const EmployeeProfile: React.FC = () => {
       setSaving(true);
       const isExp = (profile as any)?.employeeExperience === "EXPERIENCED";
       const type: ExperienceType = isExp ? "EXPERIENCED" : "FRESHER";
-      const payload = buildPayload(isExp);
-      const files = buildFiles(isExp);
-      await authService.updateProfileDetails(String(user.id), type, payload, files);
+      await authService.updateProfileDetails(String(user.id), type, buildPayload(isExp), buildFiles(isExp));
       await fetchEmployeeProfile(user.id);
       setIsEditing(false);
     } catch (err: any) {
@@ -614,6 +625,7 @@ const EmployeeProfile: React.FC = () => {
   const formatDate = (d?: string | Date) =>
     d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : "—";
   const isExperienced = bp.employeeExperience === "EXPERIENCED";
+  const isMarried = formData.maritalStatus === "MARRIED" || bp.maritalStatus === "MARRIED";
   const fp = { formData, isEditing, onChange };
 
   const TABS = [
@@ -633,35 +645,31 @@ const EmployeeProfile: React.FC = () => {
         {/* ── HEADER ── */}
         <div className="bg-white rounded-t-2xl border border-slate-200 shadow-sm px-6 py-5">
           <div className="flex flex-col md:flex-row md:items-start gap-5">
-            {/* Avatar */}
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-100 to-rose-200 flex items-center justify-center text-2xl font-black text-rose-600 shrink-0 shadow-sm">
               {profile.name?.charAt(0)}
             </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h2 className="text-xl font-bold text-slate-800">{profile.name}</h2>
-                <StatusBadge status={bp.verificationStatus} />
-              </div>
-              <p className="text-xs font-semibold text-indigo-600 mt-0.5">{bp.designation || "—"}</p>
-              <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 flex-wrap">
-                <span className="flex items-center gap-1.5">
-                  <FaEnvelope className="text-slate-400 text-[10px]" /> {bp.email || "—"}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <FaPhone className="text-slate-400 text-[10px]" /> {bp.contactNumber || "—"}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <HiOutlineOfficeBuilding className="text-slate-400" /> {bp.branch || "—"}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <HiOutlineLocationMarker className="text-slate-400" /> Joined {formatDate(bp.joiningDate)}
-                </span>
+            <div className="flex-1 min-w-0 space-y-1.5">
+              {/* Editable name */}
+              {isEditing ? (
+                <input
+                  className="text-xl font-bold text-slate-800 border-b-2 border-indigo-300 bg-transparent focus:outline-none focus:border-indigo-500 w-full"
+                  value={formData.name || ""}
+                  onChange={e => onChange('name', e.target.value)}
+                  placeholder="Full Name" />
+              ) : (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className="text-xl font-bold text-slate-800">{profile.name}</h2>
+                  <StatusBadge status={bp.verificationStatus} />
+                </div>
+              )}
+              <p className="text-xs font-semibold text-indigo-600">{formData.designation || bp.designation || "—"}</p>
+              <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+                <span className="flex items-center gap-1.5"><FaEnvelope className="text-[10px]" /> {bp.email || "—"}</span>
+                <span className="flex items-center gap-1.5"><FaPhone className="text-[10px]" /> {formData.contactNumber || bp.contactNumber || "—"}</span>
+                <span className="flex items-center gap-1.5"><HiOutlineOfficeBuilding /> {bp.branch || "—"}</span>
+                <span className="flex items-center gap-1.5"><HiOutlineLocationMarker /> Joined {formatDate(bp.joiningDate)}</span>
               </div>
             </div>
-
-            {/* Actions */}
             <div className="flex items-center gap-2 shrink-0">
               {!isEditing ? (
                 <button onClick={() => setIsEditing(true)}
@@ -670,24 +678,18 @@ const EmployeeProfile: React.FC = () => {
                 </button>
               ) : (
                 <>
-                  <button onClick={() => {
-                    setFormData(originalData);
-                    setIsEditing(false)}}
+                  <button onClick={() => { setFormData(originalData); setIsEditing(false); }}
                     className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
                     <FaTimes className="text-xs" /> Cancel
                   </button>
                   <button onClick={handleSave} disabled={saving}
                     className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-50 min-w-20 justify-center">
-                    {saving
-                      ? <div className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      : <><FaSave className="text-xs" /> Save</>}
+                    {saving ? <div className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><FaSave className="text-xs" /> Save</>}
                   </button>
                 </>
               )}
             </div>
           </div>
-
-          {/* Status bar */}
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 text-[11px] text-slate-400 flex-wrap">
             <HiOutlineShieldCheck className="text-slate-300" />
             <span>Verification: <span className="font-semibold text-slate-500">{bp.verificationStatus || "PENDING"}</span></span>
@@ -695,11 +697,7 @@ const EmployeeProfile: React.FC = () => {
             <span>Role: <span className="font-semibold text-slate-500">{bp.role || "—"}</span></span>
             <span className="text-slate-200">·</span>
             <span>Type: <span className="font-semibold text-slate-500">{bp.employeeExperience || "—"}</span></span>
-            {isEditing && (
-              <span className="ml-auto px-2.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[10px] font-bold animate-pulse">
-                ✏️ EDITING MODE
-              </span>
-            )}
+            {isEditing && <span className="ml-auto px-2.5 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[10px] font-bold animate-pulse">✏️ EDITING MODE</span>}
           </div>
         </div>
 
@@ -708,10 +706,7 @@ const EmployeeProfile: React.FC = () => {
           <div className="flex min-w-max">
             {TABS.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-all ${activeTab === tab.id
-                  ? "border-indigo-600 text-indigo-600 bg-indigo-50/40"
-                  : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                  }`}>
+                className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-all ${activeTab === tab.id ? "border-indigo-600 text-indigo-600 bg-indigo-50/40" : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"}`}>
                 {tab.label}
               </button>
             ))}
@@ -731,35 +726,30 @@ const EmployeeProfile: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   <Card title="Contact Information">
                     <F label="Phone Number" field="contactNumber" {...fp} />
-                    <Static label="Work Email" value={bp.email} />
+                    <F label="Work Email" field="email" {...{ formData: { email: bp.email }, isEditing: false, onChange: () => { } }} />
                     <F label="Personal Email" field="personalEmail" type="email" {...fp} />
                     <F label="Emergency Contact" field="emergencyContactNumber" {...fp} />
                     <S label="Gender" field="gender" options={Object.values(GenderMap)} displayVal={bp.gender} {...fp} />
-                    <S label="Blood Group" field="bloodGroup" options={Object.values(BloodGroupMap)}
-                      formatOpt={v => v.replace(/_/g, ' ')} displayVal={bp.bloodGroup} {...fp} />
+                    <S label="Blood Group" field="bloodGroup" options={Object.values(BloodGroupMap)} formatOpt={v => v.replace(/_/g, ' ')} displayVal={bp.bloodGroup} {...fp} />
                   </Card>
-
                   <Card title="Employment Overview">
                     <F label="Designation" field="designation" {...fp} />
-                    <Static label="Role" value={bp.role} />
-                    <Static label="Reporting Manager" value={bp.reportingName} />
                     <F label="Joining Date" field="joiningDate" type="date" {...fp} />
-                    <Static label="Biometric" value={bp.biometricStatus} />
-                    <Static label="VPN Status" value={bp.vpnStatus} />
+                    <F label="Reporting Manager" field="reportingName" {...{ formData: { reportingName: bp.reportingName }, isEditing: false, onChange: () => { } }} />
+                    <F label="Role" field="role" {...{ formData: { role: bp.role }, isEditing: false, onChange: () => { } }} />
+                    <F label="Biometric" field="biometricStatus" {...{ formData: { biometricStatus: bp.biometricStatus }, isEditing: false, onChange: () => { } }} />
+                    <F label="VPN Status" field="vpnStatus" {...{ formData: { vpnStatus: bp.vpnStatus }, isEditing: false, onChange: () => { } }} />
                     <div className="col-span-full pt-1">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Skills</p>
                       {isEditing ? (
                         <input className="w-full border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                           placeholder="React, Node.js, Spring Boot..."
-                          value={formData.skillSet || ""}
-                          onChange={e => onChange('skillSet', e.target.value)} />
+                          value={formData.skillSet || ""} onChange={e => onChange('skillSet', e.target.value)} />
                       ) : (
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1.5 min-h-9 items-center">
                           {bp.skillSet?.length
-                            ? bp.skillSet.map((s: string, i: number) => (
-                              <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg border border-indigo-100">{s}</span>
-                            ))
-                            : <span className="text-slate-300 italic text-xs">No skills added</span>}
+                            ? bp.skillSet.map((s: string, i: number) => <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg border border-indigo-100">{s}</span>)
+                            : <span className="text-slate-300 italic text-xs">—</span>}
                         </div>
                       )}
                     </div>
@@ -774,13 +764,11 @@ const EmployeeProfile: React.FC = () => {
                   <F label="Last Name" field="lastName" {...fp} />
                   <S label="Gender" field="gender" options={Object.values(GenderMap)} displayVal={bp.gender} {...fp} />
                   <F label="Date of Birth" field="dateOfBirth" type="date" {...fp} />
-                  <S label="Blood Group" field="bloodGroup" options={Object.values(BloodGroupMap)}
-                    formatOpt={v => v.replace(/_/g, ' ')} displayVal={bp.bloodGroup} {...fp} />
+                  <S label="Blood Group" field="bloodGroup" options={Object.values(BloodGroupMap)} formatOpt={v => v.replace(/_/g, ' ')} displayVal={bp.bloodGroup} {...fp} />
                   <S label="Marital Status" field="maritalStatus" options={Object.values(MaritalStatusMap)} displayVal={bp.maritalStatus} {...fp} />
                   <F label="Personal Email" field="personalEmail" type="email" {...fp} />
                   <F label="Emergency Contact" field="emergencyContactNumber" {...fp} />
-
-                  {/* Aadhar */}
+                  {/* Aadhar — always masked in view */}
                   <div className="col-span-full flex flex-col gap-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aadhar Number</label>
                     {isEditing ? (
@@ -796,7 +784,7 @@ const EmployeeProfile: React.FC = () => {
                       </div>
                     ) : (
                       <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono text-slate-700 min-h-10 flex items-center tracking-widest">
-                        {bp.aadharNumber ? `XXXX-XXXX-${bp.aadharNumber.slice(-4)}` : <span className="text-slate-300 italic text-xs font-sans">Not specified</span>}
+                        {bp.aadharNumber ? `XXXX-XXXX-${bp.aadharNumber.slice(-4)}` : <span className="text-slate-300 italic text-xs font-sans">—</span>}
                       </div>
                     )}
                   </div>
@@ -808,8 +796,6 @@ const EmployeeProfile: React.FC = () => {
                 <Card title="Address Details" icon={<HiOutlineLocationMarker />}>
                   <TA label="Present Residence" field="presentAddress" {...fp} />
                   <TA label="Permanent Address" field="permanentAddress" {...fp} />
-                  <Static label="Branch" value={bp.branch} />
-                  <Static label="Country" value={bp.country} />
                 </Card>
               )}
 
@@ -817,25 +803,22 @@ const EmployeeProfile: React.FC = () => {
               {activeTab === "financial" && (
                 <Card title="Financial Details" icon={<HiOutlineCreditCard />}>
                   <F label="Bank Name" field="bankName" {...fp} />
-                  {/* Account number — masked in view mode */}
+                  <F label="IFSC Code" field="ifscCode" {...fp} />
+                  <F label="Bank Branch" field="bankBranchName" {...fp} />
+                  {/* Account — masked in view */}
                   <div className="flex flex-col gap-1">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Account Number</label>
                     {isEditing ? (
                       <input className="border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-mono"
-                        value={formData.accountNumber || ""} onChange={e => onChange('accountNumber', e.target.value)}
-                        placeholder="Account number" />
+                        value={formData.accountNumber || ""} onChange={e => onChange('accountNumber', e.target.value)} placeholder="Account number" />
                     ) : (
                       <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono text-slate-700 min-h-10 flex items-center">
-                        {formData.accountNumber
-                          ? `XXXXXXXX${formData.accountNumber.slice(-4)}`
-                          : <span className="text-slate-300 italic text-xs font-sans">Not specified</span>}
+                        {formData.accountNumber ? `XXXXXXXX${formData.accountNumber.slice(-4)}` : <span className="text-slate-300 italic text-xs font-sans">—</span>}
                       </div>
                     )}
                   </div>
-                  <F label="IFSC Code" field="ifscCode" {...fp} />
-                  <F label="Bank Branch" field="bankBranchName" {...fp} />
-                  <Static label="PF Number" value={bp.pfNumber} />
-                  <Static label="Company" value={bp.companyName} />
+                  <F label="PF Number" field="pfNumber" {...fp} />
+                  <F label="Company" field="companyName" {...{ formData: { companyName: bp.companyName }, isEditing: false, onChange: () => { } }} />
                   {isExperienced && <F label="UAN Number" field="uanNumber" {...fp} />}
                 </Card>
               )}
@@ -845,26 +828,25 @@ const EmployeeProfile: React.FC = () => {
                 <div className="space-y-5">
                   <Card title="Employment Details" icon={<HiOutlineOfficeBuilding />} cols={3}>
                     <F label="Designation" field="designation" {...fp} />
-                    <Static label="Department" value={bp.departmentName} />
-                    <Static label="Branch" value={bp.branch} />
-                    <Static label="Joining Date" value={formatDate(bp.joiningDate)} />
-                    <Static label="Experience Type" value={bp.employeeExperience} />
-                    <Static label="Reporting Manager" value={bp.reportingName} />
-                    <Static label="Biometric Status" value={bp.biometricStatus} />
-                    <Static label="VPN Status" value={bp.vpnStatus} />
+                    <F label="Department" field="department" {...fp} />
+                    <F label="Branch" field="branch" {...fp} />
+                    <F label="Country" field="country" {...fp} />
+                    <F label="Company" field="company" {...fp} />
+                    <F label="Joining Date" field="joiningDate" type="date" {...fp} />
+                    <F label="Experience Type" field="experienceType" {...fp} />
+                    <F label="Reporting Manager" field="reportingName" {...fp} />
+                    <F label="Biometric Status" field="biometricStatus" {...fp} />
+                    <F label="VPN Status" field="vpnStatus" {...fp} />
                     <div className="col-span-full pt-1">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Skillset</p>
                       {isEditing ? (
                         <input className="w-full border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                          value={formData.skillSet || ""} onChange={e => onChange('skillSet', e.target.value)}
-                          placeholder="React, Spring Boot, MySQL..." />
+                          value={formData.skillSet || ""} onChange={e => onChange('skillSet', e.target.value)} placeholder="React, Spring Boot, MySQL..." />
                       ) : (
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1.5 min-h-9 items-center">
                           {bp.skillSet?.length
-                            ? bp.skillSet.map((s: string, i: number) => (
-                              <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg border border-indigo-100">{s}</span>
-                            ))
-                            : <span className="text-slate-300 italic text-xs">No skills added</span>}
+                            ? bp.skillSet.map((s: string, i: number) => <span key={i} className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-3 py-1 rounded-lg border border-indigo-100">{s}</span>)
+                            : <span className="text-slate-300 italic text-xs">—</span>}
                         </div>
                       )}
                     </div>
@@ -882,16 +864,10 @@ const EmployeeProfile: React.FC = () => {
                           </button>
                         )}
                       </div>
-
                       {(formData.experiences || []).length === 0 ? (
-                        <div className="text-center py-8 text-slate-300">
-                          <p className="text-sm italic">No experience history</p>
-                          {isEditing && (
-                            <button onClick={addExperience}
-                              className="mt-3 text-xs text-indigo-500 hover:text-indigo-700 font-semibold">
-                              + Add your first experience
-                            </button>
-                          )}
+                        <div className="text-center py-8">
+                          <p className="text-sm text-slate-300 italic">No experience history</p>
+                          {isEditing && <button onClick={addExperience} className="mt-2 text-xs text-indigo-500 font-semibold">+ Add first experience</button>}
                         </div>
                       ) : (
                         <div className="space-y-4">
@@ -916,8 +892,7 @@ const EmployeeProfile: React.FC = () => {
                     <Card title="Father's Details">
                       {isEditing && (
                         <label className="col-span-full flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none">
-                          <input type="checkbox" className="rounded"
-                            checked={formData.fatherAlive ?? true}
+                          <input type="checkbox" className="rounded" checked={formData.fatherAlive ?? true}
                             onChange={e => onChange('fatherAlive', e.target.checked)} />
                           <span>Father is alive</span>
                         </label>
@@ -931,8 +906,7 @@ const EmployeeProfile: React.FC = () => {
                     <Card title="Mother's Details">
                       {isEditing && (
                         <label className="col-span-full flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none">
-                          <input type="checkbox" className="rounded"
-                            checked={formData.motherAlive ?? true}
+                          <input type="checkbox" className="rounded" checked={formData.motherAlive ?? true}
                             onChange={e => onChange('motherAlive', e.target.checked)} />
                           <span>Mother is alive</span>
                         </label>
@@ -943,8 +917,8 @@ const EmployeeProfile: React.FC = () => {
                     </Card>
                   </div>
 
-                  {/* Spouse — only if married */}
-                  {(formData.maritalStatus === "MARRIED" || bp.maritalStatus === "MARRIED") && (
+                  {/* Spouse */}
+                  {isMarried && (
                     <Card title="Spouse Details">
                       <F label="Spouse Name" field="spouseName" {...fp} />
                       <F label="Contact Number" field="spouseContactNumber" {...fp} />
@@ -952,61 +926,96 @@ const EmployeeProfile: React.FC = () => {
                       <F label="Date of Birth" field="spouseDateOfBirth" type="date" {...fp} />
                     </Card>
                   )}
+
+                  {/* Children — always show if married */}
+                  {isMarried && (
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Children</h3>
+                        {isEditing && (
+                          <button onClick={addChild}
+                            className="flex items-center gap-1.5 px-3 py-1.5 border border-violet-200 text-violet-600 text-xs font-bold rounded-xl hover:bg-violet-50 transition-colors">
+                            <FaPlus size={9} /> Add Child
+                          </button>
+                        )}
+                      </div>
+                      {(formData.children || []).length === 0 ? (
+                        <div className="text-center py-6">
+                          <p className="text-sm text-slate-300 italic">No children added</p>
+                          {isEditing && <button onClick={addChild} className="mt-2 text-xs text-violet-500 font-semibold">+ Add child</button>}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {(formData.children || []).map((child: ChildEntry, idx: number) => (
+                            <ChildCard key={idx} index={idx} child={child} isEditing={isEditing}
+                              canDelete={(formData.children || []).length > 0}
+                              onUpdate={updateChild} onDelete={deleteChild} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* ── DOCUMENTS ── */}
               {activeTab === "documents" && (
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
-                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Uploaded Documents</h3>
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Documents</h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 md:grid-rows-2 gap-3">
-                    <DocPath label="ID Proof" path={bp.idProofPath} />
-                    <DocPath label="Passport Photo" path={bp.passportPhotoPath} />
-                    {!isExperienced ? (
-                      <>
-                        <DocPath label="10th Marksheet" path={bp.tenthMarksheetPath} />
-                        <DocPath label="12th Marksheet" path={bp.twelfthMarksheetPath} />
-                        <DocPath label="Degree Certificate" path={bp.degreeCertificatePath} />
-                        <DocPath label="Offer Letter" path={bp.offerLetterPath} />
-                      </>
-                    ) : (
-                      <>
-                        {bp.experiencedDocuments?.map((doc: any, i: number) => (
-                          <div key={i} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <DocPath label="Experience Certificate" path={doc.experienceCertPath} />
-                            <DocPath label="Joining Letter" path={doc.joiningLetterPath} />
-                            <DocPath label="Relieving Letter" path={doc.relievingLetterPath} />
-                          </div>
-                        ))}
-                      </>
-                    )}
+                  {/* Identity documents — View in both modes, Change only in edit */}
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Identity Documents</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <DocCard label="ID Proof" path={bp.idProofPath} isEditing={isEditing}
+                        fileKey="idProof" files={commonFiles} onFile={handleCommonFile} />
+                      <DocCard label="Passport Photo" path={bp.passportPhotoPath} isEditing={isEditing}
+                        fileKey="passportPhoto" files={commonFiles} onFile={handleCommonFile} />
+                    </div>
                   </div>
 
-                  {isEditing && (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <div className="h-px flex-1 bg-slate-100" />
-                        <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest shrink-0">Upload / Replace</p>
-                        <div className="h-px flex-1 bg-slate-100" />
-                      </div>
+                  {/* Fresher — academic + joining docs */}
+                  {!isExperienced && (
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Academic & Joining Documents</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        <FileRow label="ID Proof" fileKey="idProof" files={commonFiles} onFile={handleCommonFile} />
-                        <FileRow label="Passport Photo" fileKey="passportPhoto" files={commonFiles} onFile={handleCommonFile} />
-                        {!isExperienced ? (
-                          <>
-                            <FileRow label="10th Marksheet" fileKey="tenthMarksheet" files={commonFiles} onFile={handleCommonFile} />
-                            <FileRow label="12th Marksheet" fileKey="twelfthMarksheet" files={commonFiles} onFile={handleCommonFile} />
-                            <FileRow label="Degree Certificate" fileKey="degreeCertificate" files={commonFiles} onFile={handleCommonFile} />
-                            <FileRow label="Offer Letter" fileKey="offerLetter" files={commonFiles} onFile={handleCommonFile} />
-                          </>
-                        ) : (
-                          <>
-                            <FileRow label="Joining Letter" fileKey="offerLetter" files={commonFiles} onFile={handleCommonFile} />
-                          </>
-                        )}
+                        <DocCard label="10th Marksheet" path={bp.tenthMarksheetPath} isEditing={isEditing}
+                          fileKey="tenthMarksheet" files={commonFiles} onFile={handleCommonFile} />
+                        <DocCard label="12th Marksheet" path={bp.twelfthMarksheetPath} isEditing={isEditing}
+                          fileKey="twelfthMarksheet" files={commonFiles} onFile={handleCommonFile} />
+                        <DocCard label="Degree Certificate" path={bp.degreeCertificatePath} isEditing={isEditing}
+                          fileKey="degreeCertificate" files={commonFiles} onFile={handleCommonFile} />
+                        <DocCard label="Offer Letter" path={bp.offerLetterPath} isEditing={isEditing}
+                          fileKey="offerLetter" files={commonFiles} onFile={handleCommonFile} />
                       </div>
-                    </>
+                    </div>
+                  )}
+
+                  {/* Experienced — exp docs per company */}
+                  {isExperienced && (formData.experiences || []).length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Experience Documents</p>
+                      <div className="space-y-4">
+                        {(formData.experiences || []).map((exp: any, idx: number) => (
+                          <div key={idx} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-3">
+                            <p className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg inline-block uppercase tracking-widest">
+                              {exp.companyName || `Company #${idx + 1}`}
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <DocCard label="Experience Cert" path={exp.experienceCertPath} isEditing={isEditing}
+                                fileKey="experienceCerts" files={expFilesList[idx] as any || {}}
+                                onFile={(_, f) => handleExpFile(idx, "experienceCerts", f)} />
+                              <DocCard label="Joining Letter" path={exp.joiningLetterPath} isEditing={isEditing}
+                                fileKey="joiningLetters" files={expFilesList[idx] as any || {}}
+                                onFile={(_, f) => handleExpFile(idx, "joiningLetters", f)} />
+                              <DocCard label="Relieving Letter" path={exp.relievingLetterPath} isEditing={isEditing}
+                                fileKey="relievingLetters" files={expFilesList[idx] as any || {}}
+                                onFile={(_, f) => handleExpFile(idx, "relievingLetters", f)} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
@@ -1033,9 +1042,7 @@ const EmployeeProfile: React.FC = () => {
         </div>
       </div>
 
-      {showFailure && (
-        <FailureModal title="Update Failed" message={errorMessage} onClose={() => setShowFailure(false)} />
-      )}
+      {showFailure && <FailureModal title="Update Failed" message={errorMessage} onClose={() => setShowFailure(false)} />}
     </>
   );
 };
