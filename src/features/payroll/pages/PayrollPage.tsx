@@ -174,18 +174,26 @@ const PayrollView: React.FC = () => {
 
   const downloadPDF = async () => {
   try {
+    console.time("pdf");
+
     const response = await api.get(
       `/payslip/download/${year}/${month}`,
       { responseType: "blob" }
     );
 
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
+    console.timeEnd("pdf");
 
+    const url = window.URL.createObjectURL(response.data);
+
+    const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `Payslip-${month}-${year}.pdf`);
+    link.download = `Payslip-${month}-${year}.pdf`;
+
     document.body.appendChild(link);
     link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(url);
 
   } catch (err) {
     console.error(err);
