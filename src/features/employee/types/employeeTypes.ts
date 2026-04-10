@@ -33,6 +33,7 @@ export interface User {
   verificationStatus: string; // Or your Enum
   employeeExperience: 'FRESHER' | 'EXPERIENCED';
   hrRemarks?: string;
+  maritalStatus? : string;
 
   // Personal Info
   firstName: string;

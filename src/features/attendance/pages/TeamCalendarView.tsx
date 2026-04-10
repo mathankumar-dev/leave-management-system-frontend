@@ -38,7 +38,7 @@ const TeamCalendarView: React.FC = () => {
     fetchAttendanceCalendar,
     employeeCalendar,
     attendanceCalendar,
-  loading
+    loading
   } = useCalendar();
 
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
@@ -48,19 +48,19 @@ const TeamCalendarView: React.FC = () => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
- useEffect(() => {
+  useEffect(() => {
 
-  if (typeof id === "string") {
+    if (typeof id === "string") {
 
-    fetchTeamSchedule(id);
+      fetchTeamSchedule(id);
 
-    fetchEmployeeCalendar(id);
+      fetchEmployeeCalendar(id);
 
-    fetchAttendanceCalendar(id,year,month); // NEW API CALL
+      fetchAttendanceCalendar(id, year, month); // NEW API CALL
 
-  }
+    }
 
-}, [id,year,month]);
+  }, [id, year, month]);
 
   const formatKey = (date: Date) => {
     const y = date.getFullYear();
@@ -91,12 +91,12 @@ const TeamCalendarView: React.FC = () => {
       day.setDate(start.getDate() + i);
       const key = formatKey(day);
       return {
-  date: day,
-  team: teamCalendar[key] || [],
-  mine: employeeCalendar[key] || [],
-  attendance: attendanceCalendar[key],
-  holiday: PUBLIC_HOLIDAYS_2026[key]
-};
+        date: day,
+        team: teamCalendar[key] || [],
+        mine: employeeCalendar[key] || [],
+        attendance: attendanceCalendar[key],
+        holiday: PUBLIC_HOLIDAYS_2026[key]
+      };
     });
   }, [currentDate, teamCalendar, employeeCalendar]);
 
@@ -107,21 +107,21 @@ const TeamCalendarView: React.FC = () => {
 
   // console.log(teamCalendar);
 
-  const formatTimeRange = (attendance:any) => {
+  const formatTimeRange = (attendance: any) => {
 
-  if (!attendance?.checkIn || !attendance?.checkOut) {
-    return "ABSENT";
-  }
+    if (!attendance?.checkIn || !attendance?.checkOut) {
+      return "ABSENT";
+    }
 
-  const start = new Date(`1970-01-01T${attendance.checkIn}`);
-  const end   = new Date(`1970-01-01T${attendance.checkOut}`);
+    const start = new Date(`1970-01-01T${attendance.checkIn}`);
+    const end = new Date(`1970-01-01T${attendance.checkOut}`);
 
-  const diffMs = end.getTime() - start.getTime();
+    const diffMs = end.getTime() - start.getTime();
 
-  const hours = (diffMs / (1000 * 60 * 60)).toFixed(2);
+    const hours = (diffMs / (1000 * 60 * 60)).toFixed(2);
 
-  return `${attendance.checkIn.slice(0,5)} - ${attendance.checkOut.slice(0,5)} (${hours}h)`;
-};
+    return `${attendance.checkIn.slice(0, 5)} - ${attendance.checkOut.slice(0, 5)} (${hours}h)`;
+  };
 
 
 
@@ -191,6 +191,10 @@ const TeamCalendarView: React.FC = () => {
                   ))}
                   {Array.from({ length: daysInMonthCount }).map((_, i) => {
                     const day = i + 1;
+                    const dateObj = new Date(year, month, day);
+                    const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 6 = Saturday
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
                     const key = getFormattedDateKey(day);
                     const team = teamCalendar[key] || [];
                     const mine = employeeCalendar[key] || [];
@@ -201,43 +205,56 @@ const TeamCalendarView: React.FC = () => {
                     return (
                       <button
                         key={day}
-                        onClick={() => { setSelectedDay(day); setCurrentDate(new Date(year, month, day)) }}
+                        onClick={() => {
+                          setSelectedDay(day);
+                          setCurrentDate(new Date(year, month, day));
+                        }}
                         className={`h-20 sm:h-32 p-1.5 sm:p-2 text-left flex flex-col transition-all relative border-r border-b border-slate-100 
-                        ${isSelected ? "bg-indigo-50/50 ring-2 ring-inset ring-indigo-500 z-10" : "bg-white hover:bg-slate-50"} 
-                        ${holiday ? "bg-rose-50/20" : ""}`}
+      ${isSelected ? "bg-indigo-50/50 ring-2 ring-inset ring-indigo-500 z-10" : "bg-white hover:bg-slate-50"} 
+      ${isWeekend && !isSelected ? "bg-slate-100/50" : ""} 
+      ${holiday ? "bg-rose-50/30" : ""}`}
                       >
                         <div className="flex justify-between items-start mb-1">
-                          <span className={`text-[10px] sm:text-[11px] font-black h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center rounded-sm 
-                          ${isSelected ? "bg-indigo-600 text-white" : "text-slate-400"}`}>{day}</span>
+                          <span
+                            className={`text-[10px] sm:text-[11px] font-black h-5 w-5 sm:h-6 sm:w-6 flex items-center justify-center rounded-sm 
+        ${isSelected ? "bg-indigo-600 text-white" : isWeekend ? "text-slate-400" : "text-slate-400"}`}
+                          >
+                            {day}
+                          </span>
                           <div className="flex gap-1">
                             {mine.length > 0 && <CountBadge color="amber" count={mine.length} />}
                             {team.length > 0 && <CountBadge color="indigo" count={team.length} />}
                           </div>
                         </div>
+
                         <div className="flex-1 overflow-hidden space-y-0.5 hidden sm:block">
-                          {holiday && (
+                          {/* PRIORITY: Show Public Holiday first, otherwise show Weekend label */}
+                          {holiday ? (
                             <div className="px-1 py-0.5 bg-rose-100/50 border border-rose-200 text-rose-600 text-[7px] font-black uppercase rounded-sm truncate">
                               {holiday}
                             </div>
+                          ) : isWeekend ? (
+                            <div className="px-1 py-0.5 bg-slate-200/50 border border-slate-300 text-slate-500 text-[7px] font-black uppercase rounded-sm truncate">
+                              Weekend Holiday
+                            </div>
+                          ) : null}
+
+                          {attendance && (
+                            attendance.checkIn && attendance.checkOut ? (
+                              <div className="px-1 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[7px] font-black rounded-sm truncate">
+                                {attendance.checkIn.slice(0, 5)} - {attendance.checkOut.slice(0, 5)}
+                              </div>
+                            ) : (
+                              // Only show ABSENT if it's not a weekend/holiday
+                              !isWeekend && !holiday && (
+                                <div className="px-1 py-0.5 bg-red-50 border border-red-200 text-red-700 text-[7px] font-black rounded-sm truncate">
+                                  ABSENT
+                                </div>
+                              )
+                            )
                           )}
 
-                        {attendance && (
-                          attendance.checkIn && attendance.checkOut ? (
-
-                            <div className="px-1 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[7px] font-black rounded-sm truncate">
-                              {attendance.checkIn.slice(0,5)} - {attendance.checkOut.slice(0,5)}
-                            </div>
-
-                          ) : (
-
-                            <div className="px-1 py-0.5 bg-red-50 border border-red-200 text-red-700 text-[7px] font-black rounded-sm truncate">
-                              ABSENT
-                            </div>
-
-                          )
-                        )}
-
-                          {/* TEAM NAMES (Show first 2-3 then a +count) */}
+                          {/* TEAM NAMES */}
                           {team.slice(0, 2).map((emp: any, idx: number) => (
                             <div key={idx} className="px-1 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[7px] font-black uppercase rounded-sm truncate">
                               <TeamMemberName employeeId={emp.employeeId} />
@@ -245,6 +262,8 @@ const TeamCalendarView: React.FC = () => {
                           ))}
                           {team.length > 2 && <p className="text-[7px] font-black text-slate-400 px-1 uppercase">+ {team.length - 2} MORE</p>}
                         </div>
+
+                        {/* Mobile dots */}
                         <div className="mt-auto flex gap-0.5 sm:hidden justify-center">
                           {mine.length > 0 && <div className="w-1 h-1 bg-amber-400 rounded-full" />}
                           {team.length > 0 && <div className="w-1 h-1 bg-indigo-500 rounded-full" />}
@@ -266,12 +285,12 @@ const TeamCalendarView: React.FC = () => {
                       {d.holiday && <StatusBadge color="rose" label={d.holiday} />}
                       {d.attendance && (
 
-              <StatusBadge
-  color={d.attendance?.checkIn && d.attendance?.checkOut ? "amber" : "rose"}
-  label={formatTimeRange(d.attendance)}
-/>
+                        <StatusBadge
+                          color={d.attendance?.checkIn && d.attendance?.checkOut ? "amber" : "rose"}
+                          label={formatTimeRange(d.attendance)}
+                        />
 
-              )}
+                      )}
                       {d.team.map((r: any, idx: number) => (
                         <StatusBadge key={idx} status={r.status} label={<TeamMemberName employeeId={r.employeeId} />} />
                       ))}
@@ -298,25 +317,18 @@ const TeamCalendarView: React.FC = () => {
 
                   {attendanceCalendar[dailyKey] && (
 
-  <DayRecord
+                    <DayRecord
+                      title="My Attendance"
+                      content={
+                        `IN ${attendanceCalendar[dailyKey].checkIn?.slice(0, 5)}
 
-    title="My Attendance"
+                      OUT ${attendanceCalendar[dailyKey].checkOut?.slice(0, 5)}
 
-    content={
-
-      `IN ${attendanceCalendar[dailyKey].checkIn?.slice(0,5)}
-
-       OUT ${attendanceCalendar[dailyKey].checkOut?.slice(0,5)}
-
-       ${attendanceCalendar[dailyKey].workingHours} hrs`
-
-    }
-
-    color="amber"
-
-  />
-
-)}
+                      ${attendanceCalendar[dailyKey].workingHours} hrs`
+                      }
+                      color="amber"
+                    />
+                  )}
 
                   {/* UPDATED TEAM SECTION */}
                   {dailyTeam.map((r: any, i: number) => (
@@ -349,43 +361,43 @@ const TeamCalendarView: React.FC = () => {
 
             {attendanceCalendar[selectedDateKey] && (
 
-<div className="flex flex-col gap-1 p-3 bg-emerald-50 border border-emerald-100 rounded-sm">
+              <div className="flex flex-col gap-1 p-3 bg-emerald-50 border border-emerald-100 rounded-sm">
 
-  <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
 
-    <div className="w-8 h-8 bg-emerald-100 text-emerald-600 flex items-center justify-center rounded-sm">
+                  <div className="w-8 h-8 bg-emerald-100 text-emerald-600 flex items-center justify-center rounded-sm">
 
-      <FaUserAlt size={12} />
+                    <FaUserAlt size={12} />
 
-    </div>
+                  </div>
 
-    <p className="text-xs font-black text-slate-900 uppercase">
+                  <p className="text-xs font-black text-slate-900 uppercase">
 
-      Attendance
+                    Attendance
 
-    </p>
+                  </p>
 
-  </div>
+                </div>
 
-  <p className="text-[10px] font-bold text-slate-700 ml-11">
+                <p className="text-[10px] font-bold text-slate-700 ml-11">
 
-    {attendanceCalendar[selectedDateKey].checkIn?.slice(0,5)}
+                  {attendanceCalendar[selectedDateKey].checkIn?.slice(0, 5)}
 
-    {" → "}
+                  {" → "}
 
-    {attendanceCalendar[selectedDateKey].checkOut?.slice(0,5)}
+                  {attendanceCalendar[selectedDateKey].checkOut?.slice(0, 5)}
 
-  </p>
+                </p>
 
-  <p className="text-[9px] text-slate-400 ml-11">
+                <p className="text-[9px] text-slate-400 ml-11">
 
-    {attendanceCalendar[selectedDateKey].workingHours} hrs
+                  {attendanceCalendar[selectedDateKey].workingHours} hrs
 
-  </p>
+                </p>
 
-</div>
+              </div>
 
-)}
+            )}
 
             {selectedDayTeamLeaves.length > 0 ? (
               selectedDayTeamLeaves.map((emp: any) => (
@@ -394,10 +406,10 @@ const TeamCalendarView: React.FC = () => {
                   <div className="flex flex-col min-w-0">
                     <p className="text-xs font-black text-slate-900 uppercase truncate"><TeamMemberName employeeId={emp.employeeId} /></p>
                     <div className="flex items-center">
-                    <span className="text-sm">Application Status : </span>
-                    <div className="w-2 h-2.5">
-                    <StatusBadge2  status={emp.status} />
-                    </div>
+                      <span className="text-sm">Application Status : </span>
+                      <div className="w-2 h-2.5">
+                        <StatusBadge2 status={emp.status} />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -409,21 +421,61 @@ const TeamCalendarView: React.FC = () => {
         </div>
 
         <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
-          <div className="p-4 bg-slate-50 border-b border-slate-100"><p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Upcoming Holidays</p></div>
+          <div className="p-4 bg-slate-50 border-b border-slate-100">
+            <p className="text-[10px] font-black tracking-widest text-slate-500 uppercase">
+              Upcoming Holidays
+            </p>
+          </div>
           <div className="max-h-64 overflow-y-auto">
-            {Object.entries(PUBLIC_HOLIDAYS_2026).map(([date, name]) => (
-              <div key={date} className="p-3 border-b border-slate-50 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-black text-slate-900 uppercase truncate">{name}</p>
-                  <p className="text-[8px] font-bold text-slate-400 uppercase">{new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+            {Object.entries(PUBLIC_HOLIDAYS_2026)
+              .filter(([date]) => {
+                const holidayTime = new Date(date).getTime();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayTime = today.getTime();
+
+                return holidayTime >= todayTime;
+              })
+              .map(([date, name]) => (
+                <div
+                  key={date}
+                  className="p-3 border-b border-slate-50 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-slate-900 uppercase truncate">
+                      {name}
+                    </p>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase">
+                      {new Date(date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        weekday: "short",
+                      })}
+                    </p>
+                  </div>
+                  <div className="px-1.5 py-0.5 bg-rose-50 text-rose-600 text-[7px] font-black rounded-sm border border-rose-100 uppercase tracking-tighter">
+                    Day Off
+                  </div>
                 </div>
-                <div className="px-1.5 py-0.5 bg-rose-50 text-rose-600 text-[7px] font-black rounded-sm border border-rose-100 uppercase tracking-tighter">Day Off</div>
-              </div>
-            ))}
+              ))}
+
+            {Object.entries(PUBLIC_HOLIDAYS_2026).filter(([date]) => {
+              const holidayTime = new Date(date).getTime();
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              return holidayTime >= today.getTime();
+            }).length === 0 && (
+                <div className="p-6 text-center">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    No more holidays this year
+                  </p>
+                </div>
+              )}
           </div>
         </div>
       </div>
     </div>
+
   );
 };
 

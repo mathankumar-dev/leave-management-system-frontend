@@ -108,7 +108,7 @@ export interface BasePersonalDetails {
 export interface Child {
   childName: string;
   gender: Gender;
-  age: number;
+  childDateOfBirth: string;
 }
 
 export interface ExperienceEntry {

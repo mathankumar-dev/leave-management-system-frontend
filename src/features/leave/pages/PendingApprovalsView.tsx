@@ -12,9 +12,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSearch, FaTimes } from 'react-icons/fa';
 
 
-
-
-
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
@@ -54,7 +51,6 @@ const PendingApprovalsView: React.FC = () => {
         status: LeaveDecision | null;
     }>({ isOpen: false, req: null, status: null });
 
-    // --- MOD 2: Trigger for the Comment Dialog ---
     const onActionTriggered = (req: any, status: LeaveDecision) => {
         setDialogConfig({
             isOpen: true,
@@ -66,7 +62,7 @@ const PendingApprovalsView: React.FC = () => {
         return requests.filter((req) => {
             const matchesSearch =
                 req.employeeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                req.leaveType?.toLowerCase().includes(searchQuery.toLowerCase());
+                req.leaveTypeName?.toLowerCase().includes(searchQuery.toLowerCase());
 
             const createdDate = new Date(req.createdAt);
             const now = new Date();
@@ -105,7 +101,7 @@ const PendingApprovalsView: React.FC = () => {
             req.id,
             status,
             commentText || (status === 'APPROVED' ? "Approved" : "Rejected"),
-            req.leaveType,
+            req.leaveTypeName,
             accessDecisionBody
         );
 
@@ -134,8 +130,8 @@ const PendingApprovalsView: React.FC = () => {
                 onClose={() => setDetailModalReq(null)}
                 onAction={(status) => {
                     const reqToProcess = detailModalReq;
-                    setDetailModalReq(null); // Close this modal first
-                    onActionTriggered(reqToProcess, status); // Open the comment dialog
+                    setDetailModalReq(null);
+                    onActionTriggered(reqToProcess, status); 
                 }}
             />
             <CommentDialog
@@ -373,5 +369,3 @@ const AuthenticatedImage: React.FC<AuthenticatedImageProps> = ({ fileUrl, classN
 
     return <img src={imgSrc} alt="Attachment" className={className} />;
 };
-
-// export default AuthenticatedImage;

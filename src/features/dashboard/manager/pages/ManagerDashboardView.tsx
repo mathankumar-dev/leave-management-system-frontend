@@ -320,12 +320,13 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       {/* Modals & Drawers */}
       <DetailedRequestModal
         isOpen={!!detailModalReq}
-        req={detailModalReq}
+        // Passing the ID from the state object
+        leaveId={detailModalReq?.leaveId || detailModalReq?.id}
         onClose={() => setDetailModalReq(null)}
         onAction={(status) => {
-          const req = detailModalReq;
+          const currentReq = detailModalReq;
           setDetailModalReq(null);
-          setDialogConfig({ isOpen: true, req, status });
+          setDialogConfig({ isOpen: true, req: currentReq, status });
         }}
       />
 

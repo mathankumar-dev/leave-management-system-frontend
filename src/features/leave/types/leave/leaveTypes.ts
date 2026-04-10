@@ -190,6 +190,9 @@ export interface LeaveBalanceResponse {
   breakdown: LeaveTypeBreakdown[];
 }
 
+
+
+
 export type TeamPendingLeave = {
   leaveId: number;
   employeeId: string;
