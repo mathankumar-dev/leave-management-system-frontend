@@ -5,10 +5,12 @@ export const payrollService = {
         return api.get(`/payslip/my/${year}/${month}`);
     },
 
-    getHistory: async (year: number) => {
-        const res = await api.get(`payslip/summary/${year}`);
-        return res.data;
-    },
+    getHistory: async (employeeId: string, year: number) => {
+    const res = await api.get(
+        `payslip/employee/${employeeId}/${year}`
+    );
+    return res.data;
+},
 
     downloadPayslip: async (year: number, month: number) => {
         const res = await api.get(`payslip/download/${year}/${month}`, {

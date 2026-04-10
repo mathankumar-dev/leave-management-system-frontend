@@ -7,16 +7,20 @@ import type { YearlySummary } from "@/features/payroll/payrollTypes";
 import api from "@/services/apiClient";
 import { payrollService } from "@/features/payroll/services/payrollService";
 
+import { toPng } from "html-to-image";
+import jsPDF from "jspdf";
+
 const PayrollView: React.FC = () => {
   const { payslip, fetchPayslip } = usePayroll();
   const { user } = useAuth();
+  const [loadingPDF, setLoadingPDF] = useState(false);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [summary,setSummary] = useState<YearlySummary | null>(null);
   const [viewMode, setViewMode] = useState<"monthly" | "yearly">("monthly");
 
   const [loading, setLoading] = useState(false);
-  const [loadingPDF] = useState(false);
+ 
   const [, setLoadingProfile] = useState(false);
 
   const now = new Date();
@@ -29,17 +33,13 @@ const PayrollView: React.FC = () => {
 ];
 
   // ================= FETCH =================
-  useEffect(() => {
-    if (viewMode === "monthly") {
-      fetchPayslip(year, month);
-      fetchProfile();
-    }
-  }, [year, month, viewMode]);
+ 
 
   const fetchProfile = useCallback( async () => {
     setLoadingProfile(true);
     try {
       const res = await api.get(`/employees/profile/${user?.id!}`);
+      console.log(res);
       setProfile(res.data);
     } catch (err) {
       console.error("Profile fetch failed", err);
@@ -48,18 +48,22 @@ const PayrollView: React.FC = () => {
     }
   },[]);
 
-  const fetchYearlySummary = async (year: number) => {
-    try {
-      setLoading(true);
-      const data: YearlySummary = await payrollService.getHistory(year);
-      setSummary(data);
-    } catch (e) {
-      console.error("Yearly summary failed", e);
-      setSummary(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchYearlySummary = async (employeeId: string, year: number) => {
+  try {
+    setLoading(true);
+
+    const data: YearlySummary =
+        await payrollService.getHistory(employeeId, year);
+
+    setSummary(data);
+
+  } catch (e) {
+    console.error("Yearly summary failed", e);
+    setSummary(null);
+  } finally {
+    setLoading(false);
+  }
+};
 
  const search = async () => {
   try {
@@ -73,8 +77,13 @@ const PayrollView: React.FC = () => {
     }
 
     if (viewMode === "yearly") {
-      await fetchYearlySummary(year);
+      await Promise.all([
+        fetchYearlySummary(user?.id!, year),
+        fetchProfile()   // ADD THIS
+      ]);
     }
+
+
 
   } catch (err) {
     console.error("Search failed", err);
@@ -113,54 +122,55 @@ const PayrollView: React.FC = () => {
     `₹ ${Number(val || 0).toLocaleString("en-IN")}`;
 
 
-  // const downloadPDF = async () => {
-  //   const element = document.getElementById("payslip-container");
-  //   if (!element) return;
+//   const downloadPDF = async () => {
+//   const element = document.getElementById("payslip-container");
+//   if (!element) return;
 
-  //   setLoadingPDF(true);
+//   setLoadingPDF(true);
 
-  //   try {
-  //     const dataUrl = await toPng(element, {
-  //       cacheBust: true,
-  //       pixelRatio: 3,
-  //       backgroundColor: "#ffffff",
-  //     });
+//   console.log("pdf called");
 
-  //     const pdf = new jsPDF("p", "mm", "a4");
+//   try {
+//     const dataUrl = await toPng(element, {
+//       cacheBust: true,
+//       pixelRatio: 3,
+//       backgroundColor: "#ffffff",
+//     });
 
-  //     const img = new Image();
-  //     img.src = dataUrl;
+//     const pdf = new jsPDF("p", "mm", "a4");
 
-  //     img.onload = () => {
-  //       const pageWidth = 210;
-  //       const pageHeight = 297;
+//     const img = new Image();
+//     img.src = dataUrl;
 
-  //       const imgWidth = pageWidth;
-  //       const imgHeight = (img.height * imgWidth) / img.width;
+//     img.onload = () => {
+//       const pageWidth = 210;
+//       const pageHeight = 297;
 
-  //       let heightLeft = imgHeight;
-  //       let position = 0;
+//       const imgWidth = pageWidth;
+//       const imgHeight = (img.height * imgWidth) / img.width;
 
-  //       // First page
-  //       pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
-  //       heightLeft -= pageHeight;
+//       let heightLeft = imgHeight;
+//       let position = 0;
 
-  //       // Remaining pages
-  //       while (heightLeft > 0) {
-  //         position = heightLeft - imgHeight;
-  //         pdf.addPage();
-  //         pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
-  //         heightLeft -= pageHeight;
-  //       }
+//       pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+//       heightLeft -= pageHeight;
 
-  //       pdf.save(`Payslip-${month}-${year}.pdf`);
-  //     };
-  //   } catch (err) {
-  //     console.error(err);
-  //   } finally {
-  //     setLoadingPDF(false);
-  //   }
-  // };
+//       while (heightLeft > 0) {
+//         position = heightLeft - imgHeight;
+//         pdf.addPage();
+//         pdf.addImage(dataUrl, "PNG", 0, position, imgWidth, imgHeight);
+//         heightLeft -= pageHeight;
+//       }
+
+//       pdf.save(`Payslip-${month}-${year}.pdf`);
+//       setLoadingPDF(false);
+//     };
+
+//   } catch (err) {
+//     console.error(err);
+//     setLoadingPDF(false);
+//   }
+// };
 
   const downloadPDF = async () => {
   try {
@@ -188,7 +198,7 @@ const PayrollView: React.FC = () => {
     ["Conveyance", payslip?.conveyance, "Professional Tax", payslip?.professionalTax],
     ["Medical", payslip?.medical, "ESI", payslip?.esi],
     ["Other Allowance", payslip?.otherAllowance, "LOP", payslip?.lop],
-    ["Bonus", payslip?.bonus, "", ""],
+    ["Bonus", payslip?.bonus, " variablePay", payslip?.variablePay],
   ];
 
   return (
@@ -237,9 +247,10 @@ const PayrollView: React.FC = () => {
 
         <button
           onClick={() => {
-            setViewMode("yearly");
-            fetchYearlySummary(year);
-          }}
+  setViewMode("yearly");
+  fetchYearlySummary(user?.id!, year);
+   search();
+}}
           className="bg-purple-600 text-white px-4 py-2 rounded"
         >
           Yearly View
@@ -275,7 +286,13 @@ const PayrollView: React.FC = () => {
                   Office Address: Type II / 1, Ground Floor, Dr.V.S.I Estate,
                   Thiruvanmiyur, Chennai- 600041
                 </h3>
-                <p className="text-xs mt-1">MONTHLY SALARY PAYSLIP</p>
+
+
+                      <p className="text-xs mt-3 font-semibold tracking-wide">
+        {viewMode === "monthly"
+          ? `MONTHLY PAYSLIP - ${months[month-1]} ${year}`
+          : `YEARLY PAYSLIP - ${year}`}
+      </p>
               </div>
 
               {/* EMPTY SPACE (for balance) */}
@@ -285,7 +302,7 @@ const PayrollView: React.FC = () => {
 
 
             {/* EMPLOYEE DETAILS */}
-            {viewMode === "monthly" && payslip && profile && (
+            {profile && (
               <div className="border-2 border-black p-6 text-sm">
                
                 <table className="w-full border border-black mb-4 text-sm">
@@ -294,25 +311,32 @@ const PayrollView: React.FC = () => {
                       <td className="border p-2 font-medium">Employee ID</td>
                       <td className="border p-2">{payslip.employeeId}</td>
                       <td className="border p-2 font-medium">UAN No</td>
-                      <td className="border p-2">{profile.unaNumber ?? "--"}</td>
+                      <td className="border p-2">{profile.uanNumber}</td>
                     </tr>
                     <tr>
                       <td className="border p-2 font-medium">Employee Name</td>
-                      <td className="border p-2">{profile.name ?? "--"}</td>
+                      <td className="border p-2">{profile.name }</td>
                       <td className="border p-2 font-medium">PF Number</td>
-                      <td className="border p-2">{profile.pfNumber ?? "--"}</td>
+                      <td className="border p-2">{profile.pfNumber}</td>
                     </tr>
                     <tr>
                       <td className="border p-2 font-medium">Designation</td>
-                      <td className="border p-2">{profile.designation ?? "--"}</td>
+                      <td className="border p-2">{profile.designation }</td>
                       <td className="border p-2 font-medium">Bank</td>
-                      <td className="border p-2">{profile.bankName ?? "--"}</td>
+                      <td className="border p-2">{profile.bankName }</td>
                     </tr>
                     <tr>
-                      <td className="border p-2 font-medium">Month / Year</td>
-                      <td className="border p-2">{payslip.month}/{payslip.year}</td>
+                      <td className="border p-2 font-medium">
+                        {viewMode === "monthly" ? "Month / Year" : "Year"}
+                      </td>
+
+                      <td className="border p-2">
+                        {viewMode === "monthly"
+                          ? `${payslip?.month}/${payslip?.year}`
+                          : year}
+                      </td>
                       <td className="border p-2 font-medium">Account No</td>
-                      <td className="border p-2">{profile.accountNumber ?? "--"}</td>
+                      <td className="border p-2">{profile.accountNumber }</td>
                     </tr>
                   </tbody>
                 </table>
@@ -343,6 +367,8 @@ const PayrollView: React.FC = () => {
                   ))
                 ) : (
                   <>
+
+                  
                     <tr>
                       <td className="border p-2">Basic</td>
                       <td className="border p-2">{formatCurrency(summary?.totalBasic)}</td>
@@ -365,7 +391,7 @@ const PayrollView: React.FC = () => {
                     </tr>
 
                     <tr>
-                      <td className="border p-2">Medical</td>
+                      <td className="border p-2">Medical Allowance</td>
                       <td className="border p-2">{formatCurrency(summary?.totalMedical)}</td>
                       <td className="border p-2">ESI</td>
                       <td className="border p-2">{formatCurrency(summary?.totalEsi)}</td>
@@ -381,8 +407,9 @@ const PayrollView: React.FC = () => {
                     <tr>
                       <td className="border p-2">Bonus</td>
                       <td className="border p-2">{formatCurrency(summary?.totalBonus)}</td>
-                      {/* <td className="border p-2"></td>
-                      <td className="border p-2"></td> */}
+                      {/* <td className="border p-2">Variable Pay</td>
+                      <td className="border p-2">{formatCurrency(summary?.)}</td> */}
+                      
                     </tr>
 
                     <tr>

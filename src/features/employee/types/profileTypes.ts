@@ -69,5 +69,5 @@ export interface ProfileData {
   accountNumber?: string;
   bankName?: string;
   pfNumber?: string;
-  unaNumber?: string;
+  uanNumber?: string;
 }

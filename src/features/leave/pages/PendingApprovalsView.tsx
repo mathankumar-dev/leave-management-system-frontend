@@ -7,7 +7,6 @@ import { notify } from '@/features/notification/utils/notifications';
 import api from '@/services/apiClient';
 import { useAuth } from '@/shared/auth/useAuth';
 import { CommentDialog, CustomLoader, MetricTile } from '@/shared/components';
-import { formatDateDisplay } from '@/shared/utils/dateUtils';
 import { formatTimeAgo } from '@/shared/utils/formatTimeAgo';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSearch, FaTimes } from 'react-icons/fa';
@@ -50,11 +49,6 @@ const PendingApprovalsView: React.FC = () => {
         }
     }, [user?.id, canSeeDashboardMetrics]);
 
-    const [dialogConfig, setDialogConfig] = useState<{
-        isOpen: boolean;
-        req: any;
-        status: LeaveDecision | null;
-    }>({ isOpen: false, req: null, status: null });
 
     const [selectedAttachment, setSelectedAttachment] = useState<any | null>(null);
 
@@ -64,7 +58,20 @@ const PendingApprovalsView: React.FC = () => {
         const endDate = new Date(end).toLocaleDateString('en-US', options);
         return start === end ? startDate : `${startDate} - ${endDate}`;
     };
+    const [dialogConfig, setDialogConfig] = useState<{
+        isOpen: boolean;
+        req: any;
+        status: LeaveDecision | null;
+    }>({ isOpen: false, req: null, status: null });
 
+    // --- MOD 2: Trigger for the Comment Dialog ---
+    const onActionTriggered = (req: any, status: LeaveDecision) => {
+        setDialogConfig({
+            isOpen: true,
+            req,
+            status
+        });
+    };
     const filteredRequests = useMemo(() => {
         return requests.filter((req) => {
             const matchesSearch =
@@ -89,19 +96,17 @@ const PendingApprovalsView: React.FC = () => {
         });
     }, [requests, searchQuery, timeFilter]);
 
-    const onActionTriggered = (req: PendingRequest, status: LeaveDecision) => {
-        setDialogConfig({ isOpen: true, req, status });
-    };
+
 
 
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
         let accessDecisionBody: ManagerAccessDecision | undefined = undefined;
 
-        // Handle special Access requests (VPN/Biometric)
+        // Specialized logic for specific leave types if needed
         if (req.leaveType === 'VPN' || req.leaveType === 'BIOMETRIC') {
             accessDecisionBody = {
                 decision: status,
-                remarks: commentText || "Approved", // Default if blank
+                remarks: commentText || "Approved via Manager Portal",
                 managerId: user!.id,
             };
         }
@@ -109,7 +114,7 @@ const PendingApprovalsView: React.FC = () => {
         const result = await handleDecision(
             req.id,
             status,
-            commentText || (status === 'APPROVED' ? "Approved" : ""), // Default for leave remarks
+            commentText || (status === 'APPROVED' ? "Approved" : "Rejected"),
             req.leaveType,
             accessDecisionBody
         );
@@ -117,12 +122,8 @@ const PendingApprovalsView: React.FC = () => {
         if (result?.success) {
             notify.leaveAction(status, req.employeeName, !!req.isCompOff, !!req.isOD);
             setDialogConfig({ isOpen: false, req: null, status: null });
-        } else {
-            notify.error("Update Failed", "Please check your connection and try again.");
         }
     };
-
-console.log(requests);
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -142,30 +143,25 @@ console.log(requests);
                 req={detailModalReq}
                 onClose={() => setDetailModalReq(null)}
                 onAction={(status) => {
-                    const req = detailModalReq;
-                    setDetailModalReq(null);
-                    onActionTriggered(req, status);
+                    const reqToProcess = detailModalReq;
+                    setDetailModalReq(null); // Close this modal first
+                    onActionTriggered(reqToProcess, status); // Open the comment dialog
                 }}
             />
             <CommentDialog
                 isOpen={dialogConfig.isOpen}
                 onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
                 title={
-                    dialogConfig.status === 'APPROVED' ? 'Approve Request' :
-                        dialogConfig.status === 'REJECTED' ? 'Reject Request' : 'Request Meeting'
+                    dialogConfig.status === 'APPROVED'
+                        ? `Approve ${dialogConfig.req?.employeeName}'s Request`
+                        : `Reject ${dialogConfig.req?.employeeName}'s Request`
                 }
                 placeholder={
                     dialogConfig.status === 'APPROVED'
-                        ? `Add an optional approval note for ${dialogConfig.req?.employeeName}...`
-                        : dialogConfig.status === 'REJECTED'
-                            ? `Provide a reason for rejecting ${dialogConfig.req?.employeeName}'s request...`
-                            : `Enter notes regarding the meeting with ${dialogConfig.req?.employeeName}...`
+                        ? "Add an optional note..."
+                        : "Reason for rejection is required..."
                 }
-                confirmLabel={
-                    dialogConfig.status === 'APPROVED' ? 'Confirm Approval' :
-                        dialogConfig.status === 'REJECTED' ? 'Reject' : 'Schedule Discussion'
-                }
-                // This calls the confirm logic ONLY when the user clicks the button in the dialog
+                confirmLabel={dialogConfig.status === 'APPROVED' ? 'Confirm Approval' : 'Reject Request'}
                 onSubmit={(comment) => handleConfirmDecision(dialogConfig.req, dialogConfig.status!, comment)}
             />
 
@@ -242,7 +238,7 @@ console.log(requests);
                             <RequestTile
                                 key={req.id}
                                 employeeName={req.employeeName}
-                                leaveType={req.leaveType}
+                                leaveType={req.leaveTypeName}
                                 reasonMessage={req.isCompOff ? "Comp-Off Credit Request" : req.reason}
                                 dateRange={formatDateRange(req.startDate, req.endDate)}
                                 startDate={req.startDate}
@@ -360,7 +356,7 @@ const AuthenticatedImage: React.FC<AuthenticatedImageProps> = ({ fileUrl, classN
         const fetchImage = async () => {
             try {
                 setLoading(true);
-                const response = await api.get(`/documents/view/${encodeURIComponent(fileUrl)}`, {
+                const response = await api.get(`/files/view?path=${encodeURIComponent(fileUrl)}`, {
                     responseType: "blob",
                 });
 

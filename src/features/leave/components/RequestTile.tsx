@@ -1,8 +1,8 @@
-import React from 'react'
-import { HiDotsCircleHorizontal } from 'react-icons/hi'
-import { FaFileImage } from 'react-icons/fa';
 import type { LeaveType } from '@/features/leave/types';
 import { CTAButton, Divider } from '@/shared/components';
+import React from 'react';
+import { FaFileImage } from 'react-icons/fa';
+import { HiDotsCircleHorizontal } from 'react-icons/hi';
 
 export interface RequestTileProps {
     employeeName: string;
@@ -15,8 +15,8 @@ export interface RequestTileProps {
     reasonMessage: string;
     days: number;
     createdAt: string;
-    onAccept: () => void;
-    onReject: () => void;
+    onAccept?: () => void;
+    onReject?: () => void;
     onDiscuss?: () => void;
     attachments?: any[];
     onViewAttachment?: (attachment: any) => void;
@@ -153,17 +153,27 @@ const RequestTile: React.FC<RequestTileProps> = ({
             {/* 4. Actions Section */}
             <div className='flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto mt-2 md:mt-0'>
                 <div className='flex flex-1 md:flex-none gap-2'>
-                    <CTAButton
-                        label='Accept'
-                        className="flex-1 md:px-5 bg-green-600 hover:bg-green-700 text-[10px] uppercase font-bold h-9 rounded-sm shadow-sm"
-                        onClick={onAccept}
-                    />
-                    <CTAButton
-                        label='Reject'
-                        isOutlineOnly
-                        className='flex-1 md:px-5 border-red-200! hover:bg-red-50 text-[10px] uppercase font-bold h-9 rounded-sm'
-                        onClick={onReject}
-                    />
+                    {onAccept && (
+                        <CTAButton
+                            label='Accept'
+                            className="flex-1 md:px-5 bg-green-600 hover:bg-green-700 text-[10px] uppercase font-bold h-9 rounded-sm shadow-sm"
+                            onClick={onAccept}
+                        />
+
+                    )}
+
+                    {
+                        onReject && (
+                            <CTAButton
+                                label='Reject'
+                                isOutlineOnly
+                                className='flex-1 md:px-5 border-red-200! hover:bg-red-50 text-[10px] uppercase font-bold h-9 rounded-sm'
+                                onClick={onReject}
+                            />
+                        )
+                    }
+
+
                 </div>
 
                 {onDiscuss && (
