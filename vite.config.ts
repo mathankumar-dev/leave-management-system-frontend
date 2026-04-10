@@ -11,15 +11,16 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://106.51.0.210:8111',
-        // target: 'http://192.168.1.13:8111',
-        // target: 'https://jgpq493j-8111.inc1.devtunnels.ms/api',
-        changeOrigin: true,
-        secure: false
-      }
-    }
+    allowedHosts:true
+    // proxy: {
+    //   '/api': {
+    //     // target: 'http://106.51.0.210:8111',
+    //     target: 'http://192.168.1.14:8111',
+    //     // target: 'https://jgpq493j-8111.inc1.devtunnels.ms/api',
+    //     changeOrigin: true,
+    //     secure: false
+    //   }
+    // }
   },
   resolve: {
     alias: {
@@ -29,7 +30,7 @@ export default defineConfig({
   preview: {
     port: 4173,
     strictPort: true,
-    host: true,    
+    host: true,
     proxy: {
       '/api': {
         target: 'http://106.51.0.210:8111',
