@@ -129,9 +129,11 @@ export const leaveService = {
     );
   },
   getLeaveBalances: async (employeeId: string, year: number = 2026): Promise<LeaveBalanceResponse> => {
-    const res = await api.get(`leaves-balance/${employeeId}`, {
+    const res = await api.get(`leave/balance/${employeeId}/summary`, {
       params: { year }
     });
+    console.log(res.data);
+    
     return res.data;
   },
   submitCompOffRequest: async (payload: CompOffRequest) => {

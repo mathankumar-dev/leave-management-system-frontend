@@ -146,12 +146,12 @@ const LeaveApplicationForm = () => {
 
     const gender = user?.gender?.toUpperCase();
 
-    if (user?.maritalStatus === "MARRIED") {
-      if (gender === "MALE") {
-        types.push("PATERNITY");
-      } else if (gender === "FEMALE") {
-        types.push("MATERNITY");
-      }
+    if(user?.maritalStatus === "MARRIED"){
+    if (gender === "MALE") {
+      types.push("PATERNITY");
+    } else if (gender === "FEMALE") {
+      types.push("MATERNITY");
+    }
     }
 
 
