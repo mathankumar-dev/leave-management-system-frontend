@@ -128,11 +128,11 @@ const DocPath: React.FC<{ label: string; path?: string | null }> = ({ label, pat
     </div>
     {path && (
       <button
-  onClick={() => viewDocument(path)}
-  className="text-[10px] font-bold text-indigo-600 hover:underline"
->
-  View
-</button>
+        onClick={() => viewDocument(path)}
+        className="text-[10px] font-bold text-indigo-600 hover:underline"
+      >
+        View
+      </button>
     )}
   </div>
 );
@@ -333,6 +333,7 @@ const EmployeeProfile: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState<any>({});
   const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
+  const [originalData, setOriginalData] = useState<any>({});
 
   // Common files (fresher + experienced shared)
   const [commonFiles, setCommonFiles] = useState<Record<string, any>>({
@@ -350,6 +351,8 @@ const EmployeeProfile: React.FC = () => {
   useEffect(() => {
     if (!authLoading && user?.id) fetchEmployeeProfile(user.id);
   }, [fetchEmployeeProfile, user?.id, authLoading]);
+
+  
 
   // Pre-fill form
   useEffect(() => {
@@ -404,6 +407,64 @@ const EmployeeProfile: React.FC = () => {
 
     const aadhar = bp.aadharNumber || "";
     setAadharParts({ p1: aadhar.slice(0, 4), p2: aadhar.slice(4, 8), p3: aadhar.slice(8, 12) });
+  }, [backendProfile]);
+
+
+  //edit cancel
+  useEffect(() => {
+    if (!backendProfile) return;
+    setProfile({ ...backendProfile });
+    const bp = backendProfile as any;
+    const isExp = bp.employeeExperience === "EXPERIENCED";
+    const expDocs = bp.experiencedDocuments;
+    const experiences = isExp ? (expDocs?.length ? expDocs : [{}]) : [];
+
+    const mappedData = {
+      name: bp.name || "",
+      joiningDate: bp.joiningDate || "",
+      firstName: bp.firstName || "",
+      lastName: bp.lastName || "",
+      contactNumber: bp.contactNumber || "",
+      gender: bp.gender || "MALE",
+      maritalStatus: bp.maritalStatus || "SINGLE",
+      aadharNumber: bp.aadharNumber || "",
+      personalEmail: bp.personalEmail || "",
+      dateOfBirth: bp.dateOfBirth || "",
+      presentAddress: bp.presentAddress || "",
+      permanentAddress: bp.permanentAddress || "",
+      bloodGroup: bp.bloodGroup || "O_POSITIVE",
+      emergencyContactNumber: bp.emergencyContactNumber || "",
+      designation: bp.designation || "",
+      skillSet: Array.isArray(bp.skillSet) ? bp.skillSet.join(", ") : bp.skillSet || "",
+      accountNumber: bp.accountNumber || "",
+      bankName: bp.bankName || "",
+      ifscCode: bp.ifscCode || "",
+      bankBranchName: bp.bankBranchName || "",
+      uanNumber: bp.uanNumber || "",
+      fatherName: bp.fatherName || "",
+      fatherDateOfBirth: bp.fatherDateOfBirth || "",
+      fatherOccupation: bp.fatherOccupation || "",
+      fatherAlive: bp.fatherAlive ?? true,
+      motherName: bp.motherName || "",
+      motherDateOfBirth: bp.motherDateOfBirth || "",
+      motherOccupation: bp.motherOccupation || "",
+      motherAlive: bp.motherAlive ?? true,
+      spouseName: bp.spouseName || "",
+      spouseDateOfBirth: bp.spouseDateOfBirth || "",
+      spouseOccupation: bp.spouseOccupation || "",
+      spouseContactNumber: bp.spouseContactNumber || "",
+      children: bp.children || [],
+
+    };
+
+    setExpFilesList(experiences.map(() => ({
+      experienceCerts: null, joiningLetters: null, relievingLetters: null
+    })));
+
+    const aadhar = bp.aadharNumber || "";
+    setAadharParts({ p1: aadhar.slice(0, 4), p2: aadhar.slice(4, 8), p3: aadhar.slice(8, 12) });
+    setFormData(mappedData);
+    setOriginalData(mappedData); 
   }, [backendProfile]);
 
   // Sync aadhar parts
@@ -609,7 +670,9 @@ const EmployeeProfile: React.FC = () => {
                 </button>
               ) : (
                 <>
-                  <button onClick={() => setIsEditing(false)}
+                  <button onClick={() => {
+                    setFormData(originalData);
+                    setIsEditing(false)}}
                     className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
                     <FaTimes className="text-xs" /> Cancel
                   </button>
@@ -646,8 +709,8 @@ const EmployeeProfile: React.FC = () => {
             {TABS.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-all ${activeTab === tab.id
-                    ? "border-indigo-600 text-indigo-600 bg-indigo-50/40"
-                    : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                  ? "border-indigo-600 text-indigo-600 bg-indigo-50/40"
+                  : "border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                   }`}>
                 {tab.label}
               </button>
@@ -897,7 +960,7 @@ const EmployeeProfile: React.FC = () => {
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
                   <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Uploaded Documents</h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 md:grid-rows-2 gap-3">
                     <DocPath label="ID Proof" path={bp.idProofPath} />
                     <DocPath label="Passport Photo" path={bp.passportPhotoPath} />
                     {!isExperienced ? (
