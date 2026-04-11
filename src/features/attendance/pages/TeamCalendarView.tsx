@@ -155,7 +155,6 @@ const TeamCalendarView: React.FC = () => {
   const selectedDayTeamLeaves = teamCalendar[selectedDateKey] || [];
   const selectedDayHoliday = PUBLIC_HOLIDAYS_2026[selectedDateKey];
 
-  console.log(selectedDayTeamLeaves);
 
 
   return (

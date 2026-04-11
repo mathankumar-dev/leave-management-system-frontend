@@ -122,7 +122,6 @@ const PendingApprovalsView: React.FC = () => {
         throw new Error('Function not implemented.');
     }
 
-    console.log(requests);
     
 
     return (
