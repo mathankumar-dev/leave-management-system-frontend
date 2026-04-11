@@ -69,4 +69,6 @@ export interface ProfileData {
   bankName?: string;
   pfNumber?: string;
   uanNumber? : number;
+
+  passportPhotoPath?: string;
 }
