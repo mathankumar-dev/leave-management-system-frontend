@@ -346,6 +346,27 @@ const EmployeeProfile: React.FC = () => {
   const [formData, setFormData] = useState<any>({ experiences: [], children: [] });
   const [originalData, setOriginalData] = useState<any>({});
   const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+
+  const fetchProfileImage = async (path: string) => {
+    try {
+      const response = await api.get(
+        `/documents/view?path=${encodeURIComponent(path)}`,
+        { responseType: "blob" }
+      );
+
+      const imageUrl = URL.createObjectURL(
+        new Blob([response.data], {
+          type: response.headers["content-type"],
+        })
+      );
+
+      setProfileImage(imageUrl);
+    } catch (err) {
+      console.error("Error loading profile image:", err);
+    }
+  };
 
   // Common files
   const [commonFiles, setCommonFiles] = useState<Record<string, any>>({
@@ -381,12 +402,12 @@ const EmployeeProfile: React.FC = () => {
       contactNumber: bp.contactNumber || "",
       gender: bp.gender || "MALE",
       maritalStatus: bp.maritalStatus || "SINGLE",
-      department : bp.departmentName || "",
-      branch : bp.branch || "",
-      country : bp.country || "",
-      biometricStatus : bp.biometricStatus || "",
-      vpnStatus : bp.vpnStatus || "",
-      company : bp.companyName || "",
+      department: bp.departmentName || "",
+      branch: bp.branch || "",
+      country: bp.country || "",
+      biometricStatus: bp.biometricStatus || "",
+      vpnStatus: bp.vpnStatus || "",
+      company: bp.companyName || "",
       aadharNumber: bp.aadharNumber || "",
       personalEmail: bp.personalEmail || "",
       dateOfBirth: bp.dateOfBirth || "",
@@ -413,7 +434,7 @@ const EmployeeProfile: React.FC = () => {
       spouseName: bp.spouseName || "",
       spouseDateOfBirth: bp.spouseDateOfBirth || "",
       spouseOccupation: bp.spouseOccupation || "",
-      experienceType : bp.employeeExperience || "",
+      experienceType: bp.employeeExperience || "",
       spouseContactNumber: bp.spouseContactNumber || "",
       children: bp.children || [],
       experiences,
@@ -425,6 +446,11 @@ const EmployeeProfile: React.FC = () => {
 
     const aadhar = bp.aadharNumber || "";
     setAadharParts({ p1: aadhar.slice(0, 4), p2: aadhar.slice(4, 8), p3: aadhar.slice(8, 12) });
+
+    if (backendProfile.passportPhotoPath) {
+      fetchProfileImage(backendProfile.passportPhotoPath);
+    }
+
   }, [backendProfile]);
 
   // Sync aadhar
@@ -509,7 +535,7 @@ const EmployeeProfile: React.FC = () => {
       skillSet: formData.skillSet,
       accountNumber: formData.accountNumber,
       bankName: formData.bankName,
-      pfNumber : formData.pfNumber,
+      pfNumber: formData.pfNumber,
       ifscCode: formData.ifscCode,
       bankBranchName: formData.bankBranchName,
       fatherName: formData.fatherName,
@@ -605,7 +631,17 @@ const EmployeeProfile: React.FC = () => {
         <div className="bg-white rounded-t-2xl border border-slate-200 shadow-sm px-6 py-5">
           <div className="flex flex-col md:flex-row md:items-start gap-5">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-100 to-rose-200 flex items-center justify-center text-2xl font-black text-rose-600 shrink-0 shadow-sm">
-              {profile.name?.charAt(0)}
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-2xl font-black text-rose-600">
+                  {profile.name?.charAt(0)}
+                </span>
+              )}
             </div>
             <div className="flex-1 min-w-0 space-y-1.5">
               {/* Editable name */}
