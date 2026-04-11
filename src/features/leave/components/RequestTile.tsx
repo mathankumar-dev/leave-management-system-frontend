@@ -28,7 +28,6 @@ const RequestTile: React.FC<RequestTileProps> = ({
     dateRange,
     startDateHalfDayType,
     endDateHalfDayType,
-    reasonMessage,
     days,
     createdAt,
     onAccept,

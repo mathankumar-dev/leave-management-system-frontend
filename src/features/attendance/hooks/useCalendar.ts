@@ -2,15 +2,7 @@ import { attendanceService } from "@/features/attendance/services/attendanceServ
 import type { AttendanceRecord, TeamCalendarResponse } from "@/features/attendance/types";
 import { useCallback, useState } from "react";
 
-type AttendanceMap = Record<
-  string,
-  {
-    date: string;
-    checkIn?: string;
-    checkOut?: string;
-    workingHours?: number;
-  }
->;
+
 
 export const useCalendar = () => {
   const [loading, setLoading] = useState(false);
@@ -22,7 +14,7 @@ export const useCalendar = () => {
   const [employeeCalendar, setEmployeeCalendar] =
     useState<TeamCalendarResponse>({});
 
-const [attendance, setAttendance] = useState<Record<string, AttendanceRecord>>({});
+  const [attendance, setAttendance] = useState<Record<string, AttendanceRecord>>({});
   /*
   ========================
   TEAM LEAVE CALENDAR
@@ -82,29 +74,29 @@ const [attendance, setAttendance] = useState<Record<string, AttendanceRecord>>({
   // In your component
 
   const fetchAttendanceCalendar = useCallback(
-  async (employeeId: string, year: number, month: number) => {
-    try {
-      setLoading(true);
-      setError(null);
+    async (employeeId: string, year: number, month: number) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const data: AttendanceRecord[] = await attendanceService.getAttendance(employeeId, year, month);
+        const data: AttendanceRecord[] = await attendanceService.getAttendance(employeeId, year, month);
 
-      // Transform Array -> Object { "2026-04-11": Record }
-      const attendanceMap = data.reduce((acc, record) => {
-        acc[record.date] = record;
-        return acc;
-      }, {} as Record<string, AttendanceRecord>);
-      
-      setAttendance(attendanceMap);
-    } catch (err) {
-      console.error("Attendance fetch error:", err);
-      setError("Failed to fetch attendance records.");
-    } finally {
-      setLoading(false);
-    }
-  },
-  []
-);
+        // Transform Array -> Object { "2026-04-11": Record }
+        const attendanceMap = data.reduce((acc, record) => {
+          acc[record.date] = record;
+          return acc;
+        }, {} as Record<string, AttendanceRecord>);
+
+        setAttendance(attendanceMap);
+      } catch (err) {
+        console.error("Attendance fetch error:", err);
+        setError("Failed to fetch attendance records.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   /*
   ========================

@@ -5,7 +5,6 @@ import { useLeave } from '@/features/leave/hooks/useLeave';
 import { useManagerApprovals } from '@/features/leave/hooks/useManagerApprovals';
 import type { LeaveDecision, ManagerAccessDecision } from '@/features/leave/types';
 import { notify } from '@/features/notification/utils/notifications';
-import api from '@/services/apiClient';
 import { useAuth } from '@/shared/auth/useAuth';
 import { CommentDialog, CustomLoader, MetricTile } from '@/shared/components';
 import { formatTimeAgo } from '@/shared/utils/formatTimeAgo';

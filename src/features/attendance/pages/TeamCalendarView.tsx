@@ -92,7 +92,7 @@ const TeamCalendarView: React.FC = () => {
     };
   }, [currentDate]);
 
-  const { daysInMonthCount, firstDayOfMonth, monthName, shortMonth, year, month, day } = calendarStats;
+  const { daysInMonthCount, firstDayOfMonth, monthName, year, month } = calendarStats;
 
   useEffect(() => {
     if (typeof id === "string") {
