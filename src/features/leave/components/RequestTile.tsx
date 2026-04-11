@@ -120,7 +120,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
             </div>
 
             {/* 3. Reason Section */}
-            {leaveType !== "COMP_OFF" ? (
+            {/* {leaveType !== "COMP_OFF" ? (
                 <>
                     <div className="hidden md:block">
                         <Divider />
@@ -146,7 +146,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
                         Compensatory Off Request
                     </span>
                 </div>
-            )}
+            )} */}
 
             <div className="hidden md:block"><Divider /></div>
 

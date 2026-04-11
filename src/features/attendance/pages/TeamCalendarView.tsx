@@ -58,7 +58,7 @@ const TeamCalendarView: React.FC = () => {
 
       fetchEmployeeCalendar(id);
 
-      fetchAttendanceCalendar(id, year, month); // NEW API CALL
+      fetchAttendanceCalendar(id, year, month);
 
     }
 
@@ -108,6 +108,8 @@ const TeamCalendarView: React.FC = () => {
   const dailyHoliday = PUBLIC_HOLIDAYS_2026[dailyKey];
 
   // console.log(teamCalendar);
+  console.log(attendanceCalendar);
+  
 
   const formatTimeRange = (attendance: any) => {
 

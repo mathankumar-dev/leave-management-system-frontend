@@ -61,6 +61,8 @@ export const leaveService = {
 
   getLeaveApplicationByID: async (leaveId: number) => {
     const res = await api.get(`/leaves/${leaveId}`);
+    console.log(res);
+    
     
     return res.data;
   },
