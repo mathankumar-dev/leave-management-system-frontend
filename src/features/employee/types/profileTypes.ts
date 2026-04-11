@@ -68,4 +68,5 @@ export interface ProfileData {
   accountNumber?: string;
   bankName?: string;
   pfNumber?: string;
+  uanNumber? : number;
 }

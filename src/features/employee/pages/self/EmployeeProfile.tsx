@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import { HiOutlineLocationMarker, HiOutlineOfficeBuilding } from "react-icons/hi";
 import {
-  HiCheckCircle, HiOutlineCreditCard,
+  HiOutlineCreditCard,
   HiOutlineIdentification, HiOutlineShieldCheck
 } from "react-icons/hi2";
 
@@ -74,16 +74,6 @@ const S: React.FC<{
 );
 
 // Editable field that is always read-only for sensitive data display
-const ReadOnlyF: React.FC<{ label: string; displayValue: string }> = ({ label, displayValue }) => (
-  <div className="flex flex-col gap-1">
-    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
-    <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono text-slate-700 min-h-10 flex items-center">
-      <span className={displayValue ? "" : "text-slate-300 italic text-xs font-sans"}>
-        {displayValue || "—"}
-      </span>
-    </div>
-  </div>
-);
 
 // Textarea
 const TA: React.FC<{ label: string; field: string } & FP> =
@@ -158,37 +148,6 @@ const DocCard: React.FC<{
 };
 
 // File upload row (for non-existing files in edit mode)
-const FileRow: React.FC<{
-  label: string; fileKey: string;
-  files: Record<string, any>;
-  onFile: (key: string, file: File | null) => void;
-  multiple?: boolean;
-}> = ({ label, fileKey, files, onFile, multiple = false }) => {
-  const hasFile = multiple ? (files[fileKey]?.length > 0) : !!files[fileKey];
-  return (
-    <div className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl hover:border-indigo-200 transition-all group">
-      <div className="flex items-center gap-2.5 overflow-hidden">
-        <div className={`p-1.5 rounded-lg shrink-0 ${hasFile ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
-          <HiCheckCircle size={14} />
-        </div>
-        <div className="overflow-hidden">
-          <p className="text-[10px] font-bold text-slate-700 uppercase">{label}</p>
-          <p className="text-[10px] text-slate-400 truncate">
-            {multiple ? (files[fileKey]?.length ? `${files[fileKey].length} file(s)` : "Not selected") : (files[fileKey]?.name || "Not selected")}
-          </p>
-        </div>
-      </div>
-      <label className="cursor-pointer shrink-0 bg-slate-50 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all border border-slate-200 text-slate-600">
-        {hasFile ? "CHANGE" : "UPLOAD"}
-        <input type="file" hidden multiple={multiple}
-          onChange={e => {
-            if (multiple) { onFile(fileKey, e.target.files ? (Array.from(e.target.files) as any) : null); }
-            else { onFile(fileKey, e.target.files?.[0] || null); }
-          }} />
-      </label>
-    </div>
-  );
-};
 
 // Child row component
 interface ChildEntry { childName: string; childDateOfBirth?: string; gender: string; age?: number; }
