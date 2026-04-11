@@ -1,6 +1,7 @@
 import logoWithName from "@/assets/images/bg-rm-logo-HRES.png";
 import logo from "@/assets/images/wenxt-W-only-logo.png";
 import { useAuth } from "@/shared/auth/useAuth";
+import { useAuthenticatedImage } from "@/shared/hooks/useAuthenticatedImage";
 import {
   FaBell,
   FaCalendarAlt,
@@ -29,6 +30,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { imageUrl, isLoading: imageLoading } = useAuthenticatedImage(user?.passportPhotoPath);
 
   const userRole = user?.role?.toUpperCase();
   const userName = user?.name;
@@ -120,10 +122,22 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
         {/* USER PROFILE */}
         <div
           onClick={() => handleNavigate("profile")}
-          className={`group  relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} p-3 mb-8 rounded-sm cursor-pointer transition-all hover:bg-slate-50`}
+          className={`group relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} p-3 mb-8 rounded-sm cursor-pointer transition-all hover:bg-slate-50`}
         >
-          <div className="w-10 h-10 min-w-10 rounded-full  bg-brand text-white flex items-center justify-center font-black shadow-lg shadow-brand/20 transition-transform group-hover:scale-105">
-            {userName?.charAt(0) || "U"}
+          {/* 3. Updated Avatar Circle */}
+          <div className="w-10 h-10 min-w-10 rounded-full bg-brand text-white flex items-center justify-center font-black shadow-lg shadow-brand/20 transition-transform group-hover:scale-105 overflow-hidden">
+            {imageLoading ? (
+              <div className="w-full h-full animate-pulse bg-white/20" />
+            ) : imageUrl ? (
+              <img
+                src={imageUrl}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              /* Fallback to Initial if no image */
+              userName?.charAt(0) || "U"
+            )}
           </div>
 
           {!isCollapsed && (
