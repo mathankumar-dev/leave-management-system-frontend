@@ -1,4 +1,5 @@
-import logoSVG from "@/assets/svg/logo.svg";
+import logo from "@/assets/images/wenxt-W-only-logo.png";
+import logoWithName from "@/assets/images/bg-rm-logo-HRES.png";
 import { useAuth } from "@/shared/auth/useAuth";
 import {
   FaBell,
@@ -101,11 +102,17 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
 
         {/* LOGO AREA */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} mb-10 px-2 py-3 rounded-2xl bg-slate-50/50 transition-all`}>
-          <img src={logoSVG} alt="logo" className="w-8 h-8 min-w-8 p-2" />
+          {/* Added shrink-0 to prevent the logo from squishing */}
+          <img src={logo} alt="logo" className="w-16 h-14 min-w-16 p-2 shrink-0 object-contain" />
+
           {!isCollapsed && (
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-slate-900 text-xs font-black leading-none uppercase tracking-tighter">WeNxt</span>
-              <span className="text-brand text-[9px] font-bold uppercase tracking-widest whitespace-nowrap">Technologies</span>
+            <div className="flex flex-col justify-center overflow-hidden">
+              <span className="text-slate-900 text-xs font-black leading-tight uppercase tracking-tighter">
+                WeNxt
+              </span>
+              <span className="text-brand text-[9px] font-bold uppercase tracking-widest whitespace-nowrap leading-tight">
+                Technologies
+              </span>
             </div>
           )}
         </div>
@@ -127,7 +134,6 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
           )}
         </div>
 
-        {/* NAVIGATION */}
         {/* NAVIGATION */}
         <div className="flex-1 overflow-y-auto no-scrollbar py-2">
           {!isCollapsed && (

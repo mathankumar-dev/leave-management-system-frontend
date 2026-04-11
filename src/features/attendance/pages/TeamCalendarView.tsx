@@ -7,6 +7,7 @@ import {
   FaCalendarAlt,
   FaCalendarDay,
   FaCalendarWeek,
+  FaChevronDown,
   FaChevronLeft,
   FaChevronRight,
   FaSpinner,
@@ -44,6 +45,7 @@ const TeamCalendarView: React.FC = () => {
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
+  const [isAttendanceExpanded, setIsAttendanceExpanded] = useState(false);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -192,7 +194,7 @@ const TeamCalendarView: React.FC = () => {
                   {Array.from({ length: daysInMonthCount }).map((_, i) => {
                     const day = i + 1;
                     const dateObj = new Date(year, month, day);
-                    const dayOfWeek = dateObj.getDay(); // 0 = Sunday, 6 = Saturday
+                    const dayOfWeek = dateObj.getDay();
                     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
                     const key = getFormattedDateKey(day);
@@ -360,43 +362,61 @@ const TeamCalendarView: React.FC = () => {
             )}
 
             {attendanceCalendar[selectedDateKey] && (
+              <div className="flex flex-col gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-sm transition-all duration-200">
 
-              <div className="flex flex-col gap-1 p-3 bg-emerald-50 border border-emerald-100 rounded-sm">
-
-                <div className="flex items-center gap-3">
-
-                  <div className="w-8 h-8 bg-emerald-100 text-emerald-600 flex items-center justify-center rounded-sm">
-
-                    <FaUserAlt size={12} />
-
+                {/* Header Row */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-emerald-100 text-emerald-600 flex items-center justify-center rounded-sm shrink-0">
+                      <FaUserAlt size={12} />
+                    </div>
+                    <p className="text-xs font-black text-slate-900 uppercase">
+                      Attendance
+                    </p>
                   </div>
 
-                  <p className="text-xs font-black text-slate-900 uppercase">
-
-                    Attendance
-
+                  <p className="text-[14px] font-bold text-slate-700 pt-1">
+                    {attendanceCalendar[selectedDateKey].checkIn?.slice(0, 5)}
+                    {" → "}
+                    {attendanceCalendar[selectedDateKey].checkOut?.slice(0, 5)}
                   </p>
-
                 </div>
 
-                <p className="text-[10px] font-bold text-slate-700 ml-11">
+                {/* Second Line: Working Hours */}
+                <div className="text-[10px] text-black ml-11">
+                  <span className="font-medium opacity-80">Actual Working Hours: </span>
+                  <span className="font-bold">{attendanceCalendar[selectedDateKey].workingHours} hrs</span>
+                </div>
 
-                  {attendanceCalendar[selectedDateKey].checkIn?.slice(0, 5)}
+                {/* Expandable Content */}
+                {isAttendanceExpanded && (
+                  <div className="ml-11 pt-2 mt-1 border-t border-emerald-200/50 space-y-2 animate-in fade-in slide-in-from-top-1">
+                    <div className="flex justify-between text-[9px] uppercase tracking-tight text-slate-600">
+                      <span>Break Duration</span>
+                      <span className="font-bold text-slate-900">01:00 hr</span>
+                    </div>
+                    <div className="flex justify-between text-[9px] uppercase tracking-tight text-slate-600">
+                      <span>Overtime</span>
+                      <span className="font-bold text-emerald-700">+00:45 hr</span>
+                    </div>
+                  </div>
+                )}
 
-                  {" → "}
-
-                  {attendanceCalendar[selectedDateKey].checkOut?.slice(0, 5)}
-
-                </p>
-
-                <p className="text-[9px] text-slate-400 ml-11">
-
-                  {attendanceCalendar[selectedDateKey].workingHours} hrs
-
-                </p>
+                {/* "See More" Toggle Button */}
+                <button
+                  onClick={() => setIsAttendanceExpanded(!isAttendanceExpanded)}
+                  className="ml-11 mt-1 flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 transition-colors w-fit"
+                >
+                  <span className="text-[9px] font-black uppercase tracking-wider">
+                    {isAttendanceExpanded ? 'Show Less' : 'See More Details'}
+                  </span>
+                  <FaChevronDown
+                    size={8}
+                    className={`transition-transform duration-300 ${isAttendanceExpanded ? 'rotate-180' : ''}`}
+                  />
+                </button>
 
               </div>
-
             )}
 
             {selectedDayTeamLeaves.length > 0 ? (
