@@ -11,6 +11,7 @@ import {
   FaExclamationTriangle,
   FaFileSignature,
   FaHistory,
+  FaHome,
   FaMoneyBillWave,
   FaThLarge,
   FaUsers
@@ -49,6 +50,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
 
   const tabs = [
+    { name: "Home", path: "portal", icon: <FaHome />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "CTO", "COO"] },
     { name: "Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO", "EMPLOYEE"] },
@@ -71,7 +73,8 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   );
 
   const handleNavigate = (path: string) => {
-    navigate(`${basePath}/${path}`);
+    const finalPath = path === "portal" ? "/portal" : `${basePath}/${path}`;
+    navigate(finalPath);
     if (window.innerWidth < 768) setIsOpen(false);
   };
 
