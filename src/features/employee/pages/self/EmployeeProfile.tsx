@@ -30,19 +30,25 @@ type ExperienceType = 'FRESHER' | 'EXPERIENCED';
 interface FP { formData: any; isEditing: boolean; onChange: (f: string, v: any) => void; }
 
 // Text input — always shows, never hides
-const F: React.FC<{ label: string; field: string; type?: string; span?: boolean; fullSpan?: boolean } & FP> =
+const F: React.FC<{ label: string; field: string; type?: string; span?: boolean; fullSpan?: boolean } & FP> = 
   ({ label, field, type = "text", span = false, fullSpan = false, formData, isEditing, onChange }) => (
-    <div className={`flex flex-col gap-1 ${fullSpan ? "col-span-full" : span ? "col-span-full sm:col-span-2" : ""}`}>
+    <div className={`flex flex-col gap-1 min-w-0 ${fullSpan ? "col-span-full" : span ? "col-span-full sm:col-span-2" : ""}`}>
       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
       {isEditing ? (
-        <input type={type}
-          className="border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
+        <input 
+          type={type}
+          className="w-full border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
           value={formData[field] || ""}
           onChange={e => onChange(field, e.target.value)}
-          placeholder={label} />
+          placeholder={label} 
+        />
       ) : (
-        <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center">
-          <span className={formData[field] ? "" : "text-slate-300 italic text-xs"}>
+        /* Added 'min-w-0' here */
+        <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center min-w-0">
+          <span
+            /* Changed to 'break-all' to handle long emails with no spaces */
+            className={`break-all flex-1 ${formData[field] ? "" : "text-slate-300 italic text-xs"}`}
+          >
             {formData[field] || "—"}
           </span>
         </div>
@@ -65,8 +71,13 @@ const S: React.FC<{
         {options.map(v => <option key={v} value={v}>{formatOpt ? formatOpt(v) : v}</option>)}
       </select>
     ) : (
-      <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center">
-        <span className={displayVal || formData[field] ? "" : "text-slate-300 italic text-xs"}>
+      <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center min-w-0">
+        <span
+          className={`break-words flex-1 ${displayVal || formData[field]
+              ? ""
+              : "text-slate-300 italic text-xs"
+            }`}
+        >
           {displayVal || formData[field] || "—"}
         </span>
       </div>
@@ -645,7 +656,10 @@ const EmployeeProfile: React.FC = () => {
               )}
               <p className="text-xs font-semibold text-indigo-600">{formData.designation || bp.designation || "—"}</p>
               <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
-                <span className="flex items-center gap-1.5"><FaEnvelope className="text-[10px]" /> {bp.email || "—"}</span>
+                <span className="flex items-center gap-1.5 min-w-0">
+                  <FaEnvelope className="text-[10px] shrink-0" />
+                  <span className="truncate">{bp.email || "—"}</span>
+                </span>
                 <span className="flex items-center gap-1.5"><FaPhone className="text-[10px]" /> {formData.contactNumber || bp.contactNumber || "—"}</span>
                 <span className="flex items-center gap-1.5"><HiOutlineOfficeBuilding /> {bp.branch || "—"}</span>
                 <span className="flex items-center gap-1.5"><HiOutlineLocationMarker /> Joined {formatDate(bp.joiningDate)}</span>
