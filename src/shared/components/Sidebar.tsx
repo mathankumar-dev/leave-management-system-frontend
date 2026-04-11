@@ -108,7 +108,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
         {/* LOGO AREA */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} mb-10 px-2 py-3 rounded-2xl bg-slate-50/50 transition-all`}>
           {/* Added shrink-0 to prevent the logo from squishing */}
-          <img src={isCollapsed ? logoWithName : logo} alt="logo" className="w-16 h-14 min-w-16 p-2 shrink-0 object-contain" />
+          <img src={isCollapsed ? logoWithName : logo} alt="logo" className="w-18 h-16 min-w-18 p-2 shrink-0 object-contain" />
 
           {!isCollapsed && (
             <div className="flex flex-col justify-center overflow-hidden">
