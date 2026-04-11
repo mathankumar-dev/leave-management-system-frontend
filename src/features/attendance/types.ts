@@ -11,3 +11,15 @@ export interface TeamMemberBalance {
 
 export type TeamCalendarResponse = Record<string, TeamMemberBalance[]>;
 
+
+export interface AttendanceRecord {
+  date: string;        
+  status: string;
+  checkIn: string | null; 
+  checkOut: string | null;
+  workingHours: string;   
+  punchRecords: string | null;
+}
+
+
+

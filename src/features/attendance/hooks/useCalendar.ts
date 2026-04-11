@@ -1,6 +1,5 @@
 import { attendanceService } from "@/features/attendance/services/attendanceService";
-import type { TeamCalendarResponse } from "@/features/attendance/types";
-import api from "@/services/apiClient";
+import type { AttendanceRecord, TeamCalendarResponse } from "@/features/attendance/types";
 import { useCallback, useState } from "react";
 
 type AttendanceMap = Record<
@@ -23,9 +22,7 @@ export const useCalendar = () => {
   const [employeeCalendar, setEmployeeCalendar] =
     useState<TeamCalendarResponse>({});
 
-  const [attendanceCalendar, setAttendanceCalendar] =
-    useState<AttendanceMap>({});
-
+const [attendance, setAttendance] = useState<Record<string, AttendanceRecord>>({});
   /*
   ========================
   TEAM LEAVE CALENDAR
@@ -82,55 +79,29 @@ export const useCalendar = () => {
   ATTENDANCE CALENDAR
   ========================
   */
+  // In your component
+
   const fetchAttendanceCalendar = useCallback(
   async (employeeId: string, year: number, month: number) => {
-
     try {
-
       setLoading(true);
+      setError(null);
 
-      const res = await api.get(
-        `/attendance/employee/${employeeId}`,
-        {
-          params: {
-            year,
-            month: month + 1 // JS month is 0-based
-          }
-        }
-      );
+      const data: AttendanceRecord[] = await attendanceService.getAttendance(employeeId, year, month);
 
-      const map: AttendanceMap = {};
-
-      res.data?.forEach((item: any) => {
-
-        map[item.date] = {
-
-          date: item.date,
-
-          checkIn: item.checkIn,
-
-          checkOut: item.checkOut,
-
-          workingHours: item.workingHours
-
-        };
-
-      });
-
-      setAttendanceCalendar(map);
-
+      // Transform Array -> Object { "2026-04-11": Record }
+      const attendanceMap = data.reduce((acc, record) => {
+        acc[record.date] = record;
+        return acc;
+      }, {} as Record<string, AttendanceRecord>);
+      
+      setAttendance(attendanceMap);
     } catch (err) {
-
-      console.error("attendance calendar error", err);
-
-      setError("Failed to fetch attendance calendar");
-
+      console.error("Attendance fetch error:", err);
+      setError("Failed to fetch attendance records.");
     } finally {
-
       setLoading(false);
-
     }
-
   },
   []
 );
@@ -146,8 +117,7 @@ export const useCalendar = () => {
 
     teamCalendar,
     employeeCalendar,
-    attendanceCalendar,
-
+    attendance,
     fetchTeamSchedule,
     fetchEmployeeCalendar,
     fetchAttendanceCalendar,
