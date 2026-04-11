@@ -62,6 +62,7 @@ export interface User {
   // UI status
   biometricStatus: string;
   vpnStatus: string;
+  passportPhotoPath? : string;
 }
 
 // export interface PersonalDetails {
