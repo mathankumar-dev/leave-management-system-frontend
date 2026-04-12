@@ -835,11 +835,17 @@ const EmployeeProfile: React.FC = () => {
                     <F label="Company" field="company" {...fp} />
                     <F label="Joining Date" field="joiningDate" type="date" {...fp} />
                     <F label="Experience Type" field="experienceType" {...fp} />
-                    {
-                      backendProfile?.reportingId && (
-                        <F label="Reporting Manager" field="reportingName" {...fp} />
-                      )
-                    }
+                    {backendProfile?.reportingId && (
+                      <F
+                        label="Reporting Manager"
+                        field="reportingName"
+                        {...{
+                          formData: { reportingName: bp.reportingName },
+                          isEditing: false,
+                          onChange: () => { }
+                        }}
+                      />
+                    )}
                     <F label="Biometric Status" field="biometricStatus" {...fp} />
                     <F label="VPN Status" field="vpnStatus" {...fp} />
                     <div className="col-span-full pt-1">
