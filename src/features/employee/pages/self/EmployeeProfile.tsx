@@ -30,17 +30,17 @@ type ExperienceType = 'FRESHER' | 'EXPERIENCED';
 interface FP { formData: any; isEditing: boolean; onChange: (f: string, v: any) => void; }
 
 // Text input — always shows, never hides
-const F: React.FC<{ label: string; field: string; type?: string; span?: boolean; fullSpan?: boolean } & FP> = 
+const F: React.FC<{ label: string; field: string; type?: string; span?: boolean; fullSpan?: boolean } & FP> =
   ({ label, field, type = "text", span = false, fullSpan = false, formData, isEditing, onChange }) => (
     <div className={`flex flex-col gap-1 min-w-0 ${fullSpan ? "col-span-full" : span ? "col-span-full sm:col-span-2" : ""}`}>
       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
       {isEditing ? (
-        <input 
+        <input
           type={type}
           className="w-full border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
           value={formData[field] || ""}
           onChange={e => onChange(field, e.target.value)}
-          placeholder={label} 
+          placeholder={label}
         />
       ) : (
         /* Added 'min-w-0' here */
@@ -74,8 +74,8 @@ const S: React.FC<{
       <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center min-w-0">
         <span
           className={`break-words flex-1 ${displayVal || formData[field]
-              ? ""
-              : "text-slate-300 italic text-xs"
+            ? ""
+            : "text-slate-300 italic text-xs"
             }`}
         >
           {displayVal || formData[field] || "—"}
@@ -361,8 +361,6 @@ const EmployeeProfile: React.FC = () => {
   const { imageUrl, isLoading: imageLoading } = useAuthenticatedImage(backendProfile?.passportPhotoPath);
 
 
-
-
   // Common files
   const [commonFiles, setCommonFiles] = useState<Record<string, any>>({
     idProof: null, passportPhoto: null,
@@ -379,6 +377,8 @@ const EmployeeProfile: React.FC = () => {
   useEffect(() => {
     if (!authLoading && user?.id) fetchEmployeeProfile(user.id);
   }, [fetchEmployeeProfile, user?.id, authLoading]);
+
+
 
   // Pre-fill form
   useEffect(() => {
@@ -730,7 +730,13 @@ const EmployeeProfile: React.FC = () => {
                   <Card title="Employment Overview">
                     <F label="Designation" field="designation" {...fp} />
                     <F label="Joining Date" field="joiningDate" type="date" {...fp} />
-                    <F label="Reporting Manager" field="reportingName" {...{ formData: { reportingName: bp.reportingName }, isEditing: false, onChange: () => { } }} />
+
+                    {
+                      backendProfile?.reportingId && (
+
+                        <F label="Reporting Manager" field="reportingName" {...{ formData: { reportingName: bp.reportingName }, isEditing: false, onChange: () => { } }} />
+                      )
+                    }
                     <F label="Role" field="role" {...{ formData: { role: bp.role }, isEditing: false, onChange: () => { } }} />
                     <F label="Biometric" field="biometricStatus" {...{ formData: { biometricStatus: bp.biometricStatus }, isEditing: false, onChange: () => { } }} />
                     <F label="VPN Status" field="vpnStatus" {...{ formData: { vpnStatus: bp.vpnStatus }, isEditing: false, onChange: () => { } }} />
@@ -829,7 +835,11 @@ const EmployeeProfile: React.FC = () => {
                     <F label="Company" field="company" {...fp} />
                     <F label="Joining Date" field="joiningDate" type="date" {...fp} />
                     <F label="Experience Type" field="experienceType" {...fp} />
-                    <F label="Reporting Manager" field="reportingName" {...fp} />
+                    {
+                      backendProfile?.reportingId && (
+                        <F label="Reporting Manager" field="reportingName" {...fp} />
+                      )
+                    }
                     <F label="Biometric Status" field="biometricStatus" {...fp} />
                     <F label="VPN Status" field="vpnStatus" {...fp} />
                     <div className="col-span-full pt-1">
