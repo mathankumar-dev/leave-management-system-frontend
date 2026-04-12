@@ -1,55 +1,117 @@
 import { attendanceService } from "@/features/attendance/services/attendanceService";
-import type { TeamCalendarResponse } from "@/features/attendance/types";
+import type { AttendanceRecord, TeamCalendarResponse } from "@/features/attendance/types";
 import { useCallback, useState } from "react";
 
+
+
 export const useCalendar = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+  const [teamCalendar, setTeamCalendar] =
+    useState<TeamCalendarResponse>({});
 
-    const [teamCalendar, setTeamCalendar] = useState<TeamCalendarResponse>({});
-    const [employeeCalendar, setEmployeeCalendar] = useState<TeamCalendarResponse>({});
+  const [employeeCalendar, setEmployeeCalendar] =
+    useState<TeamCalendarResponse>({});
 
-    const fetchTeamSchedule = useCallback(async (employeeId: string) => {
+  const [attendance, setAttendance] = useState<Record<string, AttendanceRecord>>({});
+  /*
+  ========================
+  TEAM LEAVE CALENDAR
+  ========================
+  */
+  const fetchTeamSchedule = useCallback(
+    async (employeeId: string) => {
+      try {
         setLoading(true);
-        try {
-            const data = await attendanceService.getTeamCalendar(employeeId);
-            setTeamCalendar(data);
-            return data;
-        } catch (error) {
-            console.error("Failed to fetch team calendar", error);
 
+        const data =
+          await attendanceService.getTeamCalendar(employeeId);
 
-            
-            return null;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+        setTeamCalendar(data || {});
 
-    const fetchEmployeeCalendar = useCallback(async (employeeId: string) => {
-        try {
-            setLoading(true);
+        return data;
+      } catch (err) {
+        console.error("team calendar error", err);
+        setError("Failed to fetch team calendar");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-            const data = await attendanceService.getEmployeeCalendar(employeeId);
+  /*
+  ========================
+  MY LEAVE CALENDAR
+  ========================
+  */
+  const fetchEmployeeCalendar = useCallback(
+    async (employeeId: string) => {
+      try {
+        setLoading(true);
 
-            setEmployeeCalendar(data);
+        const data =
+          await attendanceService.getEmployeeCalendar(employeeId);
 
-        } catch (err: any) {
-            setError(err.message || "Failed to fetch calendar");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+        setEmployeeCalendar(data || {});
+      } catch (err: any) {
+        console.error("employee calendar error", err);
+        setError(err.message || "Failed to fetch employee calendar");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-    return {
-        loading,
-        error, setError,
-        fetchEmployeeCalendar,
-        employeeCalendar,
-        fetchTeamSchedule,
-        teamCalendar,
-        
-    }
+  /*
+  ========================
+  ATTENDANCE CALENDAR
+  ========================
+  */
+  // In your component
 
-}
+  const fetchAttendanceCalendar = useCallback(
+    async (employeeId: string, year: number, month: number) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data: AttendanceRecord[] = await attendanceService.getAttendance(employeeId, year, month);
+
+        // Transform Array -> Object { "2026-04-11": Record }
+        const attendanceMap = data.reduce((acc, record) => {
+          acc[record.date] = record;
+          return acc;
+        }, {} as Record<string, AttendanceRecord>);
+
+        setAttendance(attendanceMap);
+      } catch (err) {
+        console.error("Attendance fetch error:", err);
+        setError("Failed to fetch attendance records.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  /*
+  ========================
+  EXPORT API
+  ========================
+  */
+  return {
+    loading,
+    error,
+
+    teamCalendar,
+    employeeCalendar,
+    attendance,
+    fetchTeamSchedule,
+    fetchEmployeeCalendar,
+    fetchAttendanceCalendar,
+  };
+};

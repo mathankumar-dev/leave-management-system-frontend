@@ -1,35 +1,20 @@
+import AuthenticatedImage from '@/features/leave/components/AuthenticatedImage';
+import DetailedRequestModal from '@/features/leave/components/DetailedRequestModal';
 import RequestTile from '@/features/leave/components/RequestTile';
 import { useLeave } from '@/features/leave/hooks/useLeave';
 import { useManagerApprovals } from '@/features/leave/hooks/useManagerApprovals';
 import type { LeaveDecision, ManagerAccessDecision } from '@/features/leave/types';
 import { notify } from '@/features/notification/utils/notifications';
-import api from '@/services/apiClient';
 import { useAuth } from '@/shared/auth/useAuth';
-import { CustomLoader, CommentDialog, MetricTile } from '@/shared/components';
+import { CommentDialog, CustomLoader, MetricTile } from '@/shared/components';
 import { formatTimeAgo } from '@/shared/utils/formatTimeAgo';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FaCheckDouble, FaChevronDown, FaDownload, FaFileAlt, FaFileImage, FaSearch, FaTimes } from 'react-icons/fa';
 
-
-
-interface PendingRequest {
-    id: number;
-    employeeName: string;
-    leaveType: string;
-    reason?: string;
-    startDate: string;
-    endDate: string;
-    createdAt: string;
-    isCompOff?: boolean;
-    halfDayType?: string;
-}
 
 const PendingApprovalsView: React.FC = () => {
     const { user } = useAuth();
 
-    const userRole = user?.role?.toUpperCase();
-    const isManager = userRole === 'MANAGER';
-    const isTeamLeader = userRole === 'TEAM_LEADER';
     const canSeeDashboardMetrics = true;
 
     const {
@@ -42,19 +27,15 @@ const PendingApprovalsView: React.FC = () => {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
+    const [detailModalReq, setDetailModalReq] = useState<any | null>(null);
 
     useEffect(() => {
         if (user?.id && canSeeDashboardMetrics) {
             // fetchWeeklyLeaveSummary(user.id);
             // fetchTeamOnLeave(user.id);
         }
-    }, [ user?.id, canSeeDashboardMetrics]);
+    }, [user?.id, canSeeDashboardMetrics]);
 
-    const [dialogConfig, setDialogConfig] = useState<{
-        isOpen: boolean;
-        req: any;
-        status: LeaveDecision | null;
-    }>({ isOpen: false, req: null, status: null });
 
     const [selectedAttachment, setSelectedAttachment] = useState<any | null>(null);
 
@@ -64,12 +45,24 @@ const PendingApprovalsView: React.FC = () => {
         const endDate = new Date(end).toLocaleDateString('en-US', options);
         return start === end ? startDate : `${startDate} - ${endDate}`;
     };
+    const [dialogConfig, setDialogConfig] = useState<{
+        isOpen: boolean;
+        req: any;
+        status: LeaveDecision | null;
+    }>({ isOpen: false, req: null, status: null });
 
+    const onActionTriggered = (req: any, status: LeaveDecision) => {
+        setDialogConfig({
+            isOpen: true,
+            req,
+            status
+        });
+    };
     const filteredRequests = useMemo(() => {
         return requests.filter((req) => {
             const matchesSearch =
                 req.employeeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                req.leaveType?.toLowerCase().includes(searchQuery.toLowerCase());
+                req.leaveTypeName?.toLowerCase().includes(searchQuery.toLowerCase());
 
             const createdDate = new Date(req.createdAt);
             const now = new Date();
@@ -89,71 +82,34 @@ const PendingApprovalsView: React.FC = () => {
         });
     }, [requests, searchQuery, timeFilter]);
 
-    const onActionTriggered = (req: PendingRequest, status: LeaveDecision) => {
-        const isAccessRequest = req.leaveType === 'VPN' || req.leaveType === 'BIOMETRIC';
 
-        if (status === 'REJECTED' || status === 'MEETING_REQUIRED' || (isAccessRequest && status === 'APPROVED')) {
-            setDialogConfig({ isOpen: true, req, status });
-            return;
-        }
-        handleConfirmDecision(req, status);
-    };
 
-    // const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-    //     let result;
-    //     if (req.isCompOff) {
-    //         if (status === 'APPROVED') {
-    //             result = await handleCompOffApprove(req.id);
-    //         } else if (status === 'REJECTED') {
-    //             result = await handleCompOffReject(req.id, commentText || "");
-    //         }
-    //     } else {
-    //         const decisionPayload: LeaveDecisionRequest = {
-    //             leaveId: req.id,
-    //             approverId: Number(user?.id),
-    //             decision: status,
-    //             comments: commentText
-    //         };
-    //         result = await handleDecision(decisionPayload);
-    //     }
-
-    //     if (result?.success) {
-    //         notify.leaveAction(status, req.employeeName, !!req.isCompOff);
-    //         setDialogConfig({ isOpen: false, req: null, status: null });
-    //     } else {
-    //         notify.error("Update Failed", "Please check your connection and try again.");
-    //     }
-    // };
 
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-
         let accessDecisionBody: ManagerAccessDecision | undefined = undefined;
 
+        // Specialized logic for specific leave types if needed
         if (req.leaveType === 'VPN' || req.leaveType === 'BIOMETRIC') {
             accessDecisionBody = {
                 decision: status,
-                remarks: commentText || "Approved",
+                remarks: commentText || "Approved via Manager Portal",
                 managerId: user!.id,
             };
         }
 
-        // 2. Pass it as the 5th argument
         const result = await handleDecision(
             req.id,
             status,
-            commentText || "",
-            req.leaveType,
-            accessDecisionBody // Pass the object here
+            commentText || (status === 'APPROVED' ? "Approved" : "Rejected"),
+            req.leaveTypeName,
+            accessDecisionBody
         );
 
         if (result?.success) {
             notify.leaveAction(status, req.employeeName, !!req.isCompOff, !!req.isOD);
             setDialogConfig({ isOpen: false, req: null, status: null });
-        } else {
-            notify.error("Update Failed", "Please check your connection and try again.");
         }
     };
-
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
@@ -165,18 +121,35 @@ const PendingApprovalsView: React.FC = () => {
         throw new Error('Function not implemented.');
     }
 
+    
+
     return (
         <div className='flex flex-col gap-4 w-full max-w-full overflow-x-hidden'>
+
+            <DetailedRequestModal
+                isOpen={!!detailModalReq}
+                req={detailModalReq}
+                onClose={() => setDetailModalReq(null)}
+                onAction={(status) => {
+                    const reqToProcess = detailModalReq;
+                    setDetailModalReq(null);
+                    onActionTriggered(reqToProcess, status); 
+                }}
+            />
             <CommentDialog
                 isOpen={dialogConfig.isOpen}
                 onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
-                title={dialogConfig.status === 'REJECTED' ? 'Reject Request' : 'Request Meeting'}
-                placeholder={
-                    dialogConfig.status === 'REJECTED'
-                        ? `Provide a reason for rejecting ${dialogConfig.req?.employeeName}'s request...`
-                        : `Enter notes regarding the meeting with ${dialogConfig.req?.employeeName}...`
+                title={
+                    dialogConfig.status === 'APPROVED'
+                        ? `Approve ${dialogConfig.req?.employeeName}'s Request`
+                        : `Reject ${dialogConfig.req?.employeeName}'s Request`
                 }
-                confirmLabel={dialogConfig.status === 'REJECTED' ? 'Reject' : 'Schedule Discussion'}
+                placeholder={
+                    dialogConfig.status === 'APPROVED'
+                        ? "Add an optional note..."
+                        : "Reason for rejection is required..."
+                }
+                confirmLabel={dialogConfig.status === 'APPROVED' ? 'Confirm Approval' : 'Reject Request'}
                 onSubmit={(comment) => handleConfirmDecision(dialogConfig.req, dialogConfig.status!, comment)}
             />
 
@@ -247,24 +220,28 @@ const PendingApprovalsView: React.FC = () => {
             <div className='flex flex-col gap-3 bg-[#F1F5F9] py-4 px-2 md:px-4 rounded-sm border border-slate-200'>
                 {filteredRequests.length > 0 ? (
                     filteredRequests.map((req) => (
-                        <RequestTile
-                            key={req.id}
-                            employeeName={req.employeeName}
-                            leaveType={req.leaveType}
-                            reasonMessage={req.isCompOff ? "Comp-Off Credit Request" : req.reason}
-                            dateRange={formatDateRange(req.startDate, req.endDate)}
-                            startDate={req.startDate}
-                            endDate={req.endDate}
-                            startDateHalfDayType={req.startDateHalfDayType || req.halfDayType}
-                            endDateHalfDayType={req.endDateHalfDayType}
-                            days={req.days}
-                            createdAt={formatTimeAgo(req.createdAt)}
-                            onAccept={() => onActionTriggered(req, 'APPROVED')}
-                            onReject={() => onActionTriggered(req, 'REJECTED')}
-                            onDiscuss={((isManager || isTeamLeader) && !req.isCompOff && !req.isOD) ? () => onActionTriggered(req, 'MEETING_REQUIRED') : undefined}
-                            attachments={req.attachments}
-                            onViewAttachment={(attachment) => setSelectedAttachment(attachment)}
-                        />
+                        <div key={req.id}
+                            onClick={() => setDetailModalReq(req)}
+                            className="cursor-pointer transition-transform active:scale-[0.99]">
+                            <RequestTile
+                                key={req.id}
+                                employeeName={req.employeeName}
+                                leaveType={req.leaveTypeName}
+                                reasonMessage={req.isCompOff ? "Comp-Off Credit Request" : req.reason}
+                                dateRange={formatDateRange(req.startDate, req.endDate)}
+                                startDate={req.startDate}
+                                endDate={req.endDate}
+                                startDateHalfDayType={req.startDateHalfDayType || req.halfDayType}
+                                endDateHalfDayType={req.endDateHalfDayType}
+                                days={req.days}
+                                createdAt={formatTimeAgo(req.createdAt)}
+                                onAccept={() => onActionTriggered(req, 'APPROVED')}
+                                onReject={() => onActionTriggered(req, 'REJECTED')}
+                                attachments={req.attachments}
+                                onViewAttachment={(attachment) => setSelectedAttachment(attachment)}
+                            />
+                        </div>
+
                     ))
                 ) : (
                     <div className="py-16 bg-white rounded-sm border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400">
@@ -354,48 +331,4 @@ const PendingApprovalsView: React.FC = () => {
 export default PendingApprovalsView;
 
 
-// Your Axios instance
 
-interface AuthenticatedImageProps {
-    fileUrl: string;
-    className?: string;
-}
-
-const AuthenticatedImage: React.FC<AuthenticatedImageProps> = ({ fileUrl, className }) => {
-    const [imgSrc, setImgSrc] = useState<string>("");
-    const [loading, setLoading] = useState<boolean>(true);
-
-    useEffect(() => {
-        const fetchImage = async () => {
-            try {
-                setLoading(true);
-                // Use your API instance to handle the 403/Auth headers automatically
-                const response = await api.get(`/files/download/${encodeURIComponent(fileUrl)}`, {
-                    responseType: "blob",
-                });
-
-                // Convert the raw data into a local URL the browser can display
-                const url = URL.createObjectURL(response.data);
-                setImgSrc(url);
-            } catch (error) {
-                console.error("Error fetching image:", error);
-                setImgSrc("https://via.placeholder.com/300?text=Error+Loading+Image");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (fileUrl) fetchImage();
-
-        // Cleanup the URL when component unmounts to save memory
-        return () => {
-            if (imgSrc) URL.revokeObjectURL(imgSrc);
-        };
-    }, [fileUrl]);
-
-    if (loading) return <div className="p-10 animate-pulse bg-slate-200 rounded-lg">Loading secure image...</div>;
-
-    return <img src={imgSrc} alt="Attachment" className={className} />;
-};
-
-// export default AuthenticatedImage;

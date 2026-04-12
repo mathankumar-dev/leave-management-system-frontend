@@ -1,5 +1,6 @@
 import { useNotifications } from "@/features/notification/hooks/useNotification";
 import { useAuth } from "@/shared/auth/useAuth";
+import { useAuthenticatedImage } from "@/shared/hooks/useAuthenticatedImage";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useMemo, useState } from "react";
 import {
@@ -23,7 +24,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { imageUrl, isLoading: imageLoading } = useAuthenticatedImage(user?.passportPhotoPath);
   const { notifications, unreadCount } = useNotifications(String(user?.id));
 
   // 1. Normalize Role (Matching Sidebar Logic)
@@ -67,6 +68,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
     <div className="sticky top-0 z-30 flex items-center justify-between bg-white/80 backdrop-blur-md px-4 md:px-6 py-3 border-b border-neutral-200 w-full">
 
       {/* LEFT */}
+
       <div className="flex items-center gap-3 min-w-0">
         <button onClick={onMenuClick} className="md:hidden p-2.5 rounded-lg text-slate-500 active:bg-slate-100">
           <FaBars size={18} />
@@ -150,8 +152,19 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
             }}
             className={`flex items-center gap-3 p-1.5 rounded-2xl transition-all ${isProfileOpen ? "bg-white shadow-md" : ""}`}
           >
-            <div className="w-10 h-10 bg-brand text-white flex items-center justify-center rounded-full font-bold shadow-lg shadow-brand/20">
-              {user?.name?.charAt(0) || "U"}
+            <div className="w-10 h-10 min-w-10 rounded-full bg-brand text-white flex items-center justify-center font-black shadow-lg shadow-brand/20 transition-transform group-hover:scale-105 overflow-hidden">
+              {imageLoading ? (
+                <div className="w-full h-full animate-pulse bg-white/20" />
+              ) : imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                /* Fallback to Initial if no image */
+                user?.name?.charAt(0) || "U"
+              )}
             </div>
             <FaChevronDown className={`text-[10px] transition-transform ${isProfileOpen ? "rotate-180" : ""}`} />
           </button>

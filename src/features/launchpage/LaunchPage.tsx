@@ -1,11 +1,13 @@
-import logo from "@/assets/images/wenxt-W-only-logo.png";
+import logo from "@/assets/images/LogoWeHRM2.png";
 import CalendarSVG from "@/assets/svg/calendar-svg.svg";
 import moneySVG from "@/assets/svg/money-svg.svg";
 import { useAuth } from "@/shared/auth/useAuth";
+import { useAuthenticatedImage } from "@/shared/hooks/useAuthenticatedImage";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useState } from "react";
 import { FaChevronDown, FaSignOutAlt, FaUserCog } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+
 
 
 const LaunchPage: React.FC = () => {
@@ -13,6 +15,7 @@ const LaunchPage: React.FC = () => {
   const { user, contextLogout: logout } = useAuth();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { imageUrl, isLoading: imageLoading } = useAuthenticatedImage(user?.passportPhotoPath);
 
 
   // const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
@@ -32,7 +35,7 @@ const LaunchPage: React.FC = () => {
     navigate(`${basePath}/${path}`);
   };
   const goToProfile = () => {
-    handleNavigate("profile");
+    handleNavigate("/profile");
     setIsProfileOpen(false);
   };
   // useEffect(() => {
@@ -86,8 +89,6 @@ const LaunchPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-brand-bg text-slate-900 font-sans selection:bg-brand selection:text-white overflow-hidden relative">
-
-      {/* BACKGROUND BLOBS - CONSISTENCY */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute -top-40 -right-40 w-160 h-160 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute top-1/2 -left-20 w-100 h-100 bg-emerald-500/5 rounded-full blur-3xl" />
@@ -98,7 +99,7 @@ const LaunchPage: React.FC = () => {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="bg-brand overflow-hidden relative z-[60] shadow-lg shadow-brand/20 py-2.5 border-b border-white/10"
+          className="bg-brand overflow-hidden relative z-60 shadow-lg shadow-brand/20 py-2.5 border-b border-white/10"
         >
           {/* TICKER CONTAINER */}
           <div className="flex whitespace-nowrap overflow-hidden group">
@@ -142,7 +143,7 @@ const LaunchPage: React.FC = () => {
           <motion.div
             animate={{ x: ["-100%", "100%"] }}
             transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none"
+            className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent pointer-events-none"
           />
         </motion.div>
       </AnimatePresence>
@@ -156,7 +157,7 @@ const LaunchPage: React.FC = () => {
             className="flex items-center space-x-3 cursor-pointer group"
             onClick={() => navigate("/")}
           >
-            <img src={logo} alt="logo" className="h-10 w-10 object-contain transition-transform group-hover:scale-110" />
+            <img src={logo} alt="logo" className="h-15 w-15 object-contain transition-transform group-hover:scale-110" />
             <span className="text-xl font-black text-slate-800 tracking-tight">
               WeNxt <span className="text-brand">Technologies</span>
             </span>
@@ -181,8 +182,19 @@ const LaunchPage: React.FC = () => {
                   }`}
               >
                 {/* AVATAR STYLE MATCHING YOUR PREVIOUS CARDS */}
-                <div className="w-10 h-10 bg-brand text-white flex items-center justify-center rounded-xl font-bold text-sm shadow-lg shadow-brand/20">
-                  {user?.name.charAt(0) || "U"}
+                <div className="w-10 h-10 min-w-10 rounded-full bg-brand text-white flex items-center justify-center font-black shadow-lg shadow-brand/20 transition-transform group-hover:scale-105 overflow-hidden">
+                  {imageLoading ? (
+                    <div className="w-full h-full animate-pulse bg-white/20" />
+                  ) : imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    /* Fallback to Initial if no image */
+                    user?.name?.charAt(0) || "U"
+                  )}
                 </div>
 
                 <FaChevronDown
@@ -214,7 +226,7 @@ const LaunchPage: React.FC = () => {
                         className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-slate-600 hover:bg-brand/5 hover:text-brand rounded-2xl transition-all"
                       >
                         <FaUserCog className="text-lg opacity-70" />
-                        Account Settings
+                        Profile
                       </button>
 
                       <button

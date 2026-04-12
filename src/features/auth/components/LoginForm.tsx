@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { FaUserShield, FaLock, FaArrowRight } from "react-icons/fa";
+import { FaArrowRight, FaLock, FaUserShield } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../../../shared/auth/useAuth";
 
-import logoSVG from '@/assets/images/bg-rm-logo-HRES.png';
-import wehrm from '@/assets/images/logoWeHRM.png';
+
+import wehrm from '@/assets/images/LogoWeHRM2.png';
 
 
+import type { LoginCredentials } from "@/shared/auth/authTypes";
 import Loader from "../../../shared/components/Loader";
 import { authService } from "../api/authApi";
-import type { LoginCredentials } from "@/shared/auth/authTypes";
 
 const LoginForm: React.FC = () => {
   const [identifier, setIdentifier] = useState("");
@@ -68,11 +68,11 @@ const LoginForm: React.FC = () => {
           </p>
         </div>
 
-      {/*Radio option */}
+        {/*Radio option */}
         <div className="flex items-center gap-6">
-        <span className="text-xs font-semibold text-neutral-600">
-              Login with :
-            </span>
+          <span className="text-xs font-semibold text-neutral-600">
+            Login with :
+          </span>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
@@ -123,7 +123,7 @@ const LoginForm: React.FC = () => {
               value={identifier}
               onChange={(e) => {
                 const value = e.target.value;
-                setIdentifier(logintype === "id" ? value : value.toUpperCase());
+                setIdentifier(logintype === "id" ?  value.toUpperCase() : value);
               }}
               placeholder={logintype === "email" ? "name@wenxttech.com" : "WENXT011"}
               className={`w-full pl-12 pr-4 py-3.5 bg-white border border-neutral-300 rounded-xl outline-none focus:ring-4 focus:ring-primary-50 focus:border-primary-500 text-sm shadow-sm ${logintype === "id" ? "uppercase" : ""

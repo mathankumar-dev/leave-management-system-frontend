@@ -136,7 +136,6 @@ const EmployeesView = () => {
 
 
   const filteredEmployees = employees.filter(emp => {
-      console.log("EMP DATA 👉", emp);
 
     const matchRole =
       roleFilter === "ALL" || emp.roleName === roleFilter;

@@ -7,6 +7,7 @@ import '@/app/index.css';
 import App from '@/app/App.tsx';
 import { AuthProvider } from '@/shared/auth/AuthContext';
 
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>

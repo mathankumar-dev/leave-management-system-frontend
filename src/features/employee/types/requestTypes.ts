@@ -31,7 +31,7 @@ import type { BloodGroup, Gender, MaritalStatus } from "@/shared/types";
 //   oldCompanyName?: string;
 //   oldCompanyFromDate?: string;
 //   oldCompanyEndDate?: string;
-  
+
 
 // }
 
@@ -49,8 +49,9 @@ export interface MultipartFiles {
   offerLetter?: File;
 
   // Experienced
-  experienceCerts?: File[]; 
-  relievingLetter?: File;
+  experienceCerts?: File[];
+  joiningLetter?: File[];
+  relievingLetter?: File[];
 }
 
 export interface BasePersonalDetails {
@@ -63,7 +64,7 @@ export interface BasePersonalDetails {
   gender: Gender;
   maritalStatus: MaritalStatus;
 
-  aadharNumber: string; 
+  aadharNumber: string;
   personalEmail: string;
   dateOfBirth: string; // YYYY-MM-DD
 
@@ -107,20 +108,22 @@ export interface BasePersonalDetails {
 export interface Child {
   childName: string;
   gender: Gender;
-  age: number;
+  childDateOfBirth: string;
 }
 
 export interface ExperienceEntry {
   companyName: string;
   role: string;
-  fromDate: string; 
-  endDate: string;  
-  lastCompany: boolean;
-  tempCert?: File | null; 
+  fromDate: string;
+  endDate: string;
+  lastCompany?: boolean;
+  tempCert?: File | null;
+  tempJoiningLetter?: File | null;
+  tempRelievingLetter?: File | null;
 
 }
 
-export interface FresherPersonalDetailsRequest extends BasePersonalDetails {}
+export interface FresherPersonalDetailsRequest extends BasePersonalDetails { }
 export interface ExperiencedPersonalDetailsRequest extends BasePersonalDetails {
   uanNumber: string;
   experiences: ExperienceEntry[];

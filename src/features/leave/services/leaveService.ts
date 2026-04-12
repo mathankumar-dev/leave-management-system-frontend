@@ -59,6 +59,12 @@ export const leaveService = {
     return response.data;
   },
 
+  getLeaveApplicationByID: async (leaveId: number) => {
+    const res = await api.get(`/leaves/${leaveId}`);
+    
+    
+    return res.data;
+  },
   // getPendingApprovals: async (managerId: string): Promise<PendingLeaveApplicationApiResponse[]> => {
   //   const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
   //   return response.data.content;
@@ -66,8 +72,8 @@ export const leaveService = {
 
   getPendingApprovals: async (managerId: string) => {
     const response = await api.get(`/leave-approvals/pending/manager/${managerId}`);
-    // If the response is a direct array, use response.data. 
-    // If it's paged, use response.data.content.
+    
+    
     return response.data.content || response.data;
   },
 
@@ -122,9 +128,10 @@ export const leaveService = {
     );
   },
   getLeaveBalances: async (employeeId: string, year: number = 2026): Promise<LeaveBalanceResponse> => {
-    const res = await api.get(`leaves-balance/${employeeId}`, {
+    const res = await api.get(`leave/balance/${employeeId}/summary`, {
       params: { year }
     });
+    
     return res.data;
   },
   submitCompOffRequest: async (payload: CompOffRequest) => {

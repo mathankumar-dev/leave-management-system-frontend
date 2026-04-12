@@ -2,7 +2,7 @@ import { useEmployeeDashboard } from "@/features/dashboard/hooks";
 import LeaveDetailsDrawer from "@/features/leave/components/LeaveDetailsDrawer";
 import type { LeaveTypeBreakDown } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
-import { CustomLoader, MyFloatingActionButton } from "@/shared/components";
+import { CustomLoader } from "@/shared/components";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState, type JSX } from "react";
 import {
@@ -128,13 +128,12 @@ const DashboardView = () => {
     <motion.div
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto px-6 py-8 space-y-8 bg-[#F9FAFB] min-h-screen"
+      className="max-w-7xl mx-auto  space-y-8 bg-[#F9FAFB] min-h-screen"
     >
       {/* SaaS HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Overview</h1>
-          <p className="text-sm text-gray-500 font-medium">Welcome back, {user?.name}</p>
+          <p className="text-sm  font-bold">Welcome back, {user?.name}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden md:flex bg-white border border-gray-200 rounded-lg px-3 py-2 items-center gap-2 text-xs font-bold text-gray-500 shadow-sm">
@@ -196,7 +195,7 @@ const DashboardView = () => {
           {stats.map((item, idx) => (
             <motion.div
               key={idx}
-              whileHover={{ backgroundColor: "#F3F4F6" }} // Slightly darker gray on hover
+              whileHover={{ backgroundColor: "#F3F4F6" }} 
               onClick={() => setSelectedCard(item)}
               className={`
           grid grid-cols-12 items-center px-6 py-4 transition-colors cursor-pointer group
@@ -265,16 +264,16 @@ const DashboardView = () => {
 
 // --- Styled Sub-components ---
 
-const MonthlyCard = ({ label, val, sub, color }: any) => (
+const MonthlyCard = ({ label, val, sub }: any) => (
   <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</span>
     <div className="flex justify-between items-end mt-2">
       <h3 className="text-3xl font-black text-gray-900">{val} <span className="text-xs font-bold text-gray-400">Days</span></h3>
       <p className="text-[10px] font-bold text-gray-400 mb-1">{sub}</p>
     </div>
-    <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4 overflow-hidden">
+    {/* <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4 overflow-hidden">
       <div className={`h-full ${color}`} style={{ width: '65%' }} />
-    </div>
+    </div> */}
   </div>
 );
 
