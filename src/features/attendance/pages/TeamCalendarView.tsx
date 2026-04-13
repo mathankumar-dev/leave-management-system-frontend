@@ -414,6 +414,7 @@ const TeamCalendarView: React.FC = () => {
                         </div>
                       </div>
                     </motion.div>
+                    
                   );
                 })}
               </motion.div>
