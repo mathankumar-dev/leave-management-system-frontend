@@ -38,7 +38,6 @@ export const useEmployee = () => {
             setError(null);
             try {
                 const response = await employeeService.getProfile(employeeId);
-                console.log(response);
                 
                 setProfile(response);
                 return response;

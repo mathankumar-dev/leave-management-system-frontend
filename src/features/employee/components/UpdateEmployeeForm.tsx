@@ -84,28 +84,7 @@ const UpdateEmployeePopup: React.FC<Props> = ({ open, onClose, updateUser, emplo
         loadData();
     }, [open, employeeId]);
     // 1. Fetch organizational data and Employee details
-    useEffect(() => {
-        const loadData = async () => {
-            if (open && employeeId) {
-                // Fetch organizational lookups
-                fetchBranches();
-                fetchDepartments();
-                fetchManagers();
-                fetchRoles();
-
-                // Fetch specific employee data and load it into form immediately
-                try {
-                    const data = await fetchEmployeeProfile(employeeId);
-                    if (data) {
-                        syncFormData(data);
-                    }
-                } catch (error) {
-                    toast.error("Failed to load employee details");
-                }
-            }
-        };
-        loadData();
-    }, [open, employeeId]);
+   
     const syncFormData = (data: ProfileData) => {
         // Helper to find IDs from names if the API returns names
         const matchedRole = roles.find(r => r.roleName === data.role);
@@ -127,11 +106,8 @@ const UpdateEmployeePopup: React.FC<Props> = ({ open, onClose, updateUser, emplo
     };
 
     // 2. SYNC FORM DATA when profile is loaded
-    // 2. SYNC FORM DATA when profile is loaded
-    // 2. SYNC FORM DATA when profile is loaded
     useEffect(() => {
         if (profile && open) {
-            console.log("Syncing Profile Data:", profile);
 
             // Map String Names from JSON to IDs for your Dropdowns
             // This is crucial because your JSON has "Engineering" but your type wants "departmentId"
