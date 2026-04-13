@@ -1,5 +1,5 @@
 import type { TeamMemberBalance } from "@/features/attendance/types";
-import type { CompOffRequest, LeaveBalanceResponse, LeaveDecisionRequest, LeaveRecord, ODResponse, PendingLeaveApplicationApiResponse } from "@/features/leave/types";
+import type { CompOffRequest, LeaveBalanceResponse, LeaveBalanceResponseV2, LeaveDecisionRequest, LeaveRecord, ODResponse, PendingLeaveApplicationApiResponse } from "@/features/leave/types";
 import api from "@/services/apiClient";
 
 export const leaveService = {
@@ -127,11 +127,12 @@ export const leaveService = {
       }
     );
   },
-  getLeaveBalances: async (employeeId: string, year: number = 2026): Promise<LeaveBalanceResponse> => {
-    const res = await api.get(`/v1/leave/balance/${employeeId}/summary`, {
+  getLeaveBalances: async (employeeId: string, year: number = 2026): Promise<LeaveBalanceResponseV2> => {
+    const res = await api.get(`/v1/leave/balance/${employeeId}`, {
       params: { year }
     });
-    
+
+  
     return res.data;
   },
   submitCompOffRequest: async (payload: CompOffRequest) => {

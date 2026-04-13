@@ -1,6 +1,6 @@
 import type { TeamMemberBalance } from "@/features/attendance/types";
 import { leaveService } from "@/features/leave/services/leaveService";
-import type { LeaveBalanceResponse, LeaveRecord } from "@/features/leave/types";
+import type { LeaveBalanceResponse, LeaveBalanceResponseV2, LeaveRecord } from "@/features/leave/types";
 import { useCallback, useState } from "react";
 
 
@@ -12,7 +12,7 @@ export const useLeave = () => {
     const [teamOnLeave, setTeamOnLeave] = useState<TeamMemberBalance[]>([]);
     const [error, setError] = useState<string | null>(null);
     
-      const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponse | null>(null);
+      const [leaveBalance, setLeaveBalance] = useState<LeaveBalanceResponseV2 | null>(null);
 
 
     const fetchMyLeaves = useCallback(async (employeeId: string): Promise<LeaveRecord[]> => {
@@ -87,6 +87,7 @@ export const useLeave = () => {
         setError(null);
         try {
           const data = await leaveService.getLeaveBalances(employeeId, year);
+          
           setLeaveBalance(data);
           return data;
         } catch (err: any) {
