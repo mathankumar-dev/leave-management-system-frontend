@@ -19,8 +19,10 @@ export interface ProfileData {
   role: string;
   reportingId? : string | null;
   reportingName? : string | null;
-
+  departmentId?:number;
+  teamId?:number;
   hrname: string;
+  branchId?:number;
 
   joiningDate: string;
 

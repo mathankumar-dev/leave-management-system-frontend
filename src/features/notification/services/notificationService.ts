@@ -26,17 +26,17 @@ export const notificationService = {
 
   createFlashNews: async (data: FlashNewsRequest) => {
     try {
-      const message = await api.post("/v1/flash-news/create", data);
+      const message = await api.post("/v1/flash-news", data);
       return message.data;
     }
     catch (error: any) {
       throw error.response?.data?.message || "Failed to post the news"
     }
   },
-
-
   getFlashNews: async (): Promise<FlashNews[]> => {
     const response = await api.get('/v1/flash-news');
+    console.log(response);
+    
     return response.data;
   },
 

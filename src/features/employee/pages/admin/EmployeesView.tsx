@@ -1,9 +1,9 @@
 import AddEmployeePopup from "@/features/employee/components/AddEmployeeForm";
+import UpdateEmployeePopup from "@/features/employee/components/UpdateEmployeeForm";
 import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import type { EmployeeEntity } from "@/features/employee/types";
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -18,8 +18,7 @@ import {
 } from "react-icons/fa";
 
 const EmployeesView = () => {
-  const { getEmployees, loading, addUser, deleteUser } = useEmployee();
-
+  const { getEmployees, loading, fetchEmployeeProfile, addUser, updateUser, deleteUser } = useEmployee();
   const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
   const [allEmployees, setAllEmployees] = useState<EmployeeEntity[]>([]); // manager name lookup
   const [pagination, setPagination] = useState({ totalElements: 0, totalPages: 0 });
@@ -32,6 +31,8 @@ const EmployeesView = () => {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(0);
   const [openAddEmployee, setOpenAddEmployee] = useState(false);
+  const [openUpdateEmployee, setOpenUpdateEmployee] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
 
   const isSearchMode = !!searchTerm;
 
@@ -97,16 +98,16 @@ const EmployeesView = () => {
   }, [loadEmployeeData]);
 
   // ─── Debounced search ─────────────────────────────────────────
- const handleSearchInput = (value: string) => {
-  setSearchInput(value);
+  const handleSearchInput = (value: string) => {
+    setSearchInput(value);
 
-  if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
 
-  searchTimeout.current = setTimeout(() => {
-    setSearchTerm(value);
-    setCurrentPage(0);
-  }, 300);
-};
+    searchTimeout.current = setTimeout(() => {
+      setSearchTerm(value);
+      setCurrentPage(0);
+    }, 300);
+  };
 
   const clearSearch = () => {
     setSearchInput("");
@@ -310,6 +311,7 @@ const EmployeesView = () => {
                     </td>
 
                     {/* Options */}
+                    {/* Options */}
                     <td className="px-6 py-4 text-right relative overflow-visible">
                       <button
                         onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === emp.empId ? null : emp.empId); }}
@@ -328,6 +330,23 @@ const EmployeesView = () => {
                               exit={{ opacity: 0, scale: 0.95, x: 5 }}
                               className="absolute right-14 top-1/2 -translate-y-1/2 z-50 min-w-45 bg-white border border-slate-200 shadow-2xl rounded-sm p-1"
                             >
+                              <button
+                                onClick={async () => {
+                                  // 1. Set the specific employee ID
+                                  setSelectedEmployeeId(emp.empId);
+
+                                  // 2. Fetch the profile (if your hook stores it in a shared state)
+                                  await fetchEmployeeProfile(emp.empId);
+
+                                  // 3. Open the modal
+                                  setOpenUpdateEmployee(true);
+                                  setActiveMenu(null);
+                                }}
+                                className="w-full text-left px-3 py-2.5 text-[10px] font-black uppercase text-slate-700 hover:bg-slate-50 flex items-center gap-2 border-b border-slate-100"
+                              >
+                                <FaRegAddressCard size={12} className="text-indigo-500" /> Update Details
+                              </button>
+
                               {emp.active ? (
                                 <button
                                   onClick={() => { setConfirmState({ isOpen: true, empId: emp.empId, mode: 'DEACTIVATE' }); setActiveMenu(null); }}
@@ -413,6 +432,16 @@ const EmployeesView = () => {
         open={openAddEmployee}
         addUser={addUser}
         onClose={() => { setOpenAddEmployee(false); loadEmployeeData(); }}
+      />
+      <UpdateEmployeePopup
+        employeeId={selectedEmployeeId} // Use the state variable here
+        open={openUpdateEmployee}
+        updateUser={updateUser}
+        onClose={() => {
+          setOpenUpdateEmployee(false);
+          setSelectedEmployeeId(""); // Clear selection on close
+          loadEmployeeData();
+        }}
       />
 
       <ConfirmDialog
