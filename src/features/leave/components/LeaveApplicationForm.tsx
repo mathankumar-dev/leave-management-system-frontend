@@ -18,7 +18,7 @@ type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
-  const { setError } = useLeave();
+  const { setError,leaveBalance,fetchLeaveBalance } = useLeave();
   const { applyLeave, bankCompOff, loading } = useLeaveAction();
   const [submitted, setSubmitted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);

@@ -38,6 +38,7 @@ export const useEmployee = () => {
             setError(null);
             try {
                 const response = await employeeService.getProfile(employeeId);
+                
                 setProfile(response);
                 return response;
             } catch (err: unknown) {

@@ -11,7 +11,7 @@ import React, { useEffect, useState } from "react";
 import {
   FaEdit, FaEnvelope,
   FaEye,
-  FaFileAlt, FaPhone,
+  FaFileAlt, FaIdBadge, FaPhone,
   FaPlus,
   FaSave, FaTimes, FaTrash
 } from "react-icons/fa";
@@ -446,6 +446,9 @@ const EmployeeProfile: React.FC = () => {
 
   }, [backendProfile]);
 
+  console.log(backendProfile);
+
+
   // Sync aadhar
   useEffect(() => {
     const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
@@ -718,6 +721,8 @@ const EmployeeProfile: React.FC = () => {
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 text-[11px] text-slate-400 flex-wrap">
+            <FaIdBadge />
+            <span>Employee ID: <span className="font-semibold text-slate-500">{bp.id || "-"}</span></span>
             <HiOutlineShieldCheck className="text-slate-300" />
             <span>Verification: <span className="font-semibold text-slate-500">{bp.verificationStatus || "PENDING"}</span></span>
             <span className="text-slate-200">·</span>
