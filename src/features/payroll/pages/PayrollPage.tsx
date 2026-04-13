@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import logo from "@/assets/images/bg-rm-logo-HRES.png";
 import { usePayroll } from "@/features/payroll/hooks/usePayroll";
 import { useAuth } from "@/shared/auth/useAuth";
@@ -7,13 +7,12 @@ import type { YearlySummary } from "@/features/payroll/payrollTypes";
 import api from "@/services/apiClient";
 import { payrollService } from "@/features/payroll/services/payrollService";
 
-import { toPng } from "html-to-image";
-import jsPDF from "jspdf";
+
 
 const PayrollView: React.FC = () => {
   const { payslip, fetchPayslip } = usePayroll();
   const { user } = useAuth();
-  const [loadingPDF, setLoadingPDF] = useState(false);
+  const [loadingPDF] = useState(false);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [summary,setSummary] = useState<YearlySummary | null>(null);
@@ -39,7 +38,6 @@ const PayrollView: React.FC = () => {
     setLoadingProfile(true);
     try {
       const res = await api.get(`/employees/profile/${user?.id!}`);
-      console.log(res);
       setProfile(res.data);
     } catch (err) {
       console.error("Profile fetch failed", err);

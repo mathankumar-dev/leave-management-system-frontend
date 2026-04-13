@@ -12,7 +12,6 @@ export interface ProfileData {
   spouseContactNumber: string;
   children: never[];
   experiences: never[];
-  uanNumber: string;
   spouseDateOfBirth: string;
   id: number;
   name: string;
@@ -69,5 +68,7 @@ export interface ProfileData {
   accountNumber?: string;
   bankName?: string;
   pfNumber?: string;
-  uanNumber?: string;
+  uanNumber? : number;
+
+  passportPhotoPath?: string;
 }

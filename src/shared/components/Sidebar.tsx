@@ -1,5 +1,7 @@
-import logoSVG from "@/assets/svg/logo.svg";
+import logoWithName from "@/assets/images/bg-rm-logo-HRES.png";
+import logo from "@/assets/images/wenxt-W-only-logo.png";
 import { useAuth } from "@/shared/auth/useAuth";
+import { useAuthenticatedImage } from "@/shared/hooks/useAuthenticatedImage";
 import {
   FaBell,
   FaCalendarAlt,
@@ -9,6 +11,7 @@ import {
   FaExclamationTriangle,
   FaFileSignature,
   FaHistory,
+  FaHome,
   FaMoneyBillWave,
   FaThLarge,
   FaUsers
@@ -28,6 +31,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { imageUrl, isLoading: imageLoading } = useAuthenticatedImage(user?.passportPhotoPath);
 
   const userRole = user?.role?.toUpperCase();
   const userName = user?.name;
@@ -46,6 +50,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   const basePath = basePathMap[userRole as keyof typeof basePathMap] || "/employee";
 
   const tabs = [
+    { name: "Home", path: "portal", icon: <FaHome />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "CTO", "COO"] },
     { name: "Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO", "EMPLOYEE"] },
@@ -54,7 +59,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
     { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR", "CFO"] },
     { name: "Low Balance", path: "low-balance", icon: <FaExclamationTriangle />, roles: ["HR"] },
     { name: "Verifications", path: "verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
-    { name: "My Requests", path: "requests", icon: <FaHistory />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "CTO"] },
+    { name: "My Requests", path: "requests", icon: <FaHistory />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "CTO",] },
     { name: "Request Center", path: "request-center", icon: <FaFileSignature />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN", "CTO"] },
     { name: "Notifications", path: "notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     // { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "ADMIN"] },
@@ -68,7 +73,8 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   );
 
   const handleNavigate = (path: string) => {
-    navigate(`${basePath}/${path}`);
+    const finalPath = path === "portal" ? "/portal" : `${basePath}/${path}`;
+    navigate(finalPath);
     if (window.innerWidth < 768) setIsOpen(false);
   };
 
@@ -101,11 +107,17 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
 
         {/* LOGO AREA */}
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} mb-10 px-2 py-3 rounded-2xl bg-slate-50/50 transition-all`}>
-          <img src={logoSVG} alt="logo" className="w-8 h-8 min-w-8 p-2" />
+          {/* Added shrink-0 to prevent the logo from squishing */}
+          <img src={isCollapsed ? logoWithName : logo} alt="logo" className="w-18 h-16 min-w-18 p-2 shrink-0 object-contain" />
+
           {!isCollapsed && (
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-slate-900 text-xs font-black leading-none uppercase tracking-tighter">WeNxt</span>
-              <span className="text-brand text-[9px] font-bold uppercase tracking-widest whitespace-nowrap">Technologies</span>
+            <div className="flex flex-col justify-center overflow-hidden">
+              <span className="text-slate-900 text-xs font-black leading-tight uppercase tracking-tighter">
+                WeNxt
+              </span>
+              <span className="text-brand text-[9px] font-bold uppercase tracking-widest whitespace-nowrap leading-tight">
+                Technologies
+              </span>
             </div>
           )}
         </div>
@@ -113,10 +125,22 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
         {/* USER PROFILE */}
         <div
           onClick={() => handleNavigate("profile")}
-          className={`group  relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} p-3 mb-8 rounded-sm cursor-pointer transition-all hover:bg-slate-50`}
+          className={`group relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} p-3 mb-8 rounded-sm cursor-pointer transition-all hover:bg-slate-50`}
         >
-          <div className="w-10 h-10 min-w-10 rounded-full  bg-brand text-white flex items-center justify-center font-black shadow-lg shadow-brand/20 transition-transform group-hover:scale-105">
-            {userName?.charAt(0) || "U"}
+          {/* 3. Updated Avatar Circle */}
+          <div className="w-10 h-10 min-w-10 rounded-full bg-brand text-white flex items-center justify-center font-black shadow-lg shadow-brand/20 transition-transform group-hover:scale-105 overflow-hidden">
+            {imageLoading ? (
+              <div className="w-full h-full animate-pulse bg-white/20" />
+            ) : imageUrl ? (
+              <img
+                src={imageUrl}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              /* Fallback to Initial if no image */
+              userName?.charAt(0) || "U"
+            )}
           </div>
 
           {!isCollapsed && (
@@ -127,7 +151,6 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
           )}
         </div>
 
-        {/* NAVIGATION */}
         {/* NAVIGATION */}
         <div className="flex-1 overflow-y-auto no-scrollbar py-2">
           {!isCollapsed && (

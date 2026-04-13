@@ -164,7 +164,7 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
                   <motion.div key="step1" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} className="space-y-4">
                     <SectionHeader icon={<FaUser />} title="Identity & Contact" />
 
-                    <FormInput label="Employee ID (Custom ID)" name="empId" placeholder="e.g. WENXT001" value={formData.empId} onChange={handleInputChange} required />
+                    <FormInput label="Employee ID (Custom ID)" name="empId" placeholder="e.g. WENXT001" value={formData.empId.toUpperCase()} onChange={handleInputChange} required />
 
                     <div className="grid grid-cols-2 gap-4">
                       <FormInput label="Full Name" name="fullName" value={formData.fullName} onChange={handleInputChange} required />

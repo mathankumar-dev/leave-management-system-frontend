@@ -44,12 +44,10 @@ const ChangePasswordDialog: React.FC = () => {
 
     try {
       setLoaderState({ active: true, finished: false });
-      console.log("Going to call change password");
       
       await authService.changePassword(newPassword);
 
       
-      console.log("after calling change password");
       
       setLoaderState({ active: true, finished: true });
     } catch (err) {
@@ -63,9 +61,7 @@ const ChangePasswordDialog: React.FC = () => {
     if (user) {
       try {
         const updatedProfile = await authService.getEmployeeProfile(user.id);
-        console.log("updated profile");
         
-        console.log(updatedProfile);
         
         setUser(updatedProfile);
       } catch (err) {
