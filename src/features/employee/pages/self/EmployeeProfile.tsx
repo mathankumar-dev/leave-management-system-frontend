@@ -30,17 +30,17 @@ type ExperienceType = 'FRESHER' | 'EXPERIENCED';
 interface FP { formData: any; isEditing: boolean; onChange: (f: string, v: any) => void; }
 
 // Text input — always shows, never hides
-const F: React.FC<{ label: string; field: string; type?: string; span?: boolean; fullSpan?: boolean } & FP> = 
+const F: React.FC<{ label: string; field: string; type?: string; span?: boolean; fullSpan?: boolean } & FP> =
   ({ label, field, type = "text", span = false, fullSpan = false, formData, isEditing, onChange }) => (
     <div className={`flex flex-col gap-1 min-w-0 ${fullSpan ? "col-span-full" : span ? "col-span-full sm:col-span-2" : ""}`}>
       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label>
       {isEditing ? (
-        <input 
+        <input
           type={type}
           className="w-full border border-indigo-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all"
           value={formData[field] || ""}
           onChange={e => onChange(field, e.target.value)}
-          placeholder={label} 
+          placeholder={label}
         />
       ) : (
         /* Added 'min-w-0' here */
@@ -74,8 +74,8 @@ const S: React.FC<{
       <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 min-h-10 flex items-center min-w-0">
         <span
           className={`break-words flex-1 ${displayVal || formData[field]
-              ? ""
-              : "text-slate-300 italic text-xs"
+            ? ""
+            : "text-slate-300 italic text-xs"
             }`}
         >
           {displayVal || formData[field] || "—"}
@@ -359,8 +359,7 @@ const EmployeeProfile: React.FC = () => {
   const [originalData, setOriginalData] = useState<any>({});
   const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
   const { imageUrl, isLoading: imageLoading } = useAuthenticatedImage(backendProfile?.passportPhotoPath);
-
-
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
 
   // Common files
@@ -379,6 +378,8 @@ const EmployeeProfile: React.FC = () => {
   useEffect(() => {
     if (!authLoading && user?.id) fetchEmployeeProfile(user.id);
   }, [fetchEmployeeProfile, user?.id, authLoading]);
+
+
 
   // Pre-fill form
   useEffect(() => {
@@ -622,24 +623,55 @@ const EmployeeProfile: React.FC = () => {
         {/* ── HEADER ── */}
         <div className="bg-white rounded-t-2xl border border-slate-200 shadow-sm px-6 py-5">
           <div className="flex flex-col md:flex-row md:items-start gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-100 to-rose-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm border border-rose-200/50">
+            {/* 1. Add cursor-pointer and onClick to your existing image container */}
+            <div
+              onClick={() => imageUrl && setIsPreviewOpen(true)} // Only open if image exists
+              className={`w-16 h-16 rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-sm ${imageUrl ? 'cursor-pointer hover:ring-4 hover:ring-indigo-50 transition-all' : ''}`}
+            >
               {imageLoading ? (
-                /* Loading State: Pulse effect while the Blob is being created */
                 <div className="w-full h-full animate-pulse bg-rose-300/20" />
               ) : imageUrl ? (
-                /* Success State: The authenticated image */
-                <img
-                  src={imageUrl}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
+                <img src={imageUrl} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                /* Fallback State: Show the initial if no image path exists or loading failed */
                 <span className="text-2xl font-black text-rose-600">
                   {profile?.name?.charAt(0) || "U"}
                 </span>
               )}
             </div>
+
+            {/* 2. The Modal Overlay (Add this at the bottom of your JSX, outside the main div) */}
+            {isPreviewOpen && (
+              <div
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+                onClick={() => setIsPreviewOpen(false)} // Close on clicking overlay
+              >
+                <div className="relative max-w-2xl w-full flex flex-col items-center">
+                  {/* Close Button */}
+                  <button
+                    className="absolute -top-12 right-0 text-white hover:text-indigo-300 flex items-center gap-2 text-sm font-bold"
+                    onClick={() => setIsPreviewOpen(false)}
+                  >
+                    <FaTimes /> Close
+                  </button>
+
+                  {/* The Image "Canvas" */}
+                  <div
+                    className="bg-white p-2 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300"
+                    onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image itself
+                  >
+                    <img
+                      src={imageUrl || undefined}
+                      alt="Profile Preview"
+                      className="max-h-[70vh] w-auto rounded-2xl object-contain"
+                    />
+                    <div className="p-4 text-center">
+                      <h3 className="font-bold text-slate-800">{profile.name}</h3>
+                      <p className="text-xs text-slate-500">{bp.designation}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex-1 min-w-0 space-y-1.5">
               {/* Editable name */}
               {isEditing ? (
@@ -730,7 +762,13 @@ const EmployeeProfile: React.FC = () => {
                   <Card title="Employment Overview">
                     <F label="Designation" field="designation" {...fp} />
                     <F label="Joining Date" field="joiningDate" type="date" {...fp} />
-                    <F label="Reporting Manager" field="reportingName" {...{ formData: { reportingName: bp.reportingName }, isEditing: false, onChange: () => { } }} />
+
+                    {
+                      backendProfile?.reportingId && (
+
+                        <F label="Reporting Manager" field="reportingName" {...{ formData: { reportingName: bp.reportingName }, isEditing: false, onChange: () => { } }} />
+                      )
+                    }
                     <F label="Role" field="role" {...{ formData: { role: bp.role }, isEditing: false, onChange: () => { } }} />
                     <F label="Biometric" field="biometricStatus" {...{ formData: { biometricStatus: bp.biometricStatus }, isEditing: false, onChange: () => { } }} />
                     <F label="VPN Status" field="vpnStatus" {...{ formData: { vpnStatus: bp.vpnStatus }, isEditing: false, onChange: () => { } }} />
@@ -829,7 +867,17 @@ const EmployeeProfile: React.FC = () => {
                     <F label="Company" field="company" {...fp} />
                     <F label="Joining Date" field="joiningDate" type="date" {...fp} />
                     <F label="Experience Type" field="experienceType" {...fp} />
-                    <F label="Reporting Manager" field="reportingName" {...fp} />
+                    {backendProfile?.reportingId && (
+                      <F
+                        label="Reporting Manager"
+                        field="reportingName"
+                        {...{
+                          formData: { reportingName: bp.reportingName },
+                          isEditing: false,
+                          onChange: () => { }
+                        }}
+                      />
+                    )}
                     <F label="Biometric Status" field="biometricStatus" {...fp} />
                     <F label="VPN Status" field="vpnStatus" {...fp} />
                     <div className="col-span-full pt-1">

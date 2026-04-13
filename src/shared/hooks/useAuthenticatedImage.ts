@@ -17,7 +17,7 @@ export const useAuthenticatedImage = (path: string | null | undefined) => {
             setIsLoading(true);
             try {
                 const response = await api.get(
-                    `/documents/view?path=${encodeURIComponent(path)}`,
+                    `/v1/documents/view?path=${encodeURIComponent(path)}`,
                     { responseType: "blob" }
                 );
 

@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const contextLogout = useCallback(async () => {
     try {
-      await api.post('/auth/logout');
+      await api.post('/v1/auth/logout');
     } catch (e) {
       console.error("Logout request failed", e);
     } finally {

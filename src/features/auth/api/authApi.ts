@@ -5,29 +5,29 @@ import type { AuthResponse, LoginCredentials } from "@/shared/auth/authTypes";
 export const authService = {
 
   loginUser: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/login', credentials);
+    const response = await api.post<AuthResponse>('/v1/auth/login', credentials);
     return response.data;
   },
 
 
 
   getEmployeeProfile: async (id: string): Promise<User> => {
-    const response = await api.get<User>(`/employees/profile/${id}`);
+    const response = await api.get<User>(`/v1/employees/profile/${id}`);
 
     return response.data;
   },
 
   getMyProfile: async (): Promise<User> => {
-    const response = await api.get<User>('/employees/me');
+    const response = await api.get<User>('/v1/employees/me');
     return response.data;
   },
 
   getProfileByID: async (id: number): Promise<User> => {
-    const response = await api.get<User>(`/employees/profile/${id}`);
+    const response = await api.get<User>(`/v1/employees/profile/${id}`);
     return response.data;
   },
   // getProfileByID: async (id  : number): Promise<User> => {
-  //   const response = await api.get<User>(`/employees/profile/${id}`);
+  //   const response = await api.get<User>(`/v1/employees/profile/${id}`);
   //   console.log(response);
 
   //   return response.data;
@@ -68,29 +68,13 @@ export const authService = {
       }
     }
     const response = await api.post(
-      `/employees/personal-details/${id}/${type.toLowerCase()}`,
+      `/v1/employees/personal-details/${id}/${type.toLowerCase()}`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }
     );
     return response.data;
   },
 
-  // ─── PUT — profile update ─────────────────────────────────────
-  // Backend: PUT /employees/profile/{id}
-  // Parts:
-  //   data           → JSON string (ProfileUpdateRequest)
-  //   idProof        → MultipartFile (optional)
-  //   passportPhoto  → MultipartFile (optional)
-  //   FRESHER only:
-  //     tenthMarksheet, twelfthMarksheet, degreeCertificate, offerLetter
-  //   EXPERIENCED only:
-  //     experienceCerts[]  → List<MultipartFile>  (one per experience entry)
-  //     joiningLetters[]   → List<MultipartFile>  (one per experience entry)
-  //     relievingLetter[]  → List<MultipartFile>  (one per experience entry)
-  //
-  // IMPORTANT: data JSON must include experiences[] for EXPERIENCED type
-  // so backend can match files by index.
-  // ─── PUT — profile update ─────────────────────────────────────
   updateProfileDetails: async (
     id: string,
     type: "FRESHER" | "EXPERIENCED",
@@ -154,7 +138,7 @@ export const authService = {
 
     // ── 5. API call ───────────────────────────────────────────────
     const response = await api.put(
-      `/employees/profile/${id}`,
+      `/v1/employees/profile/${id}`,
       formData,
       {
         headers: {
@@ -169,11 +153,11 @@ export const authService = {
 
 
   changePassword: async (newPassword: string): Promise<void> => {
-    await api.post('/auth/force-change', { newPassword });
+    await api.post('/v1/auth/force-change', { newPassword });
   },
 
   forgotPassword: async (email: string): Promise<void> => {
-    await api.post('/password-reset/forgot-password', {
+    await api.post('/v1/password-reset/forgot-password', {
       email
     });
   },
@@ -186,7 +170,7 @@ export const authService = {
   }) => {
 
     return api.post(
-      "/password-reset/verify-otp",
+      "/v1/password-reset/verify-otp",
       data
     );
 
