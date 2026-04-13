@@ -48,6 +48,13 @@ const TeamCalendarView: React.FC = () => {
     loading
   } = useCalendar();
 
+
+
+
+
+
+
+
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
@@ -155,7 +162,13 @@ const TeamCalendarView: React.FC = () => {
   const selectedDayTeamLeaves = teamCalendar[selectedDateKey] || [];
   const selectedDayHoliday = PUBLIC_HOLIDAYS_2026[selectedDateKey];
 
+  console.log("team");
 
+  console.log(teamCalendar);
+  console.log("mine");
+  console.log(employeeCalendar);
+  console.log("attendance");
+  console.log(attendanceCalendar);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20 bg-slate-50/50">
@@ -261,12 +274,21 @@ const TeamCalendarView: React.FC = () => {
                         </div>
 
                         <div className="flex-1 overflow-hidden space-y-0.5 hidden sm:block">
+                          {/* Existing Holiday/Weekend logic... */}
                           {holiday ? (
-                            <div className="px-1 py-0.5 bg-rose-100/50 border border-rose-200 text-rose-600 text-[7px] font-black   rounded-sm truncate">{holiday}</div>
+                            <div className="px-1 py-0.5 bg-rose-100/50 border border-rose-200 text-rose-600 text-[7px] font-black rounded-sm truncate">{holiday}</div>
                           ) : isWeekend ? (
-                            <div className="px-1 py-0.5 bg-slate-200/50 border border-slate-300 text-slate-500 text-[7px] font-black   rounded-sm truncate">Weekend Holiday</div>
+                            <div className="px-1 py-0.5 bg-slate-200/50 border border-slate-300 text-slate-500 text-[7px] font-black rounded-sm truncate">Weekend Holiday</div>
                           ) : null}
 
+                          {/* 1. ADD YOUR OWN LEAVES HERE */}
+                          {mine.map((leave: any, idx: number) => (
+                            <div key={`mine-${idx}`} className="px-1 py-0.5 bg-amber-50 border border-amber-100 text-amber-700 text-[7px] font-black rounded-sm truncate">
+                              {leave.leaveTypeName || 'My Leave'}
+                            </div>
+                          ))}
+
+                          {/* Existing Attendance logic... */}
                           {attendance && (
                             attendance.checkIn && attendance.checkOut ? (
                               <div className="px-1 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[7px] font-black rounded-sm truncate">
@@ -277,12 +299,12 @@ const TeamCalendarView: React.FC = () => {
                             ))
                           )}
 
+                          {/* Existing Team Leave logic... */}
                           {team.slice(0, 2).map((emp: any, idx: number) => (
-                            <div key={idx} className="px-1 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[7px] font-black   rounded-sm truncate">
+                            <div key={idx} className="px-1 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[7px] font-black rounded-sm truncate">
                               <TeamMemberName employeeId={emp.employeeId} />
                             </div>
                           ))}
-                          {team.length > 2 && <p className="text-[7px] font-black text-slate-400 px-1  ">+ {team.length - 2} MORE</p>}
                         </div>
                         <div className="mt-auto flex gap-0.5 sm:hidden justify-center">
                           {mine.length > 0 && <div className="w-1 h-1 bg-amber-400 rounded-full" />}
@@ -414,7 +436,7 @@ const TeamCalendarView: React.FC = () => {
                         </div>
                       </div>
                     </motion.div>
-                    
+
                   );
                 })}
               </motion.div>
@@ -498,7 +520,7 @@ const TeamCalendarView: React.FC = () => {
               </div>
             )}
 
-            {/* 2. ATTENDANCE OR ABSENCE SECTION */}
+            {/* 2. ATTENDANCE SECTION (Existing) */}
             {attendanceCalendar[selectedDateKey] ? (
               attendanceCalendar[selectedDateKey].checkIn ? (
                 /* PRESENT STATE */
@@ -578,7 +600,32 @@ const TeamCalendarView: React.FC = () => {
               )
             ) : null}
 
-            {/* 3. TEAM LEAVES SECTION */}
+            {/* 2.5 MY LEAVES SECTION (NEWLY ADDED) */}
+            {employeeCalendar[selectedDateKey] && employeeCalendar[selectedDateKey].length > 0 && (
+              employeeCalendar[selectedDateKey].map((leave: any, idx: number) => (
+                <div
+                  key={`my-leave-${idx}`}
+                  className="flex items-center gap-3 p-3 bg-amber-50/50 border border-amber-200 rounded-sm"
+                >
+                  <div className="w-8 h-8 bg-amber-100 text-amber-600 flex items-center justify-center rounded-sm shrink-0">
+                    <FaUserAlt size={10} />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <p className="text-xs font-black text-amber-900 truncate">
+                      My {leave.leaveTypeName || 'Leave'}
+                    </p>
+                    <div className="flex items-center text-[10px] text-amber-700">
+                      <span>Status: </span>
+                      <div className="ml-1 scale-75 origin-left">
+                        <StatusBadge2 status={leave.status} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+
+            {/* 3. TEAM LEAVES SECTION (Existing) */}
             {selectedDayTeamLeaves.length > 0 ? (
               selectedDayTeamLeaves.map((emp: any) => (
                 <div
@@ -603,8 +650,10 @@ const TeamCalendarView: React.FC = () => {
                 </div>
               ))
             ) : (
-              /* 4. FALLBACK: ONLY SHOW "NO RECORDS" IF LITERALLY NOTHING IS HAPPENING */
-              !selectedDayHoliday && !attendanceCalendar[selectedDateKey] && (
+              /* 4. FALLBACK logic */
+              !selectedDayHoliday &&
+              !attendanceCalendar[selectedDateKey] &&
+              (!employeeCalendar[selectedDateKey] || employeeCalendar[selectedDateKey].length === 0) && (
                 <div className="flex flex-col items-center py-10 opacity-30">
                   <FaUserCheck size={20} />
                   <p className="text-[9px] font-black tracking-widest mt-2 uppercase">No Activity</p>
