@@ -1,5 +1,5 @@
 import type { TeamMemberBalance } from "@/features/attendance/types";
-import type { CompOffRequest, LeaveBalanceResponse, LeaveBalanceResponseV2, LeaveDecisionRequest, LeaveRecord, ODResponse, PendingLeaveApplicationApiResponse } from "@/features/leave/types";
+import type { CompOffRequest, LeaveBalanceResponseV2, LeaveDecisionRequest, LeaveRecord, ODResponse, PendingLeaveApplicationApiResponse } from "@/features/leave/types";
 import api from "@/services/apiClient";
 
 export const leaveService = {

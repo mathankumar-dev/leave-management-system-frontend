@@ -91,6 +91,7 @@ export const useNotifications = (employeeId?: string) => {
     refetch: fetchNotifications,
     markAsRead,
     markAllAsRead,
-    fetchFlashNews
+    fetchFlashNews,
+    flashNews
   };
 };

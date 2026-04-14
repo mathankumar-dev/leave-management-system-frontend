@@ -1,6 +1,6 @@
 import type { TeamMemberBalance } from "@/features/attendance/types";
 import { leaveService } from "@/features/leave/services/leaveService";
-import type { LeaveBalanceResponse, LeaveBalanceResponseV2, LeaveRecord } from "@/features/leave/types";
+import type { LeaveBalanceResponseV2, LeaveRecord } from "@/features/leave/types";
 import { useCallback, useState } from "react";
 
 
