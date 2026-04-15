@@ -55,14 +55,6 @@ export const authService = {
       if (Array.isArray(files.experienceCerts)) {
         files.experienceCerts.forEach(f => formData.append("experienceCerts", f));
       }
-      // joiningLetters — List<MultipartFile>
-      if (Array.isArray(files.joiningLetters)) {
-        files.joiningLetters.forEach(f => formData.append("joiningLetters", f));
-      }
-      // relievingLetter — List<MultipartFile>
-      if (Array.isArray(files.relievingLetter)) {
-        files.relievingLetter.forEach(f => formData.append("relievingLetter", f));
-      }
       if (Array.isArray(files.joiningLetter)) {
         files.joiningLetter.forEach((file) => {
           formData.append("joiningLetters", file);
@@ -177,9 +169,7 @@ updateProfileDetails: async (
 
   changePassword: async (newPassword: string): Promise<void> => {
     await api.post('/auth/force-change', { newPassword });
-    await api.put('/auth/change-password', {
-      newPassword,
-    });
+
   },
 
   forgotPassword: async (email: string): Promise<void> => {
