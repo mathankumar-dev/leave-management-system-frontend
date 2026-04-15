@@ -10,7 +10,6 @@ import ManagerDashboardView from "@/features/dashboard/manager/pages/ManagerDash
 import RequestCenter from "@/features/employee/components/RequestCenter";
 // import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
 import { HRVerificationPage } from "@/features/employee/pages/hr/Hrverificationpage";
-import CalendarView from "@/features/employee/pages/self/CalendarView";
 import DashboardView from "@/features/employee/pages/self/DashboardView";
 import EmployeeProfile from "@/features/employee/pages/self/EmployeeProfile";
 import TeamMembersView from "@/features/employee/pages/TeamMembersView";
@@ -54,13 +53,12 @@ const DashboardRoutes = () => {
       <Route path="profile" element={<EmployeeProfile />} />
       <Route path="request-center" element={<RequestCenter />} />
 
-      {/* CALENDAR */}
-      <Route path="calendar" element={<CalendarView />} />
+
 
       {/* MANAGER */}
       <Route path="team" element={<TeamMembersView />} />
       <Route path="action-center" element={<PendingApprovalsView />} />
-      <Route path="team-calendar" element={<TeamCalendarView />} />
+      <Route path="calendar" element={<TeamCalendarView />} />
 
       {/* HR */}
       <Route path="employees" element={renderEmployees()} />

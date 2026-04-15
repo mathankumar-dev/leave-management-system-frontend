@@ -15,6 +15,7 @@ export interface RequestTileProps {
     reasonMessage: string;
     days: number;
     createdAt: string;
+    status?: 'PENDING' | 'APPROVED' | 'REJECTED' | string; // Added status prop
     onAccept?: () => void;
     onReject?: () => void;
     onDiscuss?: () => void;
@@ -30,11 +31,13 @@ const RequestTile: React.FC<RequestTileProps> = ({
     endDateHalfDayType,
     days,
     createdAt,
+    status = 'PENDING', // Default to PENDING for safety
     onAccept,
     onReject,
     onDiscuss,
     attachments,
     onViewAttachment,
+    reasonMessage
 }) => {
 
     const getHalfDayLabel = (type?: string | null) => {
@@ -77,10 +80,9 @@ const RequestTile: React.FC<RequestTileProps> = ({
                     </span>
                     <div className='flex items-center gap-2 mt-0.5'>
                         <span className='text-indigo-600 font-bold text-[10px] uppercase tracking-tighter'>
-                            {leaveType.replace('_', ' ')}
+                            {leaveType?.replace('_', ' ')}
                         </span>
 
-                        {/* MOBILE VIEW: Only show count if NOT On Duty */}
                         {!isOnDuty && (
                             <span className='md:hidden text-amber-500 text-[10px] font-bold'>
                                 • {duration.count} {duration.session && `(${duration.session})`}
@@ -96,11 +98,9 @@ const RequestTile: React.FC<RequestTileProps> = ({
             <div className='hidden md:flex flex-col items-center min-w-35 px-2 text-center'>
                 <span className='text-[11px] font-bold text-slate-600'>{dateRange}</span>
 
-                {/* DESKTOP: Only show count and session if NOT On Duty */}
                 {!isOnDuty ? (
                     <div className='flex flex-col items-center mt-0.5'>
-                        <span className={`text-[9px] font-black uppercase tracking-widest ${days % 1 !== 0 ? 'text-amber-500' : 'text-indigo-400'
-                            }`}>
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${days % 1 !== 0 ? 'text-amber-500' : 'text-indigo-400'}`}>
                             {duration.count}
                         </span>
                         {duration.session && (
@@ -118,87 +118,73 @@ const RequestTile: React.FC<RequestTileProps> = ({
                 )}
             </div>
 
-            {/* 3. Reason Section */}
-            {/* {leaveType !== "COMP_OFF" ? (
-                <>
-                    <div className="hidden md:block">
-                        <Divider />
-                    </div>
-
-                    <div className='flex-1 min-w-0'>
-                        <p className='text-xs md:text-sm text-slate-500 line-clamp-2 leading-relaxed'>
-                            <span className='font-bold text-slate-400 mr-1 md:hidden uppercase text-[9px]'>
-                                Reason:
-                            </span>
-                            "{reasonMessage}"
-                        </p>
-                        {isOnDuty && (
-                            <span className="text-[8px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase border border-blue-100 mt-1 inline-block">
-                                Official Assignment
-                            </span>
-                        )}
-                    </div>
-                </>
-            ) : (
-                <div className='flex-1 flex items-center justify-center'>
-                    <span className='text-[10px] font-bold text-slate-400 uppercase tracking-widest'>
-                        Compensatory Off Request
-                    </span>
-                </div>
-            )} */}
-
             <div className="hidden md:block"><Divider /></div>
 
-            {/* 4. Actions Section */}
-            <div className='flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto mt-2 md:mt-0'>
-                <div className='flex flex-1 md:flex-none gap-2'>
-                    {onAccept && (
-                        <CTAButton
-                            label='Accept'
-                            className="flex-1 md:px-5 bg-green-600 hover:bg-green-700 text-[10px] uppercase font-bold h-9 rounded-sm shadow-sm"
-                            onClick={onAccept}
-                        />
+            {/* 3. Reason Section (Optional: Un-comment if you want to see the reason message) */}
+             <div className='flex-1 min-w-0 hidden lg:block'>
+                <p className='text-[11px] text-slate-500 line-clamp-1 italic'>
+                    "{reasonMessage}"
+                </p>
+            </div>
+            
+            <div className="hidden lg:block"><Divider /></div>
 
-                    )}
+            {/* 4. Status or Actions Section */}
+            <div className='flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto'>
+                {status === 'PENDING' ? (
+                    <div className='flex flex-1 md:flex-none gap-2'>
+                        {onAccept && (
+                            <CTAButton
+                                label='Accept'
+                                className="flex-1 md:px-5 bg-green-600 hover:bg-green-700 text-[10px] uppercase font-bold h-9 rounded-sm shadow-sm"
+                                onClick={(e) => { e.stopPropagation(); onAccept(); }}
+                            />
+                        )}
 
-                    {
-                        onReject && (
+                        {onReject && (
                             <CTAButton
                                 label='Reject'
                                 isOutlineOnly
                                 className='flex-1 md:px-5 border-red-200! hover:bg-red-50 text-[10px] uppercase font-bold h-9 rounded-sm'
-                                onClick={onReject}
+                                onClick={(e) => { e.stopPropagation(); onReject(); }}
                             />
-                        )
-                    }
-
-
-                </div>
-
-                {onDiscuss && (
-                    <CTAButton
-                        label='Discuss'
-                        isOutlineOnly
-                        className='flex-1 md:flex-none md:px-5 border-slate-200! text-slate-500! hover:bg-slate-50 text-[10px] uppercase font-bold h-9 rounded-sm'
-                        onClick={onDiscuss}
-                    />
+                        )}
+                        
+                        {onDiscuss && (
+                            <CTAButton
+                                label='Discuss'
+                                isOutlineOnly
+                                className='hidden xl:flex md:px-5 border-slate-200! text-slate-500! hover:bg-slate-50 text-[10px] uppercase font-bold h-9 rounded-sm'
+                                onClick={(e) => { e.stopPropagation(); onDiscuss(); }}
+                            />
+                        )}
+                    </div>
+                ) : (
+                    <div className={`flex-1 md:flex-none px-6 py-2 rounded-sm border font-black text-[10px] uppercase tracking-widest text-center min-w-[120px] 
+                        ${status === 'APPROVED' 
+                            ? 'bg-green-50 border-green-200 text-green-600' 
+                            : 'bg-red-50 border-red-200 text-red-600'}`}
+                    >
+                        {status}
+                    </div>
                 )}
             </div>
-            {/* ATTACHMENT PILL */}
+
+            {/* 5. Attachment Pill */}
             {attachments && attachments.length > 0 && (
                 <button
-                    onClick={() => onViewAttachment?.(attachments[0])}
+                    onClick={(e) => { e.stopPropagation(); onViewAttachment?.(attachments[0]); }}
                     className="group flex items-center gap-1.5 px-2 py-1 bg-slate-100 hover:bg-indigo-600 text-slate-600 hover:text-white rounded-md transition-all border border-slate-200"
                     title="View Attachments"
                 >
                     <FaFileImage size={14} className="opacity-70 group-hover:opacity-100" />
                     <span className="text-[10px] font-bold">
-                        {attachments.length > 1 ? `FILES (${attachments.length})` : 'FILE'}
+                        {attachments.length > 1 ? `(${attachments.length})` : 'FILE'}
                     </span>
                 </button>
             )}
 
-            {/* 5. Timestamp Footer */}
+            {/* 6. Timestamp Footer */}
             <div className='flex justify-between items-center md:flex-col md:justify-center border-t border-slate-50 md:border-none pt-2 md:pt-0'>
                 <span className='md:hidden text-[9px] font-bold text-slate-300 uppercase'>Requested</span>
                 <span className='text-slate-400 text-[9px] md:text-[10px] font-medium whitespace-nowrap'>
@@ -206,8 +192,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
                 </span>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default RequestTile;
-
