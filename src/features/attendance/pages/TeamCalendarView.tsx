@@ -38,6 +38,7 @@ const getStatusColor = (status?: string): StatusTheme => {
 const TeamCalendarView: React.FC = () => {
   const { user } = useAuth();
   const id = user?.id;
+  const canViewTeam = user?.role?.toUpperCase() !== 'EMPLOYEE';
   const {
     fetchTeamSchedule,
     teamCalendar,
@@ -155,7 +156,13 @@ const TeamCalendarView: React.FC = () => {
   const selectedDayTeamLeaves = teamCalendar[selectedDateKey] || [];
   const selectedDayHoliday = PUBLIC_HOLIDAYS_2026[selectedDateKey];
 
+  console.log("team");
 
+  console.log(teamCalendar);
+  console.log("mine");
+  console.log(employeeCalendar);
+  console.log("attendance");
+  console.log(attendanceCalendar);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20 bg-slate-50/50">
@@ -189,7 +196,7 @@ const TeamCalendarView: React.FC = () => {
             </h2>
             <div className="flex gap-4 mt-1">
               <LegendItem color="bg-amber-400" label="Me" />
-              <LegendItem color="bg-indigo-500" label="Team" />
+              {canViewTeam && <LegendItem color="bg-indigo-500" label="Team" />}
             </div>
           </div>
 
@@ -254,18 +261,27 @@ const TeamCalendarView: React.FC = () => {
                             ${isSelected ? "bg-indigo-600 text-white" : "text-slate-400"}`}>
                             {day}
                           </span>
+                          {/* Monthly Grid Badges */}
                           <div className="flex gap-1">
                             {mine.length > 0 && <CountBadge color="amber" count={mine.length} />}
-                            {team.length > 0 && <CountBadge color="indigo" count={team.length} />}
+                            {canViewTeam && team.length > 0 && <CountBadge color="indigo" count={team.length} />}
                           </div>
                         </div>
 
                         <div className="flex-1 overflow-hidden space-y-0.5 hidden sm:block">
+
                           {holiday ? (
-                            <div className="px-1 py-0.5 bg-rose-100/50 border border-rose-200 text-rose-600 text-[7px] font-black   rounded-sm truncate">{holiday}</div>
+                            <div className="px-1 py-0.5 bg-rose-100/50 border border-rose-200 text-rose-600 text-[7px] font-black rounded-sm truncate">{holiday}</div>
                           ) : isWeekend ? (
-                            <div className="px-1 py-0.5 bg-slate-200/50 border border-slate-300 text-slate-500 text-[7px] font-black   rounded-sm truncate">Weekend Holiday</div>
+                            <div className="px-1 py-0.5 bg-slate-200/50 border border-slate-300 text-slate-500 text-[7px] font-black rounded-sm truncate">Weekend Holiday</div>
                           ) : null}
+
+                          {/* 1. ADD YOUR OWN LEAVES HERE */}
+                          {mine.map((leave: any, idx: number) => (
+                            <div key={`mine-${idx}`} className="px-1 py-0.5 bg-amber-50 border border-amber-100 text-amber-700 text-[7px] font-black rounded-sm truncate">
+                              {leave.leaveTypeName || 'My Leave'}
+                            </div>
+                          ))}
 
                           {attendance && (
                             attendance.checkIn && attendance.checkOut ? (
@@ -278,11 +294,10 @@ const TeamCalendarView: React.FC = () => {
                           )}
 
                           {team.slice(0, 2).map((emp: any, idx: number) => (
-                            <div key={idx} className="px-1 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[7px] font-black   rounded-sm truncate">
+                            <div key={idx} className="px-1 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[7px] font-black rounded-sm truncate">
                               <TeamMemberName employeeId={emp.employeeId} />
                             </div>
                           ))}
-                          {team.length > 2 && <p className="text-[7px] font-black text-slate-400 px-1  ">+ {team.length - 2} MORE</p>}
                         </div>
                         <div className="mt-auto flex gap-0.5 sm:hidden justify-center">
                           {mine.length > 0 && <div className="w-1 h-1 bg-amber-400 rounded-full" />}
@@ -312,106 +327,129 @@ const TeamCalendarView: React.FC = () => {
                 {weeklyData.map((d, i) => {
                   const isToday = new Date().toDateString() === d.date.toDateString();
                   const isWeekend = d.date.getDay() === 0 || d.date.getDay() === 6;
+                  const isSelected = selectedDay === d.date.getDate() && month === d.date.getMonth();
+
+                  // Role-based visibility check
+                  const canViewTeam = user?.role?.toUpperCase() !== 'EMPLOYEE';
 
                   return (
                     <motion.div
                       key={i}
-                      variants={{
-                        hidden: { opacity: 0, x: -20 },
-                        show: { opacity: 1, x: 0 }
+                      layoutId={`day-${d.date.getTime()}`}
+                      onClick={() => {
+                        setSelectedDay(d.date.getDate());
+                        setCurrentDate(new Date(d.date));
                       }}
-                      className={`relative flex flex-col md:flex-row items-stretch gap-6 p-4 rounded-3xl border transition-all duration-300
-                      ${isToday
-                          ? "bg-white border-indigo-500 shadow-[0_10px_40px_rgba(79,70,229,0.1)] ring-1 ring-indigo-500/20"
-                          : "bg-white/80 border-slate-100 hover:border-slate-200 shadow-sm"
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        show: { opacity: 1, y: 0 }
+                      }}
+                      className={`relative flex flex-col md:flex-row items-stretch gap-6 p-5 rounded-2xl border transition-all duration-300 cursor-pointer
+            ${isSelected
+                          ? "bg-white border-indigo-500 shadow-lg ring-2 ring-indigo-500/10 scale-[1.01]"
+                          : "bg-white/80 border-slate-100 hover:border-indigo-200 hover:shadow-md shadow-sm"
                         }
-                      ${isWeekend && !isToday ? "bg-slate-50/50 opacity-90" : ""}
-                    `}
+            ${isWeekend && !isSelected ? "bg-slate-50/50 opacity-90" : ""}
+          `}
                     >
-                      {/* Left Side: Date Anchor (Horizontal fixed width) */}
-                      <div className="flex md:flex-col items-center justify-center md:w-24 shrink-0 border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-4">
-                        <p className={`text-[10px] font-black uppercase tracking-widest md:mb-1 mr-3 md:mr-0
-                            ${isToday ? "text-indigo-600" : "text-slate-400"}`}>
+                      {/* Date Indicator Side-car */}
+                      <div className="flex md:flex-col items-center justify-center md:w-20 shrink-0 border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 md:pr-4">
+                        <p className={`text-[10px] font-black uppercase tracking-[0.15em] md:mb-1 mr-3 md:mr-0
+              ${isToday ? "text-indigo-600" : "text-slate-400"}`}>
                           {d.date.toLocaleDateString('en-US', { weekday: 'short' })}
                         </p>
-                        <p className={`text-4xl font-black tracking-tighter leading-none
-                            ${isToday ? "text-slate-900" : "text-slate-700"}`}>
+                        <p className={`text-3xl font-black tracking-tighter leading-none
+              ${isToday || isSelected ? "text-indigo-900" : "text-slate-700"}`}>
                           {d.date.getDate()}
                         </p>
                         {isToday && (
-                          <span className="ml-3 md:ml-0 md:mt-2 bg-indigo-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                            Today
+                          <span className="ml-3 md:ml-0 md:mt-2 bg-indigo-600 text-white text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-sm">
+                            Current
                           </span>
                         )}
                       </div>
 
-                      {/* Middle: Shift/Main Info */}
-                      <div className="flex-1 flex flex-col md:flex-row gap-4 py-2">
-                        {/* My Shift Section */}
-                        <div className="md:w-64">
-                          {d.attendance ? (
-                            <div className={`h-full p-4 rounded-2xl border flex flex-col justify-center
-                  ${d.attendance.checkIn ? "bg-emerald-50/40 border-emerald-100" : "bg-rose-50/40 border-rose-100"}`}>
-                              <div className="flex items-center gap-2 mb-2 text-slate-500">
-                                <FaUserAlt size={10} className={isToday ? "text-indigo-500" : ""} />
-                                <span className="text-[9px] font-black uppercase tracking-wider">My Shift</span>
-                              </div>
-                              {d.attendance.checkIn ? (
-                                <div className="flex items-baseline gap-2">
-                                  <span className="text-xl font-black text-slate-800">{d.attendance.checkIn.slice(0, 5)}</span>
-                                  <span className="text-slate-300 font-bold">—</span>
-                                  <span className="text-xl font-black text-slate-800">{d.attendance.checkOut?.slice(0, 5) || '--:--'}</span>
-                                  <span className="ml-auto text-[10px] font-bold text-emerald-600 bg-white px-2 py-0.5 rounded-lg border border-emerald-100">
-                                    {d.attendance.workingHours}h
-                                  </span>
+                      {/* Main Content Info */}
+                      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 py-1">
+
+                        {/* Attendance/Shift Column - Spans full width (12) if employee, otherwise 5 */}
+                        <div className={canViewTeam ? "lg:col-span-5" : "lg:col-span-12"}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <FaUserAlt size={10} className="text-slate-400" />
+                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Personal Status</span>
+                          </div>
+
+                          {d.mine.length > 0 ? (
+                            <div className="flex flex-col gap-2">
+                              {d.mine.map((leave: any, idx: number) => (
+                                <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-100 shadow-sm">
+                                  <span className="text-xs font-black text-amber-900">{leave.leaveTypeName}</span>
+                                  <StatusBadge2 status={leave.status} />
                                 </div>
-                              ) : (
-                                <span className="text-sm font-black text-rose-500 uppercase tracking-widest">Absent</span>
-                              )}
+                              ))}
+                            </div>
+                          ) : d.attendance?.checkIn ? (
+                            <div className="bg-emerald-50/60 border border-emerald-100 p-3 rounded-xl flex items-center justify-between">
+                              <div>
+                                <p className="text-[10px] font-bold text-emerald-800 leading-tight">Shift Logged</p>
+                                <p className="text-lg font-black text-slate-800 mt-0.5">
+                                  {d.attendance.checkIn.slice(0, 5)} <span className="text-slate-300 mx-1">—</span> {d.attendance.checkOut?.slice(0, 5) || '??'}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <span className="block text-[8px] font-black text-emerald-600 uppercase">Hours</span>
+                                <span className="text-sm font-black text-slate-700">{d.attendance.workingHours}h</span>
+                              </div>
                             </div>
                           ) : d.holiday ? (
-                            <div className="h-full p-4 rounded-2xl bg-rose-50 border border-rose-100 flex flex-col justify-center">
-                              <span className="text-[9px] font-black text-rose-500 uppercase mb-1">Public Holiday</span>
-                              <p className="text-sm font-black text-rose-900 uppercase italic truncate">{d.holiday}</p>
+                            <div className="bg-rose-50 border border-rose-100 p-3 rounded-xl">
+                              <span className="text-[8px] font-black text-rose-500 uppercase tracking-tighter">Office Closed</span>
+                              <p className="text-sm font-black text-rose-900 leading-tight">{d.holiday}</p>
                             </div>
                           ) : (
-                            <div className="h-full flex items-center px-4 border-2 border-dashed border-slate-100 rounded-2xl text-slate-300 italic text-xs font-medium">
-                              No activity logged
+                            <div className="h-full min-h-[60px] flex items-center justify-center border-2 border-dashed border-slate-100 rounded-xl">
+                              <p className="text-[10px] text-slate-300 font-bold uppercase italic tracking-widest">No Logs Yet</p>
                             </div>
                           )}
                         </div>
 
-                        {/* Team Section */}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Team Out</span>
-                            <div className="h-[1px] flex-1 bg-slate-100" />
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {d.team.length > 0 ? (
-                              d.team.map((r: any, idx: number) => (
-                                <div key={idx} className="flex items-center gap-2 bg-slate-100/50 hover:bg-indigo-50 p-1.5 pr-3 rounded-full transition-all cursor-default border border-transparent hover:border-indigo-100 group/item">
-                                  <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-[9px] font-bold text-indigo-500 shadow-sm">
-                                    {r.employeeId.slice(-2)}
+                        {/* Team Activity Column - Only rendered if not an Employee */}
+                        {canViewTeam && (
+                          <div className="lg:col-span-7 border-l border-slate-100 pl-6">
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Team Out</span>
+                              <div className="h-[1px] flex-1 bg-slate-100" />
+                              <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md">
+                                {d.team.length} Member{d.team.length !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {d.team.length > 0 ? (
+                                d.team.map((r: any, idx: number) => (
+                                  <div key={idx} className="flex items-center gap-3 bg-white border border-slate-100 p-2 rounded-xl hover:border-indigo-200 transition-colors group/team">
+                                    <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-[10px] font-black text-indigo-600 border border-indigo-100">
+                                      {r.employeeId.slice(-2)}
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                      <span className="text-[11px] font-black text-slate-800 truncate leading-tight">
+                                        <TeamMemberName employeeId={r.employeeId} />
+                                      </span>
+                                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter truncate">
+                                        {r.leaveTypeName || 'Leave'}
+                                      </span>
+                                    </div>
                                   </div>
-                                  <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-slate-700 leading-none">
-                                      <TeamMemberName employeeId={r.employeeId} />
-                                    </span>
-                                    <span className="text-[7px] font-bold text-slate-400 uppercase tracking-tighter">
-                                      {r.leaveTypeName || 'Leave'}
-                                    </span>
-                                  </div>
+                                ))
+                              ) : (
+                                <div className="col-span-2 py-4 flex items-center justify-center gap-2 text-emerald-500/60">
+                                  <FaCheckCircle size={14} />
+                                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Full Strength</span>
                                 </div>
-                              ))
-                            ) : (
-                              <div className="flex items-center gap-2 text-slate-300 py-1 px-1">
-                                <FaCheckCircle size={12} />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Full Team Present</span>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </motion.div>
                   );
@@ -420,61 +458,114 @@ const TeamCalendarView: React.FC = () => {
             )}
 
             {viewMode === "day" && (
-              <motion.div key="day" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-8 max-w-2xl mx-auto">
+              <motion.div
+                key="day"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-8 max-w-2xl mx-auto"
+              >
+                {/* Header */}
                 <div className="bg-slate-900 text-white p-6 rounded-sm mb-6 flex justify-between items-center shadow-md">
                   <div>
-                    <p className="text-[10px] font-black   tracking-[0.2em] text-indigo-400">Daily Schedule</p>
-                    <h3 className="text-2xl font-black mt-1">{currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</h3>
+                    <p className="text-[10px] font-black tracking-[0.2em] text-indigo-400 uppercase">Daily Schedule</p>
+                    <h3 className="text-2xl font-black mt-1">
+                      {currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    </h3>
                   </div>
                   <FaCalendarDay className="text-slate-700 opacity-50" size={40} />
                 </div>
+
                 <div className="space-y-4">
+                  {/* 1. Public Holiday */}
                   {dailyHoliday && <DayRecord title="Public Holiday" content={dailyHoliday} color="rose" />}
+
+                  {/* 2. My Leave Applications (Personal Status) */}
+                  {dailyMine.length > 0 && dailyMine.map((leave: any, idx: number) => (
+                    <motion.div
+                      key={`my-leave-${idx}`}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                    >
+                      <DayRecord
+                        title="My Leave Application"
+                        content={leave.leaveTypeName}
+                        status={leave.status}
+                        color="amber"
+                      />
+                    </motion.div>
+                  ))}
+
+                  {/* 3. My Attendance Record */}
                   {attendanceCalendar[dailyKey] && (
                     <DayRecord
                       title="My Attendance"
                       content={`IN ${attendanceCalendar[dailyKey].checkIn?.slice(0, 5)} | OUT ${attendanceCalendar[dailyKey].checkOut?.slice(0, 5)} | ${attendanceCalendar[dailyKey].workingHours} hrs`}
-                      color="amber"
+                      color="indigo"
                     />
                   )}
-                  {dailyTeam.map((r: any, i: number) => (
-                    <DayRecord key={`team-${i}`} title={<TeamMemberName employeeId={r.employeeId} />} content={r.leaveTypeName || "Team Absence"} status={r.status} />
+
+                  {/* 4. Team Absence Records - Only visible to non-employees */}
+                  {user?.role?.toUpperCase() !== 'EMPLOYEE' && dailyTeam.map((r: any, i: number) => (
+                    <motion.div
+                      key={`team-${i}`}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                    >
+                      <DayRecord
+                        title={<TeamMemberName employeeId={r.employeeId} />}
+                        content={r.leaveTypeName || "Team Absence"}
+                        status={r.status}
+                      />
+                    </motion.div>
                   ))}
-                  <div className="ml-11 pt-2 mt-1 border-t border-emerald-200/50 space-y-3 animate-in fade-in slide-in-from-top-1">
 
-
-                    <div className="pt-2 border-t border-emerald-100">
-                      <p className="text-[8px] font-black text-emerald-800 tracking-widest mb-2">Punching Logs</p>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {/* Use optional chaining here to prevent the crash */}
-                        {attendanceCalendar[selectedDateKey]?.punchRecords ? (
-                          attendanceCalendar[selectedDateKey].punchRecords
-                            .split(",")
-                            .filter((r: string) => r.trim().length > 0)
-                            .map((record: string, idx: number) => {
-                              const parts = record.split(":");
-                              const time = `${parts[0]}:${parts[1]}`;
-                              const isCheckIn = record.toLowerCase().includes(":in");
-                              return (
-                                <div key={idx} className={`flex items-center justify-between px-2 py-1 rounded-sm border ${isCheckIn ? "bg-white border-emerald-200 shadow-sm" : "bg-slate-50 border-slate-200"}`}>
-                                  <span className={`text-[9px] font-black ${isCheckIn ? "text-emerald-700" : "text-slate-500"}`}>{time}</span>
-                                  <span className={`text-[7px] font-bold tracking-tighter ${isCheckIn ? "text-emerald-500" : "text-rose-400"}`}>{isCheckIn ? "● IN" : "○ OUT"}</span>
-                                </div>
-                              );
-                            })
-                        ) : (
-                          /* This now correctly shows when the date doesn't exist in your calendar object */
-                          <span className="col-span-2 text-[8px] italic text-slate-400">No logs available</span>
-                        )}
-                      </div>
+                  {/* 5. Punching Logs Section */}
+                  <div className="ml-1 pt-2 mt-4 border-t border-slate-100">
+                    <p className="text-[8px] font-black text-slate-500 tracking-widest mb-3 uppercase">Detailed Punch Logs</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {attendanceCalendar[selectedDateKey]?.punchRecords ? (
+                        attendanceCalendar[selectedDateKey].punchRecords
+                          .split(",")
+                          .filter((r: string) => r.trim().length > 0)
+                          .map((record: string, idx: number) => {
+                            const parts = record.split(":");
+                            const time = `${parts[0]}:${parts[1]}`;
+                            const isCheckIn = record.toLowerCase().includes(":in");
+                            return (
+                              <div
+                                key={idx}
+                                className={`flex items-center justify-between px-3 py-2 rounded-lg border transition-all
+                      ${isCheckIn
+                                    ? "bg-emerald-50/50 border-emerald-100 text-emerald-700"
+                                    : "bg-slate-50 border-slate-200 text-slate-500"
+                                  }`}
+                              >
+                                <span className="text-[10px] font-black">{time}</span>
+                                <span className={`text-[8px] font-bold ${isCheckIn ? "text-emerald-500" : "text-rose-400"}`}>
+                                  {isCheckIn ? "● IN" : "○ OUT"}
+                                </span>
+                              </div>
+                            );
+                          })
+                      ) : (
+                        <div className="col-span-full py-4 bg-slate-50/50 border border-dashed border-slate-200 rounded-xl text-center">
+                          <span className="text-[10px] font-bold italic text-slate-400">No punch records found</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  {(dailyTeam.length === 0 && dailyMine.length === 0 && !dailyHoliday) && (
-                    <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-sm">
-                      <FaUserCheck className="mx-auto text-slate-200 mb-3" size={30} />
-                      <p className="text-slate-400 font-bold  text-xs tracking-widest">Full Team Presence</p>
-                    </div>
-                  )}
+
+                  {/* Empty State Logic */}
+                  {dailyMine.length === 0 &&
+                    !attendanceCalendar[dailyKey] &&
+                    !dailyHoliday &&
+                    (user?.role?.toUpperCase() === 'EMPLOYEE' || dailyTeam.length === 0) && (
+                      <div className="text-center py-20 border-2 border-dashed border-slate-100 rounded-xl bg-white/50">
+                        <FaUserCheck className="mx-auto text-slate-200 mb-3" size={30} />
+                        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">No scheduled activity</p>
+                      </div>
+                    )}
                 </div>
               </motion.div>
             )}
@@ -497,7 +588,7 @@ const TeamCalendarView: React.FC = () => {
               </div>
             )}
 
-            {/* 2. ATTENDANCE OR ABSENCE SECTION */}
+            {/* 2. ATTENDANCE SECTION (Existing) */}
             {attendanceCalendar[selectedDateKey] ? (
               attendanceCalendar[selectedDateKey].checkIn ? (
                 /* PRESENT STATE */
@@ -577,7 +668,32 @@ const TeamCalendarView: React.FC = () => {
               )
             ) : null}
 
-            {/* 3. TEAM LEAVES SECTION */}
+            {/* 2.5 MY LEAVES SECTION (NEWLY ADDED) */}
+            {employeeCalendar[selectedDateKey] && employeeCalendar[selectedDateKey].length > 0 && (
+              employeeCalendar[selectedDateKey].map((leave: any, idx: number) => (
+                <div
+                  key={`my-leave-${idx}`}
+                  className="flex items-center gap-3 p-3 bg-amber-50/50 border border-amber-200 rounded-sm"
+                >
+                  <div className="w-8 h-8 bg-amber-100 text-amber-600 flex items-center justify-center rounded-sm shrink-0">
+                    <FaUserAlt size={10} />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <p className="text-xs font-black text-amber-900 truncate">
+                      My {leave.leaveTypeName || 'Leave'}
+                    </p>
+                    <div className="flex items-center text-[10px] text-amber-700">
+                      <span>Status: </span>
+                      <div className="ml-1 scale-75 origin-left">
+                        <StatusBadge2 status={leave.status} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+
+            {/* 3. TEAM LEAVES SECTION (Existing) */}
             {selectedDayTeamLeaves.length > 0 ? (
               selectedDayTeamLeaves.map((emp: any) => (
                 <div
@@ -602,8 +718,10 @@ const TeamCalendarView: React.FC = () => {
                 </div>
               ))
             ) : (
-              /* 4. FALLBACK: ONLY SHOW "NO RECORDS" IF LITERALLY NOTHING IS HAPPENING */
-              !selectedDayHoliday && !attendanceCalendar[selectedDateKey] && (
+              /* 4. FALLBACK logic */
+              !selectedDayHoliday &&
+              !attendanceCalendar[selectedDateKey] &&
+              (!employeeCalendar[selectedDateKey] || employeeCalendar[selectedDateKey].length === 0) && (
                 <div className="flex flex-col items-center py-10 opacity-30">
                   <FaUserCheck size={20} />
                   <p className="text-[9px] font-black tracking-widest mt-2 uppercase">No Activity</p>

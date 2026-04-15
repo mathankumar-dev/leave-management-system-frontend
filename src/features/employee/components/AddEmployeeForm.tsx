@@ -42,11 +42,6 @@ const AddEmployeePopup: React.FC<Props> = ({ open, onClose, addUser }) => {
     }
   }, [open, fetchBranches, fetchDepartments, fetchManagers, fetchRoles]);
 
-
-
-
-
-
   const [formData, setFormData] = useState({
     empId: "",
     fullName: "",

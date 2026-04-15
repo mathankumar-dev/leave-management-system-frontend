@@ -56,11 +56,11 @@ export const employeeService = {
     const res = await api.get(`/v1/employees/departments/list`);
     return res.data;
   },
-    getAllManagers: async () => {
+  getAllManagers: async () => {
     const res = await api.get(`/v1/employees/managers/list`);
     return res.data;
   },
-    getAllBranches: async () => {
+  getAllBranches: async () => {
     const res = await api.get(`/v1/employees/branch/list`);
     return res.data;
   },
@@ -128,6 +128,13 @@ export const employeeService = {
       return response.data;
     } catch (error: any) {
       throw error.response?.data || "Failed to create user";
+    }
+  },
+  updateUser: async (userData: CreateUserRequest) => {
+    try {
+      await api.put('/v1/admin/users/update', userData);
+    } catch (error: any) {
+      throw error.response?.data || "Failed to update user";
     }
   },
 

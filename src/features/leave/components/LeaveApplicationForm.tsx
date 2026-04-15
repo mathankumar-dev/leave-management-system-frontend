@@ -3,11 +3,12 @@ import { useLeaveAction } from "@/features/leave/hooks/useLeaveActions";
 import type { LeaveType } from "@/features/leave/types";
 import { useAuth } from "@/shared/auth/useAuth";
 import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   HiOutlineChatBubbleLeftRight,
   HiOutlineCheckCircle,
   HiOutlineClock,
+  HiOutlineExclamationTriangle,
   HiOutlinePaperAirplane,
   HiOutlinePaperClip,
   HiOutlineShieldCheck,
@@ -18,7 +19,7 @@ type HalfDayType = "FIRST_HALF" | "SECOND_HALF" | null;
 
 const LeaveApplicationForm = () => {
   const { user } = useAuth();
-  const { setError } = useLeave();
+  const { setError, leaveBalance, fetchLeaveBalance, error } = useLeave();
   const { applyLeave, bankCompOff, loading } = useLeaveAction();
   const [submitted, setSubmitted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,11 +46,11 @@ const LeaveApplicationForm = () => {
     MATERNITY: "Maternity"
   };
 
-  // useEffect(() => {
-  //   if (user?.id) {
-  //     fetchLeaveBalance(user.id, 2026);
-  //   }
-  // }, [user?.id, fetchLeaveBalance]);
+  useEffect(() => {
+    if (user?.id) {
+      fetchLeaveBalance(user.id, 2026);
+    }
+  }, [user?.id, fetchLeaveBalance]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) setSelectedFile(e.target.files[0]);
@@ -146,19 +147,28 @@ const LeaveApplicationForm = () => {
 
     const gender = user?.gender?.toUpperCase();
 
-    if(user?.maritalStatus === "MARRIED"){
-    if (gender === "MALE") {
-      types.push("PATERNITY");
-    } else if (gender === "FEMALE") {
-      types.push("MATERNITY");
+    if (user?.maritalStatus === "MARRIED") {
+      if (gender === "MALE") {
+        types.push("PATERNITY");
+      } else if (gender === "FEMALE") {
+        types.push("MATERNITY");
+      }
     }
-    }
-
-
 
     return types as (LeaveType)[];
   };
 
+
+  const getBalanceForType = (type: string) => {
+
+    if (!leaveBalance) return 0;
+
+    const monthlyData = type === "SICK"
+      ? leaveBalance.sickLeaveBalance.remainingDays
+      : leaveBalance.annualLeaveBalance.remainingDays;
+
+    return monthlyData;
+  };
   const availableTypes = getAvailableLeaveTypes();
 
   const HalfDaySelector = ({ label, value, onChange }: { label: string, value: HalfDayType, onChange: (v: HalfDayType) => void }) => (
@@ -197,38 +207,40 @@ const LeaveApplicationForm = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto py-4 md:py-6 px-0 md:px-4">
-      {/* {error && (
+      {error && (
         <div className="mx-4 mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-3">
           <HiOutlineExclamationTriangle size={20} className="text-rose-500 shrink-0 mt-0.5" />
           <p className="text-sm text-rose-700">{error}</p>
         </div>
-      )} */}
+      )}
 
-      {/* {leaveBalance && (
+      {leaveBalance && (
         <div className="mb-6 mx-4 md:mx-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           <div className="flex overflow-x-auto no-scrollbar md:divide-x divide-slate-100">
-            {leaveBalance.breakdown
-              .filter((item) => availableTypes.includes(item.leaveType as any))
-              .map((item) => {
-                const isActive = formData.category === item.leaveType;
+            {availableTypes
+              .filter(type => type !== "COMP_OFF")
+              .map((type) => {
+
+                const isActive = formData.leaveTypeName === type;
+                const remaining = getBalanceForType(type);
                 return (
                   <div
-                    key={item.leaveType}
-                    onClick={() => setFormData({ ...formData, category: item.leaveType as any })}
-                    className={`flex-1 min-w-35 px-4 py-3 cursor-pointer transition-all relative ${isActive ? "bg-indigo-50/50" : "hover:bg-slate-50"
+                    key={type}
+                    onClick={() => setFormData({ ...formData, leaveTypeName: type as any })}
+                    className={`flex-1 min-w-[140px] px-4 py-3 cursor-pointer transition-all relative ${isActive ? "bg-indigo-50/50" : "hover:bg-slate-50"
                       }`}
                   >
                     {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}
                     <div className="flex flex-col">
-                      <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? "text-indigo-600" : "text-slate-400"}`}>
-                        {item.leaveType.replace("_", " ")} (annual)
+                      <span className={`text-[8px] font-bold uppercase tracking-wider ${isActive ? "text-indigo-600" : "text-slate-400"
+                        }`}>
+                        {type.replace("_", " ")}
                       </span>
-                      <div className="flex items-center justify-around gap-1">
-                    
-                        <div className="flex flex-col justify-center items-center">
-                          <span className="font-medium">Balance </span>
-                          <span className="text-lg font-bold text-brand">{item.allocatedDays} <span className="font-medium text-slate-500">left</span></span>
-                        </div>
+                      <div className="flex flex-col mt-1">
+                        <span className="text-xs text-slate-500 font-medium">Balance</span>
+                        <span className="text-lg font-bold text-slate-900">
+                          {remaining} <span className="text-xs font-medium text-slate-400">days</span>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -236,7 +248,7 @@ const LeaveApplicationForm = () => {
               })}
           </div>
         </div>
-      )} */}
+      )}
 
       <div className="bg-white border-y md:border border-slate-200 md:rounded-2xl shadow-sm overflow-hidden">
         {/* Responsive Header */}

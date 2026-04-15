@@ -250,6 +250,7 @@ const PersonalDetailsModal = () => {
         required = false,
         multiple = false,
         customFile = undefined,
+        allowedTypes, // e.g., ".png, .jpg, .pdf"
         onCustomChange
     }: {
         label: string,
@@ -257,12 +258,31 @@ const PersonalDetailsModal = () => {
         required?: boolean,
         multiple?: boolean,
         customFile?: any,
+        allowedTypes?: string,
         onCustomChange?: (file: File | null) => void
     }) => {
         const inputId = `file-input-${fileKey}`;
-
-        // Explicitly check the global 'files' state if customFile isn't provided
         const displayFile = customFile !== undefined ? customFile : files[fileKey];
+
+        const handleValidation = (fileList: FileList | null): boolean => {
+            if (!allowedTypes || !fileList) return true;
+
+            // Split allowedTypes into an array and clean them up
+            const typesArray = allowedTypes.split(',').map(t => t.trim().toLowerCase());
+
+            // Check every file selected against the allowed list
+            const allValid = Array.from(fileList).every(file => {
+                const extension = `.${file.name.split('.').pop()?.toLowerCase()}`;
+                // Also check MIME type (e.g., 'image/png') for better coverage
+                return typesArray.includes(extension) || typesArray.includes(file.type);
+            });
+
+            if (!allValid) {
+                alert(`Invalid file type. Please upload: ${allowedTypes}`);
+                return false;
+            }
+            return true;
+        };
 
         return (
             <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-2xl group hover:border-indigo-200 transition-all">
@@ -271,9 +291,10 @@ const PersonalDetailsModal = () => {
                         <HiOutlineDocumentText size={18} />
                     </div>
                     <div className="overflow-hidden">
-                        <p className="text-[11px] font-bold text-neutral-700 tracking-tight">{label} {required && <span className="text-red-500">*</span>}</p>
+                        <p className="text-[11px] font-bold text-neutral-700 tracking-tight">
+                            {label} {required && <span className="text-red-500">*</span>}
+                        </p>
                         <p className="text-[10px] text-neutral-400 truncate">
-                            {/* Logic to show the filename once selected */}
                             {Array.isArray(displayFile)
                                 ? `${displayFile.length} files`
                                 : (displayFile as File)?.name || "Not uploaded"}
@@ -293,18 +314,28 @@ const PersonalDetailsModal = () => {
                     type="file"
                     className="hidden"
                     multiple={multiple}
+                    accept={allowedTypes}
                     onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
+                        const selectedFiles = e.target.files;
+
+                        // 1. Validate types
+                        if (!handleValidation(selectedFiles)) {
+                            e.target.value = '';
+                            return;
+                        }
+
+                        // 2. Process changes
                         if (onCustomChange) {
-                            onCustomChange(file);
+                            onCustomChange(selectedFiles?.[0] || null);
                         } else {
-                            // This triggers handleFileChange which updates the global 'files' state
                             if (multiple) {
-                                handleMultiFileChange(fileKey, e.target.files);
+                                handleMultiFileChange(fileKey, selectedFiles);
                             } else {
-                                handleFileChange(fileKey, file);
+                                handleFileChange(fileKey, selectedFiles?.[0] || null);
                             }
                         }
+
+                        // Reset to allow re-uploading the same file if deleted
                         e.target.value = '';
                     }}
                 />
@@ -413,8 +444,12 @@ const PersonalDetailsModal = () => {
                             {activeStep === 1 && (
                                 <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FileRow label="ID Proof (Aadhar/PAN/Driving License/Voter ID)" fileKey="idProof" required />
-                                    <FileRow label="Passport Size Photo" fileKey="passportPhoto" required />
-
+                                    <FileRow
+                                        label="Passport Size Photo"
+                                        fileKey="passportPhoto"
+                                        required
+                                        allowedTypes=".jpg,.jpeg,.png"
+                                    />
                                     {!isExperienced && (
                                         <>
                                             <FileRow label="10th Marksheet" fileKey="tenthMarksheet" required />

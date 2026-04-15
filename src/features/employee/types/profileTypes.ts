@@ -13,14 +13,16 @@ export interface ProfileData {
   children: never[];
   experiences: never[];
   spouseDateOfBirth: string;
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: string;
   reportingId? : string | null;
   reportingName? : string | null;
-
+  departmentId?:number;
+  teamId?:number;
   hrname: string;
+  branchId?:number;
 
   joiningDate: string;
 
