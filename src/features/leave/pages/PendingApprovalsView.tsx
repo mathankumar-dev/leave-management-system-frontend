@@ -29,6 +29,7 @@ const PendingApprovalsView: React.FC = () => {
     const [timeFilter, setTimeFilter] = useState("all");
     const [detailModalReq, setDetailModalReq] = useState<any | null>(null);
     const [statusFilter, setStatusFilter] = useState("PENDING");
+    console.log(requests);
 
     useEffect(() => {
         if (user?.id && canSeeDashboardMetrics) {
@@ -88,6 +89,13 @@ const PendingApprovalsView: React.FC = () => {
         });
     }, [requests, searchQuery, timeFilter, statusFilter]);
 
+    const pendingCount = useMemo(() =>
+        requests.filter(r => r.status === 'PENDING').length,
+        [requests]);
+
+    const approvedCount = useMemo(() =>
+        requests.filter(r => r.status === 'APPROVED').length,
+        [requests]);
 
 
 
@@ -128,7 +136,6 @@ const PendingApprovalsView: React.FC = () => {
     }
 
 
-
     return (
         <div className='flex flex-col gap-4 w-full max-w-full overflow-x-hidden'>
 
@@ -164,7 +171,8 @@ const PendingApprovalsView: React.FC = () => {
 
                     <div className='flex justify-start md:justify-center'>
                         <MetricTile
-                            value={requests.length.toString().padStart(2, '0')}
+                            // Only count requests where status is 'PENDING'
+                            value={pendingCount.toString().padStart(2, '0')}
                             firstLabel="Pending"
                             secondLabel="Approvals"
                         />
@@ -175,9 +183,9 @@ const PendingApprovalsView: React.FC = () => {
                             <div className="hidden md:block h-12 w-px bg-slate-300" />
                             <div className='flex justify-start md:justify-center'>
                                 <MetricTile
-                                    value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
-                                    firstLabel="Members"
-                                    secondLabel="out Today"
+                                    value={approvedCount.toString().padStart(2, '0')}
+                                    firstLabel="Total"
+                                    secondLabel="Approved"
                                 />
                             </div>
 
@@ -185,9 +193,9 @@ const PendingApprovalsView: React.FC = () => {
 
                             <div className='col-span-2 md:col-span-1 flex justify-center md:justify-end border-t border-slate-200 pt-6 md:border-none md:pt-0'>
                                 <MetricTile
-                                    value={(weeklyLeaveSummary?.length || 0).toString().padStart(2, '0')}
-                                    firstLabel="Weekly Absence"
-                                    secondLabel="Summary"
+                                    value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
+                                    firstLabel="Members"
+                                    secondLabel="Out Today"
                                 />
                             </div>
                         </>
