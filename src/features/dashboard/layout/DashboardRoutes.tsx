@@ -59,7 +59,7 @@ const DashboardRoutes = () => {
 
       {/* MANAGER */}
       <Route path="team" element={<TeamMembersView />} />
-      <Route path="approvals" element={<PendingApprovalsView />} />
+      <Route path="action-center" element={<PendingApprovalsView />} />
       <Route path="team-calendar" element={<TeamCalendarView />} />
 
       {/* HR */}

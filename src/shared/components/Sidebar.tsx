@@ -17,6 +17,8 @@ import {
   FaThLarge,
   FaUsers
 } from "react-icons/fa";
+import { HiUserGroup } from "react-icons/hi";
+import { HiUsers } from "react-icons/hi2";
 import { MdVerifiedUser } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -53,11 +55,11 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   const tabs = [
     { name: "Home", path: "portal", icon: <FaHome />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
-    { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "CTO", "COO"] },
+    { name: "Action Center", path: "action-center", icon: <FaCog />, roles: ["MANAGER", "HR", "CTO", "COO","ADMIN"] },
     { name: "Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO", "EMPLOYEE"] },
-    { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO"] },
+    { name: "Team Members", path: "team", icon: <HiUserGroup />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO"] },
     // { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
-    { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR", "CFO"] },
+    { name: "Employees", path: "employees", icon: <HiUsers />, roles: ["ADMIN", "HR", "CFO"] },
     { name: "Low Balance", path: "low-balance", icon: <FaExclamationTriangle />, roles: ["HR"] },
     { name: "Verifications", path: "verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
     { name: "My Requests", path: "requests", icon: <FaHistory />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "CTO",] },
