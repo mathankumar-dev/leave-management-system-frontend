@@ -23,13 +23,12 @@ const PendingApprovalsView: React.FC = () => {
         handleDecision,
     } = useManagerApprovals(user!.id, user?.role);
 
-    const { weeklyLeaveSummary, teamOnLeave } = useLeave();
+    const { teamOnLeave } = useLeave();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
     const [detailModalReq, setDetailModalReq] = useState<any | null>(null);
     const [statusFilter, setStatusFilter] = useState("PENDING");
-    console.log(requests);
 
     useEffect(() => {
         if (user?.id && canSeeDashboardMetrics) {

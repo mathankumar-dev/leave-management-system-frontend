@@ -156,13 +156,6 @@ const TeamCalendarView: React.FC = () => {
   const selectedDayTeamLeaves = teamCalendar[selectedDateKey] || [];
   const selectedDayHoliday = PUBLIC_HOLIDAYS_2026[selectedDateKey];
 
-  console.log("team");
-
-  console.log(teamCalendar);
-  console.log("mine");
-  console.log(employeeCalendar);
-  console.log("attendance");
-  console.log(attendanceCalendar);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20 bg-slate-50/50">

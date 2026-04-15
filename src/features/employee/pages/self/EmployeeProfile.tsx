@@ -459,7 +459,6 @@ const EmployeeProfile: React.FC = () => {
 
   }, [backendProfile]);
 
-  console.log(backendProfile);
 
 
   // Sync aadhar
