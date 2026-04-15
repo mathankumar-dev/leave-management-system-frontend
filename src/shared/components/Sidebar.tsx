@@ -19,7 +19,7 @@ import {
 } from "react-icons/fa";
 import { HiUserGroup } from "react-icons/hi";
 import { HiUsers } from "react-icons/hi2";
-import { MdVerifiedUser } from "react-icons/md";
+import { MdPendingActions, MdVerifiedUser } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface SidebarProps {
@@ -55,7 +55,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   const tabs = [
     { name: "Home", path: "portal", icon: <FaHome />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
-    { name: "Action Center", path: "action-center", icon: <FaCog />, roles: ["MANAGER", "HR", "CTO", "COO","ADMIN"] },
+    { name: "Action Center", path: "action-center", icon: <MdPendingActions />, roles: ["MANAGER", "HR", "CTO", "COO","ADMIN"] },
     { name: "Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO", "EMPLOYEE"] },
     { name: "Team Members", path: "team", icon: <HiUserGroup />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO"] },
     // { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
