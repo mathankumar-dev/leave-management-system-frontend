@@ -45,23 +45,23 @@ export const employeeService = {
 
 
   getNameByID: async (employeeId: string) => {
-    const res = await api.get(`/employees/name/${employeeId}`);
+    const res = await api.get(`/v1/employees/name/${employeeId}`);
     return res.data;
   },
   getRoleList: async () => {
-    const res = await api.get(`/employees/role/list`);
+    const res = await api.get(`/v1/employees/role/list`);
     return res.data;
   },
   getDepartmentList: async () => {
-    const res = await api.get(`/employees/departments/list`);
+    const res = await api.get(`/v1/employees/departments/list`);
     return res.data;
   },
-    getAllManagers: async () => {
-    const res = await api.get(`/employees/managers/list`);
+  getAllManagers: async () => {
+    const res = await api.get(`/v1/employees/managers/list`);
     return res.data;
   },
-    getAllBranches: async () => {
-    const res = await api.get(`/employees/branch/list`);
+  getAllBranches: async () => {
+    const res = await api.get(`/v1/employees/branch/list`);
     return res.data;
   },
 
@@ -73,7 +73,7 @@ export const employeeService = {
     signal?: AbortSignal
   ): Promise<EmployeePageResponse> => {
     try {
-      const response = await api.get<EmployeePageResponse>('/employees/all', {
+      const response = await api.get<EmployeePageResponse>('/v1/employees/all', {
         params: { page, size },
         signal,
       });
@@ -93,7 +93,7 @@ export const employeeService = {
         ? { page: pageOrFilters, size }
         : pageOrFilters;
 
-      const response = await api.get<PaginatedResponse<EmployeeEntity>>('/employees/all', {
+      const response = await api.get<PaginatedResponse<EmployeeEntity>>('/v1/employees/all', {
         params
       });
 
@@ -107,7 +107,7 @@ export const employeeService = {
     signal?: AbortSignal
   ): Promise<Employee[]> => {
     try {
-      const response = await api.get<Employee[]>('/employees/search', {
+      const response = await api.get<Employee[]>('/v1/employees/search', {
         params: { query },
         signal,
       });
@@ -118,22 +118,29 @@ export const employeeService = {
   },
 
   getTeamMembers: async (id: string): Promise<TeamMember[]> => {
-    const res = await api.get(`/dashboard/team-members/${id}`);
+    const res = await api.get(`/v1/dashboard/team-members/${id}`);
     return res.data;
   },
 
   createUser: async (userData: CreateUserRequest): Promise<string> => {
     try {
-      const response = await api.post('/admin/users/add', userData);
+      const response = await api.post('/v1/admin/users/add', userData);
       return response.data;
     } catch (error: any) {
       throw error.response?.data || "Failed to create user";
     }
   },
+  updateUser: async (userData: CreateUserRequest) => {
+    try {
+      await api.put('/v1/admin/users/update', userData);
+    } catch (error: any) {
+      throw error.response?.data || "Failed to update user";
+    }
+  },
 
   deleteUser: async (employeeId: string): Promise<string> => {
     try {
-      const res = await api.delete(`/employees/${employeeId}`);
+      const res = await api.delete(`/v1/employees/${employeeId}`);
       return res.data.message || "Employee deleted successfully";
     } catch (error: any) {
       throw error.response?.data?.message || "Failed to delete user";
@@ -141,7 +148,7 @@ export const employeeService = {
   },
 
   getProfile: async (employeeId: string): Promise<ProfileData> => {
-    const response = await api.get(`/employees/profile/${employeeId}`);
+    const response = await api.get(`/v1/employees/profile/${employeeId}`);
     return response.data;
   },
 };

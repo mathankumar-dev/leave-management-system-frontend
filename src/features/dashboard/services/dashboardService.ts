@@ -8,7 +8,7 @@ export const dashboardService = {
 
   getManagerDashboard: async (managerId: string) => {
 
-    const response = await api.get(`/dashboard/manager/summary/${managerId}`);
+    const response = await api.get(`/v1/dashboard/manager/summary/${managerId}`);
 
     return response.data;
 
@@ -16,14 +16,14 @@ export const dashboardService = {
 
   getTeamLeaderDashboard: async (teamLeaderId: string) => {
 
-    const response = await api.get(`/dashboard/teamleader/${teamLeaderId}`);
+    const response = await api.get(`/v1/dashboard/teamleader/${teamLeaderId}`);
 
     return response.data;
 
   },
   getAdminDashboard: async (adminId: string) => {
 
-    const response = await api.get(`/dashboard/admin/${adminId}`);
+    const response = await api.get(`/v1/dashboard/admin/${adminId}`);
 
     return response.data;
 
@@ -32,7 +32,7 @@ export const dashboardService = {
   getManagerTeamStats: async (managerId: string): Promise<Employee[]> => {
     const currentYear = new Date().getFullYear();
 
-    const response = await api.get(`/dashboard/manager/team-balances/${managerId}`, {
+    const response = await api.get(`/v1/dashboard/manager/team-balances/${managerId}`, {
       params: {
         year: currentYear
       }
@@ -50,7 +50,7 @@ export const dashboardService = {
   //     return null;
   //   }
   //   try {
-  //     const response = await api.get(`/dashboard/employee/${id}`);
+  //     const response = await api.get(`/v1/dashboard/employee/${id}`);
   //     return [response.data];
   //   } catch (error: any) {
   //     console.error("Failed to fetch dashboard:", error.message || error);
@@ -60,7 +60,7 @@ export const dashboardService = {
 
   getEmpDashboard: async (employeeId: string) => {
 
-    const response = await api.get(`/dashboard/employee/${employeeId}`);
+    const response = await api.get(`/v1/dashboard/employee/${employeeId}`);
 
     return response.data;
 
@@ -68,7 +68,7 @@ export const dashboardService = {
 
   getHrDashboard: async (signal?: AbortSignal): Promise<DashboardResponse> => {
     try {
-      const response = await api.get<DashboardResponse>('/dashboard/hr', { signal });
+      const response = await api.get<DashboardResponse>('/v1/dashboard/hr', { signal });
       return response.data;
     } catch (err) {
       throw handleError(err, 'getDashboardData');
@@ -76,7 +76,7 @@ export const dashboardService = {
   },
   getHRLowBalance: async (signal?: AbortSignal): Promise<LowBalanceEmployee[]> => {
     try {
-      const response = await api.get<LowBalanceEmployee[]>('/dashboard/hr/low-balance?year=2026', { signal });
+      const response = await api.get<LowBalanceEmployee[]>('/v1/dashboard/hr/low-balance?year=2026', { signal });
       return response.data;
     } catch (err) {
       throw handleError(err, 'getLowBalanceEmployees');

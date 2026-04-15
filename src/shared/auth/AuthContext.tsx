@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const contextLogout = useCallback(async () => {
     try {
-      await api.post('/auth/logout');
+      await api.post('/v1/auth/logout');
     } catch (e) {
       console.error("Logout request failed", e);
     } finally {
@@ -66,7 +66,6 @@ useEffect(() => {
       setAuthData(data.employeeId, data.token);
 
       const profile = await authService.getEmployeeProfile(data.employeeId);
-      console.log(profile);
       
       setUser(profile);      
     } catch (e) {
@@ -76,9 +75,7 @@ useEffect(() => {
     }
   }, []);
 
-  console.log("user");
   
-console.log(user);
 
   return (
     <AuthContext.Provider

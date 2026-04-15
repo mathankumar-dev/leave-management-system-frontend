@@ -38,6 +38,7 @@ export const useEmployee = () => {
             setError(null);
             try {
                 const response = await employeeService.getProfile(employeeId);
+                
                 setProfile(response);
                 return response;
             } catch (err: unknown) {
@@ -181,6 +182,15 @@ export const useEmployee = () => {
             throw err;
         }
     };
+    const updateUser = async (data: CreateUserRequest): Promise<void> => {
+        try {
+            await employeeService.updateUser(data);
+            toast.success("User Updated Successfully");
+        } catch (err: any) {
+            toast.error(err.toString());
+            throw err;
+        }
+    };
 
 
 
@@ -230,6 +240,7 @@ export const useEmployee = () => {
         fetchEmployees,
         // fetchAllEmployees,
         addUser,
+        updateUser,
         deleteUser,
         getTeamMembers,
         fetchTeamMembers,

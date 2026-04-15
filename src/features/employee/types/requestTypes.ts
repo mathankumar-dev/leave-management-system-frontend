@@ -108,7 +108,7 @@ export interface BasePersonalDetails {
 export interface Child {
   childName: string;
   gender: Gender;
-  age: number;
+  childDateOfBirth: string;
 }
 
 export interface ExperienceEntry {
@@ -146,4 +146,6 @@ export interface CreateUserRequest {
   branchId: number;        // Matches private Long branchId
   joiningDate: string;     // Matches LocalDate (sent as ISO string)
   employeeExperience: string; // Matches the Enum/String on backend
+  biometricStatus? : string;
+  vpnStatus? : string;
 }

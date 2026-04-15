@@ -12,16 +12,17 @@ export interface ProfileData {
   spouseContactNumber: string;
   children: never[];
   experiences: never[];
-  uanNumber: string;
   spouseDateOfBirth: string;
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: string;
   reportingId? : string | null;
   reportingName? : string | null;
-
+  departmentId?:number;
+  teamId?:number;
   hrname: string;
+  branchId?:number;
 
   joiningDate: string;
 
@@ -69,5 +70,7 @@ export interface ProfileData {
   accountNumber?: string;
   bankName?: string;
   pfNumber?: string;
-  uanNumber?: string;
+  uanNumber? : number;
+
+  passportPhotoPath?: string;
 }

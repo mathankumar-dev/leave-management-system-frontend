@@ -320,12 +320,13 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
       {/* Modals & Drawers */}
       <DetailedRequestModal
         isOpen={!!detailModalReq}
-        req={detailModalReq}
+        // Passing the ID from the state object
+        leaveId={detailModalReq?.leaveId || detailModalReq?.id}
         onClose={() => setDetailModalReq(null)}
         onAction={(status) => {
-          const req = detailModalReq;
+          const currentReq = detailModalReq;
           setDetailModalReq(null);
-          setDialogConfig({ isOpen: true, req, status });
+          setDialogConfig({ isOpen: true, req: currentReq, status });
         }}
       />
 
@@ -348,7 +349,7 @@ const ManagerDashboardView: React.FC<{ onNavigate?: (tab: string) => void }> = (
   );
 };
 
-const MonthlyCard = ({ label, val, sub, color }: any) => (
+const MonthlyCard = ({ label, val, sub }: any) => (
   <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
     <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</span>
     <div className="flex justify-between items-end mt-2">

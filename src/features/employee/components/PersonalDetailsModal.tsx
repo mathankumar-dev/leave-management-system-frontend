@@ -86,7 +86,7 @@ const PersonalDetailsModal = () => {
         children: [],
         experiences: isExperienced ? [{ companyName: "", role: "", fromDate: "", endDate: "" }] : [],
         uanNumber: "",
-        
+
     });
 
     const [aadharParts, setAadharParts] = useState({ p1: "", p2: "", p3: "" });
@@ -250,6 +250,7 @@ const PersonalDetailsModal = () => {
         required = false,
         multiple = false,
         customFile = undefined,
+        allowedTypes, // e.g., ".png, .jpg, .pdf"
         onCustomChange
     }: {
         label: string,
@@ -257,12 +258,31 @@ const PersonalDetailsModal = () => {
         required?: boolean,
         multiple?: boolean,
         customFile?: any,
+        allowedTypes?: string,
         onCustomChange?: (file: File | null) => void
     }) => {
         const inputId = `file-input-${fileKey}`;
-
-        // Explicitly check the global 'files' state if customFile isn't provided
         const displayFile = customFile !== undefined ? customFile : files[fileKey];
+
+        const handleValidation = (fileList: FileList | null): boolean => {
+            if (!allowedTypes || !fileList) return true;
+
+            // Split allowedTypes into an array and clean them up
+            const typesArray = allowedTypes.split(',').map(t => t.trim().toLowerCase());
+
+            // Check every file selected against the allowed list
+            const allValid = Array.from(fileList).every(file => {
+                const extension = `.${file.name.split('.').pop()?.toLowerCase()}`;
+                // Also check MIME type (e.g., 'image/png') for better coverage
+                return typesArray.includes(extension) || typesArray.includes(file.type);
+            });
+
+            if (!allValid) {
+                alert(`Invalid file type. Please upload: ${allowedTypes}`);
+                return false;
+            }
+            return true;
+        };
 
         return (
             <div className="flex items-center justify-between p-4 bg-white border border-neutral-200 rounded-2xl group hover:border-indigo-200 transition-all">
@@ -271,9 +291,10 @@ const PersonalDetailsModal = () => {
                         <HiOutlineDocumentText size={18} />
                     </div>
                     <div className="overflow-hidden">
-                        <p className="text-[11px] font-bold text-neutral-700 tracking-tight">{label} {required && <span className="text-red-500">*</span>}</p>
+                        <p className="text-[11px] font-bold text-neutral-700 tracking-tight">
+                            {label} {required && <span className="text-red-500">*</span>}
+                        </p>
                         <p className="text-[10px] text-neutral-400 truncate">
-                            {/* Logic to show the filename once selected */}
                             {Array.isArray(displayFile)
                                 ? `${displayFile.length} files`
                                 : (displayFile as File)?.name || "Not uploaded"}
@@ -293,18 +314,28 @@ const PersonalDetailsModal = () => {
                     type="file"
                     className="hidden"
                     multiple={multiple}
+                    accept={allowedTypes}
                     onChange={(e) => {
-                        const file = e.target.files?.[0] || null;
+                        const selectedFiles = e.target.files;
+
+                        // 1. Validate types
+                        if (!handleValidation(selectedFiles)) {
+                            e.target.value = '';
+                            return;
+                        }
+
+                        // 2. Process changes
                         if (onCustomChange) {
-                            onCustomChange(file);
+                            onCustomChange(selectedFiles?.[0] || null);
                         } else {
-                            // This triggers handleFileChange which updates the global 'files' state
                             if (multiple) {
-                                handleMultiFileChange(fileKey, e.target.files);
+                                handleMultiFileChange(fileKey, selectedFiles);
                             } else {
-                                handleFileChange(fileKey, file);
+                                handleFileChange(fileKey, selectedFiles?.[0] || null);
                             }
                         }
+
+                        // Reset to allow re-uploading the same file if deleted
                         e.target.value = '';
                     }}
                 />
@@ -362,7 +393,7 @@ const PersonalDetailsModal = () => {
                                 {/* Vertical connector line */}
                                 <div className="absolute left-[17px] top-2 bottom-2 w-0.5 bg-neutral-100 z-0"></div>
 
-                                {steps.map((step, idx) => {
+                                {steps.map((step) => {
                                     const isCurrent = step.id === activeStep;
                                     const isCompleted = step.id < activeStep;
 
@@ -413,8 +444,12 @@ const PersonalDetailsModal = () => {
                             {activeStep === 1 && (
                                 <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FileRow label="ID Proof (Aadhar/PAN/Driving License/Voter ID)" fileKey="idProof" required />
-                                    <FileRow label="Passport Size Photo" fileKey="passportPhoto" required />
-
+                                    <FileRow
+                                        label="Passport Size Photo"
+                                        fileKey="passportPhoto"
+                                        required
+                                        allowedTypes=".jpg,.jpeg,.png"
+                                    />
                                     {!isExperienced && (
                                         <>
                                             <FileRow label="10th Marksheet" fileKey="tenthMarksheet" required />
@@ -511,17 +546,100 @@ const PersonalDetailsModal = () => {
                                         <div className="flex justify-between items-center mb-4"><InputLabel>Marital Status</InputLabel><select className="border rounded-lg px-2 py-1 text-xs font-bold" value={formData.maritalStatus} onChange={e => handleInputChange('maritalStatus', e.target.value as any)}><option value="SINGLE">SINGLE</option><option value="MARRIED">MARRIED</option></select></div>
                                         {formData.maritalStatus === "MARRIED" && (
                                             <div className="space-y-4">
-                                                <div className="grid grid-cols-2 gap-4"><div><InputLabel>Spouse Name</InputLabel><input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseName} onChange={e => handleInputChange('spouseName', e.target.value)} /></div><div><InputLabel>Spouse Contact</InputLabel><input placeholder="Contact Number" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseContactNumber} onChange={e => handleInputChange('spouseContactNumber', e.target.value)} /></div></div>
-                                                <div className="grid grid-cols-2 gap-4"><CustomDatePicker label="Spouse Date of Birth" value={formData.spouseDateOfBirth} onChange={(val: string) => handleInputChange('spouseDateOfBirth', val)} /><div><InputLabel>Spouse Occupation</InputLabel><input placeholder="Occupation" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseOccupation} onChange={e => handleInputChange('spouseOccupation', e.target.value)} /></div></div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div><InputLabel>Spouse Name</InputLabel><input placeholder="Name" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseName} onChange={e => handleInputChange('spouseName', e.target.value)} /></div>
+                                                    <div><InputLabel>Spouse Contact</InputLabel><input placeholder="Contact Number" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseContactNumber} onChange={e => handleInputChange('spouseContactNumber', e.target.value)} /></div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <CustomDatePicker label="Spouse Date of Birth" value={formData.spouseDateOfBirth} onChange={(val: string) => handleInputChange('spouseDateOfBirth', val)} />
+
+
+                                                    <div><InputLabel>Spouse Occupation</InputLabel><input placeholder="Occupation" className="w-full border rounded-xl p-3 text-sm bg-white" value={formData.spouseOccupation} onChange={e => handleInputChange('spouseOccupation', e.target.value)} /></div>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
 
                                     {formData.maritalStatus === "MARRIED" && (
                                         <div className="space-y-4">
-                                            <div className="flex justify-between items-center"><InputLabel>Children ({formData.children?.length || 0})</InputLabel><button onClick={() => setFormData(p => ({ ...p, children: [...(p.children || []), { childName: "", gender: "MALE", age: 0 }] }))} className="text-indigo-600 text-[10px] font-black flex items-center gap-1 hover:underline"><HiPlus /> ADD CHILD</button></div>
+                                            <div className="flex justify-between items-center">
+                                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                    Children ({formData.children?.length || 0})
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData(p => ({
+                                                        ...p,
+                                                        children: [...(p.children || []), { childName: "", gender: "MALE", childDateOfBirth: "" }]
+                                                    }))}
+                                                    className="text-indigo-600 text-[10px] font-black flex items-center gap-1 hover:underline"
+                                                >
+                                                    <HiPlus /> ADD CHILD
+                                                </button>
+                                            </div>
+
                                             {formData.children?.map((child, idx) => (
-                                                <div key={idx} className="flex gap-4 items-end bg-neutral-50 p-4 rounded-2xl relative border border-neutral-100"><div className="flex-1"><InputLabel>Name</InputLabel><input className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.childName} onChange={e => { const children = [...(formData.children || [])]; children[idx].childName = e.target.value; setFormData({ ...formData, children }); }} /></div><div className="w-24"><InputLabel>Age</InputLabel><input type="number" className="w-full border rounded-xl p-2.5 text-xs bg-white" value={child.age} onChange={e => { const children = [...(formData.children || [])]; children[idx].age = Number(e.target.value); setFormData({ ...formData, children }); }} /></div><div><InputLabel>Gender</InputLabel><select className="w-full border rounded-xl p-3 text-sm bg-white" value={child.gender} onChange={e => { const children = [...(formData.children || [])]; children[idx].gender = e.target.value as Gender; setFormData({ ...formData, children }); }}><option value="MALE">MALE</option><option value="FEMALE">FEMALE</option><option value="OTHER">OTHER</option></select></div><button onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))} className="p-2.5 text-red-500 hover:bg-red-50 rounded-xl transition-all"><HiTrash size={18} /></button></div>
+                                                <div key={idx} className="flex flex-wrap md:flex-nowrap gap-4 items-end bg-slate-50 p-4 rounded-2xl relative border border-slate-100">
+                                                    {/* Name Field */}
+                                                    <div className="flex-1 min-w-[150px]">
+                                                        <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">Name</label>
+                                                        <input
+                                                            className="w-full border border-slate-200 rounded-xl p-2.5 text-xs bg-white focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                                            placeholder="Child's name"
+                                                            value={child.childName}
+                                                            onChange={e => {
+                                                                const children = [...(formData.children || [])];
+                                                                children[idx].childName = e.target.value;
+                                                                setFormData({ ...formData, children });
+                                                            }}
+                                                        />
+                                                    </div>
+
+                                                    {/* Date of Birth Field */}
+                                                    <div className="flex-1 min-w-37.5">
+                                                        {/* Replacing the native input with your CustomDatePicker */}
+                                                        <CustomDatePicker
+                                                            label="Date of Birth"
+                                                            value={child.childDateOfBirth}
+                                                            onChange={(val: string) => {
+                                                                const children = [...(formData.children || [])];
+                                                                // Update the specific child's DOB at the current index
+                                                                children[idx] = {
+                                                                    ...children[idx],
+                                                                    childDateOfBirth: val
+                                                                };
+                                                                setFormData({ ...formData, children });
+                                                            }}
+                                                        />
+                                                    </div>
+
+                                                    {/* Gender Selection */}
+                                                    <div className="w-full md:w-32">
+                                                        <label className="text-[10px] font-bold text-slate-400 mb-1 block uppercase">Gender</label>
+                                                        <select
+                                                            className="w-full border border-slate-200 rounded-xl p-2.5 text-xs bg-white outline-none cursor-pointer"
+                                                            value={child.gender}
+                                                            onChange={e => {
+                                                                const children = [...(formData.children || [])];
+                                                                children[idx].gender = e.target.value as Gender;
+                                                                setFormData({ ...formData, children });
+                                                            }}
+                                                        >
+                                                            <option value="MALE">MALE</option>
+                                                            <option value="FEMALE">FEMALE</option>
+                                                            <option value="OTHER">OTHER</option>
+                                                        </select>
+                                                    </div>
+
+                                                    {/* Remove Button */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setFormData(p => ({ ...p, children: p.children?.filter((_, i) => i !== idx) }))}
+                                                        className="p-2.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100"
+                                                    >
+                                                        <HiTrash size={18} />
+                                                    </button>
+                                                </div>
                                             ))}
                                         </div>
                                     )}
