@@ -133,7 +133,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
             <div className='flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto'>
                 {status === 'PENDING' ? (
                     <div className='flex flex-1 md:flex-none gap-2'>
-                        // Inside RequestTile.tsx
+                       
 
                         {onAccept && (
                             <CTAButton
@@ -150,7 +150,7 @@ const RequestTile: React.FC<RequestTileProps> = ({
                             <CTAButton
                                 label='Reject'
                                 isOutlineOnly
-                                className="..."
+                                className="... border-red-500 text-red-400"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onReject();
