@@ -11,7 +11,7 @@ import React, { useEffect, useState } from "react";
 import {
   FaEdit, FaEnvelope,
   FaEye,
-  FaFileAlt, FaPhone,
+  FaFileAlt, FaIdBadge, FaPhone,
   FaPlus,
   FaSave, FaTimes, FaTrash
 } from "react-icons/fa";
@@ -120,10 +120,16 @@ const viewDocument = async (path: string) => {
 
 // Doc card — view mode: show + view button. Edit mode: show + view + change
 const DocCard: React.FC<{
-  label: string; path?: string | null; isEditing: boolean;
-  fileKey: string; files: Record<string, any>;
+  label: string;
+  path?: string | null;
+  isEditing: boolean;
+  fileKey: string;
+  files: Record<string, any>;
   onFile: (key: string, file: File | null) => void;
-}> = ({ label, path, isEditing, fileKey, files, onFile }) => {
+  /** * Specific file types to accept, e.g., ".png,.jpg,.jpeg" or "image/*" 
+   */
+  fileType?: string;
+}> = ({ label, path, isEditing, fileKey, files, onFile, fileType }) => {
   const selectedFile = files[fileKey] as File | null;
   const hasUpload = !!selectedFile;
   const hasExisting = !!path;
@@ -143,15 +149,22 @@ const DocCard: React.FC<{
       </div>
       <div className="flex gap-2">
         {hasExisting && (
-          <button onClick={() => viewDocument(path!)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors">
+          <button
+            onClick={() => viewDocument(path!)}
+            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors"
+          >
             <FaEye size={9} /> View
           </button>
         )}
         {isEditing && (
           <label className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-bold cursor-pointer rounded-lg border transition-all ${hasUpload ? 'text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100' : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50'}`}>
             {hasUpload ? "Change" : hasExisting ? "Replace" : "Upload"}
-            <input type="file" hidden onChange={e => onFile(fileKey, e.target.files?.[0] || null)} />
+            <input
+              type="file"
+              hidden
+              accept={fileType} // This enables the filtering in the file picker
+              onChange={e => onFile(fileKey, e.target.files?.[0] || null)}
+            />
           </label>
         )}
       </div>
@@ -446,6 +459,8 @@ const EmployeeProfile: React.FC = () => {
 
   }, [backendProfile]);
 
+
+
   // Sync aadhar
   useEffect(() => {
     const combined = `${aadharParts.p1}${aadharParts.p2}${aadharParts.p3}`;
@@ -718,6 +733,8 @@ const EmployeeProfile: React.FC = () => {
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 text-[11px] text-slate-400 flex-wrap">
+            <FaIdBadge />
+            <span>Employee ID: <span className="font-semibold text-slate-500">{bp.id || "-"}</span></span>
             <HiOutlineShieldCheck className="text-slate-300" />
             <span>Verification: <span className="font-semibold text-slate-500">{bp.verificationStatus || "PENDING"}</span></span>
             <span className="text-slate-200">·</span>
@@ -1012,8 +1029,15 @@ const EmployeeProfile: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <DocCard label="ID Proof" path={bp.idProofPath} isEditing={isEditing}
                         fileKey="idProof" files={commonFiles} onFile={handleCommonFile} />
-                      <DocCard label="Passport Photo" path={bp.passportPhotoPath} isEditing={isEditing}
-                        fileKey="passportPhoto" files={commonFiles} onFile={handleCommonFile} />
+                      <DocCard
+                        label="Passport Photo"
+                        path={bp.passportPhotoPath}
+                        isEditing={isEditing}
+                        fileKey="passportPhoto"
+                        files={commonFiles}
+                        onFile={handleCommonFile}
+                        fileType="image/*"
+                      />
                     </div>
                   </div>
 

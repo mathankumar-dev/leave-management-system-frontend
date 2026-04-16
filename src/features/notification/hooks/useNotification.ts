@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import type { FlashNews, NotificationResponse } from '@/features/notification/types';
+import { useCallback, useEffect, useState } from 'react';
 import { notificationService } from '../services/notificationService';
-import type { NotificationResponse } from '@/features/notification/types';
 
-export const useNotifications = (employeeId: string) => {
+export const useNotifications = (employeeId?: string) => {
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
+  const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +35,20 @@ export const useNotifications = (employeeId: string) => {
       setIsLoading(false);
     }
   }, [employeeId]);
+  const fetchFlashNews = useCallback(async () => {
+
+    try {
+      const res = await notificationService.getFlashNews();
+      setFlashNews(res);
+      setError(null);
+      return res;
+    } catch (err) {
+      setError('Failed to fetch FlashNews');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [employeeId]);
 
   // --- Utility actions ---
   const markAsRead = async (notificationId: number) => {
@@ -55,6 +70,8 @@ export const useNotifications = (employeeId: string) => {
     }
   };
 
+
+
   useEffect(() => {
     fetchNotifications();
 
@@ -73,6 +90,8 @@ export const useNotifications = (employeeId: string) => {
     pageInfo,
     refetch: fetchNotifications,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+    fetchFlashNews,
+    flashNews
   };
 };

@@ -61,8 +61,6 @@ const ChangePasswordDialog: React.FC = () => {
     if (user) {
       try {
         const updatedProfile = await authService.getEmployeeProfile(user.id);
-        
-        
         setUser(updatedProfile);
       } catch (err) {
         window.location.reload();

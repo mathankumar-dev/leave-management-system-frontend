@@ -37,7 +37,7 @@ const PayrollView: React.FC = () => {
   const fetchProfile = useCallback( async () => {
     setLoadingProfile(true);
     try {
-      const res = await api.get(`/employees/profile/${user?.id!}`);
+      const res = await api.get(`/v1/employees/profile/${user?.id!}`);
       setProfile(res.data);
     } catch (err) {
       console.error("Profile fetch failed", err);
@@ -175,7 +175,7 @@ const PayrollView: React.FC = () => {
     console.time("pdf");
 
     const response = await api.get(
-      `/payslip/download/${year}/${month}`,
+      `/v1/payslip/download/${year}/${month}`,
       { responseType: "blob" }
     );
 

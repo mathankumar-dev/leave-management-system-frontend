@@ -56,13 +56,20 @@ export const employeeService = {
     const res = await api.get(`/v1/employees/departments/list`);
     return res.data;
   },
-    getAllManagers: async () => {
+  getAllManagers: async () => {
     const res = await api.get(`/v1/employees/managers/list`);
     return res.data;
   },
-    getAllBranches: async () => {
+  getAllBranches: async () => {
     const res = await api.get(`/v1/employees/branch/list`);
     return res.data;
+  },
+
+  searchEmployees: async (query: string): Promise<EmployeeEntity[]> => {
+    const response = await api.get(`/v1/employees/search`, {
+      params: { query }
+    });
+    return response.data;
   },
 
 
@@ -102,20 +109,7 @@ export const employeeService = {
       throw handleError(err, 'getAllEmployees');
     }
   },
-  searchEmployees: async (
-    query: string,
-    signal?: AbortSignal
-  ): Promise<Employee[]> => {
-    try {
-      const response = await api.get<Employee[]>('/v1/employees/search', {
-        params: { query },
-        signal,
-      });
-      return response.data;
-    } catch (err) {
-      throw handleError(err, 'searchEmployees');
-    }
-  },
+  
 
   getTeamMembers: async (id: string): Promise<TeamMember[]> => {
     const res = await api.get(`/v1/dashboard/team-members/${id}`);
@@ -128,6 +122,13 @@ export const employeeService = {
       return response.data;
     } catch (error: any) {
       throw error.response?.data || "Failed to create user";
+    }
+  },
+  updateUser: async (userData: CreateUserRequest) => {
+    try {
+      await api.put('/v1/admin/users/update', userData);
+    } catch (error: any) {
+      throw error.response?.data || "Failed to update user";
     }
   },
 

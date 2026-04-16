@@ -2,7 +2,6 @@ import { authService } from "@/features/auth/api/authApi";
 import React, { createContext, useCallback, useEffect, useState } from "react";
 
 import type { User } from "@/features/employee/types";
-import api from "@/services/apiClient";
 import { getToken, getUserId, logout, setAuthData } from "@/services/auth/authStorage";
 import type { AuthResponse } from "./authTypes";
 
@@ -25,49 +24,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
   const contextLogout = useCallback(async () => {
-    try {
-      await api.post('/v1/auth/logout');
-    } catch (e) {
-      console.error("Logout request failed", e);
-    } finally {
-      setUser(null);
-      logout();
-    }
+
+    setUser(null);
+    logout();
+
   }, []);
 
-useEffect(() => {
-  const initAuth = async () => {
-    const token = getToken();
-    const id = getUserId();
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = getToken();
+      const id = getUserId();
 
-    // If there is no token, they aren't logged in.
-    if (!token || !id) {
-      setIsLoading(false);
-      return;
-    }
+      // If there is no token, they aren't logged in.
+      if (!token || !id) {
+        setIsLoading(false);
+        return;
+      }
 
-    try {
-      const profile = await authService.getEmployeeProfile(id);
-      setUser(profile);
-    } catch (error) {
-      console.error("Failed to restore session:", error);
-      logout(); 
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        const profile = await authService.getEmployeeProfile(id);
+        setUser(profile);
+      } catch (error) {
+        console.error("Failed to restore session:", error);
+        logout();
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  initAuth();
-}, []);
+    initAuth();
+  }, []);
 
   const login = useCallback(async (data: AuthResponse) => {
     try {
       setAuthData(data.employeeId, data.token);
 
       const profile = await authService.getEmployeeProfile(data.employeeId);
-      
-      setUser(profile);      
+
+      setUser(profile);
     } catch (e) {
       console.error("Login initialization failed:", e);
       logout();
@@ -75,7 +70,7 @@ useEffect(() => {
     }
   }, []);
 
-  
+
 
   return (
     <AuthContext.Provider

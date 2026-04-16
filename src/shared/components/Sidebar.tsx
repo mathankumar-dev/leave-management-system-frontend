@@ -7,16 +7,17 @@ import {
   FaCalendarAlt,
   FaChevronLeft,
   FaChevronRight,
-  FaCog,
   FaExclamationTriangle,
   FaFileSignature,
   FaHistory,
   FaHome,
   FaMoneyBillWave,
-  FaThLarge,
-  FaUsers
+  FaNewspaper,
+  FaThLarge
 } from "react-icons/fa";
-import { MdVerifiedUser } from "react-icons/md";
+import { HiUserGroup } from "react-icons/hi";
+import { HiUsers } from "react-icons/hi2";
+import { MdPendingActions, MdVerifiedUser } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface SidebarProps {
@@ -52,18 +53,17 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
   const tabs = [
     { name: "Home", path: "portal", icon: <FaHome />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Dashboard", path: "dashboard", icon: <FaThLarge />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
-    { name: "Pending Approvals", path: "approvals", icon: <FaCog />, roles: ["MANAGER", "HR", "CTO", "COO"] },
-    { name: "Calendar", path: "team-calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO", "EMPLOYEE"] },
-    { name: "Team Members", path: "team", icon: <FaUsers />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO"] },
+    { name: "Action Center", path: "action-center", icon: <MdPendingActions />, roles: ["MANAGER", "HR", "CTO", "COO", "ADMIN"] },
+    { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO", "EMPLOYEE"] },
+    { name: "Team Members", path: "team", icon: <HiUserGroup />, roles: ["MANAGER", "TEAM_LEADER", "ADMIN", "HR", "CTO", "COO"] },
     // { name: "Onboarding", path: "onboarding", icon: <FaCog />, roles: ["ADMIN"] },
-    { name: "Employees", path: "employees", icon: <FaUsers />, roles: ["ADMIN", "HR", "CFO"] },
+    { name: "Employees", path: "employees", icon: <HiUsers />, roles: ["ADMIN", "HR", "CFO"] },
     { name: "Low Balance", path: "low-balance", icon: <FaExclamationTriangle />, roles: ["HR"] },
     { name: "Verifications", path: "verifications", icon: <MdVerifiedUser />, roles: ["HR"] },
     { name: "My Requests", path: "requests", icon: <FaHistory />, roles: ["EMPLOYEE", "MANAGER", "ADMIN", "CTO",] },
     { name: "Request Center", path: "request-center", icon: <FaFileSignature />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN", "CTO"] },
     { name: "Notifications", path: "notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
-    // { name: "Calendar", path: "calendar", icon: <FaCalendarAlt />, roles: ["EMPLOYEE", "ADMIN"] },
-    // { name: "Flash News", path: "flash-news", icon: <FaNewspaper />, roles: ["ADMIN"] },
+    { name: "Flash News", path: "flash-news", icon: <FaNewspaper />, roles: ["ADMIN"] },
 
     { name: "Pay Slip", path: "payslip", icon: <FaMoneyBillWave />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
   ];
@@ -152,7 +152,9 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
         </div>
 
         {/* NAVIGATION */}
-        <div className="flex-1 overflow-y-auto no-scrollbar py-2">
+        {/* NAVIGATION */}
+        {/* Add pb-20 (bottom padding) to ensure space for tooltips of bottom items */}
+        <div className="flex-1 overflow-y-auto no-scrollbar py-2 pb-20">
           {!isCollapsed && (
             <p className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
               Core Management
@@ -167,8 +169,9 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
                 <li
                   key={tab.path}
                   onClick={() => handleNavigate(tab.path)}
+                  /* Added relative class here to anchor the tooltip better */
                   className={`group relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-4 py-3.5 rounded-xl cursor-pointer transition-all
-            ${isActive
+    ${isActive
                       ? "bg-brand text-white"
                       : "text-slate-500 hover:bg-slate-50 hover:text-brand"
                     }`}
@@ -178,16 +181,17 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
                   </span>
 
                   {!isCollapsed && (
-                    <span className="text-[14px] font-black  tracking-tight whitespace-nowrap">
+                    <span className="text-[14px] font-black tracking-tight whitespace-nowrap">
                       {tab.name}
                     </span>
                   )}
 
                   {/* Tooltip for Collapsed State */}
                   {isCollapsed && (
-                    <div className="fixed left-20 ml-2 scale-0 group-hover:scale-100 transition-all duration-200 origin-left 
+                    <div className="fixed left-20 scale-0 group-hover:scale-100 transition-all duration-200 origin-left 
               bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg 
-              whitespace-nowrap z-[100] shadow-xl shadow-black/30 pointer-events-none
+              whitespace-nowrap z-[999] shadow-xl shadow-black/30 pointer-events-none
+              /* Ensure the tooltip arrow is also visible */
               before:content-[''] before:absolute before:top-1/2 before:-left-1 before:-translate-y-1/2 
               before:w-2 before:h-2 before:bg-slate-900 before:rotate-45">
                       {tab.name}

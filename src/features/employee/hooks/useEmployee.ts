@@ -38,6 +38,7 @@ export const useEmployee = () => {
             setError(null);
             try {
                 const response = await employeeService.getProfile(employeeId);
+
                 setProfile(response);
                 return response;
             } catch (err: unknown) {
@@ -181,6 +182,15 @@ export const useEmployee = () => {
             throw err;
         }
     };
+    const updateUser = async (data: CreateUserRequest): Promise<void> => {
+        try {
+            await employeeService.updateUser(data);
+            toast.success("User Updated Successfully");
+        } catch (err: any) {
+            toast.error(err.toString());
+            throw err;
+        }
+    };
 
 
 
@@ -223,6 +233,20 @@ export const useEmployee = () => {
             setLoading(false);
         }
     }, []);
+
+    const searchUser = useCallback(async (query: string) => {
+        setLoading(true);
+        try {
+            const data = await employeeService.searchEmployees(query);
+
+            return { content: data, totalElements: data.length, totalPages: 1 };
+        } catch (error) {
+            console.error("Search failed", error);
+            return { content: [], totalElements: 0, totalPages: 0 };
+        } finally {
+            setLoading(false);
+        }
+    }, []);
     return {
         loading,
         error,
@@ -230,11 +254,13 @@ export const useEmployee = () => {
         fetchEmployees,
         // fetchAllEmployees,
         addUser,
+        updateUser,
         deleteUser,
         getTeamMembers,
         fetchTeamMembers,
         fetchEmployeeProfile,
         profile,
+        searchUser,
         fetchEmployeeName,
         getEmployees,
         fetchDepartments,

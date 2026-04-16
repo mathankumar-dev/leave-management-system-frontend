@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import {
-  HiOutlineClock, HiOutlineHome, HiOutlineBriefcase,
-  HiOutlineMoon,
-  HiChevronDoubleLeft, HiChevronDoubleRight
+  HiChevronDoubleLeft, HiChevronDoubleRight,
+  HiOutlineBriefcase,
+  HiOutlineClock, HiOutlineHome,
+  HiOutlineMoon
 } from "react-icons/hi2";
 import { TbAccessPoint } from "react-icons/tb";
 
 // Import your form components
 import LeaveApplicationForm from "@/features/leave/components/LeaveApplicationForm";
+import ODRequestForm from "@/features/leave/components/ODRequestForm";
 
 type RequestType = "LEAVE" | "OD" | "WFH" | "MEETING" | "OVERTIME" | "ACCESS";
 
@@ -49,14 +51,14 @@ const RequestCenter = () => {
         {/* SIDEBAR / MOBILE TOP NAV */}
         <motion.aside
           initial={false}
-          animate={{ 
-            width: isMobile ? "100%" : (isCollapsed ? "80px" : "260px") 
+          animate={{
+            width: isMobile ? "100%" : (isCollapsed ? "80px" : "260px")
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className="w-full md:sticky md:top-24 z-30"
         >
           <div className="bg-white border border-slate-200 rounded-2xl p-2 md:p-3 shadow-sm">
-            
+
             {/* Desktop Toggle Header: Completely hidden on mobile */}
             <div className="hidden md:flex items-center justify-between mb-4 px-4 pt-2">
               {!isCollapsed && (
@@ -82,8 +84,8 @@ const RequestCenter = () => {
                     key={item.id}
                     onClick={() => setActiveTab(item.id as RequestType)}
                     className={`flex items-center gap-3 p-3 md:p-3.5 rounded-xl transition-all whitespace-nowrap min-w-fit md:min-w-0
-                      ${isActive 
-                        ? "bg-brand text-white shadow-lg shadow-indigo-100" 
+                      ${isActive
+                        ? "bg-brand text-white shadow-lg shadow-indigo-100"
                         : "text-slate-600 hover:bg-slate-50 bg-slate-50/50 md:bg-transparent"
                       }
                       ${isCollapsed ? "md:justify-center" : "md:justify-start"}
@@ -120,11 +122,11 @@ const RequestCenter = () => {
             >
               <div className="p-4 md:p-8">
                 {activeTab === "LEAVE" && <LeaveApplicationForm />}
-                {/* activeTab === "OD" && <ODRequestForm />}
-                {activeTab === "ACCESS" && <AccessRequestForm />} */}
+                {activeTab === "OD" && <ODRequestForm />}
+                {/*{activeTab === "ACCESS" && <AccessRequestForm />} */}
 
                 {/* Status for building modules */}
-                {(activeTab === "WFH" || activeTab === "OVERTIME" || activeTab === "ACCESS" || activeTab === "OD" ) && (
+                {(activeTab === "WFH" || activeTab === "OVERTIME" || activeTab === "ACCESS" || activeTab === "OD") && (
                   <div className="flex flex-col items-center justify-center py-24 text-slate-400">
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                       <HiOutlineMoon size={32} className="opacity-20" />

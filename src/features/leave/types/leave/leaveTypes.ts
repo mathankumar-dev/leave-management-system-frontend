@@ -158,11 +158,26 @@ interface LeaveTypeBreakdown {
   pendingCount?: number;
 }
 
+
+
+interface MonthlyBalance {
+  availableDays : number;
+  employeeId : string;
+  month : number;
+  usedDays : number;
+  remainingDays : number;
+}
+
+export interface LeaveBalanceResponseV2{
+  annualLeaveBalance : MonthlyBalance;
+  sickLeaveBalance : MonthlyBalance;
+}
+
+
 export interface LeaveBalanceResponse {
   employeeId: string;
   employeeName: string;
   year: number;
-
   // Total leave statistics
   totalAllocated: number;
   totalUsed: number;
