@@ -121,23 +121,28 @@ const RequestTile: React.FC<RequestTileProps> = ({
             <div className="hidden md:block"><Divider /></div>
 
             {/* 3. Reason Section (Optional: Un-comment if you want to see the reason message) */}
-             <div className='flex-1 min-w-0 hidden lg:block'>
+            <div className='flex-1 min-w-0 hidden lg:block'>
                 <p className='text-[11px] text-slate-500 line-clamp-1 italic'>
                     "{reasonMessage}"
                 </p>
             </div>
-            
+
             <div className="hidden lg:block"><Divider /></div>
 
             {/* 4. Status or Actions Section */}
             <div className='flex flex-wrap md:flex-nowrap items-center gap-2 w-full md:w-auto'>
                 {status === 'PENDING' ? (
                     <div className='flex flex-1 md:flex-none gap-2'>
+                        // Inside RequestTile.tsx
+
                         {onAccept && (
                             <CTAButton
                                 label='Accept'
-                                className="flex-1 md:px-5 bg-green-600 hover:bg-green-700 text-[10px] uppercase font-bold h-9 rounded-sm shadow-sm"
-                                onClick={(e) => { e.stopPropagation(); onAccept(); }}
+                                className="..."
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevents parent card click
+                                    onAccept();
+                                }}
                             />
                         )}
 
@@ -145,24 +150,30 @@ const RequestTile: React.FC<RequestTileProps> = ({
                             <CTAButton
                                 label='Reject'
                                 isOutlineOnly
-                                className='flex-1 md:px-5 border-red-200! hover:bg-red-50 text-[10px] uppercase font-bold h-9 rounded-sm'
-                                onClick={(e) => { e.stopPropagation(); onReject(); }}
+                                className="..."
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onReject();
+                                }}
                             />
                         )}
-                        
+
                         {onDiscuss && (
                             <CTAButton
                                 label='Discuss'
                                 isOutlineOnly
-                                className='hidden xl:flex md:px-5 border-slate-200! text-slate-500! hover:bg-slate-50 text-[10px] uppercase font-bold h-9 rounded-sm'
-                                onClick={(e) => { e.stopPropagation(); onDiscuss(); }}
+                                className="..."
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDiscuss();
+                                }}
                             />
                         )}
                     </div>
                 ) : (
                     <div className={`flex-1 md:flex-none px-6 py-2 rounded-sm border font-black text-[10px] uppercase tracking-widest text-center min-w-[120px] 
-                        ${status === 'APPROVED' 
-                            ? 'bg-green-50 border-green-200 text-green-600' 
+                        ${status === 'APPROVED'
+                            ? 'bg-green-50 border-green-200 text-green-600'
                             : 'bg-red-50 border-red-200 text-red-600'}`}
                     >
                         {status}

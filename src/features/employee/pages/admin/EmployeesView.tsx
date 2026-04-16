@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 
 const EmployeesView = () => {
-  const { getEmployees, loading, fetchEmployeeProfile, addUser, updateUser, deleteUser } = useEmployee();
+  const { getEmployees, loading, fetchEmployeeProfile, addUser, updateUser, deleteUser, searchUser } = useEmployee();
   const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
   const [allEmployees, setAllEmployees] = useState<EmployeeEntity[]>([]); // manager name lookup
   const [pagination, setPagination] = useState({ totalElements: 0, totalPages: 0 });
@@ -72,13 +72,19 @@ const EmployeesView = () => {
 
   // ─── Load employees ───────────────────────────────────────────
   const loadEmployeeData = useCallback(async () => {
-    const result = await getEmployees({
-      page: currentPage,
-      size: 10,
-      searchTerm,
-      // role: roleFilter !== "ALL" ? roleFilter : undefined,
-      status: statusFilter !== "ALL" ? statusFilter : undefined,
-    });
+    let result;
+
+    if (searchTerm.trim()) {
+      // Trigger your new backend search endpoint
+      result = await searchUser(searchTerm);
+    } else {
+      // Normal paginated load
+      result = await getEmployees({
+        page: currentPage,
+        size: 10,
+        status: statusFilter !== "ALL" ? statusFilter : undefined,
+      });
+    }
 
     if (result && Array.isArray(result.content)) {
       setEmployees(result.content);
@@ -90,7 +96,7 @@ const EmployeesView = () => {
       setEmployees([]);
       setPagination({ totalElements: 0, totalPages: 0 });
     }
-  }, [getEmployees, currentPage, searchTerm, roleFilter, statusFilter]);
+  }, [getEmployees, searchUser, currentPage, searchTerm, statusFilter]);
 
   useEffect(() => {
     const delay = setTimeout(loadEmployeeData, 250);
@@ -176,10 +182,10 @@ const EmployeesView = () => {
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
             <input
               type="text"
-              placeholder="Search name..."
+              placeholder="SEARCH ID, NAME, OR EMAIL..."
               value={searchInput}
               onChange={(e) => handleSearchInput(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 pl-10 pr-8 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 uppercase"
+              className="w-full bg-slate-50 border border-slate-200 pl-10 pr-8 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 "
             />
             {searchInput && (
               <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
