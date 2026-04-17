@@ -22,4 +22,13 @@ export interface AttendanceRecord {
 }
 
 
+export interface TeamAttendancePage {
+  content: AttendanceRecord[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+}
+
+
 

@@ -1,180 +1,199 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/shared/auth/useAuth";
 import { useRequest } from "@/features/leave/hooks/useRequest";
 
 import {
-    HiOutlineShieldCheck,
-    HiOutlineChatBubbleLeftRight,
-    HiOutlinePaperAirplane,
-    HiOutlineCheckCircle,
-    HiOutlineExclamationTriangle,
-    HiOutlineFingerPrint,
+  HiOutlineShieldCheck,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlinePaperAirplane,
+  HiOutlineCheckCircle,
+  HiOutlineExclamationTriangle,
 } from "react-icons/hi2";
-import type { AccessType } from "../hooks/useAccessTypes";
 
 const AccessRequestForm = () => {
-    const { user } = useAuth();
-    const { createAccessRequest, loading, setError, error } = useRequest();
+  const { user } = useAuth();
+  const { createAccessRequest, loading, setError, error } = useRequest();
 
-    const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-    const [accessTypes, setAccessTypes] = useState<AccessType[]>([]);
+  const [formData, setFormData] = useState({
+    accessType: "VPN",
+    reason: "",
+    startDate: "",
+    endDate: "",
+  });
 
-    const [formData, setFormData] = useState({
-        accessType: "",
-        reason: "",
-    });
+  const calculateDays = () => {
+    if (!formData.startDate || !formData.endDate) return 0;
 
-    
-    useEffect(() => {
-        const data: AccessType[] = [
-            {
-                type: "VPN",
-                label: "VPN Access (Remote Work)",
-                enabled: true,
-                rolesAllowed: ["MANAGER", "ADMIN"],
-            },
-            {
-                type: "BIOMETRIC",
-                label: "Biometric Access",
-                enabled: false, // 🚫 future
-                rolesAllowed: ["ALL"],
-            },
-        ];
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
 
-        setAccessTypes(data);
-    }, []);
+    if (end < start) return 0;
 
-    // 🔥 Filter logic
-    const filteredOptions = accessTypes
-        .filter((opt) => opt.enabled)
-        .filter((opt) => {
-            if (opt.rolesAllowed.includes("ALL")) return true;
-            return opt.rolesAllowed.includes(user?.role || "");
-        });
+    const diff = end.getTime() - start.getTime();
+    return diff / (1000 * 60 * 60 * 24) + 1;
+  };
 
-    // 🔥 Default select
-    useEffect(() => {
-        if (filteredOptions.length > 0) {
-            setFormData((prev) => ({
-                ...prev,
-                accessType: filteredOptions[0].type,
-            }));
-        }
-    }, [accessTypes]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-
-        if (!formData.reason) {
-            setError("Please enter reason");
-            return;
-        }
-        if (!user?.id) {
-            setError("User not found");
-            return;
-        }
-
-        const success = await createAccessRequest(
-            {
-                accessType: formData.accessType,
-                reason: formData.reason,
-            },
-            user.id
-        );
-
-        if (success) setSubmitted(true);
-    };
-
-    if (submitted) {
-        return (
-            <div className="p-10 text-center bg-white border rounded-2xl shadow">
-                <HiOutlineCheckCircle size={48} className="text-green-500 mx-auto mb-4" />
-                <h2 className="text-xl font-bold">Request Submitted</h2>
-                <p className="text-gray-500 mt-2">
-                    Your {formData.accessType} request is under review.
-                </p>
-            </div>
-        );
+    if (!formData.reason) {
+      setError("Please enter reason");
+      return;
     }
 
+    if (!formData.startDate || !formData.endDate) {
+      setError("Select start & end date");
+      return;
+    }
+
+    if (new Date(formData.endDate) < new Date(formData.startDate)) {
+      setError("End date cannot be before start date");
+      return;
+    }
+
+    if (!user?.id) {
+      setError("User not found");
+      return;
+    }
+
+    const success = await createAccessRequest(
+      {
+        accessType: formData.accessType,
+        reason: formData.reason,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+      },
+      user.id
+    );
+
+    if (success) setSubmitted(true);
+  };
+
+  if (submitted) {
     return (
-        <div className="bg-white border rounded-2xl shadow">
-            <div className="p-6 border-b flex items-center gap-2">
-                <HiOutlineShieldCheck className="text-indigo-600" />
-                <h1 className="font-bold">Access Request</h1>
+      <div className="p-10 text-center bg-white rounded-2xl shadow-sm">
+        <HiOutlineCheckCircle size={48} className="text-green-500 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold">Request Submitted</h2>
+        <p className="text-gray-500 mt-2">
+          Your VPN request is under approval.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-5xl mx-auto py-10 px-4">
+
+      {/* 🔥 MAIN CONTAINER (SOFT UI) */}
+      <div className="bg-white rounded-2xl shadow-sm">
+
+        {/* 🔹 HEADER */}
+        <div className="px-8 py-6 flex justify-between items-center border-b border-slate-100">
+
+          <h1 className="text-xl font-semibold flex items-center gap-2 text-slate-800">
+            <HiOutlineShieldCheck className="text-indigo-500" />
+            VPN Access Request
+          </h1>
+
+          <div className="text-right">
+            <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+              Approval Workflow
+            </p>
+            <div className="mt-1 px-3 py-1 text-xs bg-indigo-50 text-indigo-600 rounded-md font-medium">
+              {user?.reportingName || "Manager"}
+            </div>
+          </div>
+        </div>
+
+        {/* 🔹 BODY */}
+        <form onSubmit={handleSubmit} className="px-8 py-8 space-y-8">
+
+          {/* ERROR */}
+          {error && (
+            <div className="p-3 bg-red-50 text-red-600 rounded-lg flex gap-2">
+              <HiOutlineExclamationTriangle /> {error}
+            </div>
+          )}
+
+          {/* 🔥 TOTAL DAYS (MATCH UI) */}
+          <div className="bg-slate-50 rounded-xl p-6 flex items-center gap-4">
+
+            <div className="bg-white px-4 py-2 rounded-lg text-indigo-600 font-bold shadow-sm">
+              {String(calculateDays()).padStart(2, "0")}
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Total Working Days Requested for VPN
+            </div>
+          </div>
 
-                {/* Error */}
-                {error && (
-                    <div className="p-3 bg-red-50 text-red-600 rounded flex items-center gap-2">
-                        <HiOutlineExclamationTriangle /> {error}
-                    </div>
-                )}
+          {/* 🔥 DATE FIELDS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {/* Access Type */}
-                <div>
-                    <label className="text-xs font-bold uppercase flex gap-2">
-                        <HiOutlineShieldCheck /> Access Type
-                    </label>
+            <div>
+              <label className="text-xs font-semibold text-slate-400 uppercase">
+                Work Starts On *
+              </label>
+              <input
+                type="date"
+                value={formData.startDate}
+                className="w-full mt-2 p-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white outline-none"
+                onChange={(e) =>
+                  setFormData({ ...formData, startDate: e.target.value })
+                }
+              />
+            </div>
 
-                    <select
-                        value={formData.accessType}
-                        onChange={(e) =>
-                            setFormData({ ...formData, accessType: e.target.value })
-                        }
-                        className="w-full border p-3 rounded-xl mt-2"
-                    >
-                        {filteredOptions.map((opt) => (
-                            <option key={opt.type} value={opt.type}>
-                                {opt.label}
-                            </option>
-                        ))}
-                    </select>
+            <div>
+              <label className="text-xs font-semibold text-slate-400 uppercase">
+                Work Ends On *
+              </label>
+              <input
+                type="date"
+                value={formData.endDate}
+                className="w-full mt-2 p-3 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white outline-none"
+                onChange={(e) =>
+                  setFormData({ ...formData, endDate: e.target.value })
+                }
+              />
+            </div>
 
-                    {/* Dynamic Icon */}
-                    <div className="mt-2 text-slate-400">
-                        {formData.accessType === "VPN" ? (
-                            <HiOutlineShieldCheck />
-                        ) : (
-                            <HiOutlineFingerPrint />
-                        )}
-                    </div>
-                </div>
+          </div>
 
-                {/* Reason */}
-                <div>
-                    <label className="text-xs font-bold uppercase flex gap-2">
-                        <HiOutlineChatBubbleLeftRight /> Reason
-                    </label>
+          {/* 🔥 REASON */}
+          <div>
+            <label className="text-xs font-semibold text-slate-400 uppercase flex gap-2">
+              <HiOutlineChatBubbleLeftRight /> Duty Details & Reason
+            </label>
 
-                    <textarea
-                        className="w-full border p-3 rounded-xl mt-2"
-                        rows={4}
-                        placeholder="Explain why you need access..."
-                        value={formData.reason}
-                        onChange={(e) =>
-                            setFormData({ ...formData, reason: e.target.value })
-                        }
-                        required
-                    />
-                </div>
+            <textarea
+              rows={4}
+              placeholder="E.g. Client visit / Remote work requirement..."
+              value={formData.reason}
+              className="w-full mt-2 p-4 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white outline-none"
+              onChange={(e) =>
+                setFormData({ ...formData, reason: e.target.value })
+              }
+            />
+          </div>
 
-                {/* Submit */}
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-indigo-600 text-white py-3 rounded-xl"
-                >
-                    {loading ? "Processing..." : "Submit Request"}
-                    {!loading && <HiOutlinePaperAirplane className="inline ml-2" />}
-                </button>
-            </form>
-        </div>
-    );
+          {/* 🔥 BUTTON */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-semibold tracking-wide flex items-center justify-center gap-3 shadow-md"
+          >
+            {loading ? "Processing..." : "Confirm VPN Request"}
+            {!loading && <HiOutlinePaperAirplane className="rotate-45" />}
+          </button>
+
+        </form>
+      </div>
+    </div>
+  );
 };
 
 export default AccessRequestForm;

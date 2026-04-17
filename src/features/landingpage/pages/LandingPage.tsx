@@ -1,6 +1,6 @@
 import logo from "@/assets/images/bg-rm-logo-HRES.png";
-import wenxtdashboard from "@/assets/images/wenxtimage.png";
 import wehrm from "@/assets/images/LogoWeHRM2.png";
+import wenxtdashboard from "@/assets/images/wenxtimage.png";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -38,6 +38,8 @@ export function Navbar() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  console.log(scrolled);
+
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 28);
@@ -100,7 +102,7 @@ export function Hero({ featuresRef }: { featuresRef: React.RefObject<HTMLDivElem
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center relative z-10">
         <div>
           {/* WeHRM product logo above headline */}
-          <img src={wehrm} alt="WeHRM" height={120} width={120} className="mb-4 object-contain filter contrast-125 brightness-95"  />
+          <img src={wehrm} alt="WeHRM" height={120} width={120} className="mb-4 object-contain filter contrast-125 brightness-95" />
 
           <h1 className="text-3xl md:text-3xl font-bold text-slate-800 leading-[1.1] mb-6">
             Simplifying{" "}

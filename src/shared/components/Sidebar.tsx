@@ -152,7 +152,9 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
         </div>
 
         {/* NAVIGATION */}
-        <div className="flex-1 overflow-y-auto no-scrollbar py-2">
+        {/* NAVIGATION */}
+        {/* Add pb-20 (bottom padding) to ensure space for tooltips of bottom items */}
+        <div className="flex-1 overflow-y-auto no-scrollbar py-2 pb-20">
           {!isCollapsed && (
             <p className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
               Core Management
@@ -167,8 +169,9 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
                 <li
                   key={tab.path}
                   onClick={() => handleNavigate(tab.path)}
+                  /* Added relative class here to anchor the tooltip better */
                   className={`group relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-4 py-3.5 rounded-xl cursor-pointer transition-all
-            ${isActive
+    ${isActive
                       ? "bg-brand text-white"
                       : "text-slate-500 hover:bg-slate-50 hover:text-brand"
                     }`}
@@ -178,16 +181,17 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
                   </span>
 
                   {!isCollapsed && (
-                    <span className="text-[14px] font-black  tracking-tight whitespace-nowrap">
+                    <span className="text-[14px] font-black tracking-tight whitespace-nowrap">
                       {tab.name}
                     </span>
                   )}
 
                   {/* Tooltip for Collapsed State */}
                   {isCollapsed && (
-                    <div className="fixed left-20 ml-2 scale-0 group-hover:scale-100 transition-all duration-200 origin-left 
+                    <div className="fixed left-20 scale-0 group-hover:scale-100 transition-all duration-200 origin-left 
               bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg 
-              whitespace-nowrap z-[100] shadow-xl shadow-black/30 pointer-events-none
+              whitespace-nowrap z-[999] shadow-xl shadow-black/30 pointer-events-none
+              /* Ensure the tooltip arrow is also visible */
               before:content-[''] before:absolute before:top-1/2 before:-left-1 before:-translate-y-1/2 
               before:w-2 before:h-2 before:bg-slate-900 before:rotate-45">
                       {tab.name}
