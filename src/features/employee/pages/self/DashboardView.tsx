@@ -17,7 +17,7 @@ import {
   FaUmbrellaBeach
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
+import BirthdayPopupBanner from "@/features/birthday/components/BirthdayPopupBanner";
 interface StatItem {
   title: string;
   used: number;
@@ -130,6 +130,10 @@ const DashboardView = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-7xl mx-auto  space-y-8 bg-[#F9FAFB] min-h-screen"
     >
+      <div>
+    <BirthdayPopupBanner />   {/* ← இதை add பண்ணு */}
+    {/* ... உங்கள் existing code ... */}
+  </div>
       {/* SaaS HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

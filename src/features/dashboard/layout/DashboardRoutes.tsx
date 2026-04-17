@@ -9,6 +9,7 @@ import TeamCalendarView from "@/features/attendance/pages/TeamCalendarView";
 import ManagerDashboardView from "@/features/dashboard/manager/pages/ManagerDashboardView";
 import RequestCenter from "@/features/employee/components/RequestCenter";
 // import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
+import BirthdayPage from "@/features/birthday/pages/BirthdayPage";
 import { HRVerificationPage } from "@/features/employee/pages/hr/Hrverificationpage";
 import CalendarView from "@/features/employee/pages/self/CalendarView";
 import DashboardView from "@/features/employee/pages/self/DashboardView";
@@ -76,6 +77,12 @@ const DashboardRoutes = () => {
 
       {/*CFO*/}
       {/* <Route path="payroll" element={<PayslipPage />} /> */}
+
+      {/* BIRTHDAY */}
+      <Route path="birthday" element={<BirthdayPage />} />
+
+      {/* BIRTHDAY */}
+
 
       {/* DEFAULT */}
       <Route path="*" element={<Navigate to="dashboard" />} />
