@@ -51,7 +51,9 @@ const TeamCalendarView: React.FC = () => {
     pagination,
     fetchTeamAttendanceReport,
     attendanceReport,
-    fetchEmployeeAttendanceReport
+    fetchEmployeeAttendanceReport,
+    downloadAttendanceExcel
+
   } = useCalendar();
 
   const [reportPage, setReportPage] = useState(0);
@@ -210,6 +212,15 @@ const TeamCalendarView: React.FC = () => {
       return true;
     });
   }, [teamAttendanceReport, isRangeMode]);
+
+  const handleExcelExport = () => {
+    if (!selectedReportMember) return;
+
+    downloadAttendanceExcel(selectedReportMember, {
+      fromDate: reportRange.from,
+      toDate: reportRange.to
+    });
+  };
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20 bg-slate-50/50">
@@ -883,6 +894,18 @@ const TeamCalendarView: React.FC = () => {
                 >
                   <FaChevronLeft size={8} /> Back to Team
                 </button>
+                <button
+                  onClick={handleExcelExport}
+                  disabled={loading}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase rounded-sm transition-all disabled:opacity-50 shadow-sm"
+                >
+                  {loading ? (
+                    <FaSpinner className="animate-spin" size={10} />
+                  ) : (
+                    <FaCalendarAlt size={10} />
+                  )}
+                  <span>Export Excel</span>
+                </button>
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
                   {reportRange.from} — {reportRange.to}
                 </span>
@@ -979,7 +1002,7 @@ const TeamCalendarView: React.FC = () => {
                           <FaUserAlt size={10} />
                         </div>
                         <div className="flex flex-col">
-                          <p className="text-xs font-black text-slate-900 truncate max-w-[120px]">
+                          <p className="text-xs font-black text-slate-900 truncate max-w-30">
                             <TeamMemberName employeeId={record.employeeId} />
                           </p>
                           <p className="text-[9px] font-bold text-slate-400 uppercase">{record.employeeId}</p>

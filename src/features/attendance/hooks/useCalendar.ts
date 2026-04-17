@@ -153,6 +153,24 @@ export const useCalendar = () => {
     },
     []
   );
+  const downloadAttendanceExcel = useCallback(
+    async (empId: string, filters: { fromDate?: string; toDate?: string }) => {
+      try {
+        setLoading(true); // Optional: show spinner while the server generates the file
+        setError(null);
+
+        // This calls the API service we created in the previous step
+        await attendanceService.downloadAttendanceExcel(empId, filters);
+
+      } catch (err: any) {
+        console.error("Excel download error:", err);
+        setError(err.message || "Failed to download Excel report");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   /*
   ========================
@@ -173,6 +191,7 @@ export const useCalendar = () => {
     pagination,
     fetchTeamAttendanceReport,
     attendanceReport,
-    fetchEmployeeAttendanceReport
+    fetchEmployeeAttendanceReport,
+    downloadAttendanceExcel
   };
 };

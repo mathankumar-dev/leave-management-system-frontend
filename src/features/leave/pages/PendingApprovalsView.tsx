@@ -170,7 +170,6 @@ const PendingApprovalsView: React.FC = () => {
 
                     <div className='flex justify-start md:justify-center'>
                         <MetricTile
-                            // Only count requests where status is 'PENDING'
                             value={pendingCount.toString().padStart(2, '0')}
                             firstLabel="Pending"
                             secondLabel="Approvals"

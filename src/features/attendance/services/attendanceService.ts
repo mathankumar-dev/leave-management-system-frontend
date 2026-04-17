@@ -59,7 +59,37 @@ export const attendanceService = {
         const response = await api.get(`/v1/attendance/${empId}`, {
             params
         });
-        
+
         return response.data;
+    },
+
+    downloadAttendanceExcel: async (
+        empId: string,
+        params: {
+            fromDate?: string; // Optional
+            toDate?: string;   // Optional
+        }
+    ): Promise<void> => {
+        const response = await api.get(`/v1/attendance/download/excel/${empId}`, {
+            params: {// Mapping frontend empId to backend employeeId param
+                ...params
+            },
+            responseType: 'blob', // CRITICAL: Tells axios to treat response as binary
+        });
+
+        // Create a URL for the downloaded file
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Set suggested filename
+        const dateStr = params.fromDate || new Date().toISOString().split('T')[0];
+        link.setAttribute('download', `Attendance_${empId}_${dateStr}.xlsx`);
+
+        // Append to body, click to trigger download, then clean up
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
     },
 }
