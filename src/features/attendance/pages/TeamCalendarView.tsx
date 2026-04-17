@@ -64,6 +64,11 @@ const TeamCalendarView: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
   const [isAttendanceExpanded, setIsAttendanceExpanded] = useState(false);
   const [isTeamDrawerOpen, setIsTeamDrawerOpen] = useState(false);
+  const [isRangeMode, setIsRangeMode] = useState(false);
+  const [reportRange, setReportRange] = useState({
+    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+    to: new Date().toISOString().split('T')[0]
+  });
 
   const [detailModalReq, setDetailModalReq] = useState<any | null>(null);
   const [dialogConfig, setDialogConfig] = useState<{
@@ -166,16 +171,16 @@ const TeamCalendarView: React.FC = () => {
   const selectedDayHoliday = PUBLIC_HOLIDAYS_2026[selectedDateKey];
 
   useEffect(() => {
-    if (isTeamDrawerOpen && id) {
+    if (isTeamDrawerOpen && id && !selectedReportMember) {
       fetchTeamAttendanceReport(id, {
         page: reportPage,
         size: 10,
         status: reportStatus || undefined,
-        fromDate: selectedDateKey,
-        toDate: selectedDateKey
+        fromDate: isRangeMode ? reportRange.from : selectedDateKey,
+        toDate: isRangeMode ? reportRange.to : selectedDateKey
       });
     }
-  }, [isTeamDrawerOpen, id, reportPage, reportStatus, selectedDateKey, fetchTeamAttendanceReport]);
+  }, [isTeamDrawerOpen, id, reportPage, reportStatus, selectedDateKey, isRangeMode, reportRange, fetchTeamAttendanceReport, selectedReportMember]);
   useEffect(() => {
     if (selectedReportMember) {
       const fromDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
@@ -799,112 +804,124 @@ const TeamCalendarView: React.FC = () => {
           setSelectedReportMember(null);
           setExpandedIndex(null);
         }}
-        title={selectedReportMember ? "Employee History" : "Team Attendance Insights"}
+        title={selectedReportMember ? "Employee History" : "Attendance Reports"}
       >
         <div className="space-y-4">
-          {selectedReportMember ? (
-            /* --- INDIVIDUAL DETAIL VIEW (Employee History) --- */
-            <div className="space-y-4">
-              <button
-                onClick={() => {
-                  setSelectedReportMember(null);
-                  setExpandedIndex(null);
-                }}
-                className="flex items-center gap-2 text-[10px] font-black text-indigo-600 uppercase mb-4 hover:text-indigo-800 transition-colors"
-              >
-                <FaChevronLeft size={8} /> Back to Team List
-              </button>
-
-              {/* Member Header Card */}
-              <div className="p-3 bg-slate-900 text-white rounded-sm mb-4 shadow-md">
-                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Employee Profile</p>
-                <p className="text-sm font-black mt-1">
-                  <TeamMemberName employeeId={selectedReportMember} />
-                </p>
-                <p className="text-[9px] text-slate-400 font-bold uppercase">{selectedReportMember}</p>
+          {/* --- GLOBAL RANGE CONTROLS (Only in Team List View) --- */}
+          {!selectedReportMember && (
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Report Context</p>
+                <div className="flex bg-white border border-slate-200 p-0.5 rounded-sm shadow-sm">
+                  <button
+                    onClick={() => setIsRangeMode(false)}
+                    className={`px-3 py-1 text-[9px] font-black uppercase rounded-sm transition-all ${!isRangeMode ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    Daily
+                  </button>
+                  <button
+                    onClick={() => setIsRangeMode(true)}
+                    className={`px-3 py-1 text-[9px] font-black uppercase rounded-sm transition-all ${isRangeMode ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-600'}`}
+                  >
+                    Range
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-3">
-                {attendanceReport.length > 0 ? (
-                  attendanceReport.map((record: any, idx: number) => {
-                    const isExpanded = expandedIndex === idx;
+              {isRangeMode ? (
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+                  <div>
+                    <label className="text-[8px] font-black text-slate-400 uppercase">From Date</label>
+                    <input
+                      type="date"
+                      value={reportRange.from}
+                      onChange={(e) => setReportRange(prev => ({ ...prev, from: e.target.value }))}
+                      className="w-full text-[10px] font-bold border-slate-200 rounded-sm px-1 py-1 focus:ring-1 focus:ring-indigo-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[8px] font-black text-slate-400 uppercase">To Date</label>
+                    <input
+                      type="date"
+                      value={reportRange.to}
+                      onChange={(e) => setReportRange(prev => ({ ...prev, to: e.target.value }))}
+                      className="w-full text-[10px] font-bold border-slate-200 rounded-sm px-1 py-1 focus:ring-1 focus:ring-indigo-500 outline-none"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-1">
+                  <p className="text-[10px] font-bold text-indigo-600 uppercase">Viewing: {selectedDateKey}</p>
+                </div>
+              )}
+            </div>
+          )}
 
-                    return (
-                      <div key={idx} className="border border-slate-200 rounded-sm overflow-hidden bg-white shadow-sm transition-all">
-                        {/* Row Summary Header */}
-                        <div className="p-3 flex justify-between items-center bg-white">
-                          <div
-                            className="cursor-pointer group"
-                            onClick={() => {
-                              setSelectedDay(new Date(record.date).getDate());
-                              setCurrentDate(new Date(record.date));
-                            }}
-                          >
-                            <p className="text-[10px] font-black text-slate-400 uppercase group-hover:text-indigo-600 transition-colors">{record.date}</p>
-                            <p className="text-xs font-black text-slate-900">
-                              {record.checkIn ? `${record.checkIn.slice(0, 5)} - ${record.checkOut?.slice(0, 5)}` : 'No Log Found'}
-                            </p>
-                          </div>
+          {selectedReportMember ? (
+            /* --- INDIVIDUAL HISTORY VIEW --- */
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => { setSelectedReportMember(null); setExpandedIndex(null); }}
+                  className="flex items-center gap-2 text-[10px] font-black text-indigo-600 uppercase hover:text-indigo-800"
+                >
+                  <FaChevronLeft size={8} /> Back to Team
+                </button>
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter">
+                  {reportRange.from} — {reportRange.to}
+                </span>
+              </div>
 
-                          <div className="flex flex-col items-end gap-2">
-                            <span className={`text-[8px] font-black px-2 py-0.5 rounded-sm uppercase ${record.checkIn ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                              {record.status?.trim() || (record.checkIn ? 'PRESENT' : 'ABSENT')}
-                            </span>
+              <div className="p-3 bg-slate-900 text-white rounded-sm shadow-md">
+                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Member Log History</p>
+                <p className="text-sm font-black mt-1"><TeamMemberName employeeId={selectedReportMember} /></p>
+              </div>
 
-                            {/* SEE PUNCH RECORDS TOGGLE */}
-                            {record.punchRecords && (
-                              <button
-                                onClick={() => setExpandedIndex(isExpanded ? null : idx)}
-                                className={`text-[9px] font-black uppercase tracking-tighter px-2 py-1 rounded transition-all ${isExpanded ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
-                                  }`}
-                              >
-                                {isExpanded ? "Hide Punch Records ▲" : "See Punch Records ▼"}
-                              </button>
-                            )}
-                          </div>
+              <div className="space-y-2">
+                {attendanceReport.length > 0 ? attendanceReport.map((record: any, idx: number) => {
+                  const isExpanded = expandedIndex === idx;
+                  return (
+                    <div key={idx} className="border border-slate-200 rounded-sm overflow-hidden bg-white shadow-sm transition-all">
+                      <div className="p-3 flex justify-between items-center bg-white">
+                        <div className="cursor-pointer" onClick={() => { setSelectedDay(new Date(record.date).getDate()); setCurrentDate(new Date(record.date)); }}>
+                          <p className="text-[10px] font-black text-slate-400 uppercase">{record.date}</p>
+                          <p className="text-xs font-black text-slate-900">
+                            {record.checkIn ? `${record.checkIn.slice(0, 5)} - ${record.checkOut?.slice(0, 5)}` : 'No Log Found'}
+                          </p>
                         </div>
-
-                        {/* EXPANDABLE SECTION */}
-                        <AnimatePresence>
-                          {isExpanded && record.punchRecords && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="bg-slate-50 border-t border-slate-100 overflow-hidden"
+                        <div className="flex flex-col items-end gap-1.5">
+                          <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-sm uppercase ${record.checkIn ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                            {record.status?.trim() || (record.checkIn ? 'PRESENT' : 'ABSENT')}
+                          </span>
+                          {record.punchRecords && (
+                            <button
+                              onClick={() => setExpandedIndex(isExpanded ? null : idx)}
+                              className="text-[9px] font-black text-indigo-600 uppercase underline decoration-2 underline-offset-2"
                             >
-                              <div className="p-3 grid grid-cols-2 gap-2">
-                                {record.punchRecords
-                                  .split(",")
-                                  .filter((p: string) => p.trim().length > 0)
-                                  .map((punch: string, pIdx: number) => {
-                                    const isCheckIn = punch.toLowerCase().includes(":in");
-                                    const timeParts = punch.split(":");
-                                    const time = `${timeParts[0]}:${timeParts[1]}`;
-                                    const location = punch.match(/\(([^)]+)\)/)?.[1] || "Default";
-
-                                    return (
-                                      <div key={pIdx} className="flex flex-col px-2 py-1.5 bg-white border border-slate-200 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-[10px] font-black text-slate-800">{time}</span>
-                                          <span className={`text-[7px] font-black ${isCheckIn ? 'text-emerald-500' : 'text-rose-400'}`}>
-                                            {isCheckIn ? '● IN' : '○ OUT'}
-                                          </span>
-                                        </div>
-                                        <span className="text-[7px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5 truncate">
-                                          Device: {location}
-                                        </span>
-                                      </div>
-                                    );
-                                  })}
-                              </div>
-                            </motion.div>
+                              {isExpanded ? "Hide Punches ▲" : "See Punches ▼"}
+                            </button>
                           )}
-                        </AnimatePresence>
+                        </div>
                       </div>
-                    );
-                  })
-                ) : (
+
+                      <AnimatePresence>
+                        {isExpanded && record.punchRecords && (
+                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-slate-50 border-t border-slate-100 p-2 grid grid-cols-2 gap-2">
+                            {record.punchRecords.split(",").filter((p: string) => p.trim()).map((punch: string, pIdx: number) => {
+                              const isCheckIn = punch.toLowerCase().includes(":in");
+                              return (
+                                <div key={pIdx} className="bg-white p-2 border border-slate-200 rounded-sm flex justify-between items-center shadow-sm">
+                                  <span className="text-[10px] font-black text-slate-800">{punch.split(":").slice(0, 2).join(":")}</span>
+                                  <span className={`text-[7px] font-black ${isCheckIn ? 'text-emerald-500' : 'text-rose-400'}`}>{isCheckIn ? '● IN' : '○ OUT'}</span>
+                                </div>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                }) : (
                   <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-sm">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No range data found</p>
                   </div>
@@ -912,26 +929,22 @@ const TeamCalendarView: React.FC = () => {
               </div>
             </div>
           ) : (
-            /* --- TEAM SUMMARY VIEW (Default List) --- */
+            /* --- TEAM SUMMARY VIEW --- */
             <div className="space-y-4">
-              {/* Filter Header */}
-              <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-sm">
-                <div className="flex flex-col">
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Daily View</p>
-                  <p className="text-xs font-bold text-slate-900">{selectedDateKey}</p>
-                </div>
+              {/* Team List Header */}
+              <div className="flex items-center justify-between p-2 border-b border-slate-100">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee Summary</p>
                 <select
                   value={reportStatus}
                   onChange={(e) => { setReportStatus(e.target.value); setReportPage(0); }}
-                  className="text-[10px] font-black border-slate-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="text-[9px] font-black border-slate-200 rounded-sm px-2 py-0.5 bg-white outline-none focus:ring-1 focus:ring-indigo-500"
                 >
-                  <option value="">ALL EMPLOYEES</option>
+                  <option value="">ALL STATUS</option>
                   <option value="PRESENT">PRESENT</option>
                   <option value="ABSENT">ABSENT</option>
                 </select>
               </div>
 
-              {/* Team List */}
               <div className="space-y-2">
                 {loading ? (
                   <div className="py-20 flex flex-col items-center justify-center text-slate-400">
@@ -950,10 +963,10 @@ const TeamCalendarView: React.FC = () => {
                           <FaUserAlt size={10} />
                         </div>
                         <div className="flex flex-col">
-                          <p className="text-xs font-black text-slate-900 group-hover:text-indigo-700">
+                          <p className="text-xs font-black text-slate-900 truncate max-w-[120px]">
                             <TeamMemberName employeeId={record.employeeId} />
                           </p>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{record.employeeId}</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">{record.employeeId}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
@@ -965,20 +978,20 @@ const TeamCalendarView: React.FC = () => {
                             {record.status?.trim() || (record.checkIn ? 'PRESENT' : 'ABSENT')}
                           </span>
                         </div>
-                        <FaChevronRight size={10} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                        <FaChevronRight size={10} className="text-slate-300 group-hover:text-indigo-500 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-sm">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No results for this date</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No members found for this period</p>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* PAGINATION (Adapts based on View) */}
+          {/* PAGINATION */}
           {pagination.totalPages > 1 && (
             <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-4">
               <button
@@ -988,12 +1001,9 @@ const TeamCalendarView: React.FC = () => {
               >
                 <FaChevronLeft size={10} />
               </button>
-              <div className="text-center">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Navigation</p>
-                <p className="text-[10px] font-black text-slate-800">
-                  {pagination.currentPage + 1} / {pagination.totalPages}
-                </p>
-              </div>
+              <p className="text-[10px] font-black text-slate-800">
+                {pagination.currentPage + 1} / {pagination.totalPages}
+              </p>
               <button
                 disabled={pagination.currentPage >= pagination.totalPages - 1}
                 onClick={() => selectedReportMember ? setMemberReportPage(p => p + 1) : setReportPage(p => p + 1)}
