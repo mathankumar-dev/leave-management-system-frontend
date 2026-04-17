@@ -7,6 +7,9 @@ import { useCallback, useState } from "react";
 export const useCalendar = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [teamAttendanceReport, setTeamAttendanceReport] = useState<AttendanceRecord[]>([]);
+  const [pagination, setPagination] = useState({ totalPages: 0, totalElements: 0, currentPage: 0 });
+  const [attendanceReport, setAttendanceReport] = useState<AttendanceRecord[]>([]);
 
   const [teamCalendar, setTeamCalendar] =
     useState<TeamCalendarResponse>({});
@@ -97,6 +100,59 @@ export const useCalendar = () => {
     },
     []
   );
+  const fetchTeamAttendanceReport = useCallback(
+    async (reportingId: string, filters: { fromDate?: string; toDate?: string; status?: string; page?: number; size?: number }) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await attendanceService.getTeamAttendanceReport(reportingId, filters);
+
+        setTeamAttendanceReport(data.content || []);
+        setPagination({
+          totalPages: data.totalPages,
+          totalElements: data.totalElements,
+          currentPage: data.number
+        });
+
+        return data;
+      } catch (err: any) {
+        console.error("Team attendance report error", err);
+        setError(err.message || "Failed to fetch team attendance report");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const fetchEmployeeAttendanceReport = useCallback(
+    async (empId: string, filters: { fromDate?: string; toDate?: string; page?: number; size?: number }) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await attendanceService.getEmployeeAttendanceByRange(empId, filters);
+
+        setAttendanceReport(data.content || []);
+        setPagination({
+          totalPages: data.totalPages,
+          totalElements: data.totalElements,
+          currentPage: filters.page || 0,
+        });
+
+        return data;
+      } catch (err: any) {
+        console.error("Employee report error:", err);
+        setError(err.message || "Failed to fetch employee attendance report");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   /*
   ========================
@@ -113,5 +169,10 @@ export const useCalendar = () => {
     fetchTeamSchedule,
     fetchEmployeeCalendar,
     fetchAttendanceCalendar,
+    teamAttendanceReport,
+    pagination,
+    fetchTeamAttendanceReport,
+    attendanceReport,
+    fetchEmployeeAttendanceReport
   };
 };

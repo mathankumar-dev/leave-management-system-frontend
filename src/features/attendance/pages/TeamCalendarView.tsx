@@ -1,3 +1,4 @@
+import Drawer from "@/features/attendance/components/Drawer";
 import { useCalendar } from "@/features/attendance/hooks/useCalendar";
 import { useEmployee } from "@/features/employee/hooks/useEmployee";
 import DetailedRequestModal from "@/features/leave/components/DetailedRequestModal";
@@ -18,12 +19,11 @@ import {
   FaChevronRight,
   FaSpinner,
   FaUserAlt,
-  FaUserCheck,
+  FaUserCheck
 } from "react-icons/fa";
 import { useAuth } from "../../../shared/auth/useAuth";
 import { PUBLIC_HOLIDAYS_2026 } from "../../../shared/constants/holidays";
 
-// --- COLOR LOGIC HELPER ---
 type StatusTheme = "rose" | "amber" | "indigo";
 
 const getStatusColor = (status?: string): StatusTheme => {
@@ -46,14 +46,25 @@ const TeamCalendarView: React.FC = () => {
     fetchAttendanceCalendar,
     employeeCalendar,
     attendance: attendanceCalendar,
-    loading
+    loading,
+    teamAttendanceReport,
+    pagination,
+    fetchTeamAttendanceReport,
+    attendanceReport,
+    fetchEmployeeAttendanceReport
   } = useCalendar();
 
+  const [reportPage, setReportPage] = useState(0);
+  const [reportStatus, setReportStatus] = useState<string>("");
+  const [selectedReportMember, setSelectedReportMember] = useState<string | null>(null);
+  const [memberReportPage, setMemberReportPage] = useState(0);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
   const [isAttendanceExpanded, setIsAttendanceExpanded] = useState(false);
-  // Inside TeamCalendarView component
+  const [isTeamDrawerOpen, setIsTeamDrawerOpen] = useState(false);
+
   const [detailModalReq, setDetailModalReq] = useState<any | null>(null);
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean;
@@ -61,9 +72,8 @@ const TeamCalendarView: React.FC = () => {
     status: LeaveDecision | null;
   }>({ isOpen: false, req: null, status: null });
   const { processApproval } = useLeaveAction();
-  // Helper to execute the final decision after the comment dialog
   const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-    const targetId = req.leaveId || req.id || req.employeeId; // Ensure you have the correct ID
+    const targetId = req.leaveId || req.id || req.employeeId;
     const success = await processApproval({
       leaveId: targetId,
       approverId: user!.id,
@@ -74,7 +84,7 @@ const TeamCalendarView: React.FC = () => {
     if (success) {
       notify.leaveAction(status, req.employeeName || "Employee");
       setDialogConfig({ isOpen: false, req: null, status: null });
-      loadAllData(); // Refresh your calendar/stats
+      loadAllData();
     }
   };
   const calendarStats = useMemo(() => {
@@ -86,7 +96,7 @@ const TeamCalendarView: React.FC = () => {
       daysInMonthCount: new Date(y, m + 1, 0).getDate(),
       firstDayOfMonth: new Date(y, m, 1).getDay(),
       monthName: currentDate.toLocaleString("default", { month: "long" }),
-      shortMonth: currentDate.toLocaleString("default", { month: "short" }), // Add this
+      shortMonth: currentDate.toLocaleString("default", { month: "short" }),
       year: y,
       month: m,
       day: d
@@ -102,6 +112,7 @@ const TeamCalendarView: React.FC = () => {
       fetchAttendanceCalendar(id, year, month);
     }
   }, [id, year, month, fetchTeamSchedule, fetchEmployeeCalendar, fetchAttendanceCalendar]);
+
 
   const formatKey = (date: Date) => {
     const y = date.getFullYear();
@@ -141,8 +152,6 @@ const TeamCalendarView: React.FC = () => {
   const dailyMine = employeeCalendar[dailyKey] || [];
   const dailyHoliday = PUBLIC_HOLIDAYS_2026[dailyKey];
 
-
-
   const handleMove = (direction: number) => {
     const newDate = new Date(currentDate);
     if (viewMode === "month") newDate.setMonth(newDate.getMonth() + direction);
@@ -156,22 +165,44 @@ const TeamCalendarView: React.FC = () => {
   const selectedDayTeamLeaves = teamCalendar[selectedDateKey] || [];
   const selectedDayHoliday = PUBLIC_HOLIDAYS_2026[selectedDateKey];
 
+  useEffect(() => {
+    if (isTeamDrawerOpen && id) {
+      fetchTeamAttendanceReport(id, {
+        page: reportPage,
+        size: 10,
+        status: reportStatus || undefined,
+        fromDate: selectedDateKey,
+        toDate: selectedDateKey
+      });
+    }
+  }, [isTeamDrawerOpen, id, reportPage, reportStatus, selectedDateKey, fetchTeamAttendanceReport]);
+  useEffect(() => {
+    if (selectedReportMember) {
+      const fromDate = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+      const toDate = `${year}-${String(month + 1).padStart(2, "0")}-${daysInMonthCount}`;
+
+      fetchEmployeeAttendanceReport(selectedReportMember, {
+        fromDate,
+        toDate,
+        page: memberReportPage,
+        size: 10
+      });
+    }
+  }, [selectedReportMember, memberReportPage, year, month, daysInMonthCount, fetchEmployeeAttendanceReport]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20 bg-slate-50/50">
-      {/* 1. The Main Detailed View Modal */}
       <DetailedRequestModal
         isOpen={!!detailModalReq}
         leaveId={detailModalReq?.leaveId || detailModalReq?.id}
         onClose={() => setDetailModalReq(null)}
         onAction={(status) => {
           const currentReq = detailModalReq;
-          setDetailModalReq(null); // Close this modal
-          setDialogConfig({ isOpen: true, req: currentReq, status }); // Open comment dialog
+          setDetailModalReq(null);
+          setDialogConfig({ isOpen: true, req: currentReq, status });
         }}
       />
 
-      {/* 2. The Final Approval/Rejection Dialog */}
       <CommentDialog
         isOpen={dialogConfig.isOpen}
         onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
@@ -723,6 +754,20 @@ const TeamCalendarView: React.FC = () => {
             )}
           </div>
         </div>
+        {user?.role?.toUpperCase() !== 'EMPLOYEE' && (
+          <div className="bg-white border border-slate-200 rounded-sm shadow-sm p-4">
+            <button
+              onClick={() => setIsTeamDrawerOpen(true)}
+              className="w-full flex items-center justify-between p-3 bg-slate-900 border border-slate-900 rounded-sm hover:bg-slate-800 transition-all group"
+            >
+              <div className="flex items-center gap-3 text-white">
+                <FaUserCheck size={14} className="text-emerald-400" />
+                <span className="text-[10px] font-black tracking-widest uppercase">Team Attendance Report</span>
+              </div>
+              <FaChevronRight size={10} className="text-slate-500 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        )}
 
         {/* UPCOMING HOLIDAYS PANEL (unchanged) */}
         <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
@@ -746,6 +791,220 @@ const TeamCalendarView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <Drawer
+        isOpen={isTeamDrawerOpen}
+        onClose={() => {
+          setIsTeamDrawerOpen(false);
+          setSelectedReportMember(null);
+          setExpandedIndex(null);
+        }}
+        title={selectedReportMember ? "Employee History" : "Team Attendance Insights"}
+      >
+        <div className="space-y-4">
+          {selectedReportMember ? (
+            /* --- INDIVIDUAL DETAIL VIEW (Employee History) --- */
+            <div className="space-y-4">
+              <button
+                onClick={() => {
+                  setSelectedReportMember(null);
+                  setExpandedIndex(null);
+                }}
+                className="flex items-center gap-2 text-[10px] font-black text-indigo-600 uppercase mb-4 hover:text-indigo-800 transition-colors"
+              >
+                <FaChevronLeft size={8} /> Back to Team List
+              </button>
+
+              {/* Member Header Card */}
+              <div className="p-3 bg-slate-900 text-white rounded-sm mb-4 shadow-md">
+                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Employee Profile</p>
+                <p className="text-sm font-black mt-1">
+                  <TeamMemberName employeeId={selectedReportMember} />
+                </p>
+                <p className="text-[9px] text-slate-400 font-bold uppercase">{selectedReportMember}</p>
+              </div>
+
+              <div className="space-y-3">
+                {attendanceReport.length > 0 ? (
+                  attendanceReport.map((record: any, idx: number) => {
+                    const isExpanded = expandedIndex === idx;
+
+                    return (
+                      <div key={idx} className="border border-slate-200 rounded-sm overflow-hidden bg-white shadow-sm transition-all">
+                        {/* Row Summary Header */}
+                        <div className="p-3 flex justify-between items-center bg-white">
+                          <div
+                            className="cursor-pointer group"
+                            onClick={() => {
+                              setSelectedDay(new Date(record.date).getDate());
+                              setCurrentDate(new Date(record.date));
+                            }}
+                          >
+                            <p className="text-[10px] font-black text-slate-400 uppercase group-hover:text-indigo-600 transition-colors">{record.date}</p>
+                            <p className="text-xs font-black text-slate-900">
+                              {record.checkIn ? `${record.checkIn.slice(0, 5)} - ${record.checkOut?.slice(0, 5)}` : 'No Log Found'}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`text-[8px] font-black px-2 py-0.5 rounded-sm uppercase ${record.checkIn ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                              {record.status?.trim() || (record.checkIn ? 'PRESENT' : 'ABSENT')}
+                            </span>
+
+                            {/* SEE PUNCH RECORDS TOGGLE */}
+                            {record.punchRecords && (
+                              <button
+                                onClick={() => setExpandedIndex(isExpanded ? null : idx)}
+                                className={`text-[9px] font-black uppercase tracking-tighter px-2 py-1 rounded transition-all ${isExpanded ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                                  }`}
+                              >
+                                {isExpanded ? "Hide Punch Records ▲" : "See Punch Records ▼"}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* EXPANDABLE SECTION */}
+                        <AnimatePresence>
+                          {isExpanded && record.punchRecords && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              className="bg-slate-50 border-t border-slate-100 overflow-hidden"
+                            >
+                              <div className="p-3 grid grid-cols-2 gap-2">
+                                {record.punchRecords
+                                  .split(",")
+                                  .filter((p: string) => p.trim().length > 0)
+                                  .map((punch: string, pIdx: number) => {
+                                    const isCheckIn = punch.toLowerCase().includes(":in");
+                                    const timeParts = punch.split(":");
+                                    const time = `${timeParts[0]}:${timeParts[1]}`;
+                                    const location = punch.match(/\(([^)]+)\)/)?.[1] || "Default";
+
+                                    return (
+                                      <div key={pIdx} className="flex flex-col px-2 py-1.5 bg-white border border-slate-200 rounded-sm shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-[10px] font-black text-slate-800">{time}</span>
+                                          <span className={`text-[7px] font-black ${isCheckIn ? 'text-emerald-500' : 'text-rose-400'}`}>
+                                            {isCheckIn ? '● IN' : '○ OUT'}
+                                          </span>
+                                        </div>
+                                        <span className="text-[7px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5 truncate">
+                                          Device: {location}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-sm">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No range data found</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* --- TEAM SUMMARY VIEW (Default List) --- */
+            <div className="space-y-4">
+              {/* Filter Header */}
+              <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-sm">
+                <div className="flex flex-col">
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Daily View</p>
+                  <p className="text-xs font-bold text-slate-900">{selectedDateKey}</p>
+                </div>
+                <select
+                  value={reportStatus}
+                  onChange={(e) => { setReportStatus(e.target.value); setReportPage(0); }}
+                  className="text-[10px] font-black border-slate-200 rounded-sm px-2 py-1 bg-white focus:outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="">ALL EMPLOYEES</option>
+                  <option value="PRESENT">PRESENT</option>
+                  <option value="ABSENT">ABSENT</option>
+                </select>
+              </div>
+
+              {/* Team List */}
+              <div className="space-y-2">
+                {loading ? (
+                  <div className="py-20 flex flex-col items-center justify-center text-slate-400">
+                    <FaSpinner className="animate-spin mb-2" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">Syncing Records...</p>
+                  </div>
+                ) : teamAttendanceReport.length > 0 ? (
+                  teamAttendanceReport.map((record: any, idx: number) => (
+                    <div
+                      key={idx}
+                      onClick={() => setSelectedReportMember(record.employeeId)}
+                      className="flex items-center justify-between p-3 border border-slate-100 rounded-sm hover:border-indigo-500 hover:bg-indigo-50/30 transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-slate-100 text-slate-500 flex items-center justify-center rounded-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                          <FaUserAlt size={10} />
+                        </div>
+                        <div className="flex flex-col">
+                          <p className="text-xs font-black text-slate-900 group-hover:text-indigo-700">
+                            <TeamMemberName employeeId={record.employeeId} />
+                          </p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{record.employeeId}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-[11px] font-black text-slate-800">
+                            {record.checkIn ? record.checkIn.slice(0, 5) : '--:--'}
+                          </p>
+                          <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-sm uppercase ${record.checkIn ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                            {record.status?.trim() || (record.checkIn ? 'PRESENT' : 'ABSENT')}
+                          </span>
+                        </div>
+                        <FaChevronRight size={10} className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-sm">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No results for this date</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* PAGINATION (Adapts based on View) */}
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-4">
+              <button
+                disabled={pagination.currentPage === 0}
+                onClick={() => selectedReportMember ? setMemberReportPage(p => p - 1) : setReportPage(p => p - 1)}
+                className="p-2 border border-slate-200 rounded-sm disabled:opacity-20 hover:bg-slate-50 transition-colors"
+              >
+                <FaChevronLeft size={10} />
+              </button>
+              <div className="text-center">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Navigation</p>
+                <p className="text-[10px] font-black text-slate-800">
+                  {pagination.currentPage + 1} / {pagination.totalPages}
+                </p>
+              </div>
+              <button
+                disabled={pagination.currentPage >= pagination.totalPages - 1}
+                onClick={() => selectedReportMember ? setMemberReportPage(p => p + 1) : setReportPage(p => p + 1)}
+                className="p-2 border border-slate-200 rounded-sm disabled:opacity-20 hover:bg-slate-50 transition-colors"
+              >
+                <FaChevronRight size={10} />
+              </button>
+            </div>
+          )}
+        </div>
+      </Drawer>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import type { AttendanceRecord, TeamCalendarResponse } from "@/features/attendance/types";
+import type { AttendanceRecord, TeamAttendancePage, TeamCalendarResponse } from "@/features/attendance/types";
 import api from "@/services/apiClient";
 
 export const attendanceService = {
@@ -16,7 +16,7 @@ export const attendanceService = {
         return response.data;
     },
 
-    getAttendance : async (
+    getAttendance: async (
         employeeId: string,
         year?: number,
         month?: number
@@ -28,5 +28,38 @@ export const attendanceService = {
             }
         });
         return res.data;
-    }
+    },
+    getTeamAttendanceReport: async (
+        reportingId: string,
+        params: {
+            fromDate?: string;
+            toDate?: string;
+            status?: string;
+            page?: number;
+            size?: number;
+        }
+    ): Promise<TeamAttendancePage> => {
+        const response = await api.get(`/v1/attendance/team/${reportingId}`, {
+            params: {
+                ...params,
+                // Ensure any default values or formatting happens here if needed
+            }
+        });
+        return response.data;
+    },
+    getEmployeeAttendanceByRange: async (
+        empId: string,
+        params: {
+            fromDate?: string;
+            toDate?: string;
+            page?: number;
+            size?: number;
+        }
+    ): Promise<{ content: AttendanceRecord[], totalPages: number, totalElements: number }> => {
+        const response = await api.get(`/v1/attendance/${empId}`, {
+            params
+        });
+        
+        return response.data;
+    },
 }
