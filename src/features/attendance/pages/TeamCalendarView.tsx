@@ -195,6 +195,22 @@ const TeamCalendarView: React.FC = () => {
     }
   }, [selectedReportMember, memberReportPage, year, month, daysInMonthCount, fetchEmployeeAttendanceReport]);
 
+  const uniqueTeamMembers = useMemo(() => {
+    // If we are just looking at one day, we show everyone as is
+    if (!isRangeMode) return teamAttendanceReport;
+
+    const seenIds = new Set();
+    return teamAttendanceReport.filter((record: any) => {
+      // We use "any" here because the Team API response typically 
+      // augments the AttendanceRecord with an employeeId
+      if (!record.employeeId || seenIds.has(record.employeeId)) {
+        return false;
+      }
+      seenIds.add(record.employeeId);
+      return true;
+    });
+  }, [teamAttendanceReport, isRangeMode]);
+
   return (
     <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20 bg-slate-50/50">
       <DetailedRequestModal
@@ -951,10 +967,10 @@ const TeamCalendarView: React.FC = () => {
                     <FaSpinner className="animate-spin mb-2" />
                     <p className="text-[10px] font-black uppercase tracking-widest">Syncing Records...</p>
                   </div>
-                ) : teamAttendanceReport.length > 0 ? (
-                  teamAttendanceReport.map((record: any, idx: number) => (
+                ) : uniqueTeamMembers.length > 0 ? (
+                  uniqueTeamMembers.map((record: any) => (
                     <div
-                      key={idx}
+                      key={record.employeeId}
                       onClick={() => setSelectedReportMember(record.employeeId)}
                       className="flex items-center justify-between p-3 border border-slate-100 rounded-sm hover:border-indigo-500 hover:bg-indigo-50/30 transition-all cursor-pointer group"
                     >
@@ -969,22 +985,31 @@ const TeamCalendarView: React.FC = () => {
                           <p className="text-[9px] font-bold text-slate-400 uppercase">{record.employeeId}</p>
                         </div>
                       </div>
+
                       <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-[11px] font-black text-slate-800">
-                            {record.checkIn ? record.checkIn.slice(0, 5) : '--:--'}
-                          </p>
-                          <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-sm uppercase ${record.checkIn ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                            {record.status?.trim() || (record.checkIn ? 'PRESENT' : 'ABSENT')}
-                          </span>
-                        </div>
+                        {!isRangeMode ? (
+                          /* Daily View: Show check-in/out */
+                          <div className="text-right">
+                            <p className="text-[11px] font-black text-slate-800">
+                              {record.checkIn ? record.checkIn.slice(0, 5) : '--:--'}
+                            </p>
+                            <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-sm uppercase ${record.checkIn ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                              {record.status?.trim() || (record.checkIn ? 'PRESENT' : 'ABSENT')}
+                            </span>
+                          </div>
+                        ) : (
+                          /* Range View: Just a call to action to see the history */
+                          <div className="text-right">
+                            <p className="text-[10px] font-black text-indigo-600 uppercase">View History</p>
+                          </div>
+                        )}
                         <FaChevronRight size={10} className="text-slate-300 group-hover:text-indigo-500 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="py-20 text-center border-2 border-dashed border-slate-100 rounded-sm">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No members found for this period</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No members found</p>
                   </div>
                 )}
               </div>
