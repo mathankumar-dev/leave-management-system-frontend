@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-
+import { skillsetService } from "@/features/skillset/skillsetService";
+import type { SkillPayload } from "@/features/skillset/skillsetService";
 // ── Types ──────────────────────────────────────────────────────────────────
 type SkillType = "tech" | "tools" | "soft";
 
@@ -45,6 +46,13 @@ const TYPE_LABELS: Record<SkillType, string> = {
   soft: "Interpersonal",
 };
 
+// Map frontend SkillType → backend category enum
+const toBackendCategory = (type: SkillType): SkillPayload["category"] => {
+  if (type === "tech") return "TECHNICAL";
+  if (type === "tools") return "TOOLS";
+  return "INTERPERSONAL";
+};
+
 // ── Star Rating ────────────────────────────────────────────────────────────
 function StarRating({
   rating,
@@ -57,7 +65,6 @@ function StarRating({
 }) {
   const [hover, setHover] = useState(0);
   const labels = type === "tech" ? TECH_LABELS : type === "tools" ? TOOL_LABELS : SOFT_LABELS;
-
   return (
     <div>
       <div className="flex gap-1 mb-1">
@@ -161,7 +168,9 @@ function WeeklyCard({ skill }: { skill: WeeklySkill }) {
         </div>
         <div className="flex gap-0.5">
           {[1, 2, 3, 4, 5].map((v) => (
-            <span key={v} style={{ color: v <= skill.rating ? "#D4AF37" : "#dee2e6", fontSize: "14px" }}>★</span>
+            <span key={v} style={{ color: v <= skill.rating ? "#D4AF37" : "#dee2e6", fontSize: "14px" }}>
+              ★
+            </span>
           ))}
         </div>
       </div>
@@ -192,26 +201,41 @@ export default function SkillsetHome() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Weekly skills
+  // Weekly skills — populated from API on mount, plus new ones added this session
   const [weeklySkills, setWeeklySkills] = useState<WeeklySkill[]>([]);
   const [quote] = useState(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
-  const nextIdRef = useRef(1);
 
-  // Badge progress
-  const techToolCount = weeklySkills.filter((s) => s.type === "tech" || s.type === "tools").length;
+  // ── Load existing skills on mount to show badge progress ─────────────────
+  // We use the badge API for counts (lighter than fetching all skills)
+  const [techToolCount, setTechToolCount] = useState(0);
+
+  useEffect(() => {
+    skillsetService.getMyBadges().then(({ data }) => {
+      setTechToolCount(data.techToolCombined ?? 0);
+    }).catch(() => {
+      // Silently fail — badge strip is non-critical
+    });
+  }, []);
+
   const getBadgeProgress = () => {
-    if (techToolCount < 1) return { diff: 1, name: "Associate" };
     if (techToolCount < 5) return { diff: 5 - techToolCount, name: "Associate" };
     if (techToolCount < 12) return { diff: 12 - techToolCount, name: "Specialist" };
     if (techToolCount < 20) return { diff: 20 - techToolCount, name: "Authority" };
     return { diff: 0, name: "All Milestones" };
   };
+
   const { diff, name: badgeName } = getBadgeProgress();
 
-  // Autocomplete
+  // ── Autocomplete ──────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!skillName.trim()) { setSuggestions([]); setShowSuggestions(false); return; }
+    if (!skillName.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
     const filtered = SUGGESTIONS[skillType].filter((s) =>
       s.toLowerCase().includes(skillName.toLowerCase())
     );
@@ -219,7 +243,6 @@ export default function SkillsetHome() {
     setShowSuggestions(filtered.length > 0);
   }, [skillName, skillType]);
 
-  // Close suggestions on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (suggestRef.current && !suggestRef.current.contains(e.target as Node)) {
@@ -230,30 +253,56 @@ export default function SkillsetHome() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // ── Submit — calls real API ───────────────────────────────────────────────
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!skillName.trim() || rating === 0) return;
 
-    const newSkill: WeeklySkill = {
-      id: nextIdRef.current++,
-      name: skillName.trim(),
-      type: skillType,
+    setSubmitting(true);
+    setError(null);
+
+    const payload: SkillPayload = {
+      skillName: skillName.trim(),
+      category: toBackendCategory(skillType),
       rating,
-      learn: learnTags,
-      apply: applyTags,
-      certDate,
-      file: certFile,
+      learnedAt: learnTags.join(", ") || undefined,
+      appliedAt: applyTags.join(", ") || undefined,
+      certDate: certDate || undefined,
     };
 
-    setWeeklySkills((prev) => [newSkill, ...prev]);
+    try {
+      const { data } = await skillsetService.addSkill(payload, certFile ?? undefined);
 
-    // Reset form
-    setSkillName("");
-    setLearnTags([]);
-    setApplyTags([]);
-    setCertDate("");
-    setCertFile(null);
-    setRating(0);
+      // Append to weekly skills display
+      const newSkill: WeeklySkill = {
+        id: data.id,
+        name: data.skillName ?? data.name ?? skillName,
+        type: skillType,
+        rating,
+        learn: learnTags,
+        apply: applyTags,
+        certDate,
+        file: certFile,
+      };
+      setWeeklySkills((prev) => [newSkill, ...prev]);
+
+      // Update badge count
+      if (skillType === "tech" || skillType === "tools") {
+        setTechToolCount((prev) => prev + 1);
+      }
+
+      // Reset form
+      setSkillName("");
+      setLearnTags([]);
+      setApplyTags([]);
+      setCertDate("");
+      setCertFile(null);
+      setRating(0);
+    } catch (err: any) {
+      setError(err?.response?.data?.message ?? "Failed to save skill. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -263,7 +312,6 @@ export default function SkillsetHome() {
     >
       <div className="container mx-auto px-4 mt-4 pb-12" style={{ maxWidth: "1200px" }}>
         <div className="flex flex-col lg:flex-row gap-6">
-
           {/* ── LEFT: Form ─────────────────────────────────────────────── */}
           <div className="lg:w-5/12">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -271,11 +319,18 @@ export default function SkillsetHome() {
                 Record New Competency
               </h5>
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              {error && (
+                <div className="mb-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  {error}
+                </div>
+              )}
 
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Skill Type */}
                 <div>
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Skill Type</label>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                    Skill Type
+                  </label>
                   <select
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
                     value={skillType}
@@ -289,7 +344,9 @@ export default function SkillsetHome() {
 
                 {/* Skill Name + Autocomplete */}
                 <div className="relative" ref={suggestRef}>
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Skill Name</label>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                    Skill Name
+                  </label>
                   <input
                     type="text"
                     autoComplete="off"
@@ -338,7 +395,9 @@ export default function SkillsetHome() {
                 {/* Cert + Date */}
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Certificate / Proof</label>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                      Certificate / Proof
+                    </label>
                     <input
                       type="file"
                       className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
@@ -346,7 +405,9 @@ export default function SkillsetHome() {
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Date Received</label>
+                    <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                      Date Received
+                    </label>
                     <input
                       type="date"
                       className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
@@ -358,17 +419,20 @@ export default function SkillsetHome() {
 
                 {/* Proficiency */}
                 <div>
-                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Proficiency Level</label>
+                  <label className="block text-xs font-bold uppercase text-gray-500 mb-1">
+                    Proficiency Level
+                  </label>
                   <StarRating rating={rating} onChange={setRating} type={skillType} />
                 </div>
 
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="w-full py-2.5 rounded-xl text-sm font-bold text-white mt-1 transition-all duration-200 hover:opacity-90 active:scale-95"
+                  disabled={submitting}
+                  className="w-full py-2.5 rounded-xl text-sm font-bold text-white mt-1 transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ background: "linear-gradient(135deg, #001d3d, #256096)" }}
                 >
-                  Record Skill
+                  {submitting ? "Saving..." : "Record Skill"}
                 </button>
               </form>
             </div>
@@ -376,7 +440,6 @@ export default function SkillsetHome() {
 
           {/* ── RIGHT: Motivation + Weekly ──────────────────────────────── */}
           <div className="lg:w-7/12 flex flex-col gap-5">
-
             {/* Keep Growing card */}
             <div
               className="rounded-2xl p-5 text-white shadow-md"
@@ -409,12 +472,11 @@ export default function SkillsetHome() {
                 className="text-sm font-semibold pb-2 mb-3"
                 style={{ color: "#000509", borderBottom: "1px solid #dee2e6" }}
               >
-                Recently Added (This Week)
+                Recently Added (This Session)
               </h5>
-
               {weeklySkills.length === 0 ? (
                 <div className="text-center py-10 text-sm text-gray-400">
-                  Add your first skill of the week to see it here!
+                  Add your first skill to see it here!
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -425,7 +487,6 @@ export default function SkillsetHome() {
               )}
             </div>
           </div>
-
         </div>
       </div>
     </div>

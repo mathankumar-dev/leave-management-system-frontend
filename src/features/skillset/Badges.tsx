@@ -1,3 +1,6 @@
+import React, { useEffect, useState } from "react";
+import { skillsetService } from "@/features/skillset/skillsetService";
+import type { SkillPayload } from "@/features/skillset/skillsetService";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface BadgeDef {
@@ -18,34 +21,66 @@ interface BadgeCardProps {
 
 // ── Badge Definitions ──────────────────────────────────────────────────────
 const techBadges: BadgeDef[] = [
-  { id: "tech-1", icon: "🛡️", title: "Associate",  tier: "Tier I",   milestone: 5,  description: "Awarded for reaching 5 combined Tech & Tool skills." },
-  { id: "tech-2", icon: "⚙️", title: "Specialist", tier: "Tier II",  milestone: 12, description: "Awarded for reaching 12 combined Tech & Tool skills." },
-  { id: "tech-3", icon: "💻", title: "Authority",  tier: "Tier III", milestone: 20, description: "Awarded for reaching 20 combined Tech & Tool skills.", gold: true },
+  {
+    id: "tech-1",
+    icon: "🛡",
+    title: "Associate",
+    tier: "Tier I",
+    milestone: 5,
+    description: "Awarded for reaching 5 combined Tech & Tool skills.",
+  },
+  {
+    id: "tech-2",
+    icon: "⚙️",
+    title: "Specialist",
+    tier: "Tier II",
+    milestone: 12,
+    description: "Awarded for reaching 12 combined Tech & Tool skills.",
+  },
+  {
+    id: "tech-3",
+    icon: "💻",
+    title: "Authority",
+    tier: "Tier III",
+    milestone: 20,
+    description: "Awarded for reaching 20 combined Tech & Tool skills.",
+    gold: true,
+  },
 ];
 
 const softBadges: BadgeDef[] = [
-  { id: "soft-1", icon: "🪪", title: "Professional Core", tier: "Tier I",   milestone: 3,  description: "Awarded for reaching 3 Interpersonal skills." },
-  { id: "soft-2", icon: "👥", title: "Collaborator",      tier: "Tier II",  milestone: 10, description: "Awarded for reaching 10 Interpersonal skills." },
-  { id: "soft-3", icon: "⭐", title: "Strategic Lead",    tier: "Tier III", milestone: 15, description: "Awarded for reaching 15 Interpersonal skills.", gold: true },
+  {
+    id: "soft-1",
+    icon: "🪪",
+    title: "Professional Core",
+    tier: "Tier I",
+    milestone: 3,
+    description: "Awarded for reaching 3 Interpersonal skills.",
+  },
+  {
+    id: "soft-2",
+    icon: "👥",
+    title: "Collaborator",
+    tier: "Tier II",
+    milestone: 10,
+    description: "Awarded for reaching 10 Interpersonal skills.",
+  },
+  {
+    id: "soft-3",
+    icon: "⭐",
+    title: "Strategic Lead",
+    tier: "Tier III",
+    milestone: 15,
+    description: "Awarded for reaching 15 Interpersonal skills.",
+    gold: true,
+  },
 ];
-
-// ── Demo counts (replace with real state/context) ──────────────────────────
-const TECH_TOOL_COUNT = 5; // tech + tools combined
-const SOFT_COUNT = 3;
-
-const EARNED_DATES: Record<string, string> = {
-  "tech-1": "April 12, 2026",
-  "soft-1": "April 12, 2026",
-};
-
-
 
 // ── Badge Card ─────────────────────────────────────────────────────────────
 function BadgeCard({ badge, currentCount, earnedDate }: BadgeCardProps) {
   const isUnlocked = currentCount >= badge.milestone;
   const pct = Math.min(100, Math.round((currentCount / badge.milestone) * 100));
   const needed = badge.milestone - currentCount;
-
   const isGold = badge.gold && isUnlocked;
 
   return (
@@ -53,20 +88,21 @@ function BadgeCard({ badge, currentCount, earnedDate }: BadgeCardProps) {
       className="relative rounded-2xl p-6 overflow-hidden transition-all duration-200"
       style={{
         background: isUnlocked ? "white" : "#f0f2f5",
-        border: isUnlocked
-          ? `1.5px solid #c8d9f0`
-          : "1.5px dashed #d8dde4",
+        border: isUnlocked ? `1.5px solid #c8d9f0` : "1.5px dashed #d8dde4",
         boxShadow: isUnlocked ? "0 4px 18px rgba(0,53,102,0.1)" : "none",
       }}
       onMouseEnter={(e) => {
         if (isUnlocked) {
           (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
-          (e.currentTarget as HTMLDivElement).style.boxShadow = "0 10px 28px rgba(0,53,102,0.16)";
+          (e.currentTarget as HTMLDivElement).style.boxShadow =
+            "0 10px 28px rgba(0,53,102,0.16)";
         }
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLDivElement).style.transform = "";
-        (e.currentTarget as HTMLDivElement).style.boxShadow = isUnlocked ? "0 4px 18px rgba(0,53,102,0.1)" : "none";
+        (e.currentTarget as HTMLDivElement).style.boxShadow = isUnlocked
+          ? "0 4px 18px rgba(0,53,102,0.1)"
+          : "none";
       }}
     >
       {/* Top stripe */}
@@ -121,9 +157,7 @@ function BadgeCard({ badge, currentCount, earnedDate }: BadgeCardProps) {
       <div
         className="text-xs font-bold uppercase tracking-wide mb-1"
         style={{
-          color: isUnlocked
-            ? isGold ? "#8a6200" : "#003566"
-            : "#9aa3ae",
+          color: isUnlocked ? (isGold ? "#8a6200" : "#003566") : "#9aa3ae",
           letterSpacing: "0.08em",
         }}
       >
@@ -131,18 +165,12 @@ function BadgeCard({ badge, currentCount, earnedDate }: BadgeCardProps) {
       </div>
 
       {/* Name */}
-      <div
-        className="text-base font-black mb-1"
-        style={{ color: isUnlocked ? "#001d3d" : "#9aa3ae" }}
-      >
+      <div className="text-base font-black mb-1" style={{ color: isUnlocked ? "#001d3d" : "#9aa3ae" }}>
         {badge.title}
       </div>
 
       {/* Description */}
-      <div
-        className="text-xs leading-snug mb-4"
-        style={{ color: isUnlocked ? "#6b7a8d" : "#b5bcc5" }}
-      >
+      <div className="text-xs leading-snug mb-4" style={{ color: isUnlocked ? "#6b7a8d" : "#b5bcc5" }}>
         {badge.description}
       </div>
 
@@ -199,28 +227,44 @@ function SummaryStrip({ techToolCount, softCount }: { techToolCount: number; sof
     return count >= b.milestone;
   }).length;
   const locked = allBadges.length - earned;
-
   const nextTech = techBadges.find((b) => techToolCount < b.milestone);
   const nextSoft = softBadges.find((b) => softCount < b.milestone);
   let nextNum: string | number = "✓";
   let nextLabel = "All badges earned!";
-  if (nextTech) { nextNum = nextTech.milestone - techToolCount; nextLabel = nextTech.title + " badge"; }
-  else if (nextSoft) { nextNum = nextSoft.milestone - softCount; nextLabel = nextSoft.title + " badge"; }
+  if (nextTech) {
+    nextNum = nextTech.milestone - techToolCount;
+    nextLabel = nextTech.title + " badge";
+  } else if (nextSoft) {
+    nextNum = nextSoft.milestone - softCount;
+    nextLabel = nextSoft.title + " badge";
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
       {[
         {
-          cls: "earned", num: earned, label: "Badges Earned", sub: "Milestones unlocked",
-          accent: "#1a8a4a", numColor: "#1a8a4a",
+          cls: "earned",
+          num: earned,
+          label: "Badges Earned",
+          sub: "Milestones unlocked",
+          accent: "#1a8a4a",
+          numColor: "#1a8a4a",
         },
         {
-          cls: "locked", num: locked, label: "Locked", sub: "Still to achieve",
-          accent: "#d8dde4", numColor: "#001d3d",
+          cls: "locked",
+          num: locked,
+          label: "Locked",
+          sub: "Still to achieve",
+          accent: "#d8dde4",
+          numColor: "#001d3d",
         },
         {
-          cls: "next", num: nextNum, label: "Skills to Next", sub: nextLabel,
-          accent: "#c9a227", numColor: "#c9a227",
+          cls: "next",
+          num: nextNum,
+          label: "Skills to Next",
+          sub: nextLabel,
+          accent: "#c9a227",
+          numColor: "#c9a227",
         },
       ].map((s) => (
         <div
@@ -228,7 +272,9 @@ function SummaryStrip({ techToolCount, softCount }: { techToolCount: number; sof
           className="bg-white rounded-xl p-4 shadow-sm flex items-center gap-4"
           style={{ borderLeft: `4px solid ${s.accent}` }}
         >
-          <div className="text-4xl font-black leading-none" style={{ color: s.numColor }}>{s.num}</div>
+          <div className="text-4xl font-black leading-none" style={{ color: s.numColor }}>
+            {s.num}
+          </div>
           <div>
             <div className="text-xs font-bold uppercase tracking-wide text-gray-400">{s.label}</div>
             <div className="text-xs text-gray-400 mt-0.5">{s.sub}</div>
@@ -241,16 +287,30 @@ function SummaryStrip({ techToolCount, softCount }: { techToolCount: number; sof
 
 // ── Journey Section ────────────────────────────────────────────────────────
 function JourneySection({
-  title, icon, iconColor, badges, currentCount, earnedCount,
-  totalCount, containerId,
+  title,
+  icon,
+  iconColor,
+  badges,
+  currentCount,
+  earnedCount,
+  totalCount,
+  containerId,
 }: {
-  title: string; icon: string; iconColor: string;
-  badges: BadgeDef[]; currentCount: number; earnedCount: number; totalCount: number;
+  title: string;
+  icon: string;
+  iconColor: string;
+  badges: BadgeDef[];
+  currentCount: number;
+  earnedCount: number;
+  totalCount: number;
   containerId: string;
 }) {
   return (
     <div className="mb-10">
-      <div className="flex items-center gap-3 mb-5 pb-3" style={{ borderBottom: "2px solid #e4e8ef" }}>
+      <div
+        className="flex items-center gap-3 mb-5 pb-3"
+        style={{ borderBottom: "2px solid #e4e8ef" }}
+      >
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-base"
           style={{ background: iconColor }}
@@ -265,15 +325,9 @@ function JourneySection({
           {earnedCount} / {totalCount} earned
         </span>
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id={containerId}>
         {badges.map((badge) => (
-          <BadgeCard
-            key={badge.id}
-            badge={badge}
-            currentCount={currentCount}
-            earnedDate={EARNED_DATES[badge.id]}
-          />
+          <BadgeCard key={badge.id} badge={badge} currentCount={currentCount} />
         ))}
       </div>
     </div>
@@ -282,19 +336,39 @@ function JourneySection({
 
 // ── Main Component ─────────────────────────────────────────────────────────
 export default function Badges() {
-  const techToolCount = TECH_TOOL_COUNT;
-  const softCount = SOFT_COUNT;
+  const [techToolCount, setTechToolCount] = useState(0);
+  const [softCount, setSoftCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    skillsetService
+      .getMyBadges()
+      .then(({ data }) => {
+        setTechToolCount(data.techToolCombined ?? 0);
+        setSoftCount(data.interpersonalCount ?? 0);
+      })
+      .catch(() => {
+        // fallback to 0s — badge page still renders
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const techEarned = techBadges.filter((b) => techToolCount >= b.milestone).length;
   const softEarned = softBadges.filter((b) => softCount >= b.milestone).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-400 text-sm">
+        Loading badges...
+      </div>
+    );
+  }
 
   return (
     <div
       className="min-h-screen font-sans"
       style={{ background: "#f0f2f6", fontFamily: "'Segoe UI', sans-serif" }}
     >
-
-
       <div className="container mx-auto px-4 mt-6 pb-12">
         {/* Page Header */}
         <div
@@ -308,8 +382,12 @@ export default function Badges() {
             🏆
           </div>
           <div>
-            <h1 className="text-2xl font-black text-[#001d3d] mb-0.5">Professional Milestone Gallery</h1>
-            <p className="text-gray-400 text-sm">Track the badges you've earned and the milestones ahead of you.</p>
+            <h1 className="text-2xl font-black text-[#001d3d] mb-0.5">
+              Professional Milestone Gallery
+            </h1>
+            <p className="text-gray-400 text-sm">
+              Track the badges you've earned and the milestones ahead of you.
+            </p>
           </div>
         </div>
 

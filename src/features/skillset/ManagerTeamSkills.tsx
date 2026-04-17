@@ -1,10 +1,8 @@
-import React, { useState } from "react";
-
-export type SkillCategory =
-  | "Technical"
-  | "Tools"
-  | "Platforms"
-  | "Interpersonal";
+import React, { useState, useEffect } from "react";
+import { skillsetService } from "@/features/skillset/skillsetService";
+import type { SkillPayload } from "@/features/skillset/skillsetService";
+// ── Types ──────────────────────────────────────────────────────────────────
+export type SkillCategory = "Technical" | "Tools" | "Platforms" | "Interpersonal";
 
 export interface Skill {
   skillName: string;
@@ -12,175 +10,61 @@ export interface Skill {
   stars: number;
   certifiedDate?: string;
   learnedAt?: string;
-  appliedAt?: string;
+  appliedAt?: string; 
   certLink?: string;
 }
 
 export interface Employee {
+  empId: string;
   employeeName: string;
   department: string;
   joined: string;
   skills: Skill[];
 }
 
-const MOCK_TEAM_SKILLS: Employee[] = [
-  {
-    employeeName: "Arjun Mehta",
-    department: "Engineering",
-    joined: "2022",
-    skills: [
-      {
-        skillName: "React",
-        category: "Technical",
-        stars: 5,
-        certifiedDate: "Jan 2023",
-        learnedAt: "Udemy – React Complete Guide",
-        appliedAt: "WeHRM Portal UI",
-        certLink: "https://example.com/cert/react",
-      },
-      {
-        skillName: "TypeScript",
-        category: "Technical",
-        stars: 3,
-        certifiedDate: "Mar 2023",
-        learnedAt: "Official TS Docs + Frontend Masters",
-        appliedAt: "Skillset Module",
-        certLink: "",
-      },
-      {
-        skillName: "Docker",
-        category: "Tools",
-        stars: 4,
-        certifiedDate: "Aug 2023",
-        learnedAt: "Docker Mastery – Udemy",
-        appliedAt: "CI/CD Pipeline",
-        certLink: "https://example.com/cert/docker",
-      },
-      {
-        skillName: "Communication",
-        category: "Interpersonal",
-        stars: 4,
-        certifiedDate: "—",
-        learnedAt: "Internal workshop",
-        appliedAt: "Sprint reviews, stakeholder calls",
-        certLink: "",
-      },
-    ],
-  },
-  {
-    employeeName: "Priya Nair",
-    department: "Data & AI",
-    joined: "2021",
-    skills: [
-      {
-        skillName: "Python",
-        category: "Technical",
-        stars: 5,
-        certifiedDate: "Nov 2021",
-        learnedAt: "IIT Madras Online – Python",
-        appliedAt: "ML pipeline & ETL jobs",
-        certLink: "https://example.com/cert/py",
-      },
-      {
-        skillName: "Machine Learning",
-        category: "Technical",
-        stars: 4,
-        certifiedDate: "Feb 2023",
-        learnedAt: "Coursera – Andrew Ng",
-        appliedAt: "Skill recommendation engine",
-        certLink: "https://example.com/cert/ml",
-      },
-      {
-        skillName: "Tableau",
-        category: "Platforms",
-        stars: 3,
-        certifiedDate: "—",
-        learnedAt: "Self-taught",
-        appliedAt: "HR dashboards",
-        certLink: "",
-      },
-      {
-        skillName: "Conflict Resolution",
-        category: "Interpersonal",
-        stars: 3,
-        certifiedDate: "—",
-        learnedAt: "People manager training",
-        appliedAt: "Team retrospectives",
-        certLink: "",
-      },
-      {
-        skillName: "Go",
-        category: "Technical",
-        stars: 2,
-        certifiedDate: "—",
-        learnedAt: "Currently learning",
-        appliedAt: "—",
-        certLink: "",
-      },
-    ],
-  },
-  {
-    employeeName: "Karthik Rajan",
-    department: "DevOps",
-    joined: "2020",
-    skills: [
-      {
-        skillName: "Kubernetes",
-        category: "Platforms",
-        stars: 5,
-        certifiedDate: "Jun 2022",
-        learnedAt: "Linux Foundation – CKA",
-        appliedAt: "Production infrastructure",
-        certLink: "https://example.com/cert/cka",
-      },
-      {
-        skillName: "Terraform",
-        category: "Tools",
-        stars: 4,
-        certifiedDate: "Sep 2022",
-        learnedAt: "HashiCorp Learn",
-        appliedAt: "AWS provisioning",
-        certLink: "",
-      },
-      {
-        skillName: "Go",
-        category: "Technical",
-        stars: 2,
-        certifiedDate: "—",
-        learnedAt: "Currently learning",
-        appliedAt: "—",
-        certLink: "",
-      },
-      {
-        skillName: "Team Leadership",
-        category: "Interpersonal",
-        stars: 4,
-        certifiedDate: "—",
-        learnedAt: "Internal L&D programme",
-        appliedAt: "On-call rotation lead",
-        certLink: "",
-      },
-    ],
-  },
-];
+// ── Map backend response to frontend Employee[] ───────────────────────────
+function groupByEmployee(rawSkills: any[]): Employee[] {
+  const map = new Map<string, Employee>();
 
-// Treat Tools & Platforms as one group
-const isToolsOrPlatforms = (cat: SkillCategory) =>
-  cat === "Tools" || cat === "Platforms";
+  rawSkills.forEach((s) => {
+    const empId: string = s.empId ?? "unknown";
+    if (!map.has(empId)) {
+      map.set(empId, {
+        empId,
+        employeeName: s.employeeName ?? "Unknown",
+        department: s.department ?? "—",
+        joined: "—", // backend doesn't return join year in this endpoint
+        skills: [],
+      });
+    }
 
-const CATEGORIES = [
-  "Employee",
-  "Technical",
-  "Tools & Platforms",
-  "Interpersonal",
-] as const;
+    // Map backend category enum → frontend category
+    let category: SkillCategory = "Technical";
+    const cat: string = s.category ?? "";
+    if (cat === "TOOLS" || cat === "Tools & Platforms") category = "Tools";
+    else if (cat === "INTERPERSONAL" || cat === "Interpersonal") category = "Interpersonal";
+
+    map.get(empId)!.skills.push({
+      skillName: s.skillName ?? s.name ?? "",
+      category,
+      stars: s.rating ?? s.stars ?? 0,
+      certifiedDate: s.certDate ?? s.certifiedDate ?? undefined,
+      learnedAt: s.learnedAt ?? s.learn ?? undefined,
+      appliedAt: s.appliedAt ?? s.apply ?? undefined,
+      certLink: s.certLink ?? s.proofFileUrl ?? s.file ?? undefined,
+    });
+  });
+
+  return Array.from(map.values());
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const isToolsOrPlatforms = (cat: SkillCategory) => cat === "Tools" || cat === "Platforms";
+
+const CATEGORIES = ["Employee", "Technical", "Tools & Platforms", "Interpersonal"] as const;
 type Category = (typeof CATEGORIES)[number];
 
-type SortOption =
-  | "proficiency_desc"
-  | "proficiency_asc"
-  | "date_asc"
-  | "date_newest";
+type SortOption = "proficiency_desc" | "proficiency_asc" | "date_asc" | "date_newest";
 
 const AVATAR_PALETTE = [
   { bg: "#E6F1FB", color: "#0C447C" },
@@ -190,8 +74,8 @@ const AVATAR_PALETTE = [
   { bg: "#EEEDFE", color: "#3C3489" },
 ];
 
-const avatarStyle = (index: number) =>
-  AVATAR_PALETTE[index % AVATAR_PALETTE.length];
+const avatarStyle = (index: number) => AVATAR_PALETTE[index % AVATAR_PALETTE.length];
+
 const getInitials = (name: string) =>
   name
     .split(" ")
@@ -221,14 +105,12 @@ const CATEGORY_STYLES: Record<SkillCategory, string> = {
 };
 
 const CategoryBadge: React.FC<{ category: SkillCategory }> = ({ category }) => (
-  <span
-    className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${CATEGORY_STYLES[category]}`}
-  >
+  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${CATEGORY_STYLES[category]}`}>
     {isToolsOrPlatforms(category) ? "Tools & Platforms" : category}
   </span>
 );
 
-// ─── Skill Group Detail: shows all employees who know this skill ─────────────
+// ── Skill Group Detail ────────────────────────────────────────────────────
 const SkillGroupDetail: React.FC<{
   skillName: string;
   entries: { emp: Employee; empIndex: number; skill: Skill }[];
@@ -239,6 +121,7 @@ const SkillGroupDetail: React.FC<{
     empIndex: number;
     skill: Skill;
   } | null>(null);
+
   if (selectedEntry) {
     return (
       <SkillDetail
@@ -249,6 +132,7 @@ const SkillGroupDetail: React.FC<{
       />
     );
   }
+
   return (
     <div>
       <button
@@ -257,30 +141,23 @@ const SkillGroupDetail: React.FC<{
       >
         ← Back
       </button>
-
       <div className="border border-slate-200 rounded-xl bg-white overflow-hidden mb-4">
         <div className="px-4 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div>
-            <p className="font-semibold text-slate-800 text-base">
-              {skillName}
-            </p>
+            <p className="font-semibold text-slate-800 text-base">{skillName}</p>
             <p className="text-xs text-slate-400 mt-0.5">
-              {entries.length} team member{entries.length !== 1 ? "s" : ""} know
-              this skill
+              {entries.length} team member{entries.length !== 1 ? "s" : ""} know this skill
             </p>
           </div>
           <CategoryBadge category={entries[0].skill.category} />
         </div>
       </div>
-
       <p className="text-[10px] uppercase tracking-widest text-slate-400 font-medium mb-2">
         Team members
       </p>
-
       <div className="space-y-2">
         {entries.map(({ emp, empIndex, skill }, idx) => {
           const av = avatarStyle(empIndex);
-
           return (
             <button
               key={idx}
@@ -293,14 +170,10 @@ const SkillGroupDetail: React.FC<{
               >
                 {getInitials(emp.employeeName)}
               </div>
-
               <div className="flex-1">
-                <p className="text-sm font-semibold text-slate-800">
-                  {emp.employeeName}
-                </p>
+                <p className="text-sm font-semibold text-slate-800">{emp.employeeName}</p>
                 <p className="text-xs text-slate-400">{emp.department}</p>
               </div>
-
               <Stars count={skill.stars} />
               <span className="text-slate-300 text-xs">›</span>
             </button>
@@ -311,7 +184,7 @@ const SkillGroupDetail: React.FC<{
   );
 };
 
-// ─── Employee detail ─────────────────────────────────────────────────────────
+// ── Skill Detail ──────────────────────────────────────────────────────────
 const SkillDetail: React.FC<{
   skill: Skill;
   employee: Employee;
@@ -342,6 +215,7 @@ const SkillDetail: React.FC<{
       ),
     },
   ];
+
   return (
     <div>
       <button
@@ -353,9 +227,7 @@ const SkillDetail: React.FC<{
       <div className="border border-slate-200 rounded-xl bg-white overflow-hidden">
         <div className="px-4 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div>
-            <p className="font-semibold text-slate-800 text-base">
-              {skill.skillName}
-            </p>
+            <p className="font-semibold text-slate-800 text-base">{skill.skillName}</p>
             <div className="mt-1">
               <Stars count={skill.stars} />
             </div>
@@ -364,10 +236,7 @@ const SkillDetail: React.FC<{
         </div>
         <div className="divide-y divide-slate-100">
           {rows.map((r) => (
-            <div
-              key={r.label}
-              className="flex items-start gap-4 px-4 py-3 text-sm"
-            >
+            <div key={r.label} className="flex items-start gap-4 px-4 py-3 text-sm">
               <span className="text-slate-400 w-32 shrink-0">{r.label}</span>
               <span className="text-slate-800">{r.value}</span>
             </div>
@@ -378,6 +247,7 @@ const SkillDetail: React.FC<{
   );
 };
 
+// ── Employee Detail ───────────────────────────────────────────────────────
 const EmployeeDetail: React.FC<{
   employee: Employee;
   empIndex: number;
@@ -397,6 +267,7 @@ const EmployeeDetail: React.FC<{
     const qOk = !q || s.skillName.toLowerCase().includes(q);
     return catOk && qOk;
   });
+
   return (
     <div>
       <button
@@ -413,11 +284,10 @@ const EmployeeDetail: React.FC<{
           {getInitials(employee.employeeName)}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-slate-800">
-            {employee.employeeName}
-          </p>
+          <p className="font-semibold text-slate-800">{employee.employeeName}</p>
           <p className="text-xs text-slate-500">
-            {employee.department} · Joined {employee.joined}
+            {employee.department}
+            {employee.joined !== "—" ? ` · Joined ${employee.joined}` : ""}
           </p>
         </div>
         <span className="text-xs text-slate-400 shrink-0">
@@ -429,9 +299,7 @@ const EmployeeDetail: React.FC<{
       </p>
       <div className="space-y-2">
         {filtered.length === 0 && (
-          <p className="text-sm text-slate-400 text-center py-8">
-            No skills match this filter.
-          </p>
+          <p className="text-sm text-slate-400 text-center py-8">No skills match this filter.</p>
         )}
         {filtered.map((skill, idx) => (
           <button
@@ -440,9 +308,7 @@ const EmployeeDetail: React.FC<{
             className="w-full flex items-center justify-between border border-slate-200 rounded-xl px-4 py-3 bg-white hover:border-teal-300 transition-colors text-left"
           >
             <div>
-              <p className="text-sm font-medium text-slate-800">
-                {skill.skillName}
-              </p>
+              <p className="text-sm font-medium text-slate-800">{skill.skillName}</p>
               <div className="mt-0.5">
                 <Stars count={skill.stars} />
               </div>
@@ -458,24 +324,46 @@ const EmployeeDetail: React.FC<{
   );
 };
 
-// ─── Main ────────────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────
 const ManagerTeamSkills: React.FC = () => {
-  const [teamSkills] = useState<Employee[]>(MOCK_TEAM_SKILLS);
+  const [teamSkills, setTeamSkills] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<Category>("Employee");
   const [sortBy, setSortBy] = useState<SortOption>("proficiency_desc");
-  const [selectedEmp, setSelectedEmp] = useState<{
-    emp: Employee;
-    index: number;
-  } | null>(null);
+
+  const [selectedEmp, setSelectedEmp] = useState<{ emp: Employee; index: number } | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
-  const [selectedSkillGroup, setSelectedSkillGroup] = useState<string | null>(
-    null,
-  );
+  const [selectedSkillGroup, setSelectedSkillGroup] = useState<string | null>(null);
+
+  // ── Fetch team skills on mount ──────────────────────────────────────────
+  useEffect(() => {
+    skillsetService
+      .getTeamSkills()
+      .then(({ data }) => {
+        setTeamSkills(groupByEmployee(data));
+      })
+      .catch(() => {
+        setError("Failed to load team skills. Please try again.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const q = search.toLowerCase();
 
-  // Skill group detail view
+  if (loading) {
+    return (
+      <div className="text-center text-slate-400 text-sm py-16">Loading team skills...</div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-center text-red-400 text-sm py-16">{error}</div>;
+  }
+
+  // ── Drill-down views ────────────────────────────────────────────────────
   if (selectedSkillGroup) {
     const entries: { emp: Employee; empIndex: number; skill: Skill }[] = [];
     teamSkills.forEach((emp, empIndex) => {
@@ -516,8 +404,9 @@ const ManagerTeamSkills: React.FC = () => {
     );
   }
 
+  // ── Skill group view (category tabs) ───────────────────────────────────
   const showSkillRows = category !== "Employee";
-  // Build deduplicated skill groups for category view
+
   type SkillGroup = {
     skillName: string;
     category: SkillCategory;
@@ -526,9 +415,9 @@ const ManagerTeamSkills: React.FC = () => {
     entries: { emp: Employee; empIndex: number; skill: Skill }[];
     earliestTimestamp: number;
   };
+
   const buildSkillGroups = (): SkillGroup[] => {
     const map = new Map<string, SkillGroup>();
-
     teamSkills.forEach((emp, empIndex) => {
       emp.skills
         .filter((s) => {
@@ -536,12 +425,10 @@ const ManagerTeamSkills: React.FC = () => {
             category === "Tools & Platforms"
               ? isToolsOrPlatforms(s.category)
               : s.category === category;
-
           const qOk =
             !q ||
             s.skillName.toLowerCase().includes(q) ||
             emp.employeeName.toLowerCase().includes(q);
-
           return catOk && qOk;
         })
         .forEach((skill) => {
@@ -555,28 +442,20 @@ const ManagerTeamSkills: React.FC = () => {
               earliestTimestamp: Number.MAX_SAFE_INTEGER,
             });
           }
-
           const group = map.get(skill.skillName)!;
-
           group.entries.push({ emp, empIndex, skill });
-
-          // Parse certified date safely
           const parsedDate =
             skill.certifiedDate && skill.certifiedDate !== "—"
               ? new Date(skill.certifiedDate + " 1").getTime()
               : Number.MAX_SAFE_INTEGER;
-
           if (parsedDate < group.earliestTimestamp) {
             group.earliestTimestamp = parsedDate;
           }
         });
     });
-
     return Array.from(map.values()).map((group) => {
       const stars = group.entries.map((e) => e.skill.stars);
-      group.avgStars = Math.round(
-        stars.reduce((a, b) => a + b, 0) / stars.length,
-      );
+      group.avgStars = Math.round(stars.reduce((a, b) => a + b, 0) / stars.length);
       group.maxStars = Math.max(...stars);
       return group;
     });
@@ -584,22 +463,10 @@ const ManagerTeamSkills: React.FC = () => {
 
   const sortGroups = (groups: SkillGroup[]) => {
     return [...groups].sort((a, b) => {
-      if (sortBy === "proficiency_desc") {
-        return b.avgStars - a.avgStars;
-      }
-
-      if (sortBy === "proficiency_asc") {
-        return a.avgStars - b.avgStars;
-      }
-
-      if (sortBy === "date_asc") {
-        return a.earliestTimestamp - b.earliestTimestamp;
-      }
-
-      if (sortBy === "date_newest") {
-        return b.earliestTimestamp - a.earliestTimestamp;
-      }
-
+      if (sortBy === "proficiency_desc") return b.avgStars - a.avgStars;
+      if (sortBy === "proficiency_asc") return a.avgStars - b.avgStars;
+      if (sortBy === "date_asc") return a.earliestTimestamp - b.earliestTimestamp;
+      if (sortBy === "date_newest") return b.earliestTimestamp - a.earliestTimestamp;
       return 0;
     });
   };
@@ -608,42 +475,26 @@ const ManagerTeamSkills: React.FC = () => {
 
   const filteredByEmp = teamSkills.filter((emp) => {
     const nameMatch = emp.employeeName.toLowerCase().includes(q);
-    const skillMatch = emp.skills.some((s) =>
-      s.skillName.toLowerCase().includes(q),
-    );
+    const skillMatch = emp.skills.some((s) => s.skillName.toLowerCase().includes(q));
     return nameMatch || skillMatch;
   });
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-slate-800">
-          Team skill overview
-        </h2>
-        <span className="text-xs text-slate-400">
-          {teamSkills.length} members
-        </span>
+        <h2 className="text-base font-semibold text-slate-800">Team skill overview</h2>
+        <span className="text-xs text-slate-400">{teamSkills.length} members</span>
       </div>
 
+      {/* Search */}
       <div className="relative">
         <svg
           className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
           fill="none"
           viewBox="0 0 16 16"
         >
-          <circle
-            cx="7"
-            cy="7"
-            r="4.5"
-            stroke="currentColor"
-            strokeWidth="1.2"
-          />
-          <path
-            d="M10.5 10.5L13 13"
-            stroke="currentColor"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-          />
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.2" />
+          <path d="M10.5 10.5L13 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
         </svg>
         <input
           type="text"
@@ -661,7 +512,11 @@ const ManagerTeamSkills: React.FC = () => {
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${category === cat ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-200 text-slate-600 bg-white hover:bg-slate-50"}`}
+              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                category === cat
+                  ? "bg-indigo-600 border-indigo-600 text-white"
+                  : "border-slate-200 text-slate-600 bg-white hover:bg-slate-50"
+              }`}
             >
               {cat}
             </button>
@@ -681,18 +536,15 @@ const ManagerTeamSkills: React.FC = () => {
         )}
       </div>
 
-      {/* Category skill rows — deduplicated */}
+      {/* Category skill rows */}
       {showSkillRows && (
         <>
           <p className="text-[10px] uppercase tracking-widest text-slate-400 font-medium">
-            {category} · {skillGroups.length}{" "}
-            {skillGroups.length === 1 ? "skill" : "skills"}
+            {category} · {skillGroups.length} {skillGroups.length === 1 ? "skill" : "skills"}
           </p>
           <div className="space-y-2">
             {skillGroups.length === 0 && (
-              <p className="text-sm text-slate-400 text-center py-8">
-                No skills found.
-              </p>
+              <p className="text-sm text-slate-400 text-center py-8">No skills found.</p>
             )}
             {skillGroups.map((group, idx) => (
               <button
@@ -701,13 +553,9 @@ const ManagerTeamSkills: React.FC = () => {
                 className="w-full flex items-center justify-between border border-slate-200 rounded-xl px-4 py-3 bg-white hover:border-teal-300 transition-colors text-left"
               >
                 <div>
-                  <p className="text-sm font-medium text-slate-800">
-                    {group.skillName}
-                  </p>
+                  <p className="text-sm font-medium text-slate-800">{group.skillName}</p>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    {group.entries.length}{" "}
-                    {group.entries.length === 1 ? "person" : "people"} ·
-                    avg&nbsp;
+                    {group.entries.length} {group.entries.length === 1 ? "person" : "people"} · avg{" "}
                     {group.avgStars}/5
                   </p>
                 </div>
@@ -725,9 +573,7 @@ const ManagerTeamSkills: React.FC = () => {
       {!showSkillRows && (
         <div className="space-y-3">
           {filteredByEmp.length === 0 && (
-            <p className="text-sm text-slate-400 text-center py-8">
-              No results found.
-            </p>
+            <p className="text-sm text-slate-400 text-center py-8">No results found.</p>
           )}
           {filteredByEmp.map((emp, empIndex) => {
             const av = avatarStyle(empIndex);
@@ -746,12 +592,8 @@ const ManagerTeamSkills: React.FC = () => {
                     {getInitials(emp.employeeName)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-800 text-sm">
-                      {emp.employeeName}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      {emp.department} · Joined {emp.joined}
-                    </p>
+                    <p className="font-semibold text-slate-800 text-sm">{emp.employeeName}</p>
+                    <p className="text-xs text-slate-400">{emp.department}</p>
                   </div>
                   <span className="text-xs text-indigo-500 font-medium shrink-0">
                     {emp.skills.length} skills →

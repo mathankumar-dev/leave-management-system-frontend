@@ -147,12 +147,7 @@ const DashboardView = () => {
               year: "numeric",
             })}
           </div>
-          <button
-            onClick={() => navigate("/skillset/my-skills")}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg flex items-center gap-2"
-          >
-            <FaPlus /> Add Skillset
-          </button>
+         
           <button
             onClick={() => handleNavigate("request-center")}
             className="bg-[#0052FF] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
