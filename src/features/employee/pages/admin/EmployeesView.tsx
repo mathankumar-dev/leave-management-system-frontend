@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 
 const EmployeesView = () => {
-  const { getEmployees, loading, fetchEmployeeProfile, addUser, updateUser, deleteUser, searchUser } = useEmployee();
+  const { getEmployees, loading, fetchEmployeeProfile, addUser, updateUser, deleteUser, searchUser, roles, fetchRoles } = useEmployee();
   const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
   const [allEmployees, setAllEmployees] = useState<EmployeeEntity[]>([]);
   const [pagination, setPagination] = useState({ totalElements: 0, totalPages: 0 });
@@ -64,6 +64,12 @@ const EmployeesView = () => {
     if (!managerId) return '—';
     return managerMap[managerId] || `#${managerId}`;
   };
+
+  useEffect(() => {
+
+    fetchRoles();
+
+  }, [fetchRoles]);
 
   // ─── Load employees ───────────────────────────────────────────
   const loadEmployeeData = useCallback(async () => {
@@ -158,7 +164,7 @@ const EmployeesView = () => {
               )}
             </div>
             <div className="flex gap-4">
-              <div className="relative">
+              <div className="sticky">
                 {/* The Filter Button */}
                 <button
                   onClick={() => setShowFilterMenu(!showFilterMenu)}
@@ -183,7 +189,12 @@ const EmployeesView = () => {
                         initial={{ opacity: 0, y: 8, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                        className="absolute right-0 mt-2 w-72 bg-white border border-gray-100 shadow-2xl rounded-2xl p-5 z-50 overflow-hidden"
+                        className="fixed z-[100] w-72 bg-white border border-gray-100 shadow-2xl rounded-2xl p-5 overflow-hidden"
+                        style={{
+                          // These coordinates align the menu specifically to your UI layout
+                          top: '185px',
+                          right: '180px'
+                        }}
                       >
                         <div className="space-y-5">
                           {/* Header */}
@@ -206,8 +217,8 @@ const EmployeesView = () => {
                                   key={status}
                                   onClick={() => setStatusFilter(status)}
                                   className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${statusFilter === status
-                                      ? 'bg-orange-50 text-orange-600 ring-1 ring-orange-200'
-                                      : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                    ? 'bg-orange-50 text-orange-600 ring-1 ring-orange-200'
+                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                                     }`}
                                 >
                                   {status.charAt(0) + status.slice(1).toLowerCase()}
@@ -218,18 +229,31 @@ const EmployeesView = () => {
 
                           {/* Role Section */}
                           <div>
-                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">User Role</label>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                              User Role
+                            </label>
                             <div className="flex flex-wrap gap-2">
-                              {['ALL', 'ADMIN', 'HR', 'MANAGER', 'EMPLOYEE'].map((role) => (
+                              {/* Explicitly add the "All" button first */}
+                              <button
+                                onClick={() => setRoleFilter('ALL')}
+                                className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${roleFilter === 'ALL'
+                                  ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
+                                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                  }`}
+                              >
+                                All Roles
+                              </button>
+
+                              {roles.map((role: any) => (
                                 <button
-                                  key={role}
-                                  onClick={() => setRoleFilter(role)}
-                                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${roleFilter === role
-                                      ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
-                                      : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                  key={role.id}
+                                  onClick={() => setRoleFilter(role.roleName)}
+                                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${roleFilter === role.id
+                                    ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
+                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                                     }`}
                                 >
-                                  {role === 'ALL' ? 'All Roles' : role}
+                                  {role.roleName}
                                 </button>
                               ))}
                             </div>
