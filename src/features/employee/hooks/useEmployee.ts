@@ -173,6 +173,7 @@ export const useEmployee = () => {
             setLoading(false);
         }
     }, [employeeService]);
+    
     const addUser = async (data: CreateUserRequest): Promise<void> => {
         try {
             const message = await employeeService.createUser(data);

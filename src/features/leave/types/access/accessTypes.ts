@@ -1,4 +1,4 @@
-import type { LeaveDecision, LeaveType } from "@/features/leave/types";
+import type { AccessType, LeaveDecision, LeaveType } from "@/features/leave/types";
 
 export type BiometricVpnStatus = 'PENDING' | 'PROVIDED';
 
@@ -11,7 +11,7 @@ export interface AccessResponse {
   employeeName: string;
   employeeEmail: string;
   employeeDesignation: string;
-  accessType: LeaveType;
+  accessType: AccessType;
   status: string;
   reason: string;
   submittedAt: string;
@@ -23,7 +23,7 @@ export interface AccessResponse {
 }
 
 export interface AccessRequest {
-  accessType : LeaveType;
+  accessType : string;
   reason : string;
 }
 

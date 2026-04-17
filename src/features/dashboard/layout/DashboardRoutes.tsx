@@ -20,6 +20,7 @@ import NotificationsView from "@/features/notification/pages/NotificationsView";
 import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { useAuth } from "@/shared/auth/useAuth";
 import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
+// import PayslipPage from "@/features/payroll/pages/PayslipPage";
 // import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
 
 const DashboardRoutes = () => {
@@ -73,6 +74,7 @@ const DashboardRoutes = () => {
       <Route path="payslip" element={<PayrollView />} />
 
       {/*CFO*/}
+      {/* <Route path="payroll" element={<PayslipPage />} /> */}
       {/* <Route path="payroll" element={<PayslipPage />} /> */}
 
       {/* DEFAULT */}
