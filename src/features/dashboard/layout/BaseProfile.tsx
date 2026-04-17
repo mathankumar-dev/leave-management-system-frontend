@@ -1,9 +1,13 @@
 import type { ProfileData } from "@/features/employee/types";
 import React from "react";
-import {
-  FaUser, FaPhone, 
-  FaMapMarkerAlt, FaBriefcase} from "react-icons/fa";
-
+import { FaUser, FaPhone, FaMapMarkerAlt, FaBriefcase } from "react-icons/fa";
+import SkillsetButton from "@/features/skillset/SkillsetButton";
+// then in JSX:
+<SkillsetButton
+  employeeId={profile.id}
+  employeeName={profile.name}
+  isManager={role === "manager"}
+/>;
 
 export interface BaseProfileProps {
   profile: ProfileData;
@@ -11,7 +15,9 @@ export interface BaseProfileProps {
   canEdit: boolean;
   canEditDepartment?: boolean;
   canEditEmployeeId?: boolean;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => void;
   onPhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onStartEdit: () => void;
   onSave: () => void;
@@ -23,15 +29,18 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
   isEditing,
   onChange,
 }) => {
-
-  const inputClass = (disabled: boolean) => `w-full mt-1 pl-10 pr-4 py-2 border border-slate-200 rounded-xl transition-all outline-none text-sm ${disabled ? "bg-slate-50 text-slate-500 cursor-not-allowed" : "bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+  const inputClass = (disabled: boolean) =>
+    `w-full mt-1 pl-10 pr-4 py-2 border border-slate-200 rounded-xl transition-all outline-none text-sm ${
+      disabled
+        ? "bg-slate-50 text-slate-500 cursor-not-allowed"
+        : "bg-white text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
     }`;
 
-  const labelClass = "text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wide";
+  const labelClass =
+    "text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wide";
 
   return (
     <div className="w-full space-y-10">
-
       <div>
         <h3 className="text-xs font-black text-indigo-600 uppercase tracking-[0.2em]  flex items-center gap-3">
           <FaUser className="text-sm" /> Personal Details
@@ -41,7 +50,13 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
             <label className={labelClass}>Full Name</label>
             <div className="relative mt-1">
               <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input name="name" value={profile.name} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} />
+              <input
+                name="name"
+                value={profile.name}
+                onChange={onChange}
+                disabled={!isEditing}
+                className={inputClass(!isEditing)}
+              />
             </div>
           </div>
 
@@ -57,7 +72,13 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
             <label className={labelClass}>Email</label>
             <div className="relative mt-1">
               <FaMapMarkerAlt className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input name="email" value={profile.email} onChange={onChange} disabled={!isEditing} className={inputClass(!isEditing)} />
+              <input
+                name="email"
+                value={profile.email}
+                onChange={onChange}
+                disabled={!isEditing}
+                className={inputClass(!isEditing)}
+              />
             </div>
           </div>
         </div>
@@ -70,12 +91,16 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className={labelClass}>Employee ID</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.id}</p>
+            <p className="mt-1 font-bold text-slate-700 text-sm">
+              {profile.id}
+            </p>
           </div>
 
           <div>
             <label className={labelClass}>Manager</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.reportingName}</p>
+            <p className="mt-1 font-bold text-slate-700 text-sm">
+              {profile.reportingName}
+            </p>
           </div>
           <div>
             <label className={labelClass}>Work Location</label>
@@ -83,26 +108,33 @@ const BaseProfile: React.FC<BaseProfileProps> = ({
           </div>
           <div>
             <label className={labelClass}>Joining Date</label>
-            <p className="mt-1 font-bold text-slate-700 text-sm">{profile.joiningDate}</p>
+            <p className="mt-1 font-bold text-slate-700 text-sm">
+              {profile.joiningDate}
+            </p>
           </div>
           <div>
             <label className={labelClass}>Type</label>
             {/* <span className="inline-block mt-1 px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase"> */}
-              {/* {profile.employmentType}
+            {/* {profile.employmentType}
             </span> */}
           </div>
         </div>
       </div>
 
-
-
       {/* ACTIONS */}
       {/* {canEdit && (
         <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
           {!isEditing ? (
-            <button onClick={onStartEdit} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
-              Edit Profile
-            </button>
+  <div className="flex items-center gap-2">
+    <button onClick={() => setIsEditing(true)}
+      className="flex items-center gap-1.5 px-4 py-2 border border-indigo-200 rounded-xl text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-colors">
+      <FaEdit className="text-xs" /> Edit Profile
+    </button>
+    <button onClick={() => navigate(`${basePath}/skillset/home`)}
+      className="flex items-center gap-1.5 px-4 py-2 border border-indigo-200 rounded-xl text-xs font-bold text-indigo-600 hover:bg-indigo-50 transition-colors">
+      <FaLayerGroup className="text-xs" /> Add Skills
+    </button>
+  </div>
           ) : (
             <>
               <button onClick={onCancel} className="px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all">
