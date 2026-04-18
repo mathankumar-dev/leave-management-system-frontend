@@ -65,6 +65,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout, onBirthdayToggle
     if (path.includes("payroll")) return "Payroll";
     if (path.includes("payslip")) return "Payslip";
     if (path.includes("birthday")) return "Birthday";
+    if (path.includes("attendance")) return "Attendance Reports";
     return "Dashboard";
   }, [location.pathname]);
 
