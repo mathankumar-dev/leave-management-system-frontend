@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { skillsetService } from "@/features/skillset/skillsetService";
-import type { SkillPayload } from "@/features/skillset/skillsetService";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface BadgeDef {

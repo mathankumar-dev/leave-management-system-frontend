@@ -1,13 +1,7 @@
 import type { ProfileData } from "@/features/employee/types";
 import React from "react";
 import { FaUser, FaPhone, FaMapMarkerAlt, FaBriefcase } from "react-icons/fa";
-import SkillsetButton from "@/features/skillset/SkillsetButton";
-// then in JSX:
-<SkillsetButton
-  employeeId={profile.id}
-  employeeName={profile.name}
-  isManager={role === "manager"}
-/>;
+
 
 export interface BaseProfileProps {
   profile: ProfileData;

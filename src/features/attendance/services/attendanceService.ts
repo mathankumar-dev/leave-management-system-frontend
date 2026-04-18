@@ -1,5 +1,18 @@
-import type { AttendanceRecord, TeamAttendancePage, TeamCalendarResponse } from "@/features/attendance/types";
+import type { AttendanceExportRequest, AttendanceRecord, TeamAttendancePage, TeamCalendarResponse } from "@/features/attendance/types";
 import api from "@/services/apiClient";
+
+
+// this function is an helper to download reports
+const handleDownload = (data: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(new Blob([data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+};
 
 export const attendanceService = {
     getEmployeeCalendar: async (employeeId: string): Promise<TeamCalendarResponse> => {
@@ -62,6 +75,20 @@ export const attendanceService = {
 
         return response.data;
     },
+    getAllEmployeeAttendanceByRange: async (
+        params: {
+            fromDate?: string;
+            toDate?: string;
+            page?: number;
+            size?: number;
+        }
+    ): Promise<{ content: AttendanceRecord[], totalPages: number, totalElements: number }> => {
+        const response = await api.get(`/v1/attendance/all`, {
+            params
+        });
+
+        return response.data;
+    },
 
     downloadAttendanceExcel: async (
         empId: string,
@@ -91,5 +118,20 @@ export const attendanceService = {
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
+    },
+
+    downloadTeamAttendance: async (managerId: string, payload: AttendanceExportRequest) => {
+        const response = await api.post(`/v1/attendance/download/team/${managerId}`, payload, {
+            responseType: 'blob',
+        });
+        handleDownload(response.data, `Team_Attendance_${managerId}_${payload.fromDate || 'report'}.xlsx`);
+    },
+
+    // NEW: Download Selection Report (POST)
+    downloadSelectedEmployees: async (payload: AttendanceExportRequest) => {
+        const response = await api.post(`/v1/attendance/download/selection`, payload, {
+            responseType: 'blob',
+        });
+        handleDownload(response.data, `Attendance_Selection_${payload.fromDate || 'report'}.xlsx`);
     },
 }
