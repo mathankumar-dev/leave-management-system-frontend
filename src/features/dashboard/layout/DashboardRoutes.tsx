@@ -27,6 +27,7 @@ import Badges from "@/features/skillset/Badges";
 import Progression from "@/features/skillset/Progression";
 import ManagerTeamSkills from "@/features/skillset/ManagerTeamSkills";
 import SkillsetHome from "@/features/skillset/SkillsetHome";
+import AttendanceReports from "@/features/attendance/pages/AttendanceReports";
 // import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
 
 const DashboardRoutes = () => {
@@ -75,6 +76,7 @@ const DashboardRoutes = () => {
       {/* ADMIN */}
       <Route path="onboarding" element={<OnboardingPendingPage />} />
       <Route path="flash-news" element={<FlashNewsForm />} />
+      <Route path="attendance-reports" element={<AttendanceReports />} />
 
       {/* PAYROLL */}
       <Route path="payslip" element={<PayrollView />} />

@@ -1,5 +1,5 @@
 import { attendanceService } from "@/features/attendance/services/attendanceService";
-import type { AttendanceRecord, TeamCalendarResponse } from "@/features/attendance/types";
+import type { AttendanceExportRequest, AttendanceRecord, TeamCalendarResponse } from "@/features/attendance/types";
 import { useCallback, useState } from "react";
 
 
@@ -8,6 +8,7 @@ export const useCalendar = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [teamAttendanceReport, setTeamAttendanceReport] = useState<AttendanceRecord[]>([]);
+  const [allEmployeesAttendanceReport, setAllEmployeesAttendanceReport] = useState<AttendanceRecord[]>([]);
   const [pagination, setPagination] = useState({ totalPages: 0, totalElements: 0, currentPage: 0 });
   const [attendanceReport, setAttendanceReport] = useState<AttendanceRecord[]>([]);
 
@@ -153,15 +154,38 @@ export const useCalendar = () => {
     },
     []
   );
+  const fetchAllEmployeeAttendanceReport = useCallback(
+    async (filters: { fromDate?: string; toDate?: string; page?: number; size?: number }) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await attendanceService.getAllEmployeeAttendanceByRange(filters);
+
+        setAllEmployeesAttendanceReport(data.content || []);
+        setPagination({
+          totalPages: data.totalPages,
+          totalElements: data.totalElements,
+          currentPage: filters.page || 0,
+        });
+
+        return data;
+      } catch (err: any) {
+        console.error("Employee report error:", err);
+        setError(err.message || "Failed to fetch employee attendance report");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
   const downloadAttendanceExcel = useCallback(
     async (empId: string, filters: { fromDate?: string; toDate?: string }) => {
       try {
-        setLoading(true); // Optional: show spinner while the server generates the file
+        setLoading(true);
         setError(null);
-
-        // This calls the API service we created in the previous step
         await attendanceService.downloadAttendanceExcel(empId, filters);
-
       } catch (err: any) {
         console.error("Excel download error:", err);
         setError(err.message || "Failed to download Excel report");
@@ -172,6 +196,37 @@ export const useCalendar = () => {
     []
   );
 
+  const downloadTeamReport = useCallback(
+    async (managerId: string, payload: AttendanceExportRequest) => {
+      try {
+        setLoading(true);
+        setError(null);
+        await attendanceService.downloadTeamAttendance(managerId, payload);
+      } catch (err: any) {
+        console.error("Team report download error:", err);
+        setError("Failed to download team report");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const downloadSelectedReport = useCallback(
+    async (payload: AttendanceExportRequest) => {
+      try {
+        setLoading(true);
+        setError(null);
+        await attendanceService.downloadSelectedEmployees(payload);
+      } catch (err: any) {
+        console.error("Selection report download error:", err);
+        setError("Failed to download selection report");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
   /*
   ========================
   EXPORT API
@@ -192,6 +247,10 @@ export const useCalendar = () => {
     fetchTeamAttendanceReport,
     attendanceReport,
     fetchEmployeeAttendanceReport,
-    downloadAttendanceExcel
+    downloadAttendanceExcel,
+    fetchAllEmployeeAttendanceReport,
+    allEmployeesAttendanceReport,
+    downloadTeamReport,
+    downloadSelectedReport
   };
 };
