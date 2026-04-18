@@ -200,7 +200,7 @@ const DocCard: React.FC<{
   /** * Specific file types to accept, e.g., ".png,.jpg,.jpeg" or "image/*" 
    */
   fileType?: string;
-}> = ({ label, path, isEditing, fileKey, files, onFile, fileType }) => {
+}> = ({ label, path, isEditing, fileKey, files, onFile }) => {
   const selectedFile = files[fileKey] as File | null;
   const hasUpload = !!selectedFile;
   const hasExisting = !!path;

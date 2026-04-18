@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { skillsetService } from "@/features/skillset/skillsetService";
-import type { SkillPayload } from "@/features/skillset/skillsetService";
 // ── Types ──────────────────────────────────────────────────────────────────
 export type SkillCategory = "Technical" | "Tools" | "Platforms" | "Interpersonal";
 
@@ -190,7 +189,7 @@ const SkillDetail: React.FC<{
   employee: Employee;
   empIndex: number;
   onBack: () => void;
-}> = ({ skill, employee, empIndex, onBack }) => {
+}> = ({ skill, employee, onBack }) => {
   const rows: { label: string; value: React.ReactNode }[] = [
     { label: "Employee", value: employee.employeeName },
     { label: "Department", value: employee.department },

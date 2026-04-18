@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { skillsetService } from "@/features/skillset/skillsetService";
-import type { SkillPayload } from "@/features/skillset/skillsetService";
 type Category = "tech" | "tool" | "soft";
 
 interface SkillEntry {
