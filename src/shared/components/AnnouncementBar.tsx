@@ -37,7 +37,7 @@ const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ onEditClick }) => {
                     Users can edit their profile details from
                     <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">06.04.2026</span>
                     to
-                    <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">19.04.2026</span>.
+                    <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">22.04.2026</span>.
                   </span>
                 </p>
                 <button

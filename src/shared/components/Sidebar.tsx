@@ -65,7 +65,7 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
     { name: "Request Center", path: "request-center", icon: <FaFileSignature />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN", "CTO"] },
     { name: "Notifications", path: "notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Flash News", path: "flash-news", icon: <FaNewspaper />, roles: ["ADMIN"] },
-    { name: "Attendance Reports", path: "attendance-reports", icon: <FaCalendarCheck />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
+    { name: "Attendance Reports", path: "attendance-reports", icon: <FaCalendarCheck />, roles: ["MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
 
     { name: "Pay Slip", path: "payslip", icon: <FaMoneyBillWave />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
   ];
