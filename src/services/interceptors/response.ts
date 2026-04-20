@@ -21,7 +21,7 @@ export const responseInterceptor = async (error: AxiosError) => {
   if (!isSilent) {
     switch (status) {
       case 401:
-        toast.error("Session Expired", { description: "Please log in again." });
+        toast.error("Session Expired", { description: backendMessage || "Please log in again." });
         logout();
         break;
 
@@ -33,13 +33,13 @@ export const responseInterceptor = async (error: AxiosError) => {
 
       case 403:
         toast.error("Access Denied", {
-          description: "You do not have permission to perform this action."
+          description: backendMessage || "You do not have permission to perform this action."
         });
         break;
 
       case 404:
         toast.info("Resource Not Found", {
-          description: "The requested item could not be located."
+          description: backendMessage || "The requested item could not be located."
         });
         break;
 
@@ -57,19 +57,19 @@ export const responseInterceptor = async (error: AxiosError) => {
 
       case 429:
         toast.error("Too Many Requests", {
-          description: "Slow down! You are making too many requests."
+          description: backendMessage || "Slow down! You are making too many requests."
         });
         break;
 
       case 500:
         toast.error("Server Error", {
-          description: "Something went wrong on our end. We are looking into it."
+          description: backendMessage || "Something went wrong on our end. We are looking into it."
         });
         break;
 
       case 503:
         toast.error("Service Unavailable", {
-          description: "The server is temporarily down for maintenance."
+          description: backendMessage || "The server is temporarily down for maintenance."
         });
         break;
 

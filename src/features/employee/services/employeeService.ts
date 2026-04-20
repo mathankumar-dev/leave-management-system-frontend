@@ -3,11 +3,11 @@ import { AxiosError } from 'axios';
 import api from '../../../services/apiClient';
 
 export interface Employee {
-  id: string;
+  empId: string;
   name: string;
   email: string;
-  role: string;
-  managerId: string | null;
+  roleName: string;
+  reportingId: string | null;
   active: boolean;
   joiningDate: string;
   biometricStatus: string;
