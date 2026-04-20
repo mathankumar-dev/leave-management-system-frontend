@@ -1,5 +1,5 @@
 import { attendanceService } from "@/features/attendance/services/attendanceService";
-import type { AttendanceExportRequest, AttendanceRecord, TeamCalendarResponse } from "@/features/attendance/types";
+import type { AdminAttendanceExportRequest, AttendanceExportRequest, AttendanceRecord, TeamCalendarResponse } from "@/features/attendance/types";
 import { useCallback, useState } from "react";
 
 
@@ -135,7 +135,7 @@ export const useCalendar = () => {
         setError(null);
 
         const data = await attendanceService.getEmployeeAttendanceByRange(empId, filters);
-        
+
 
         setAttendanceReport(data.content || []);
         setPagination({
@@ -228,6 +228,21 @@ export const useCalendar = () => {
     },
     []
   );
+  const downloadAllAttendanceReport = useCallback(
+    async (payload: AdminAttendanceExportRequest) => {
+      try {
+        setLoading(true);
+        setError(null);
+        await attendanceService.downloadAllEmployeesAttendanceReport(payload);
+      } catch (err: any) {
+        console.error("Selection report download error:", err);
+        setError("Failed to download selection report");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
   /*
   ========================
   EXPORT API
@@ -252,6 +267,7 @@ export const useCalendar = () => {
     fetchAllEmployeeAttendanceReport,
     allEmployeesAttendanceReport,
     downloadTeamReport,
-    downloadSelectedReport
+    downloadSelectedReport,
+    downloadAllAttendanceReport
   };
 };

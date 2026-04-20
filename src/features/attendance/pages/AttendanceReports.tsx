@@ -22,12 +22,14 @@ const AttendanceReports: React.FC = () => {
         attendanceReport,
         downloadAttendanceExcel,
         // fetchAllEmployeeAttendanceReport,
+        downloadAllAttendanceReport
     } = useCalendar();
 
     const { getEmployees } = useEmployee();
     const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
 
     const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+    const [selectedEmployeeName, setSelectedEmployeeName] = useState<string>("Loading...");
     const [activePunches, setActivePunches] = useState<{ time: string; type: string }[] | null>(null);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [dateRange, setDateRange] = useState({
@@ -40,10 +42,6 @@ const AttendanceReports: React.FC = () => {
     const [listTotalPages, setListTotalPages] = useState(0);        // For Admin List View
     const [attendanceTotalPages, setAttendanceTotalPages] = useState(0); // For Individual Report View
     const SIZE = 10; // Items per page
-
-
-
-
 
     const reportData = isAdmin ? allEmployeesAttendanceReport : teamAttendanceReport;
     useEffect(() => {
@@ -88,33 +86,7 @@ const AttendanceReports: React.FC = () => {
         return `${parts[0]}:${parts[1]}`;
     };
 
-    // const uniqueEmployees = useMemo(() => {
-    //     if (!reportData) return [];
-    //     const map = new Map();
-    //     reportData.forEach(item => {
-    //         if (!map.has(item.employeeId)) map.set(item.employeeId, item);
-    //     });
-    //     return Array.from(map.values());
-    // }, [reportData]);
 
-    // // const dataToDisplay = selectedEmployeeId ? attendanceReport : uniqueEmployees;
-
-
-    // const dataToDisplay = useMemo(() => {
-    //     // If an employee is selected, we show their detailed report
-    //     if (selectedEmployeeId) return attendanceReport || [];
-
-    //     // If no employee selected:
-    //     // Admin sees the list of all employees
-    //     if (isAdmin) return employees.map(e => ({
-    //         employeeId: e.empId,
-    //         employeeName: e.name,
-    //         isListView: true // Helper flag
-    //     }));
-
-    //     // Non-Admin sees their team report
-    //     return teamAttendanceReport || [];
-    // }, [selectedEmployeeId, attendanceReport, isAdmin, employees, teamAttendanceReport]);
 
     const dataToDisplay = useMemo(() => {
         // 1. Detail View: If a specific employee is selected
@@ -161,28 +133,62 @@ const AttendanceReports: React.FC = () => {
         }
     };
 
-    const selectedEmployeeName = useMemo(() => {
-        if (!selectedEmployeeId) return "";
+    useEffect(() => {
+        if (!selectedEmployeeId) {
+            setSelectedEmployeeName("");
+            return;
+        }
 
         if (isAdmin) {
+            // Try to find the name in the current employees page
             const emp = employees.find(e => e.empId === selectedEmployeeId);
-            return emp ? emp.name : "Loading...";
+            if (emp) {
+                setSelectedEmployeeName(emp.name);
+            }
+            // If not found (because we changed pages), we do nothing 
+            // and keep the existing name in state.
+        } else {
+            const emp = teamAttendanceReport?.find(e => e.employeeId === selectedEmployeeId);
+            if (emp) {
+                setSelectedEmployeeName(emp.employeeName);
+            }
         }
-        const emp = reportData?.find(e => e.employeeId === selectedEmployeeId);
-        return emp ? emp.employeeName : "Loading...";
-    }, [selectedEmployeeId, isAdmin, employees, reportData]);
+    }, [selectedEmployeeId, isAdmin, employees, teamAttendanceReport]);
+
     const handleExport = async () => {
         try {
+            // 1. Individual Report Export
             if (selectedEmployeeId) {
                 await downloadAttendanceExcel(selectedEmployeeId, {
                     fromDate: dateRange.from,
                     toDate: dateRange.to
                 });
-            } else {
-                const idsToExport = selectedIds.length > 0 ? selectedIds : employees.map(e => e.empId);
-                if (idsToExport.length === 0) return;
+            }
+            // 2. Admin Bulk Export (All or Selected)
+            else if (isAdmin) {
+                // Determine if "Select All" is effectively active
+                // (If length is 0, it means nothing is selected, so we default to All)
+                const isSelectAll = selectedIds.length === employees.length || selectedIds.length === 0;
+
+                if (isSelectAll) {
+                    // Call the specific "Download All" function for Admins
+                    await downloadAllAttendanceReport({
+                        fromDate: dateRange.from,
+                        toDate: dateRange.to
+                    });
+                } else {
+                    // Call the existing function for specific selections
+                    await downloadSelectedReport({
+                        empIds: selectedIds,
+                        fromDate: dateRange.from,
+                        toDate: dateRange.to
+                    });
+                }
+            }
+            // 3. Regular Team Export (Non-admin)
+            else {
                 await downloadSelectedReport({
-                    empIds: idsToExport,
+                    empIds: selectedIds.length > 0 ? selectedIds : employees.map(e => e.empId),
                     fromDate: dateRange.from,
                     toDate: dateRange.to
                 });
@@ -200,7 +206,6 @@ const AttendanceReports: React.FC = () => {
         return `${hours}h ${minutes}m`;
     };
 
-    // Keep track of the 'previous' employee ID to detect changes
     useEffect(() => {
         const loadData = async () => {
             // Use the current page state directly
