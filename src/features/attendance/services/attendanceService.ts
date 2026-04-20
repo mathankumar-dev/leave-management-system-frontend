@@ -55,7 +55,6 @@ export const attendanceService = {
         const response = await api.get(`/v1/attendance/team/${reportingId}`, {
             params: {
                 ...params,
-                // Ensure any default values or formatting happens here if needed
             }
         });
         return response.data;
@@ -68,7 +67,10 @@ export const attendanceService = {
             page?: number;
             size?: number;
         }
-    ): Promise<{ content: AttendanceRecord[], totalPages: number, totalElements: number }> => {
+    ): Promise<{
+        content: AttendanceRecord[], totalPages: number, totalElements: number, size: number,
+        number: number
+    }> => {
         const response = await api.get(`/v1/attendance/${empId}`, {
             params
         });

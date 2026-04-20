@@ -5,8 +5,7 @@ import { useAuth } from "@/shared/auth/useAuth";
 import React, { useEffect, useMemo, useState } from "react";
 import {
     FaArrowLeft,
-    FaFileExport,
-    FaUserAlt
+    FaFileExport
 } from "react-icons/fa";
 
 const AttendanceReports: React.FC = () => {
@@ -38,8 +37,13 @@ const AttendanceReports: React.FC = () => {
 
     // Add these with your other useState hooks
     const [page, setPage] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
+    const [listTotalPages, setListTotalPages] = useState(0);        // For Admin List View
+    const [attendanceTotalPages, setAttendanceTotalPages] = useState(0); // For Individual Report View
     const SIZE = 10; // Items per page
+
+
+
+
 
     const reportData = isAdmin ? allEmployeesAttendanceReport : teamAttendanceReport;
     useEffect(() => {
@@ -50,7 +54,7 @@ const AttendanceReports: React.FC = () => {
                     const result = await getEmployees({ page, size: 10 });
                     if (result?.content) {
                         setEmployees(result.content);
-                        setTotalPages(result.totalPages || 0);
+                        setListTotalPages(result.totalPages || 0); // Update this
                     }
                 } catch (err) {
                     console.error("Failed to fetch employees", err);
@@ -196,24 +200,46 @@ const AttendanceReports: React.FC = () => {
         return `${hours}h ${minutes}m`;
     };
 
+    // Keep track of the 'previous' employee ID to detect changes
     useEffect(() => {
-        setSelectedIds([]);
+        const loadData = async () => {
+            // Use the current page state directly
+            const params = {
+                fromDate: dateRange.from,
+                toDate: dateRange.to,
+                page: page, // Use state directly
+                size: SIZE
+            };
 
-        const params = {
-            fromDate: dateRange.from,
-            toDate: dateRange.to,
-            page: page, // Add this
-            size: SIZE   // Add this
+            try {
+                if (selectedEmployeeId) {
+                    const response = await fetchEmployeeAttendanceReport(selectedEmployeeId, params);
+                    if (response) {
+                        setAttendanceTotalPages(response.totalPages);
+                        // Do NOT setPage here, it creates a loop
+                    }
+                } else if (!isAdmin) {
+                    const response = await fetchTeamAttendanceReport(user!.id, params);
+                    if (response) {
+                        setAttendanceTotalPages(response.totalPages);
+                    }
+                }
+            } catch (error) {
+                console.error("Fetch failed", error);
+            }
         };
 
-        if (selectedEmployeeId) {
-            fetchEmployeeAttendanceReport(selectedEmployeeId, params);
-        } else if (!isAdmin) {
-            fetchTeamAttendanceReport(user!.id, params);
-        }
-        // Note: If you are an Admin viewing the list, ensure your getEmployees 
-        // call also updates to use the page state.
-    }, [selectedEmployeeId, dateRange, isAdmin, fetchTeamAttendanceReport, fetchEmployeeAttendanceReport, user?.id, page]); // Add 'page' to dependencies
+        loadData();
+        // Dependency array: only re-run when these change
+    }, [selectedEmployeeId, dateRange, isAdmin, fetchTeamAttendanceReport, fetchEmployeeAttendanceReport, user?.id, page]);
+    // Reset page to 0 only when selectedEmployeeId changes
+    useEffect(() => {
+        setPage(0);
+    }, [selectedEmployeeId]);
+
+
+
+    const activeTotalPages = selectedEmployeeId ? attendanceTotalPages : listTotalPages;
 
     return (
         <div className=" bg-slate-50 min-h-screen">
@@ -300,9 +326,11 @@ const AttendanceReports: React.FC = () => {
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs ring-1 ring-indigo-100">
-                                                    {row.employeeName ? row.employeeName.charAt(0).toUpperCase() : <FaUserAlt size={12} />}
+                                                    {/* Logic: Use the name from the row if available, otherwise use the selected name */}
+                                                    {(row.employeeName || selectedEmployeeName).charAt(0).toUpperCase()}
                                                 </div>
                                                 <span className={`text-slate-700 ${!selectedEmployeeId ? 'group-hover:text-indigo-600 transition-colors' : ''}`}>
+                                                    {/* Logic: Display the name from the row if available, otherwise the selected name */}
                                                     {row.employeeName || selectedEmployeeName}
                                                 </span>
                                             </div>
@@ -340,10 +368,11 @@ const AttendanceReports: React.FC = () => {
                             </tbody>
                         </table>
                         {/* Pagination Controls */}
-                        {!selectedEmployeeId && (
+                        {dataToDisplay.length > 0 && (
                             <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
                                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                    Page {page + 1} of {totalPages || 1}
+                                    {/* Update here */}
+                                    Page {page + 1} of {activeTotalPages || 1}
                                 </span>
                                 <div className="flex gap-2">
                                     <button
@@ -354,7 +383,8 @@ const AttendanceReports: React.FC = () => {
                                         Previous
                                     </button>
                                     <button
-                                        disabled={page >= totalPages - 1}
+                                        // Update here: use activeTotalPages
+                                        disabled={page >= activeTotalPages - 1}
                                         onClick={() => setPage(prev => prev + 1)}
                                         className="px-3 py-1 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-50"
                                     >

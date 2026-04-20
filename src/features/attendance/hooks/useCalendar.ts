@@ -135,12 +135,13 @@ export const useCalendar = () => {
         setError(null);
 
         const data = await attendanceService.getEmployeeAttendanceByRange(empId, filters);
+        
 
         setAttendanceReport(data.content || []);
         setPagination({
           totalPages: data.totalPages,
           totalElements: data.totalElements,
-          currentPage: filters.page || 0,
+          currentPage: filters.page || 0 ,
         });
 
         return data;
