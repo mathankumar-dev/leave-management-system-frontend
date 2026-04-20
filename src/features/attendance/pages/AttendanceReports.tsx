@@ -160,13 +160,10 @@ const AttendanceReports: React.FC = () => {
     const selectedEmployeeName = useMemo(() => {
         if (!selectedEmployeeId) return "";
 
-        // 1. If Admin, find the name in the employee list (the source of truth)
         if (isAdmin) {
             const emp = employees.find(e => e.empId === selectedEmployeeId);
             return emp ? emp.name : "Loading...";
         }
-
-        // 2. If regular user, find the name in the reportData (team/personal view)
         const emp = reportData?.find(e => e.employeeId === selectedEmployeeId);
         return emp ? emp.employeeName : "Loading...";
     }, [selectedEmployeeId, isAdmin, employees, reportData]);
