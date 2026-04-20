@@ -1,67 +1,57 @@
+// ─── useAccessTypes.ts ────────────────────────────────────────────
+// Custom hook — fetches access types from backend dynamically.
+// Backend: GET /access-types/available
+// Response: AccessTypeConfig[]
+// Frontend NEVER hardcodes "VPN" or any type — fully config-driven.
+
 import { useEffect, useState } from "react";
-import { fetchAccessTypes } from "../services/accessApi";
+import api from "@/services/apiClient";
 
-export type AccessType = {
-  type: "VPN" | "BIOMETRIC" | "NETWORK" | "SHARED_FOLDER"; // ✅ strict typing
-  label: string;
-  enabled: boolean;
-  rolesAllowed: string[];
-};
+export interface AccessTypeConfig {
+  type: string;           // e.g. "VPN", "BIOMETRIC", "SHARED_FOLDER"
+  label: string;          // e.g. "VPN Access (Remote Work)"
+  description: string;    // Short description shown in UI
+  enabled: boolean;       // Backend controls this — false = hidden in UI
+  rolesAllowed: string[]; // e.g. ["MANAGER", "ADMIN"]
+  icon: string;           // Icon key — maps to icon in frontend
+}
 
-export const useAccessTypes = (userRole?: string) => {
-  const [accessTypes, setAccessTypes] = useState<AccessType[]>([]);
-  const [filteredTypes, setFilteredTypes] = useState<AccessType[]>([]);
-  const [loading, setLoading] = useState(false);
+interface UseAccessTypesReturn {
+  accessTypes: AccessTypeConfig[];
+  loading: boolean;
+  error: string | null;
+}
+
+export const useAccessTypes = (userRole: string | undefined): UseAccessTypesReturn => {
+  const [accessTypes, setAccessTypes] = useState<AccessTypeConfig[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const getAccessTypes = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await fetchAccessTypes();
-      setAccessTypes(data);
-    } catch (err) {
-      console.error(err);
-
-      // ✅ fallback (VERY IMPORTANT)
-      setAccessTypes([
-        {
-          type: "VPN",
-          label: "VPN Access (Remote Work)",
-          enabled: true,
-          rolesAllowed: ["MANAGER", "ADMIN"],
-        },
-      ]);
-
-      setError("Using fallback access types");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔹 Fetch on load
   useEffect(() => {
-    getAccessTypes();
-  }, []);
+    if (!userRole) return;
 
-  // 🔹 Filter based on role
-  useEffect(() => {
-    const filtered = accessTypes
-      .filter((opt) => opt.enabled)
-      .filter((opt) => {
-        if (opt.rolesAllowed.includes("ALL")) return true;
-        return opt.rolesAllowed.includes(userRole || "");
-      });
+    const fetchTypes = async () => {
+      try {
+        setLoading(true);
+        // Backend returns ALL types — frontend filters by enabled + rolesAllowed
+        const response = await api.get<AccessTypeConfig[]>("/access-types/available");
+        const all = response.data;
 
-    setFilteredTypes(filtered);
-  }, [accessTypes, userRole]);
+        // Filter: enabled = true AND user's role is in rolesAllowed
+        const filtered = all.filter(
+          t => t.enabled && t.rolesAllowed.includes(userRole.toUpperCase())
+        );
 
-  return {
-    accessTypes,
-    filteredTypes, // ✅ use this in UI directly
-    loading,
-    error,
-    refetch: getAccessTypes,
-  };
+        setAccessTypes(filtered);
+      } catch (err: any) {
+        setError(err?.response?.data?.message || "Failed to load access types");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTypes();
+  }, [userRole]);
+
+  return { accessTypes, loading, error };
 };

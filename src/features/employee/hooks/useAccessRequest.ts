@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "@/services/apiClient";
-import type { AccessType } from "../hooks/useAccessTypes";
+import type { AccessType } from "../components/AccessRequestForm";
+// import type { AccessType } from "../hooks/useAccessTypes";
 
 export const useAccessRequest = () => {
   const [loading, setLoading] = useState(false);

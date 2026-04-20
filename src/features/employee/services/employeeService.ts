@@ -7,7 +7,7 @@ export interface Employee {
   name: string;
   email: string;
   role: string;
-  managerId: number | null;
+  managerId: string | null;
   active: boolean;
   joiningDate: string;
   biometricStatus: string;

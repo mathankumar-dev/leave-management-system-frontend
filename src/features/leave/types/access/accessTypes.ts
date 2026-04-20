@@ -25,6 +25,8 @@ export interface AccessResponse {
 export interface AccessRequest {
   accessType : string;
   reason : string;
+  startDate: string,
+  endDate: string,
 }
 
 

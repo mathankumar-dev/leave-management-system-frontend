@@ -20,6 +20,7 @@ export interface Payslip {
   grossSalary: number;
   netSalary: number;
   variablePay : number;
+  status : string;
 }
 
 export interface PayslipCreateRequest {
