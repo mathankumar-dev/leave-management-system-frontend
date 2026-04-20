@@ -65,6 +65,13 @@ export const employeeService = {
     return res.data;
   },
 
+  searchEmployees: async (query: string): Promise<EmployeeEntity[]> => {
+    const response = await api.get(`/v1/employees/search`, {
+      params: { query }
+    });
+    return response.data;
+  },
+
 
   // ─── HR: paginated list ───────────────────────────────────────
   getAllEmployeesHR: async (
@@ -102,20 +109,7 @@ export const employeeService = {
       throw handleError(err, 'getAllEmployees');
     }
   },
-  searchEmployees: async (
-    query: string,
-    signal?: AbortSignal
-  ): Promise<Employee[]> => {
-    try {
-      const response = await api.get<Employee[]>('/v1/employees/search', {
-        params: { query },
-        signal,
-      });
-      return response.data;
-    } catch (err) {
-      throw handleError(err, 'searchEmployees');
-    }
-  },
+  
 
   getTeamMembers: async (id: string): Promise<TeamMember[]> => {
     const res = await api.get(`/v1/dashboard/team-members/${id}`);

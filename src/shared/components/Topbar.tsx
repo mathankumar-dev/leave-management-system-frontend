@@ -11,13 +11,16 @@ import {
   FaUserCog
 } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
+import BirthdayTopbarButton from "@/features/birthday/components/BirthdayTopbarButton";
 
 interface TopbarProps {
   onMenuClick: () => void;
   onLogout: () => void;
+  onBirthdayToggle?: () => void;
+  isBirthdayOpen?: boolean;
 }
 
-const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
+const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout, onBirthdayToggle, isBirthdayOpen = false }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
 
@@ -61,6 +64,8 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
     if (path.includes("profile")) return "Profile";
     if (path.includes("payroll")) return "Payroll";
     if (path.includes("payslip")) return "Payslip";
+    if (path.includes("birthday")) return "Birthday";
+    if (path.includes("attendance")) return "Attendance Reports";
     return "Dashboard";
   }, [location.pathname]);
 
@@ -80,6 +85,12 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onLogout }) => {
 
       {/* RIGHT */}
       <div className="flex items-center gap-2 sm:gap-4">
+
+        {/* 🎂 BIRTHDAY */}
+        <BirthdayTopbarButton
+          onClick={() => { onBirthdayToggle?.(); setIsNotifOpen(false); setIsProfileOpen(false); }}
+          isOpen={isBirthdayOpen}
+        />
 
         {/* 🔔 NOTIFICATIONS */}
         <div className="relative">

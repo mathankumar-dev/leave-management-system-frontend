@@ -14,10 +14,10 @@ import {
   FaPlus,
   FaStethoscope,
   FaTimesCircle,
-  FaUmbrellaBeach
+  FaUmbrellaBeach,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
+import BirthdayPopupBanner from "@/features/birthday/components/BirthdayPopupBanner";
 interface StatItem {
   title: string;
   used: number;
@@ -40,7 +40,7 @@ const DashboardView = () => {
     sickAllocated: 0,
     sickUsed: 0,
     sickBalance: 0,
-    totalBalance: 0
+    totalBalance: 0,
   });
 
   const [stats, setStats] = useState<StatItem[]>([]);
@@ -56,8 +56,8 @@ const DashboardView = () => {
       const data = await fetchDashboard(user.id);
       const breakdown: LeaveTypeBreakDown[] = data.breakdown || [];
 
-      const sick = breakdown.find(b => b.leaveTypeName?.includes("SICK"));
-      const annual = breakdown.find(b => b.leaveTypeName?.includes("ANNUAL"));
+      const sick = breakdown.find((b) => b.leaveTypeName?.includes("SICK"));
+      const annual = breakdown.find((b) => b.leaveTypeName?.includes("ANNUAL"));
 
       setMonthly({
         annualAllocated: data.monthlyAnnualAllocated || 0,
@@ -66,7 +66,7 @@ const DashboardView = () => {
         sickAllocated: data.monthlySickAllocated || 0,
         sickUsed: data.monthlySickUsed || 0,
         sickBalance: data.monthlySickBalance || 0,
-        totalBalance: data.monthlyTotalBalance || 0
+        totalBalance: data.monthlyTotalBalance || 0,
       });
 
       setStats([
@@ -77,7 +77,7 @@ const DashboardView = () => {
           pendingCount: annual?.pendingCount ?? 0,
           balance: annual?.remainingDays ?? 0,
           icon: <FaUmbrellaBeach />,
-          color: "text-blue-500 bg-blue-50"
+          color: "text-blue-500 bg-blue-50",
         },
         {
           title: "Sick Leave",
@@ -86,15 +86,16 @@ const DashboardView = () => {
           pendingCount: sick?.pendingCount ?? 0,
           balance: sick?.remainingDays ?? 0,
           icon: <FaStethoscope />,
-          color: "text-rose-500 bg-rose-50"
+          color: "text-rose-500 bg-rose-50",
         },
         {
           title: "Carry Forward",
-          used: (data.carryForwardTotal || 0) - (data.carryForwardRemaining || 0),
+          used:
+            (data.carryForwardTotal || 0) - (data.carryForwardRemaining || 0),
           total: data.carryForwardTotal,
           balance: data.carryForwardRemaining,
           icon: <FaForward />,
-          color: "text-amber-500 bg-amber-50"
+          color: "text-amber-500 bg-amber-50",
         },
         {
           title: "Comp Off",
@@ -102,8 +103,8 @@ const DashboardView = () => {
           total: data.compoffBalance,
           balance: data.compoffBalance,
           icon: <FaHourglassHalf />,
-          color: "text-purple-500 bg-purple-50"
-        }
+          color: "text-purple-500 bg-purple-50",
+        },
       ]);
 
       setApproved(data.approvedCount);
@@ -115,10 +116,13 @@ const DashboardView = () => {
     }
   }, [user?.id, fetchDashboard, setError]);
 
-  useEffect(() => { loadDashboard(); }, [loadDashboard]);
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
 
   const handleNavigate = (path: string) => {
-    const roleBase = user?.role?.toLowerCase() === 'admin' ? '/manager' : '/employee';
+    const roleBase =
+      user?.role?.toLowerCase() === "admin" ? "/manager" : "/employee";
     navigate(`${roleBase}/${path}`);
   };
 
@@ -130,6 +134,10 @@ const DashboardView = () => {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-7xl mx-auto  space-y-8 bg-[#F9FAFB] min-h-screen"
     >
+      <div>
+    <BirthdayPopupBanner />   {/* ← இதை add பண்ணு */}
+    {/* ... உங்கள் existing code ... */}
+  </div>
       {/* SaaS HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -138,10 +146,14 @@ const DashboardView = () => {
         <div className="flex items-center gap-3">
           <div className="hidden md:flex bg-white border border-gray-200 rounded-lg px-3 py-2 items-center gap-2 text-xs font-bold text-gray-500 shadow-sm">
             <FaCalendarAlt className="text-blue-600" />
-            {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            {new Date().toLocaleDateString("en-US", {
+              month: "long",
+              year: "numeric",
+            })}
           </div>
+         
           <button
-            onClick={() => handleNavigate('request-center')}
+            onClick={() => handleNavigate("request-center")}
             className="bg-[#0052FF] hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
           >
             <FaPlus /> Apply Leave
@@ -164,19 +176,38 @@ const DashboardView = () => {
           color="bg-rose-500"
         />
         <div className="bg-gray-900 rounded-2xl p-6 text-white flex flex-col justify-between shadow-xl">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Total Monthly Balance</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+            Total Monthly Balance
+          </span>
           <div className="flex items-baseline gap-2">
             <h2 className="text-4xl font-black">{monthly.totalBalance}</h2>
-            <span className="text-sm font-bold text-gray-400">Days Remaining</span>
+            <span className="text-sm font-bold text-gray-400">
+              Days Remaining
+            </span>
           </div>
         </div>
       </section>
 
       {/* STATUS COUNTERS */}
       <div className="flex flex-wrap gap-4">
-        <StatusBadge icon={<FaCheckCircle />} label="Approved" count={approved} color="text-emerald-600 bg-emerald-50" />
-        <StatusBadge icon={<FaTimesCircle />} label="Rejected" count={rejected} color="text-rose-600 bg-rose-50" />
-        <StatusBadge icon={<FaClock />} label="Pending" count={stats.reduce((a, b) => a + (b.pendingCount || 0), 0)} color="text-amber-600 bg-amber-50" />
+        <StatusBadge
+          icon={<FaCheckCircle />}
+          label="Approved"
+          count={approved}
+          color="text-emerald-600 bg-emerald-50"
+        />
+        <StatusBadge
+          icon={<FaTimesCircle />}
+          label="Rejected"
+          count={rejected}
+          color="text-rose-600 bg-rose-50"
+        />
+        <StatusBadge
+          icon={<FaClock />}
+          label="Pending"
+          count={stats.reduce((a, b) => a + (b.pendingCount || 0), 0)}
+          color="text-amber-600 bg-amber-50"
+        />
       </div>
 
       {/* FLOATING ROW TABLE */}
@@ -195,20 +226,24 @@ const DashboardView = () => {
           {stats.map((item, idx) => (
             <motion.div
               key={idx}
-              whileHover={{ backgroundColor: "#F3F4F6" }} 
+              whileHover={{ backgroundColor: "#F3F4F6" }}
               onClick={() => setSelectedCard(item)}
               className={`
           grid grid-cols-12 items-center px-6 py-4 transition-colors cursor-pointer group
-          ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-100/50'} 
+          ${idx % 2 === 0 ? "bg-white" : "bg-gray-100/50"} 
         `}
             >
               {/* Category Column */}
               <div className="col-span-4 flex items-center gap-4">
-                <div className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-sm ${item.color}`}>
+                <div
+                  className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-sm ${item.color}`}
+                >
                   {item.icon}
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-semibold text-gray-700 text-sm">{item.title}</span>
+                  <span className="font-semibold text-gray-700 text-sm">
+                    {item.title}
+                  </span>
                 </div>
               </div>
 
@@ -250,7 +285,7 @@ const DashboardView = () => {
         open={!!selectedCard}
         stat={selectedCard}
         onClose={() => setSelectedCard(null)}
-        onClick={() => handleNavigate('request-center')}
+        onClick={() => handleNavigate("request-center")}
       />
 
       {/* <MyFloatingActionButton
@@ -266,9 +301,13 @@ const DashboardView = () => {
 
 const MonthlyCard = ({ label, val, sub }: any) => (
   <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</span>
+    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+      {label}
+    </span>
     <div className="flex justify-between items-end mt-2">
-      <h3 className="text-3xl font-black text-gray-900">{val} <span className="text-xs font-bold text-gray-400">Days</span></h3>
+      <h3 className="text-3xl font-black text-gray-900">
+        {val} <span className="text-xs font-bold text-gray-400">Days</span>
+      </h3>
       <p className="text-[10px] font-bold text-gray-400 mb-1">{sub}</p>
     </div>
     {/* <div className="w-full bg-gray-100 h-1.5 rounded-full mt-4 overflow-hidden">
@@ -278,9 +317,13 @@ const MonthlyCard = ({ label, val, sub }: any) => (
 );
 
 const StatusBadge = ({ icon, label, count, color }: any) => (
-  <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border border-transparent font-bold text-xs ${color} shadow-sm`}>
+  <div
+    className={`flex items-center gap-2 px-4 py-2 rounded-xl border border-transparent font-bold text-xs ${color} shadow-sm`}
+  >
     <span className="opacity-70">{icon}</span>
-    <span>{count} {label}</span>
+    <span>
+      {count} {label}
+    </span>
   </div>
 );
 

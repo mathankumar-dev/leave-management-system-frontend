@@ -23,11 +23,12 @@ const PendingApprovalsView: React.FC = () => {
         handleDecision,
     } = useManagerApprovals(user!.id, user?.role);
 
-    const { weeklyLeaveSummary, teamOnLeave } = useLeave();
+    const { teamOnLeave } = useLeave();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [timeFilter, setTimeFilter] = useState("all");
     const [detailModalReq, setDetailModalReq] = useState<any | null>(null);
+    const [statusFilter, setStatusFilter] = useState("PENDING");
 
     useEffect(() => {
         if (user?.id && canSeeDashboardMetrics) {
@@ -60,10 +61,15 @@ const PendingApprovalsView: React.FC = () => {
     };
     const filteredRequests = useMemo(() => {
         return requests.filter((req) => {
+            // 1. Status Filter (Matching req.status or similar property)
+            const matchesStatus = req.status === statusFilter;
+
+            // 2. Search Filter
             const matchesSearch =
                 req.employeeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 req.leaveTypeName?.toLowerCase().includes(searchQuery.toLowerCase());
 
+            // 3. Time Filter
             const createdDate = new Date(req.createdAt);
             const now = new Date();
             let matchesTime = true;
@@ -78,10 +84,17 @@ const PendingApprovalsView: React.FC = () => {
                     createdDate.getFullYear() === now.getFullYear();
             }
 
-            return matchesSearch && matchesTime;
+            return matchesStatus && matchesSearch && matchesTime;
         });
-    }, [requests, searchQuery, timeFilter]);
+    }, [requests, searchQuery, timeFilter, statusFilter]);
 
+    const pendingCount = useMemo(() =>
+        requests.filter(r => r.status === 'PENDING').length,
+        [requests]);
+
+    const approvedCount = useMemo(() =>
+        requests.filter(r => r.status === 'APPROVED').length,
+        [requests]);
 
 
 
@@ -121,7 +134,6 @@ const PendingApprovalsView: React.FC = () => {
         throw new Error('Function not implemented.');
     }
 
-    
 
     return (
         <div className='flex flex-col gap-4 w-full max-w-full overflow-x-hidden'>
@@ -133,7 +145,7 @@ const PendingApprovalsView: React.FC = () => {
                 onAction={(status) => {
                     const reqToProcess = detailModalReq;
                     setDetailModalReq(null);
-                    onActionTriggered(reqToProcess, status); 
+                    onActionTriggered(reqToProcess, status);
                 }}
             />
             <CommentDialog
@@ -158,7 +170,7 @@ const PendingApprovalsView: React.FC = () => {
 
                     <div className='flex justify-start md:justify-center'>
                         <MetricTile
-                            value={requests.length.toString().padStart(2, '0')}
+                            value={pendingCount.toString().padStart(2, '0')}
                             firstLabel="Pending"
                             secondLabel="Approvals"
                         />
@@ -169,9 +181,9 @@ const PendingApprovalsView: React.FC = () => {
                             <div className="hidden md:block h-12 w-px bg-slate-300" />
                             <div className='flex justify-start md:justify-center'>
                                 <MetricTile
-                                    value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
-                                    firstLabel="Members"
-                                    secondLabel="out Today"
+                                    value={approvedCount.toString().padStart(2, '0')}
+                                    firstLabel="Total"
+                                    secondLabel="Approved"
                                 />
                             </div>
 
@@ -179,9 +191,9 @@ const PendingApprovalsView: React.FC = () => {
 
                             <div className='col-span-2 md:col-span-1 flex justify-center md:justify-end border-t border-slate-200 pt-6 md:border-none md:pt-0'>
                                 <MetricTile
-                                    value={(weeklyLeaveSummary?.length || 0).toString().padStart(2, '0')}
-                                    firstLabel="Weekly Absence"
-                                    secondLabel="Summary"
+                                    value={(teamOnLeave?.length || 0).toString().padStart(2, '0')}
+                                    firstLabel="Members"
+                                    secondLabel="Out Today"
                                 />
                             </div>
                         </>
@@ -200,13 +212,30 @@ const PendingApprovalsView: React.FC = () => {
                         className="w-full pl-11 pr-4 py-2.5 bg-[#F1F5F9] border border-slate-200 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
                     />
                 </div>
+                {/* Status Filter */}
+                <div className="relative w-full md:w-48 group">
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-sm text-sm font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 appearance-none cursor-pointer transition-all shadow-sm"
+                    >
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="REJECTED">Rejected</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                        <FaChevronDown size={12} />
+                    </div>
+                </div>
+
+                {/* Time Filter */}
                 <div className="relative w-full md:w-48 group">
                     <select
                         value={timeFilter}
                         onChange={(e) => setTimeFilter(e.target.value)}
                         className="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-sm text-sm font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 appearance-none cursor-pointer transition-all shadow-sm"
                     >
-                        <option value="all">All Requests</option>
+                        <option value="all">All Time</option>
                         <option value="today">Today</option>
                         <option value="week">This Week</option>
                         <option value="month">This Month</option>
@@ -215,6 +244,7 @@ const PendingApprovalsView: React.FC = () => {
                         <FaChevronDown size={12} />
                     </div>
                 </div>
+
             </div>
 
             <div className='flex flex-col gap-3 bg-[#F1F5F9] py-4 px-2 md:px-4 rounded-sm border border-slate-200'>
@@ -225,6 +255,7 @@ const PendingApprovalsView: React.FC = () => {
                             className="cursor-pointer transition-transform active:scale-[0.99]">
                             <RequestTile
                                 key={req.id}
+                                status={req.status}
                                 employeeName={req.employeeName}
                                 leaveType={req.leaveTypeName}
                                 reasonMessage={req.isCompOff ? "Comp-Off Credit Request" : req.reason}

@@ -56,20 +56,20 @@ const ODRequestForm = () => {
         const role = user?.role?.toUpperCase();
 
         if (role === "EMPLOYEE") {
-            approvers.push({ label: `TL: ${user?.teamLeaderName || 'Assigning...'}`, active: true });
+            approvers.push({ label: `TL: ${user?.name || 'Assigning...'}`, active: true });
 
             if (totalDays > 1) {
-                approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+                approvers.push({ label: `Manager: ${user?.name || 'Assigning...'}`, active: true });
             }
         }
         if (role === "TEAM_LEADER") {
-            approvers.push({ label: `Manager: ${user?.managerName || 'Assigning...'}`, active: true });
+            approvers.push({ label: `Manager: ${user?.name || 'Assigning...'}`, active: true });
         }
         if (role === "MANAGER" || role === "ADMIN") {
-            approvers.push({ label: `HR: ${user?.hrname || 'Final Approval'}`, active: true });
+            approvers.push({ label: `HR: ${user?.name || 'Final Approval'}`, active: true });
         }
         if (totalDays > 7 && role !== "MANAGER") {
-            approvers.push({ label: `HR: ${user?.hrname || 'Assigning...'}`, active: true });
+            approvers.push({ label: `HR: ${user?.name || 'Assigning...'}`, active: true });
         }
 
         return approvers.map((app, index) => (
