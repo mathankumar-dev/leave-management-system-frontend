@@ -164,7 +164,7 @@ const LeaveModal: React.FC<{ employee: Employee; onClose: () => void }> = ({ emp
                 setLoading(false);
             }
         };
-        fetchBalance();
+        fetchBalance();                 
     }, [employee?.empId]);
 
     return (
