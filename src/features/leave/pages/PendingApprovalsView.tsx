@@ -3,7 +3,7 @@ import DetailedRequestModal from '@/features/leave/components/DetailedRequestMod
 import RequestTile from '@/features/leave/components/RequestTile';
 import { useLeave } from '@/features/leave/hooks/useLeave';
 import { useManagerApprovals } from '@/features/leave/hooks/useManagerApprovals';
-import type { LeaveDecision, ManagerAccessDecision } from '@/features/leave/types';
+import type { LeaveDecision } from '@/features/leave/types';
 import { notify } from '@/features/notification/utils/notifications';
 import { useAuth } from '@/shared/auth/useAuth';
 import { CommentDialog, CustomLoader, MetricTile } from '@/shared/components';
@@ -99,23 +99,22 @@ const PendingApprovalsView: React.FC = () => {
 
 
     const handleConfirmDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-        let accessDecisionBody: ManagerAccessDecision | undefined = undefined;
+        // let accessDecisionBody: ManagerAccessDecision | undefined = undefined;
 
         // Specialized logic for specific leave types if needed
-        if (req.leaveType === 'VPN' || req.leaveType === 'BIOMETRIC') {
-            accessDecisionBody = {
-                decision: status,
-                remarks: commentText || "Approved via Manager Portal",
-                managerId: user!.id,
-            };
-        }
+        // if (req.leaveType === 'VPN' || req.leaveType === 'BIOMETRIC') {
+        //     accessDecisionBody = {
+        //         decision: status,
+        //         remarks: commentText || "Approved via Manager Portal",
+        //         managerId: user!.id,
+        //     };
+        // }
 
         const result = await handleDecision(
             req.id,
             status,
             commentText || (status === 'APPROVED' ? "Approved" : "Rejected"),
             req.leaveTypeName,
-            accessDecisionBody
         );
 
         if (result?.success) {

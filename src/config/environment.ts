@@ -5,6 +5,7 @@ export interface EnvironmentConfig {
 
 export const ENV: EnvironmentConfig = {
   API_BASE_URL: "http://localhost:8111/api",
+  // API_BASE_URL: "https://lh4dz46t-8111.inc1.devtunnels.ms/",
   // API_BASE_URL: "http://192.168.1.14:8111/api",
   // API_BASE_URL: '/api',
   // API_BASE_URL: "https://jgpq493j-8111.inc1.devtunnels.ms/api",

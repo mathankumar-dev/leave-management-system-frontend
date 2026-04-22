@@ -86,7 +86,7 @@ const DashboardRoutes = () => {
       {/* ✅ SKILLSET */}
       <Route path="skillset" element={<SkillsetLayout />}>
         <Route path="home" element={<SkillsetHome />} />
-        <Route path="my-skills" element={<Myskills />} />
+        <Route path="my-skills" element={<Myskills />} />        
         <Route path="badges" element={<Badges />} />
         <Route path="progression" element={<Progression />} />
         <Route path="team-skills" element={<ManagerTeamSkills />} />

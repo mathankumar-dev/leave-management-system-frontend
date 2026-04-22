@@ -5,13 +5,13 @@ import { useAuth } from "@/shared/auth/useAuth";
 import React, { useEffect, useMemo, useState } from "react";
 import {
     FaArrowLeft,
-    FaFileExport,
-    FaUserAlt
+    FaFileExport
 } from "react-icons/fa";
 
 const AttendanceReports: React.FC = () => {
     const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
+    const isCfo = user?.role === 'CFO';
 
     // Hooks & State (Logic strictly preserved)
     const {
@@ -19,16 +19,18 @@ const AttendanceReports: React.FC = () => {
         fetchEmployeeAttendanceReport,
         downloadSelectedReport,
         teamAttendanceReport,
-        allEmployeesAttendanceReport,
+        
         attendanceReport,
         downloadAttendanceExcel,
         // fetchAllEmployeeAttendanceReport,
+        downloadAllAttendanceReport
     } = useCalendar();
 
     const { getEmployees } = useEmployee();
     const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
 
     const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+    const [selectedEmployeeName, setSelectedEmployeeName] = useState<string>("Loading...");
     const [activePunches, setActivePunches] = useState<{ time: string; type: string }[] | null>(null);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [dateRange, setDateRange] = useState({
@@ -38,10 +40,10 @@ const AttendanceReports: React.FC = () => {
 
     // Add these with your other useState hooks
     const [page, setPage] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
+    const [listTotalPages, setListTotalPages] = useState(0);        // For Admin List View
+    const [attendanceTotalPages, setAttendanceTotalPages] = useState(0); // For Individual Report View
     const SIZE = 10; // Items per page
 
-    const reportData = isAdmin ? allEmployeesAttendanceReport : teamAttendanceReport;
     useEffect(() => {
         if (isAdmin) {
             const loadAllEmployees = async () => {
@@ -50,7 +52,25 @@ const AttendanceReports: React.FC = () => {
                     const result = await getEmployees({ page, size: 10 });
                     if (result?.content) {
                         setEmployees(result.content);
-                        setTotalPages(result.totalPages || 0);
+                        setListTotalPages(result.totalPages || 0); // Update this
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch employees", err);
+                }
+            };
+            loadAllEmployees();
+        }
+    }, [isAdmin, getEmployees, page, selectedEmployeeId]);
+
+    useEffect(() => {
+        if (isCfo) {
+            const loadAllEmployees = async () => {
+                try {
+                    // Use the page state here
+                    const result = await getEmployees({ page, size: 10 });
+                    if (result?.content) {
+                        setEmployees(result.content);
+                        setListTotalPages(result.totalPages || 0); // Update this
                     }
                 } catch (err) {
                     console.error("Failed to fetch employees", err);
@@ -84,33 +104,7 @@ const AttendanceReports: React.FC = () => {
         return `${parts[0]}:${parts[1]}`;
     };
 
-    // const uniqueEmployees = useMemo(() => {
-    //     if (!reportData) return [];
-    //     const map = new Map();
-    //     reportData.forEach(item => {
-    //         if (!map.has(item.employeeId)) map.set(item.employeeId, item);
-    //     });
-    //     return Array.from(map.values());
-    // }, [reportData]);
 
-    // // const dataToDisplay = selectedEmployeeId ? attendanceReport : uniqueEmployees;
-
-
-    // const dataToDisplay = useMemo(() => {
-    //     // If an employee is selected, we show their detailed report
-    //     if (selectedEmployeeId) return attendanceReport || [];
-
-    //     // If no employee selected:
-    //     // Admin sees the list of all employees
-    //     if (isAdmin) return employees.map(e => ({
-    //         employeeId: e.empId,
-    //         employeeName: e.name,
-    //         isListView: true // Helper flag
-    //     }));
-
-    //     // Non-Admin sees their team report
-    //     return teamAttendanceReport || [];
-    // }, [selectedEmployeeId, attendanceReport, isAdmin, employees, teamAttendanceReport]);
 
     const dataToDisplay = useMemo(() => {
         // 1. Detail View: If a specific employee is selected
@@ -133,7 +127,23 @@ const AttendanceReports: React.FC = () => {
                     });
                 }
             });
-        } else {
+        } 
+
+        if (isCfo) {
+            // Admin Logic: Mapping all employees
+            employees.forEach((e) => {
+                // Only add if not already present
+                if (!map.has(e.empId)) {
+                    map.set(e.empId, {
+                        employeeId: e.empId,
+                        employeeName: e.name,
+                        isListView: true
+                    });
+                }
+            });
+        }
+
+        else {
             // Team Logic: Using the report data
             (teamAttendanceReport || []).forEach((item) => {
                 if (!map.has(item.employeeId)) {
@@ -157,28 +167,62 @@ const AttendanceReports: React.FC = () => {
         }
     };
 
-    const selectedEmployeeName = useMemo(() => {
-        if (!selectedEmployeeId) return "";
+    useEffect(() => {
+        if (!selectedEmployeeId) {
+            setSelectedEmployeeName("");
+            return;
+        }
 
         if (isAdmin) {
+            // Try to find the name in the current employees page
             const emp = employees.find(e => e.empId === selectedEmployeeId);
-            return emp ? emp.name : "Loading...";
+            if (emp) {
+                setSelectedEmployeeName(emp.name);
+            }
+            // If not found (because we changed pages), we do nothing 
+            // and keep the existing name in state.
+        } else {
+            const emp = teamAttendanceReport?.find(e => e.employeeId === selectedEmployeeId);
+            if (emp) {
+                setSelectedEmployeeName(emp.employeeName);
+            }
         }
-        const emp = reportData?.find(e => e.employeeId === selectedEmployeeId);
-        return emp ? emp.employeeName : "Loading...";
-    }, [selectedEmployeeId, isAdmin, employees, reportData]);
+    }, [selectedEmployeeId, isAdmin, employees, teamAttendanceReport]);
+
     const handleExport = async () => {
         try {
+            // 1. Individual Report Export
             if (selectedEmployeeId) {
                 await downloadAttendanceExcel(selectedEmployeeId, {
                     fromDate: dateRange.from,
                     toDate: dateRange.to
                 });
-            } else {
-                const idsToExport = selectedIds.length > 0 ? selectedIds : employees.map(e => e.empId);
-                if (idsToExport.length === 0) return;
+            }
+            // 2. Admin Bulk Export (All or Selected)
+            else if (isAdmin) {
+                // Determine if "Select All" is effectively active
+                // (If length is 0, it means nothing is selected, so we default to All)
+                const isSelectAll = selectedIds.length === employees.length || selectedIds.length === 0;
+
+                if (isSelectAll) {
+                    // Call the specific "Download All" function for Admins
+                    await downloadAllAttendanceReport({
+                        fromDate: dateRange.from,
+                        toDate: dateRange.to
+                    });
+                } else {
+                    // Call the existing function for specific selections
+                    await downloadSelectedReport({
+                        empIds: selectedIds,
+                        fromDate: dateRange.from,
+                        toDate: dateRange.to
+                    });
+                }
+            }
+            // 3. Regular Team Export (Non-admin)
+            else {
                 await downloadSelectedReport({
-                    empIds: idsToExport,
+                    empIds: selectedIds.length > 0 ? selectedIds : employees.map(e => e.empId),
                     fromDate: dateRange.from,
                     toDate: dateRange.to
                 });
@@ -197,23 +241,44 @@ const AttendanceReports: React.FC = () => {
     };
 
     useEffect(() => {
-        setSelectedIds([]);
+        const loadData = async () => {
+            // Use the current page state directly
+            const params = {
+                fromDate: dateRange.from,
+                toDate: dateRange.to,
+                page: page, // Use state directly
+                size: SIZE
+            };
 
-        const params = {
-            fromDate: dateRange.from,
-            toDate: dateRange.to,
-            page: page, // Add this
-            size: SIZE   // Add this
+            try {
+                if (selectedEmployeeId) {
+                    const response = await fetchEmployeeAttendanceReport(selectedEmployeeId, params);
+                    if (response) {
+                        setAttendanceTotalPages(response.totalPages);
+                        // Do NOT setPage here, it creates a loop
+                    }
+                } else if (!isAdmin) {
+                    const response = await fetchTeamAttendanceReport(user!.id, params);
+                    if (response) {
+                        setAttendanceTotalPages(response.totalPages);
+                    }
+                }
+            } catch (error) {
+                console.error("Fetch failed", error);
+            }
         };
 
-        if (selectedEmployeeId) {
-            fetchEmployeeAttendanceReport(selectedEmployeeId, params);
-        } else if (!isAdmin) {
-            fetchTeamAttendanceReport(user!.id, params);
-        }
-        // Note: If you are an Admin viewing the list, ensure your getEmployees 
-        // call also updates to use the page state.
-    }, [selectedEmployeeId, dateRange, isAdmin, fetchTeamAttendanceReport, fetchEmployeeAttendanceReport, user?.id, page]); // Add 'page' to dependencies
+        loadData();
+        // Dependency array: only re-run when these change
+    }, [selectedEmployeeId, dateRange, isAdmin, fetchTeamAttendanceReport, fetchEmployeeAttendanceReport, user?.id, page]);
+    // Reset page to 0 only when selectedEmployeeId changes
+    useEffect(() => {
+        setPage(0);
+    }, [selectedEmployeeId]);
+
+
+
+    const activeTotalPages = selectedEmployeeId ? attendanceTotalPages : listTotalPages;
 
     return (
         <div className=" bg-slate-50 min-h-screen">
@@ -300,9 +365,11 @@ const AttendanceReports: React.FC = () => {
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs ring-1 ring-indigo-100">
-                                                    {row.employeeName ? row.employeeName.charAt(0).toUpperCase() : <FaUserAlt size={12} />}
+                                                    {/* Logic: Use the name from the row if available, otherwise use the selected name */}
+                                                    {(row.employeeName || selectedEmployeeName).charAt(0).toUpperCase()}
                                                 </div>
                                                 <span className={`text-slate-700 ${!selectedEmployeeId ? 'group-hover:text-indigo-600 transition-colors' : ''}`}>
+                                                    {/* Logic: Display the name from the row if available, otherwise the selected name */}
                                                     {row.employeeName || selectedEmployeeName}
                                                 </span>
                                             </div>
@@ -340,10 +407,11 @@ const AttendanceReports: React.FC = () => {
                             </tbody>
                         </table>
                         {/* Pagination Controls */}
-                        {!selectedEmployeeId && (
+                        {dataToDisplay.length > 0 && (
                             <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
                                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                                    Page {page + 1} of {totalPages || 1}
+                                    {/* Update here */}
+                                    Page {page + 1} of {activeTotalPages || 1}
                                 </span>
                                 <div className="flex gap-2">
                                     <button
@@ -354,7 +422,8 @@ const AttendanceReports: React.FC = () => {
                                         Previous
                                     </button>
                                     <button
-                                        disabled={page >= totalPages - 1}
+                                        // Update here: use activeTotalPages
+                                        disabled={page >= activeTotalPages - 1}
                                         onClick={() => setPage(prev => prev + 1)}
                                         className="px-3 py-1 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-50"
                                     >
