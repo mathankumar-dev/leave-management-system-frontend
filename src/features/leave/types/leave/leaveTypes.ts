@@ -1,7 +1,8 @@
 export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type HalfDayLeaveType = "FIRST_HALF" | "SECOND_HALF";
-export type LeaveType = 'SICK' | 'ANNUAL' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF' | 'ON_DUTY' | 'VPN' | 'BIOMETRIC';
+export type LeaveType = 'SICK' | 'ANNUAL' | 'MATERNITY' | 'PATERNITY' | 'COMP_OFF' | 'ON_DUTY' ;
+export type AccessType = 'VPN' | 'BIOMETRIC';
 
 export type LeaveDecision = 'APPROVED' | 'REJECTED' | 'MEETING_REQUIRED';
 

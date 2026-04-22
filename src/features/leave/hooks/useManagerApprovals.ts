@@ -1,8 +1,7 @@
 
 import { employeeService } from "@/features/employee/services/employeeService";
 import { leaveService } from "@/features/leave/services/leaveService";
-import { requestService } from "@/features/leave/services/requestService";
-import type { LeaveDecision, LeaveDecisionRequest, LeaveType, ManagerAccessDecision } from "@/features/leave/types";
+import type { LeaveDecision, LeaveDecisionRequest, LeaveType } from "@/features/leave/types";
 import { useEffect, useState } from "react";
 
 export const useManagerApprovals = (userId: string, role?: string) => {
@@ -70,7 +69,7 @@ export const useManagerApprovals = (userId: string, role?: string) => {
     status: LeaveDecision,
     reason: string = "",
     type?: LeaveType,
-    decision?: ManagerAccessDecision
+    // decision?: ManagerAccessDecision
   ) => {
     try {
       setLoading(true);
@@ -107,11 +106,7 @@ export const useManagerApprovals = (userId: string, role?: string) => {
       //     await requestService.rejectMeeting(requestId, userId);
       //   }
       // }
-      else if (type === 'VPN' || type === 'BIOMETRIC') {
 
-        await requestService.approveAccessManager(requestId, decision!);
-
-      }
       else {
         const decisionRequest: LeaveDecisionRequest = {
           leaveId: requestId,

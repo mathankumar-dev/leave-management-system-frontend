@@ -11,6 +11,7 @@ import {
 const AttendanceReports: React.FC = () => {
     const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
+    const isCfo = user?.role === 'CFO';
 
     // Hooks & State (Logic strictly preserved)
     const {
@@ -18,7 +19,7 @@ const AttendanceReports: React.FC = () => {
         fetchEmployeeAttendanceReport,
         downloadSelectedReport,
         teamAttendanceReport,
-        allEmployeesAttendanceReport,
+        
         attendanceReport,
         downloadAttendanceExcel,
         // fetchAllEmployeeAttendanceReport,
@@ -43,9 +44,26 @@ const AttendanceReports: React.FC = () => {
     const [attendanceTotalPages, setAttendanceTotalPages] = useState(0); // For Individual Report View
     const SIZE = 10; // Items per page
 
-    const reportData = isAdmin ? allEmployeesAttendanceReport : teamAttendanceReport;
     useEffect(() => {
         if (isAdmin) {
+            const loadAllEmployees = async () => {
+                try {
+                    // Use the page state here
+                    const result = await getEmployees({ page, size: 10 });
+                    if (result?.content) {
+                        setEmployees(result.content);
+                        setListTotalPages(result.totalPages || 0); // Update this
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch employees", err);
+                }
+            };
+            loadAllEmployees();
+        }
+    }, [isAdmin, getEmployees, page, selectedEmployeeId]);
+
+    useEffect(() => {
+        if (isCfo) {
             const loadAllEmployees = async () => {
                 try {
                     // Use the page state here
@@ -109,7 +127,23 @@ const AttendanceReports: React.FC = () => {
                     });
                 }
             });
-        } else {
+        } 
+
+        if (isCfo) {
+            // Admin Logic: Mapping all employees
+            employees.forEach((e) => {
+                // Only add if not already present
+                if (!map.has(e.empId)) {
+                    map.set(e.empId, {
+                        employeeId: e.empId,
+                        employeeName: e.name,
+                        isListView: true
+                    });
+                }
+            });
+        }
+
+        else {
             // Team Logic: Using the report data
             (teamAttendanceReport || []).forEach((item) => {
                 if (!map.has(item.employeeId)) {

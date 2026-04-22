@@ -43,7 +43,6 @@ const DashboardLayout: React.FC = () => {
             </div>
           </main>
           <BirthdayPanel
-// இதா மாத்து
 currentUserId={user?.id ?? null}
             isOpen={isBirthdayOpen}
             onClose={() => setIsBirthdayOpen(false)}

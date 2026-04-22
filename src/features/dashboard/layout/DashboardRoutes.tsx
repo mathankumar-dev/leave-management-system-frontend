@@ -29,7 +29,8 @@ import ManagerTeamSkills from "@/features/skillset/ManagerTeamSkills";
 import SkillsetHome from "@/features/skillset/SkillsetHome";
 import AttendanceReports from "@/features/attendance/pages/AttendanceReports";
 import PolicyConfig from "../admin/pages/PolicyConfig";
-// import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
+import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
+import { PayslipPage } from "@/features/payroll/pages/PayslipPage";
 
 const DashboardRoutes = () => {
   const { user } = useAuth();
@@ -41,6 +42,8 @@ const DashboardRoutes = () => {
         return <DashboardView />;
       case "ADMIN":
         return <DashboardView />;
+      case "CFO":
+        return <PayslipPage />;
       default:
         return <ManagerDashboardView />;
     }
@@ -95,6 +98,7 @@ const DashboardRoutes = () => {
       </Route>
 
       {/*CFO*/}
+      <Route path="payroll" element={<CFOEmployeesPage />} />
       {/* <Route path="payroll" element={<PayslipPage />} /> */}
 
       {/* BIRTHDAY */}

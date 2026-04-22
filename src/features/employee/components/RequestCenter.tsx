@@ -11,6 +11,7 @@ import { TbAccessPoint } from "react-icons/tb";
 // Import your form components
 import LeaveApplicationForm from "@/features/leave/components/LeaveApplicationForm";
 import ODRequestForm from "@/features/leave/components/ODRequestForm";
+import AccessRequestForm from "./AccessRequestForm";
 
 type RequestType = "LEAVE" | "OD" | "WFH" | "MEETING" | "OVERTIME" | "ACCESS";
 
@@ -123,7 +124,7 @@ const RequestCenter = () => {
               <div className="p-4 md:p-8">
                 {activeTab === "LEAVE" && <LeaveApplicationForm />}
                 {activeTab === "OD" && <ODRequestForm />}
-                {/*{activeTab === "ACCESS" && <AccessRequestForm />} */}
+                {activeTab === "ACCESS" && <AccessRequestForm />}
 
                 {/* Status for building modules */}
                 {(activeTab === "WFH" || activeTab === "OVERTIME" || activeTab === "ACCESS" || activeTab === "OD") && (
