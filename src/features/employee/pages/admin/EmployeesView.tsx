@@ -9,22 +9,22 @@ import {
   FaChevronRight,
   FaEllipsisV,
   FaFilter,
+  FaPlus,
   FaRegAddressCard,
   FaSearch,
   FaTimes,
   FaUserCheck,
-  FaUserPlus,
   FaUserSlash
 } from "react-icons/fa";
 
 const EmployeesView = () => {
-  const { getEmployees, loading, fetchEmployeeProfile, addUser, updateUser, deleteUser } = useEmployee();
+  const { getEmployees, loading, fetchEmployeeProfile, addUser, updateUser, deleteUser, searchUser, roles, fetchRoles } = useEmployee();
   const [employees, setEmployees] = useState<EmployeeEntity[]>([]);
-  const [allEmployees, setAllEmployees] = useState<EmployeeEntity[]>([]); // manager name lookup
+  const [allEmployees, setAllEmployees] = useState<EmployeeEntity[]>([]);
   const [pagination, setPagination] = useState({ totalElements: 0, totalPages: 0 });
 
-  const [searchInput, setSearchInput] = useState(""); // live input
-  const [searchTerm, setSearchTerm] = useState("");   // debounced
+  const [searchInput, setSearchInput] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
@@ -35,8 +35,8 @@ const EmployeesView = () => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
 
   const isSearchMode = !!searchTerm;
-
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
     empId: string | null;
@@ -56,11 +56,7 @@ const EmployeesView = () => {
 
   const managerMap = useMemo(() => {
     const map: Record<string, string> = {};
-
-    allEmployees.forEach(emp => {
-      map[emp.empId] = emp.name;
-    });
-
+    allEmployees.forEach(emp => { map[emp.empId] = emp.name; });
     return map;
   }, [allEmployees]);
 
@@ -69,16 +65,24 @@ const EmployeesView = () => {
     return managerMap[managerId] || `#${managerId}`;
   };
 
+  useEffect(() => {
+
+    fetchRoles();
+
+  }, [fetchRoles]);
 
   // ─── Load employees ───────────────────────────────────────────
   const loadEmployeeData = useCallback(async () => {
-    const result = await getEmployees({
-      page: currentPage,
-      size: 10,
-      searchTerm,
-      // role: roleFilter !== "ALL" ? roleFilter : undefined,
-      status: statusFilter !== "ALL" ? statusFilter : undefined,
-    });
+    let result;
+    if (searchTerm.trim()) {
+      result = await searchUser(searchTerm);
+    } else {
+      result = await getEmployees({
+        page: currentPage,
+        size: 10,
+        status: statusFilter !== "ALL" ? statusFilter : undefined,
+      });
+    }
 
     if (result && Array.isArray(result.content)) {
       setEmployees(result.content);
@@ -90,19 +94,16 @@ const EmployeesView = () => {
       setEmployees([]);
       setPagination({ totalElements: 0, totalPages: 0 });
     }
-  }, [getEmployees, currentPage, searchTerm, roleFilter, statusFilter]);
+  }, [getEmployees, searchUser, currentPage, searchTerm, statusFilter]);
 
   useEffect(() => {
     const delay = setTimeout(loadEmployeeData, 250);
     return () => clearTimeout(delay);
   }, [loadEmployeeData]);
 
-  // ─── Debounced search ─────────────────────────────────────────
   const handleSearchInput = (value: string) => {
     setSearchInput(value);
-
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
-
     searchTimeout.current = setTimeout(() => {
       setSearchTerm(value);
       setCurrentPage(0);
@@ -115,7 +116,6 @@ const EmployeesView = () => {
     setCurrentPage(0);
   };
 
-  // ─── Actions ──────────────────────────────────────────────────
   const handleAction = async () => {
     if (confirmState.empId) {
       await deleteUser(confirmState.empId);
@@ -124,200 +124,235 @@ const EmployeesView = () => {
     }
   };
 
-  // ─── Skeleton rows ────────────────────────────────────────────
-  const SkeletonRow = () => (
-    <tr>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <td key={i} className="px-6 py-4">
-          <div className="h-3 bg-slate-100 rounded animate-pulse w-full" />
-        </td>
-      ))}
-    </tr>
-  );
-
-
   const filteredEmployees = employees.filter(emp => {
-
-    const matchRole =
-      roleFilter === "ALL" || emp.roleName === roleFilter;
-
-    const matchStatus =
-      statusFilter === "ALL" ||
-      (statusFilter === "ACTIVE" ? emp.active : !emp.active);
-
+    const matchRole = roleFilter === "ALL" || emp.roleName === roleFilter;
+    const matchStatus = statusFilter === "ALL" || (statusFilter === "ACTIVE" ? emp.active : !emp.active);
     return matchRole && matchStatus;
   });
 
   return (
-    <div className="space-y-6 max-w-400 mx-auto pb-10">
+    <div className=" bg-[#f8f9fa] min-h-screen space-y-6">
 
-      {/* ── Header ── */}
-      <div className="flex flex-col xl:flex-row justify-between items-end xl:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-slate-900 rounded-sm text-white">
-            <FaRegAddressCard size={20} />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Personnel Directory</h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-              {isSearchMode ? (
-                <>Search Results for "{searchTerm}"</>
-              ) : (
-                <>{pagination.totalElements} Total Records</>
+      {/* ── Tabs Style Navigation ── */}
+      {/* <div className="flex gap-2 mb-4">
+        <button className="px-5 py-2 bg-brand text-white rounded-lg text-xs font-medium shadow-sm">Employee</button>
+        <button className="px-5 py-2 bg-white text-gray-500 rounded-lg text-xs font-medium border border-gray-100 hover:bg-gray-50">Inactive employees list</button>
+      </div> */}
+
+      {/* ── Main Container ── */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+        {/* ── Top Toolbar ── */}
+        <div className="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          {/* <h2 className="text-xl font-semibold text-gray-800">Employee list</h2> */}
+
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-full">
+            {/* Search Input */}
+            <div className="relative flex-1 md:w-150">
+              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchInput}
+                onChange={(e) => handleSearchInput(e.target.value)}
+                className="w-full bg-gray-50 border border-transparent pl-11 pr-10 py-2.5 rounded-xl text-sm focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-200 transition-all"
+              />
+              {searchInput && (
+                <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <FaTimes size={12} />
+                </button>
               )}
-            </p>
-          </div>
-        </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="sticky">
+                {/* The Filter Button */}
+                <button
+                  onClick={() => setShowFilterMenu(!showFilterMenu)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-all active:scale-95"
+                >
+                  <FaFilter size={12} className={statusFilter !== 'ALL' || roleFilter !== 'ALL' ? "text-orange-500" : "text-gray-400"} />
+                  <span className="font-medium">Filter</span>
+                  {/* Optional: Show a dot if filters are active */}
+                  {(statusFilter !== 'ALL' || roleFilter !== 'ALL') && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                  )}
+                </button>
 
-        <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                <AnimatePresence>
+                  {showFilterMenu && (
+                    <>
+                      {/* Backdrop to close menu when clicking outside */}
+                      <div className="fixed inset-0 z-40" onClick={() => setShowFilterMenu(false)} />
 
-          {/* Search with clear button */}
-          <div className="relative flex-1 min-w-50">
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-            <input
-              type="text"
-              placeholder="Search name..."
-              value={searchInput}
-              onChange={(e) => handleSearchInput(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 pl-10 pr-8 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 uppercase"
-            />
-            {searchInput && (
-              <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                <FaTimes size={10} />
+                      {/* The Menu Card */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                        className="fixed z-[100] w-72 bg-white border border-gray-100 shadow-2xl rounded-2xl p-5 overflow-hidden"
+                        style={{
+                          // These coordinates align the menu specifically to your UI layout
+                          top: '185px',
+                          right: '180px'
+                        }}
+                      >
+                        <div className="space-y-5">
+                          {/* Header */}
+                          <div className="flex justify-between items-center">
+                            <h3 className="text-sm font-bold text-gray-800">Filters</h3>
+                            <button
+                              onClick={() => { setStatusFilter('ALL'); setRoleFilter('ALL'); }}
+                              className="text-[11px] font-semibold text-orange-600 hover:underline"
+                            >
+                              Reset All
+                            </button>
+                          </div>
+
+                          {/* Status Section */}
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Employment Status</label>
+                            <div className="grid grid-cols-2 gap-2">
+                              {['ALL', 'ACTIVE', 'Disabled'].map((status) => (
+                                <button
+                                  key={status}
+                                  onClick={() => setStatusFilter(status)}
+                                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${statusFilter === status
+                                    ? 'bg-orange-50 text-orange-600 ring-1 ring-orange-200'
+                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                    }`}
+                                >
+                                  {status.charAt(0) + status.slice(1).toLowerCase()}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Role Section */}
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                              User Role
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                              {/* Explicitly add the "All" button first */}
+                              <button
+                                onClick={() => setRoleFilter('ALL')}
+                                className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${roleFilter === 'ALL'
+                                  ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
+                                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                  }`}
+                              >
+                                All Roles
+                              </button>
+
+                              {roles.map((role: any) => (
+                                <button
+                                  key={role.id}
+                                  onClick={() => setRoleFilter(role.roleName)}
+                                  className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${roleFilter === role.id
+                                    ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'
+                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                                    }`}
+                                >
+                                  {role.roleName}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Add Employee Button */}
+              <button
+                onClick={() => setOpenAddEmployee(true)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl text-sm font-medium hover:bg-[#e05b2a] shadow-md shadow-orange-100 transition-all active:scale-95"
+              >
+                <FaPlus size={12} /> Add Employee
               </button>
-            )}
-          </div>
+            </div>
 
-          {/* Status Filter */}
-          <div className="relative">
-            <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(0); }}
-              className="appearance-none bg-slate-50 border border-slate-200 pl-10 pr-8 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 cursor-pointer uppercase"
-            >
-              <option value="ALL">All Status</option>
-              <option value="ACTIVE">Active</option>
-              <option value="Disabled">Disabled</option>
-            </select>
-            <FaFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" />
           </div>
-
-          {/* Role Filter */}
-          <div className="relative">
-            <select
-              value={roleFilter}
-              onChange={(e) => { setRoleFilter(e.target.value); setCurrentPage(0); }}
-              className="appearance-none bg-slate-50 border border-slate-200 pl-10 pr-8 py-2.5 rounded-sm text-xs font-bold focus:outline-none focus:border-slate-900 cursor-pointer uppercase"
-            >
-              <option value="ALL">All Roles</option>
-              <option value="ADMIN">Admin</option>
-              <option value="HR">HR</option>
-              <option value="MANAGER">Manager</option>
-              <option value="EMPLOYEE">Employee</option>
-            </select>
-            <FaFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]" />
-          </div>
-
-          <button
-            onClick={() => setOpenAddEmployee(true)}
-            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-sm text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95"
-          >
-            <FaUserPlus /> Add Member
-          </button>
         </div>
-      </div>
 
-      {/* ── Table ── */}
-      <div className="relative w-full bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm min-h-112.5">
+        {/* ── Table Area ── */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-neutral-800 text-white">
+          <table className="w-full text-left">
+            <thead className="bg-[#fcfcfc] border-y border-gray-50">
               <tr>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Name</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest">Employee ID</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Role</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Manager</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Joining Date</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-center">Status</th>
-                <th className="px-6 py-4 text-[11px] font-black uppercase tracking-widest text-right">Options</th>
+                <th className="px-6 py-4 text-[13px] font-medium text-gray-400">S.No</th>
+                <th className="px-6 py-4 text-[13px] font-medium text-gray-400">Employee Id</th>
+                <th className="px-6 py-4 text-[13px] font-medium text-gray-400">Name</th>
+                <th className="px-6 py-4 text-[13px] font-medium text-gray-400">Email</th>
+                <th className="px-6 py-4 text-[13px] font-medium text-gray-400 text-center">Manager</th>
+                <th className="px-6 py-4 text-[13px] font-medium text-gray-400 text-center">Joining Date</th>
+                <th className="px-6 py-4 text-[13px] font-medium text-gray-400">Status</th>
+                <th className="px-6 py-4 text-[13px] font-medium text-gray-400 text-right">Action</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-gray-50">
               {loading ? (
-                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan={8} className="p-6">
+                      <div className="h-4 bg-gray-100 rounded-lg animate-pulse w-full" />
+                    </td>
+                  </tr>
+                ))
               ) : filteredEmployees.length > 0 ? (
-                filteredEmployees.map((emp) => (
-                  <tr key={emp.empId} className={`transition-colors duration-150 group ${!emp.active ? 'bg-slate-50/50' : 'hover:bg-slate-50'}`}>
+                filteredEmployees.map((emp, index) => (
+                  <tr
+                    key={emp.empId}
+                    className="even:bg-gray-50/80 hover:bg-orange-50/30 transition-colors group"
+                  >
+                    {/* S.No */}
+                    <td className="px-6 py-4 text-sm text-gray-500 font-medium">
+                      {(currentPage * 10) + index + 1 < 10 ? `0${(currentPage * 10) + index + 1}` : (currentPage * 10) + index + 1}
+                    </td>
+
+                    {/* ID */}
+                    <td className="px-6 py-4 text-sm text-gray-600 font-medium">{emp.empId}</td>
 
                     {/* Name */}
                     <td className="px-6 py-4">
-                      <div className={`flex items-center gap-3 ${!emp.active ? 'opacity-60' : ''}`}>
-                        <div className={`h-9 w-9 rounded-sm flex items-center justify-center text-[11px] font-black border transition-all ${emp.active ? 'bg-slate-100 text-slate-500 border-slate-200 group-hover:bg-slate-900 group-hover:text-white' : 'bg-slate-200 text-slate-400 border-slate-300'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center text-[11px] font-bold text-orange-600">
                           {emp.name?.charAt(0) || "?"}
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-900 uppercase">
-                            {emp.name}
-                            {!emp.active && <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-600 text-[8px] font-black rounded-sm">
-                              Disabled</span>}
-                          </p>
-                          <p className="text-[10px] font-medium text-slate-400 lowercase">{emp.email}</p>
-                        </div>
+                        <span className="text-sm font-medium text-gray-700">{emp.name}</span>
                       </div>
                     </td>
 
-                    {/* Employee ID */}
-                    <td className="px-6 py-4">
-                      <p className="text-xs font-bold text-slate-900 uppercase">{emp.empId}</p>
+                    {/* Email */}
+                    <td className="px-6 py-4 text-sm text-gray-500">{emp.email}</td>
+
+                    {/* Manager */}
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm text-gray-600 font-medium">{getManagerName(emp.reportingId)}</span>
                     </td>
 
-                    {/* Role */}
-                    <td className="px-6 py-4 text-center">
-                      <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-sm text-[10px] font-black uppercase">
-                        {emp.roleName?.replace(/_/g, " ") || "UNASSIGNED"}
-                      </span>
-                    </td>
-
-                    {/* Manager — from HREmployeesPage */}
-                    <td className="px-6 py-4 text-center">
-                      {emp.reportingId ? (
-                        <div className="flex flex-col items-center gap-0.5">
-                          <span className="text-xs font-semibold text-slate-700">{getManagerName(emp.reportingId)}</span>
-                          <span className="text-[10px] text-slate-400">#{emp.reportingId}</span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 text-xs">—</span>
-                      )}
-                    </td>
-
-                    {/* Joining Date — from HREmployeesPage */}
-                    <td className="px-6 py-4 text-center">
-                      <span className="text-xs text-slate-500 font-medium">
-                        {(emp as any).joiningDate
-                          ? new Date((emp as any).joiningDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-                          : '—'}
-                      </span>
+                    {/* Joining Date */}
+                    <td className="px-6 py-4 text-center text-sm text-gray-500">
+                      {(emp as any).joiningDate ? new Date((emp as any).joiningDate).toLocaleDateString() : '—'}
                     </td>
 
                     {/* Status */}
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className={`h-2 w-2 rounded-full ${emp.active ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-red-400"}`} />
-                        <span className={`text-[10px] font-black uppercase ${emp.active ? "text-slate-600" : "text-red-400"}`}>
-                          {emp.active ? "Active" : "Disabled"}
-                        </span>
-                      </div>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-lg text-[11px] font-semibold ${emp.active ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                        {emp.active ? "Active" : "Inactive"}
+                      </span>
                     </td>
 
-                    {/* Options */}
-                    {/* Options */}
-                    <td className="px-6 py-4 text-right relative overflow-visible">
+                    {/* Action */}
+                    <td className="px-6 py-4 text-right relative">
                       <button
-                        onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === emp.empId ? null : emp.empId); }}
-                        className={`p-2 transition-all rounded-sm ${activeMenu === emp.empId ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900 hover:bg-slate-100"}`}
+                        onClick={() => setActiveMenu(activeMenu === emp.empId ? null : emp.empId)}
+                        className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        <FaEllipsisV size={12} />
+                        <FaEllipsisV size={14} />
                       </button>
 
                       <AnimatePresence>
@@ -325,43 +360,26 @@ const EmployeesView = () => {
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setActiveMenu(null)} />
                             <motion.div
-                              initial={{ opacity: 0, scale: 0.95, x: 5 }}
-                              animate={{ opacity: 1, scale: 1, x: 0 }}
-                              exit={{ opacity: 0, scale: 0.95, x: 5 }}
-                              className="absolute right-14 top-1/2 -translate-y-1/2 z-50 min-w-45 bg-white border border-slate-200 shadow-2xl rounded-sm p-1"
+                              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                              className="absolute right-12 top-1/2 -translate-y-1/2 z-50 bg-white shadow-xl border border-gray-100 rounded-xl p-2 min-w-[160px] text-left"
                             >
                               <button
                                 onClick={async () => {
-                                  // 1. Set the specific employee ID
                                   setSelectedEmployeeId(emp.empId);
-
-                                  // 2. Fetch the profile (if your hook stores it in a shared state)
                                   await fetchEmployeeProfile(emp.empId);
-
-                                  // 3. Open the modal
                                   setOpenUpdateEmployee(true);
                                   setActiveMenu(null);
                                 }}
-                                className="w-full text-left px-3 py-2.5 text-[10px] font-black uppercase text-slate-700 hover:bg-slate-50 flex items-center gap-2 border-b border-slate-100"
+                                className="w-full px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 rounded-lg flex items-center gap-2"
                               >
-                                <FaRegAddressCard size={12} className="text-indigo-500" /> Update Details
+                                <FaRegAddressCard className="text-blue-500" /> Edit Details
                               </button>
-
-                              {emp.active ? (
-                                <button
-                                  onClick={() => { setConfirmState({ isOpen: true, empId: emp.empId, mode: 'DEACTIVATE' }); setActiveMenu(null); }}
-                                  className="w-full text-left px-3 py-2.5 text-[10px] font-black uppercase text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                >
-                                  <FaUserSlash size={12} /> Deactivate User
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => { setConfirmState({ isOpen: true, empId: emp.empId, mode: 'REACTIVATE' }); setActiveMenu(null); }}
-                                  className="w-full text-left px-3 py-2.5 text-[10px] font-black uppercase text-emerald-600 hover:bg-emerald-50 flex items-center gap-2"
-                                >
-                                  <FaUserCheck size={12} /> Reactivate User
-                                </button>
-                              )}
+                              <button
+                                onClick={() => { setConfirmState({ isOpen: true, empId: emp.empId, mode: emp.active ? 'DEACTIVATE' : 'REACTIVATE' }); setActiveMenu(null); }}
+                                className={`w-full px-4 py-2 text-xs font-medium rounded-lg flex items-center gap-2 ${emp.active ? 'text-red-500 hover:bg-red-50' : 'text-emerald-500 hover:bg-emerald-50'}`}
+                              >
+                                {emp.active ? <><FaUserSlash /> Deactivate</> : <><FaUserCheck /> Activate</>}
+                              </button>
                             </motion.div>
                           </>
                         )}
@@ -371,86 +389,50 @@ const EmployeesView = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-32 text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">
-                    No Personnel Records Match Filters
-                  </td>
+                  <td colSpan={8} className="py-20 text-center text-gray-400 text-sm">No results found</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-
-        {/* Loading overlay */}
-        <AnimatePresence>
-          {loading && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex flex-col items-center justify-center z-10">
-              <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mb-2" />
-              <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Updating Directory...</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* ── Pagination ── */}
-      {!isSearchMode && (
-        <div className="flex justify-between items-center px-2 pt-4">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-            Showing Page {currentPage + 1} of {pagination.totalPages || 1}
-            {searchTerm && <span className="ml-2 text-indigo-500">— "{searchTerm}"</span>}
-          </span>
+      {!isSearchMode && pagination.totalPages > 1 && (
+        <div className="flex justify-between items-center px-2">
+          <p className="text-xs text-gray-500">Page {currentPage + 1} of {pagination.totalPages}</p>
           <div className="flex gap-2">
-            {/* Page number buttons — from HREmployeesPage */}
-            {pagination.totalPages > 1 && Array.from({ length: Math.min(pagination.totalPages, 7) }).map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentPage(i)}
-                className={`px-3 py-2 rounded-sm border text-[10px] font-black transition-all ${i === currentPage ? 'bg-slate-900 text-white border-slate-900' : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-600'}`}
-              >
-                {i + 1}
-              </button>
-            ))}
             <button
-              disabled={currentPage === 0 || loading}
+              disabled={currentPage === 0}
               onClick={() => setCurrentPage(p => p - 1)}
-              className="p-3 rounded-sm border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-20 transition-all"
+              className="p-2.5 bg-white border border-gray-200 rounded-xl disabled:opacity-30 hover:bg-gray-50 transition-all"
             >
-              <FaChevronLeft size={10} />
+              <FaChevronLeft size={12} className="text-gray-500" />
             </button>
             <button
-              disabled={currentPage >= (pagination.totalPages - 1) || loading}
+              disabled={currentPage >= (pagination.totalPages - 1)}
               onClick={() => setCurrentPage(p => p + 1)}
-              className="p-3 rounded-sm border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-20 transition-all"
+              className="p-2.5 bg-white border border-gray-200 rounded-xl disabled:opacity-30 hover:bg-gray-50 transition-all"
             >
-              <FaChevronRight size={10} />
+              <FaChevronRight size={12} className="text-gray-500" />
             </button>
           </div>
         </div>
       )}
 
       {/* ── Modals ── */}
-      <AddEmployeePopup
-        open={openAddEmployee}
-        addUser={addUser}
-        onClose={() => { setOpenAddEmployee(false); loadEmployeeData(); }}
-      />
+      <AddEmployeePopup open={openAddEmployee} addUser={addUser} onClose={() => { setOpenAddEmployee(false); loadEmployeeData(); }} />
       <UpdateEmployeePopup
-        employeeId={selectedEmployeeId} // Use the state variable here
+        employeeId={selectedEmployeeId}
         open={openUpdateEmployee}
         updateUser={updateUser}
-        onClose={() => {
-          setOpenUpdateEmployee(false);
-          setSelectedEmployeeId(""); // Clear selection on close
-          loadEmployeeData();
-        }}
+        onClose={() => { setOpenUpdateEmployee(false); setSelectedEmployeeId(""); loadEmployeeData(); }}
       />
-
       <ConfirmDialog
         isOpen={confirmState.isOpen}
-        title={confirmState.mode === 'DEACTIVATE' ? "Security Protocol" : "Restore Access"}
-        message={confirmState.mode === 'DEACTIVATE'
-          ? "Revoke system access for this member immediately?"
-          : "Re-enable system access for this member?"}
-        confirmText={confirmState.mode === 'DEACTIVATE' ? "Confirm Deactivation" : "Confirm Reactivation"}
+        title={confirmState.mode === 'DEACTIVATE' ? "Confirm Deactivation" : "Confirm Activation"}
+        message={`Are you sure you want to ${confirmState.mode.toLowerCase()} this employee?`}
+        confirmText="Confirm"
         isDanger={confirmState.mode === 'DEACTIVATE'}
         onConfirm={handleAction}
         onCancel={() => setConfirmState({ ...confirmState, isOpen: false })}

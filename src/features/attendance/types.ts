@@ -13,13 +13,32 @@ export type TeamCalendarResponse = Record<string, TeamMemberBalance[]>;
 
 
 export interface AttendanceRecord {
-  date: string;        
+  employeeId: string;
+  employeeName: string;
+  date: string;
   status: string;
-  checkIn: string | null; 
+  checkIn: string | null;
   checkOut: string | null;
-  workingHours: string;   
+  workingHours: string;
   punchRecords: string | null;
 }
 
 
+export interface TeamAttendancePage {
+  content: AttendanceRecord[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+}
+
+export interface AttendanceExportRequest {
+  empIds: string[];
+  fromDate?: string;
+  toDate?: string;
+}
+export interface AdminAttendanceExportRequest {
+  fromDate?: string;
+  toDate?: string;
+}
 

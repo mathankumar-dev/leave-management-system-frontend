@@ -21,6 +21,7 @@
 export interface User {
   // Core Identity
   id: string;
+  employeeCode:string;
   name: string;
   email: string;
   role: string;

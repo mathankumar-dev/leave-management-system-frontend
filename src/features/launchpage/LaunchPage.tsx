@@ -65,7 +65,7 @@ const LaunchPage: React.FC = () => {
 
         // Look at your console log: the actual news is inside response.data
         // We check for both possibilities to be safe
-        const actualData =  response;
+        const actualData = response;
 
         if (actualData && Array.isArray(actualData)) {
           const sorted = [...actualData].sort((a, b) =>
@@ -170,7 +170,7 @@ useEffect(() => {
                       Users can edit profile details from
                       <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">06.04.2026</span>
                       to
-                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">16.04.2026</span>.
+                      <span className="bg-white/20 px-2 py-0.5 rounded mx-1 text-white">22.04.2026</span>.
                     </span>
                   </p>
                   <button

@@ -18,12 +18,11 @@ import {
   FaChevronRight,
   FaSpinner,
   FaUserAlt,
-  FaUserCheck,
+  FaUserCheck
 } from "react-icons/fa";
 import { useAuth } from "../../../shared/auth/useAuth";
 import { PUBLIC_HOLIDAYS_2026 } from "../../../shared/constants/holidays";
 
-// --- COLOR LOGIC HELPER ---
 type StatusTheme = "rose" | "amber" | "indigo";
 
 const getStatusColor = (status?: string): StatusTheme => {
@@ -46,14 +45,14 @@ const TeamCalendarView: React.FC = () => {
     fetchAttendanceCalendar,
     employeeCalendar,
     attendance: attendanceCalendar,
-    loading
-  } = useCalendar();
+    loading } = useCalendar();
 
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
   const [isAttendanceExpanded, setIsAttendanceExpanded] = useState(false);
-  // Inside TeamCalendarView component
+
+
   const [detailModalReq, setDetailModalReq] = useState<any | null>(null);
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean;
@@ -61,9 +60,8 @@ const TeamCalendarView: React.FC = () => {
     status: LeaveDecision | null;
   }>({ isOpen: false, req: null, status: null });
   const { processApproval } = useLeaveAction();
-  // Helper to execute the final decision after the comment dialog
   const executeDecision = async (req: any, status: LeaveDecision, commentText?: string) => {
-    const targetId = req.leaveId || req.id || req.employeeId; // Ensure you have the correct ID
+    const targetId = req.leaveId || req.id || req.employeeId;
     const success = await processApproval({
       leaveId: targetId,
       approverId: user!.id,
@@ -74,7 +72,7 @@ const TeamCalendarView: React.FC = () => {
     if (success) {
       notify.leaveAction(status, req.employeeName || "Employee");
       setDialogConfig({ isOpen: false, req: null, status: null });
-      loadAllData(); // Refresh your calendar/stats
+      loadAllData();
     }
   };
   const calendarStats = useMemo(() => {
@@ -86,7 +84,7 @@ const TeamCalendarView: React.FC = () => {
       daysInMonthCount: new Date(y, m + 1, 0).getDate(),
       firstDayOfMonth: new Date(y, m, 1).getDay(),
       monthName: currentDate.toLocaleString("default", { month: "long" }),
-      shortMonth: currentDate.toLocaleString("default", { month: "short" }), // Add this
+      shortMonth: currentDate.toLocaleString("default", { month: "short" }),
       year: y,
       month: m,
       day: d
@@ -102,6 +100,7 @@ const TeamCalendarView: React.FC = () => {
       fetchAttendanceCalendar(id, year, month);
     }
   }, [id, year, month, fetchTeamSchedule, fetchEmployeeCalendar, fetchAttendanceCalendar]);
+
 
   const formatKey = (date: Date) => {
     const y = date.getFullYear();
@@ -141,8 +140,6 @@ const TeamCalendarView: React.FC = () => {
   const dailyMine = employeeCalendar[dailyKey] || [];
   const dailyHoliday = PUBLIC_HOLIDAYS_2026[dailyKey];
 
-
-
   const handleMove = (direction: number) => {
     const newDate = new Date(currentDate);
     if (viewMode === "month") newDate.setMonth(newDate.getMonth() + direction);
@@ -156,29 +153,21 @@ const TeamCalendarView: React.FC = () => {
   const selectedDayTeamLeaves = teamCalendar[selectedDateKey] || [];
   const selectedDayHoliday = PUBLIC_HOLIDAYS_2026[selectedDateKey];
 
-  console.log("team");
 
-  console.log(teamCalendar);
-  console.log("mine");
-  console.log(employeeCalendar);
-  console.log("attendance");
-  console.log(attendanceCalendar);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 p-1 md:p-0 pb-20 bg-slate-50/50">
-      {/* 1. The Main Detailed View Modal */}
       <DetailedRequestModal
         isOpen={!!detailModalReq}
         leaveId={detailModalReq?.leaveId || detailModalReq?.id}
         onClose={() => setDetailModalReq(null)}
         onAction={(status) => {
           const currentReq = detailModalReq;
-          setDetailModalReq(null); // Close this modal
-          setDialogConfig({ isOpen: true, req: currentReq, status }); // Open comment dialog
+          setDetailModalReq(null);
+          setDialogConfig({ isOpen: true, req: currentReq, status });
         }}
       />
 
-      {/* 2. The Final Approval/Rejection Dialog */}
       <CommentDialog
         isOpen={dialogConfig.isOpen}
         onClose={() => setDialogConfig({ isOpen: false, req: null, status: null })}
@@ -731,6 +720,7 @@ const TeamCalendarView: React.FC = () => {
           </div>
         </div>
 
+
         {/* UPCOMING HOLIDAYS PANEL (unchanged) */}
         <div className="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
           <div className="p-4 bg-slate-50 border-b border-slate-100">
@@ -753,6 +743,8 @@ const TeamCalendarView: React.FC = () => {
           </div>
         </div>
       </div>
+
+
     </div>
   );
 };

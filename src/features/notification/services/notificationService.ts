@@ -35,7 +35,6 @@ export const notificationService = {
   },
   getFlashNews: async (): Promise<FlashNews[]> => {
     const response = await api.get('/v1/flash-news');
-    console.log(response);
     
     return response.data;
   },

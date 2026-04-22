@@ -14,7 +14,7 @@ const AuthenticatedImage: React.FC<AuthenticatedImageProps> = ({ fileUrl, classN
         const fetchImage = async () => {
             try {
                 setLoading(true);
-                const response = await api.get(`/files/view?path=${encodeURIComponent(fileUrl)}`, {
+                const response = await api.get(`/v1/files/view?path=${encodeURIComponent(fileUrl)}`, {
                     responseType: "blob",
                 });
 

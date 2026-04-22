@@ -227,7 +227,7 @@ const LeaveApplicationForm = () => {
                   <div
                     key={type}
                     onClick={() => setFormData({ ...formData, leaveTypeName: type as any })}
-                    className={`flex-1 min-w-[140px] px-4 py-3 cursor-pointer transition-all relative ${isActive ? "bg-indigo-50/50" : "hover:bg-slate-50"
+                    className={`flex-1 min-w-35 px-4 py-3 cursor-pointer transition-all relative ${isActive ? "bg-indigo-50/50" : "hover:bg-slate-50"
                       }`}
                   >
                     {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600" />}

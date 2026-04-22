@@ -38,7 +38,7 @@ export const useEmployee = () => {
             setError(null);
             try {
                 const response = await employeeService.getProfile(employeeId);
-                
+
                 setProfile(response);
                 return response;
             } catch (err: unknown) {
@@ -165,7 +165,7 @@ export const useEmployee = () => {
         setLoading(true);
         try {
             const response = await employeeService.getAllEmployees(filters);
-            return response; // This is now the object containing { content: [...], totalElements: 4, ... }
+            return response; 
         } catch (err: unknown) {
             setError("Failed to fetch");
             return null;
@@ -233,6 +233,20 @@ export const useEmployee = () => {
             setLoading(false);
         }
     }, []);
+
+    const searchUser = useCallback(async (query: string) => {
+        setLoading(true);
+        try {
+            const data = await employeeService.searchEmployees(query);
+
+            return { content: data, totalElements: data.length, totalPages: 1 };
+        } catch (error) {
+            console.error("Search failed", error);
+            return { content: [], totalElements: 0, totalPages: 0 };
+        } finally {
+            setLoading(false);
+        }
+    }, []);
     return {
         loading,
         error,
@@ -246,6 +260,7 @@ export const useEmployee = () => {
         fetchTeamMembers,
         fetchEmployeeProfile,
         profile,
+        searchUser,
         fetchEmployeeName,
         getEmployees,
         fetchDepartments,
