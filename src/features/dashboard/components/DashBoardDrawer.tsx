@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 interface DrawerProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface DrawerProps {
   subtitle: string;
   children: React.ReactNode;
 }
+const navigate = useNavigate();
 
 const DashboardDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, subtitle, children }) => {
   return (
@@ -41,11 +43,13 @@ const DashboardDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, subtit
             <div className="flex-1 overflow-y-auto p-6 space-y-8">
               {children}
             </div>
+            
           </motion.div>
         </>
       )}
     </AnimatePresence>
   );
 };
+
 
 export default DashboardDrawer;

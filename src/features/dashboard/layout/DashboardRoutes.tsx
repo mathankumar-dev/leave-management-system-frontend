@@ -21,6 +21,7 @@ import NotificationsView from "@/features/notification/pages/NotificationsView";
 import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { useAuth } from "@/shared/auth/useAuth";
 import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
+import PolicyConfig from "../admin/pages/PolicyConfig";
 // import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
 
 const DashboardRoutes = () => {
@@ -47,6 +48,7 @@ const DashboardRoutes = () => {
   return (
     <Routes>
       {/* DASHBOARD */}
+      
       <Route path="dashboard" element={renderDashboard()} />
       {/* COMMON */}
       <Route path="notifications" element={<NotificationsView />} />
@@ -70,6 +72,7 @@ const DashboardRoutes = () => {
       {/* ADMIN */}
       <Route path="onboarding" element={<OnboardingPendingPage />} />
       <Route path="flash-news" element={<FlashNewsForm />} />
+      <Route path="policies" element={<PolicyConfig />} />
 
       {/* PAYROLL */}
       <Route path="payslip" element={<PayrollView />} />
