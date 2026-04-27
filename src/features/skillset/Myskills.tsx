@@ -458,13 +458,6 @@ export default function MySkills() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <button
-              className="px-4 py-2 rounded-lg text-sm text-white font-semibold whitespace-nowrap"
-              style={{ backgroundColor: "#003566" }}
-              onClick={() => setEditingSkill("new")}
-            >
-              + Add Skill
-            </button>
           </div>
         </div>
 

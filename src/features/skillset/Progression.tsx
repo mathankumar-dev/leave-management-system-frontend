@@ -327,37 +327,8 @@ export default function Progression() {
                   ))}
                 </div>
               </div>
-            </div>
+            </div>           
 
-            {/* Avg proficiency bar chart */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm mb-6" style={{ borderTop: "4px solid #003566" }}>
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Average Proficiency by Category</div>
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={barData} margin={{ top: 0, right: 20, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="cat" tick={{ fontSize: 12, fill: "#64748b" }} />
-                  <YAxis domain={[0, 5]} tick={{ fontSize: 11, fill: "#64748b" }} />
-                  <Tooltip formatter={(v: any) => [`${v}/5`, "Avg rating"]} />
-                  <Bar dataKey="avg" radius={[6, 6, 0, 0]}>
-                    {barData.map((d, i) => <Cell key={i} fill={d.color} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Quiz score trend */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm mb-6" style={{ borderTop: "4px solid #d97706" }}>
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Quiz Score Trend</div>
-              <ResponsiveContainer width="100%" height={160}>
-                <LineChart data={SCORE_TREND} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#64748b" }} />
-                  <YAxis domain={[50, 100]} tick={{ fontSize: 11, fill: "#64748b" }} />
-                  <Tooltip formatter={(v: any) => [`${v}%`, "Avg score"]} />
-                  <Line type="monotone" dataKey="avg" stroke="#d97706" strokeWidth={3} dot={{ r: 5, fill: "#d97706" }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
 
             {/* Deep dive */}
             <div className="bg-white rounded-2xl p-6 shadow-sm mb-6" style={{ borderTop: "4px solid #003566" }}>
@@ -404,6 +375,20 @@ export default function Progression() {
                   })}
                 </div>
               )}
+            </div>
+
+            {/* Quiz score trend */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm mb-6" style={{ borderTop: "4px solid #d97706" }}>
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">Quiz Score Trend</div>
+              <ResponsiveContainer width="100%" height={160}>
+                <LineChart data={SCORE_TREND} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#64748b" }} />
+                  <YAxis domain={[50, 100]} tick={{ fontSize: 11, fill: "#64748b" }} />
+                  <Tooltip formatter={(v: any) => [`${v}%`, "Avg score"]} />
+                  <Line type="monotone" dataKey="avg" stroke="#d97706" strokeWidth={3} dot={{ r: 5, fill: "#d97706" }} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
 
             {/* Key insights */}

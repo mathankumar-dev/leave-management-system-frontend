@@ -11,7 +11,7 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8111',
+        target: 'http://localhost:8112',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path  // keep /api prefix — Spring Boot expects it
