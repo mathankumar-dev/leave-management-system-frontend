@@ -3,6 +3,8 @@ export const PUBLIC_HOLIDAYS_2026: Record<string, string> = {
   "2026-01-01": "New Year",
   "2026-01-15": "Pongal",
   "2026-01-26": "Republic Day",
+   "2026-04-14":"Tamil New Year",
+  "2026-04-23":"Election Day",
   "2026-05-01": "May Day",
   "2026-08-15": "Independence Day",
   "2026-09-14": "Vinayagar Chaturthi",
