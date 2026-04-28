@@ -9,6 +9,7 @@ import TeamCalendarView from "@/features/attendance/pages/TeamCalendarView";
 import ManagerDashboardView from "@/features/dashboard/manager/pages/ManagerDashboardView";
 import RequestCenter from "@/features/employee/components/RequestCenter";
 // import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
+import BirthdayPage from "@/features/birthday/pages/BirthdayPage";
 import { HRVerificationPage } from "@/features/employee/pages/hr/Hrverificationpage";
 import DashboardView from "@/features/employee/pages/self/DashboardView";
 import EmployeeProfile from "@/features/employee/pages/self/EmployeeProfile";
@@ -20,33 +21,40 @@ import NotificationsView from "@/features/notification/pages/NotificationsView";
 import PayrollView from "@/features/payroll/pages/PayrollPage";
 import { useAuth } from "@/shared/auth/useAuth";
 import EmployeesView from "@/features/employee/pages/admin/EmployeesView";
+import SkillsetLayout from "@/features/skillset/Skillsetlayout";
+import Myskills from "@/features/skillset/Myskills";
+import Badges from "@/features/skillset/Badges";
+import Progression from "@/features/skillset/Progression";
+import ManagerTeamSkills from "@/features/skillset/ManagerTeamSkills";
+import SkillsetHome from "@/features/skillset/SkillsetHome";
+import AttendanceReports from "@/features/attendance/pages/AttendanceReports";
 // import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
 
 const DashboardRoutes = () => {
-
   const { user } = useAuth();
   const role = user?.role;
 
   const renderDashboard = () => {
     switch (role) {
       case "EMPLOYEE":
-          return <DashboardView />;
+        return <DashboardView />;
       case "ADMIN":
-          return <DashboardView />;
+        return <DashboardView />;
       default:
         return <ManagerDashboardView />;
     }
   };
   const renderEmployees = () => {
-    switch (role) { 
+    switch (role) {
       default:
-        return <EmployeesView/>;  
+        return <EmployeesView />;
     }
   };
   return (
     <Routes>
       {/* DASHBOARD */}
       <Route path="dashboard" element={renderDashboard()} />
+
       {/* COMMON */}
       <Route path="notifications" element={<NotificationsView />} />
       <Route path="requests" element={<MyRequestsView />} />
@@ -68,12 +76,29 @@ const DashboardRoutes = () => {
       {/* ADMIN */}
       <Route path="onboarding" element={<OnboardingPendingPage />} />
       <Route path="flash-news" element={<FlashNewsForm />} />
+      <Route path="attendance-reports" element={<AttendanceReports />} />
 
       {/* PAYROLL */}
       <Route path="payslip" element={<PayrollView />} />
+      {/* ✅ SKILLSET */}
+      <Route path="skillset" element={<SkillsetLayout />}>
+        <Route path="home" element={<SkillsetHome />} />
+        <Route path="my-skills" element={<Myskills />} />        
+        <Route path="badges" element={<Badges />} />
+        <Route path="progression" element={<Progression />} />
+        <Route path="team-skills" element={<ManagerTeamSkills />} />
+        <Route index element={<Navigate to="home" replace />} />{" "}
+        {/* ← redirect index to home */}
+      </Route>
 
       {/*CFO*/}
       {/* <Route path="payroll" element={<PayslipPage />} /> */}
+
+      {/* BIRTHDAY */}
+      <Route path="birthday" element={<BirthdayPage />} />
+
+      {/* BIRTHDAY */}
+
 
       {/* DEFAULT */}
       <Route path="*" element={<Navigate to="dashboard" />} />
