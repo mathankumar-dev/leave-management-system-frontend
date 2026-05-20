@@ -1,6 +1,6 @@
-
 import { employeeService } from "@/features/employee/services/employeeService";
 import { leaveService } from "@/features/leave/services/leaveService";
+import { permissionService } from "@/features/leave/services/permissionService";
 import type { LeaveDecision, LeaveDecisionRequest, LeaveType } from "@/features/leave/types";
 import { useEffect, useState } from "react";
 
@@ -12,38 +12,56 @@ export const useManagerApprovals = (userId: string, role?: string) => {
     if (!userId) return;
     setLoading(true);
     try {
-      const [leaveData] = await Promise.all([
+      // ── Fetch leaves AND permissions in parallel ───────────────
+      const [leaveData, permissionData] = await Promise.all([
         leaveService.getPendingApprovals(userId),
+        permissionService.getPendingPermissions(userId).catch(() => []),
       ]);
 
-      // 1. Map the basic data first
+      // ── Map leave data (unchanged from live) ───────────────────
       const rawLeaves = (leaveData || []).map((item: any) => ({
         ...item.leaveApplicationResponseDTO,
-        // leaveType: item.leaveApplicationResponseDTO.leaveTypeName,
         attachments: item.attachments || [],
         attachmentCount: item.attachmentCount || 0,
-        isLeave: true
+        isLeave: true,
+        requestType: "LEAVE",
       }));
 
-      // 2. Resolve all names in parallel
-      // Inside useManagerApprovals.ts -> fetchRequests function
+      // ── Map permission data (new) ──────────────────────────────
+      const rawPermissions = (permissionData || []).map((item: any) => ({
+        ...item,
+        isPermission: true,
+        requestType: "PERMISSION",
+        leaveTypeName: "PERMISSION",
+        startDate: item.permissionDate,
+        endDate: item.permissionDate,
+        days: parseFloat((item.durationMinutes / 60).toFixed(1)),
+      }));
+
+      // ── Resolve names for leaves (unchanged from live) ─────────
       const formattedLeaves = await Promise.all(
         rawLeaves.map(async (req: any) => {
           const response = await employeeService.getNameByID(req.employeeId);
-          
-
-          // CRITICAL: Ensure this is a string
-          // If response is { fullName: "..." }, use response.fullName
-          // If response is just the string, use response || "Unknown"
           const nameString = typeof response === 'string'
             ? response
             : (response?.fullName || response?.empName || "Unknown Employee");
-
           return { ...req, employeeName: nameString };
         })
       );
 
-      const combined = formattedLeaves.sort(
+      // ── Resolve names for permissions (new) ───────────────────
+      const formattedPermissions = await Promise.all(
+        rawPermissions.map(async (req: any) => {
+          const response = await employeeService.getNameByID(req.employeeId);
+          const nameString = typeof response === 'string'
+            ? response
+            : (response?.fullName || response?.empName || "Unknown Employee");
+          return { ...req, employeeName: nameString };
+        })
+      );
+
+      // ── Combine and sort (unchanged pattern) ───────────────────
+      const combined = [...formattedLeaves, ...formattedPermissions].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
@@ -54,7 +72,6 @@ export const useManagerApprovals = (userId: string, role?: string) => {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchRequests();
@@ -68,45 +85,28 @@ export const useManagerApprovals = (userId: string, role?: string) => {
     requestId: number,
     status: LeaveDecision,
     reason: string = "",
-    type?: LeaveType,
-    // decision?: ManagerAccessDecision
+    type?: LeaveType | string,
   ) => {
     try {
       setLoading(true);
-      // const isHR = role?.toUpperCase() === 'HR';
 
-      // ─── HR leave decision ────────────────────────────────────
-      // if (isHR) {
-      //   if (status === 'APPROVED') {
-      //     await api.patch(`/leave-approvals/${requestId}/approve`);
-      //   } else {
-      //     await api.patch(`/leave-approvals/${requestId}/reject`, {
-      //       comments: reason
-      //     });
-      //   }
-      // }
-      // else if (type === 'ON_DUTY') {
-      //   if (status === 'APPROVED') {
-      //     await requestService.approveOD(requestId, userId);
-      //   } else {
-      //     await requestService.rejectOD(requestId, userId, reason);
-      //   }
-      // }
-      if (type === 'COMP_OFF') {
+      // ── Permission decision (new) ──────────────────────────────
+      if (type === 'PERMISSION') {
+        if (status === 'APPROVED') {
+          await permissionService.approvePermission(requestId, userId, reason);
+        } else {
+          await permissionService.rejectPermission(requestId, userId, reason);
+        }
+      }
+      // ── Comp-Off decision (unchanged) ──────────────────────────
+      else if (type === 'COMP_OFF') {
         if (status === 'APPROVED') {
           await leaveService.approveCompOff(requestId);
         } else {
           await leaveService.rejectCompOff(requestId, reason);
         }
       }
-      // else if (type === 'MEETING') {
-      //   if (status === 'APPROVED') {
-      //     await requestService.approveMeeting(requestId, userId);
-      //   } else {
-      //     await requestService.rejectMeeting(requestId, userId);
-      //   }
-      // }
-
+      // ── Leave decision (unchanged) ─────────────────────────────
       else {
         const decisionRequest: LeaveDecisionRequest = {
           leaveId: requestId,
@@ -128,6 +128,7 @@ export const useManagerApprovals = (userId: string, role?: string) => {
     }
   };
 
+  // ── Unchanged from live ────────────────────────────────────────
   const handleCompOffApprove = async (compOffId: number) => {
     try {
       await leaveService.approveCompOff(compOffId);
@@ -156,4 +157,4 @@ export const useManagerApprovals = (userId: string, role?: string) => {
     handleCompOffReject,
     refresh: fetchRequests
   };
-}
+};

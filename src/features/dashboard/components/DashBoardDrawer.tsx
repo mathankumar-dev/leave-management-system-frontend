@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 interface DrawerProps {
   isOpen: boolean;
@@ -10,7 +10,7 @@ interface DrawerProps {
   subtitle: string;
   children: React.ReactNode;
 }
-const navigate = useNavigate();
+// const navigate = useNavigate();
 
 const DashboardDrawer: React.FC<DrawerProps> = ({ isOpen, onClose, title, subtitle, children }) => {
   return (

@@ -13,7 +13,7 @@ import Loader from "@/shared/components/Loader";
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
-import PolicyConfig from "@/features/dashboard/admin/pages/PolicyConfig";
+// import PolicyConfig from "@/features/dashboard/admin/pages/PolicyConfig";
 import FileViewer from "@/features/dashboard/admin/pages/FileViewer";
 
 
