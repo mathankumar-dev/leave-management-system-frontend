@@ -195,6 +195,7 @@ const TimePicker = ({
 };
 
 // ─── Duration Display ─────────────────────────────────────────────
+// ─── Duration Display ─────────────────────────────────────────────
 const DurationDisplay = ({
   startTime,
   endTime,
@@ -202,33 +203,70 @@ const DurationDisplay = ({
   startTime: TimeValue;
   endTime: TimeValue;
 }) => {
+
   const diff = toMinutes(endTime) - toMinutes(startTime);
 
-  if (diff <= 0) {
-    return (
-      <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-100 rounded-xl">
-        <HiOutlineClock size={15} className="text-rose-400 shrink-0" />
-        <p className="text-xs font-semibold text-rose-500">
-          End time must be after start time.
-        </p>
-      </div>
-    );
+  const isDefaultTime =
+    startTime.hour === 9 &&
+    startTime.minute === 15 &&
+    endTime.hour === 18 &&
+    endTime.minute === 30;
+
+  let durationText = "Select start time and end time";
+
+  if (!isDefaultTime && diff > 0) {
+    const hours = Math.floor(diff / 60);
+    const minutes = diff % 60;
+
+    durationText = `
+      ${hours > 0 ? `${hours} hr${hours > 1 ? "s" : ""} ` : ""}
+      ${minutes > 0 ? `${minutes} min${minutes > 1 ? "s" : ""}` : ""}
+    `;
   }
 
-  const hours   = Math.floor(diff / 60);
-  const minutes = diff % 60;
-
   return (
-    <div className="flex items-center gap-3 p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
-      <HiOutlineClock size={18} className="text-indigo-500 shrink-0" />
+    <div
+      className={`flex items-center gap-3 p-4 rounded-xl border ${
+        diff <= 0 && !isDefaultTime
+          ? "bg-rose-50 border-rose-100"
+          : "bg-indigo-50 border-indigo-100"
+      }`}
+    >
+      <HiOutlineClock
+        size={18}
+        className={`shrink-0 ${
+          diff <= 0 && !isDefaultTime
+            ? "text-rose-400"
+            : "text-indigo-500"
+        }`}
+      />
+
       <div>
-        <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">
+        <p
+          className={`text-[9px] font-black uppercase tracking-widest ${
+            diff <= 0 && !isDefaultTime
+              ? "text-rose-400"
+              : "text-indigo-400"
+          }`}
+        >
           Total Permission Duration
         </p>
-        <p className="text-sm font-black text-indigo-700 mt-0.5">
-          {hours > 0 && `${hours} hr${hours > 1 ? "s" : ""} `}
-          {minutes > 0 && `${minutes} min${minutes > 1 ? "s" : ""}`}
-        </p>
+
+        {diff <= 0 && !isDefaultTime ? (
+          <p className="text-sm font-bold text-rose-500 mt-0.5">
+            End time must be after start time.
+          </p>
+        ) : (
+          <p
+            className={`text-sm font-black mt-0.5 ${
+              isDefaultTime
+                ? "text-slate-400"
+                : "text-indigo-700"
+            }`}
+          >
+            {durationText}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -292,9 +330,9 @@ const PermissionRequestForm = () => {
       formData.append("startTime",      `${pad(form.startTime.hour)}:${pad(form.startTime.minute)}:00`);
       formData.append("endTime",        `${pad(form.endTime.hour)}:${pad(form.endTime.minute)}:00`);
       formData.append("reason",         form.reason);
-      form.attachments.forEach((file) => {
-        formData.append("attachments", file);
-      });
+      if (form.attachments.length > 0) {
+      formData.append("attachment", form.attachments[0]);
+      }
 
       await permissionService.submitPermissionRequest(formData);
       setSubmitted(true);
