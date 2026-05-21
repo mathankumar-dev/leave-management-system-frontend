@@ -1,6 +1,7 @@
 import AuthenticatedImage from '@/features/leave/components/AuthenticatedImage';
 import DetailedRequestModal from '@/features/leave/components/DetailedRequestModal';
 import PermissionDetailModal from '@/features/leave/components/PermissionDetailModal';
+import WfhDetailModal from '@/features/leave/components/WfhDetailModal';
 import PermissionTile from '@/features/leave/components/PermissionTile';
 import RequestTile from '@/features/leave/components/RequestTile';
 import { useLeave } from '@/features/leave/hooks/useLeave';
@@ -30,6 +31,7 @@ const PendingApprovalsView: React.FC = () => {
     const [timeFilter, setTimeFilter] = useState("all");
     const [detailModalReq, setDetailModalReq] = useState<any | null>(null);
     const [permissionModalReq, setPermissionModalReq] = useState<any | null>(null);
+    const [wfhModalReq, setWfhModalReq] = useState<any | null>(null);
     const [statusFilter, setStatusFilter] = useState("PENDING");
 
     useEffect(() => {
@@ -135,6 +137,18 @@ const PendingApprovalsView: React.FC = () => {
                 onAction={(status) => {
                     const reqToProcess = detailModalReq;
                     setDetailModalReq(null);
+                    onActionTriggered(reqToProcess, status);
+                }}
+            />
+
+            {/* ── WFH detail modal ─────────────────────────────────── */}
+            <WfhDetailModal
+                isOpen={!!wfhModalReq}
+                req={wfhModalReq}
+                onClose={() => setWfhModalReq(null)}
+                onAction={(status) => {
+                    const reqToProcess = wfhModalReq;
+                    setWfhModalReq(null);
                     onActionTriggered(reqToProcess, status);
                 }}
             />
@@ -253,8 +267,31 @@ const PendingApprovalsView: React.FC = () => {
                             key={req.id}
                             className="transition-transform active:scale-[0.99]"
                         >
-                            {/* ── Permission tile ──────────────────────── */}
-                            {req.requestType === 'PERMISSION' ? (
+                            {/* ── WFH tile ─────────────────────────────── */}
+                            {req.requestType === 'WFH' ? (
+                                <div
+                                    onClick={() => setWfhModalReq(req)}
+                                    className="cursor-pointer"
+                                >
+                                    <RequestTile
+                                        key={req.id}
+                                        status={req.status}
+                                        employeeName={req.employeeName}
+                                        leaveType={"WFH" as any}
+                                        reasonMessage={req.reason || "Work From Home"}
+                                        dateRange={formatDateRange(req.startDate, req.endDate)}
+                                        startDate={req.startDate}
+                                        endDate={req.endDate}
+                                        startDateHalfDayType={req.startDateHalfDayType}
+                                        endDateHalfDayType={req.endDateHalfDayType}
+                                        days={req.totalDays ?? req.days}
+                                        createdAt={formatTimeAgo(req.createdAt)}
+                                        onAccept={() => onActionTriggered(req, 'APPROVED')}
+                                        onReject={() => onActionTriggered(req, 'REJECTED')}
+                                        attachments={[]}
+                                    />
+                                </div>
+                            ) : req.requestType === 'PERMISSION' ? (
                                 <div
                                     onClick={() => setPermissionModalReq(req)}
                                     className="cursor-pointer"

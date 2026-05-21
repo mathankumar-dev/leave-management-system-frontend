@@ -267,7 +267,14 @@ const TeamCalendarView: React.FC = () => {
 
                           {/* 1. ADD YOUR OWN LEAVES HERE */}
                           {mine.map((leave: any, idx: number) => (
-                            <div key={`mine-${idx}`} className="px-1 py-0.5 bg-amber-50 border border-amber-100 text-amber-700 text-[7px] font-black rounded-sm truncate">
+                            <div
+                              key={`mine-${idx}`}
+                              className={`px-1 py-0.5 border text-[7px] font-black rounded-sm truncate ${
+                                leave.leaveTypeName === "WFH"
+                                  ? "bg-teal-50 border-teal-200 text-teal-700"
+                                  : "bg-amber-50 border-amber-100 text-amber-700"
+                              }`}
+                            >
                               {leave.leaveTypeName || 'My Leave'}
                             </div>
                           ))}
@@ -371,8 +378,17 @@ const TeamCalendarView: React.FC = () => {
                           {d.mine.length > 0 ? (
                             <div className="flex flex-col gap-2">
                               {d.mine.map((leave: any, idx: number) => (
-                                <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-100 shadow-sm">
-                                  <span className="text-xs font-black text-amber-900">{leave.leaveTypeName}</span>
+                                <div
+                                  key={idx}
+                                  className={`flex items-center justify-between p-3 rounded-xl border shadow-sm ${
+                                    leave.leaveTypeName === "WFH"
+                                      ? "bg-teal-50 border-teal-100"
+                                      : "bg-amber-50 border-amber-100"
+                                  }`}
+                                >
+                                  <span className={`text-xs font-black ${leave.leaveTypeName === "WFH" ? "text-teal-900" : "text-amber-900"}`}>
+                                    {leave.leaveTypeName}
+                                  </span>
                                   <StatusBadge2 status={leave.status} />
                                 </div>
                               ))}
@@ -662,16 +678,24 @@ const TeamCalendarView: React.FC = () => {
               employeeCalendar[selectedDateKey].map((leave: any, idx: number) => (
                 <div
                   key={`my-leave-${idx}`}
-                  className="flex items-center gap-3 p-3 bg-amber-50/50 border border-amber-200 rounded-sm"
+                  className={`flex items-center gap-3 p-3 border rounded-sm ${
+                    leave.leaveTypeName === "WFH"
+                      ? "bg-teal-50/50 border-teal-200"
+                      : "bg-amber-50/50 border-amber-200"
+                  }`}
                 >
-                  <div className="w-8 h-8 bg-amber-100 text-amber-600 flex items-center justify-center rounded-sm shrink-0">
+                  <div className={`w-8 h-8 flex items-center justify-center rounded-sm shrink-0 ${
+                    leave.leaveTypeName === "WFH"
+                      ? "bg-teal-100 text-teal-600"
+                      : "bg-amber-100 text-amber-600"
+                  }`}>
                     <FaUserAlt size={10} />
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <p className="text-xs font-black text-amber-900 truncate">
+                    <p className={`text-xs font-black truncate ${leave.leaveTypeName === "WFH" ? "text-teal-900" : "text-amber-900"}`}>
                       My {leave.leaveTypeName || 'Leave'}
                     </p>
-                    <div className="flex items-center text-[10px] text-amber-700">
+                    <div className={`flex items-center text-[10px] ${leave.leaveTypeName === "WFH" ? "text-teal-700" : "text-amber-700"}`}>
                       <span>Status: </span>
                       <div className="ml-1 scale-75 origin-left">
                         <StatusBadge2 status={leave.status} />

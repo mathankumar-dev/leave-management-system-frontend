@@ -1,5 +1,6 @@
 import { attendanceService } from "@/features/attendance/services/attendanceService";
 import type { AdminAttendanceExportRequest, AttendanceExportRequest, AttendanceRecord, TeamCalendarResponse } from "@/features/attendance/types";
+import { wfhService } from "@/features/leave/services/wfhService";
 import { useCallback, useState } from "react";
 
 
@@ -48,7 +49,7 @@ export const useCalendar = () => {
 
   /*
   ========================
-  MY LEAVE CALENDAR
+  MY LEAVE CALENDAR (with WFH merged in)
   ========================
   */
   const fetchEmployeeCalendar = useCallback(
@@ -56,10 +57,50 @@ export const useCalendar = () => {
       try {
         setLoading(true);
 
-        const data =
-          await attendanceService.getEmployeeCalendar(employeeId);
+        const [leaveData, wfhData] = await Promise.all([
+          attendanceService.getEmployeeCalendar(employeeId),
+          wfhService.getMyApplications(employeeId).catch(() => []),
+        ]);
 
-        setEmployeeCalendar(data || {});
+        // Merge WFH records into the calendar map
+        const merged: TeamCalendarResponse = { ...(leaveData || {}) };
+
+        (wfhData || []).forEach((wfh: any) => {
+          if (!wfh.startDate || !wfh.endDate) return;
+
+          // Expand date range for multi-day WFH
+          const start = new Date(wfh.startDate);
+          const end = new Date(wfh.endDate);
+          const cursor = new Date(start);
+
+          while (cursor <= end) {
+            const yyyy = cursor.getFullYear();
+            const mm = String(cursor.getMonth() + 1).padStart(2, "0");
+            const dd = String(cursor.getDate()).padStart(2, "0");
+            const key = `${yyyy}-${mm}-${dd}`;
+
+            const wfhEntry = {
+              leaveTypeName: "WFH",
+              status: wfh.status,
+              startDate: wfh.startDate,
+              endDate: wfh.endDate,
+              employeeId: wfh.employeeId,
+              employeeName: wfh.employeeName,
+              id: wfh.id,
+              isWfh: true,
+            };
+
+            if (!merged[key]) {
+              merged[key] = [wfhEntry as any];
+            } else {
+              merged[key] = [...merged[key], wfhEntry as any];
+            }
+
+            cursor.setDate(cursor.getDate() + 1);
+          }
+        });
+
+        setEmployeeCalendar(merged);
       } catch (err: any) {
         console.error("employee calendar error", err);
         setError(err.message || "Failed to fetch employee calendar");

@@ -4,7 +4,6 @@ import api from "@/services/apiClient";
 
 export const requestService = {
   createODRequest: async (request: ODRequest, employeeId: string) => {
-
     const response = await api.post('/v1/od/request', request, {
       params: { employeeId }
     });
@@ -28,12 +27,7 @@ export const requestService = {
     await api.patch(`/v1/access-requests/${requestId}/manager-decision`, decision,);
   },
 
-
-
-
   approveOD: async (odId: number, approverId: number): Promise<void> => {
-
-
     await api.put(`/v1/od/approve/${odId}`, {}, {
       params: { approverId }
     });
@@ -46,7 +40,6 @@ export const requestService = {
   approveMeeting: async (meetingId: number, managerId: number): Promise<void> => {
     await api.patch(`/v1/meetings/approve/manager/${meetingId}/${managerId}`,);
   },
-
 
   rejectMeeting: async (meetingId: number, reviewerId: number): Promise<void> => {
     await api.patch(`/v1/meetings/${meetingId}/reject`, {}, {

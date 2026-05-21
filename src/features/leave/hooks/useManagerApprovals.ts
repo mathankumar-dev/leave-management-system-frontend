@@ -1,6 +1,7 @@
 import { employeeService } from "@/features/employee/services/employeeService";
 import { leaveService } from "@/features/leave/services/leaveService";
 import { permissionService } from "@/features/leave/services/permissionService";
+import { wfhService } from "@/features/leave/services/wfhService";
 import type { LeaveDecision, LeaveDecisionRequest, LeaveType } from "@/features/leave/types";
 import { useEffect, useState } from "react";
 
@@ -12,13 +13,14 @@ export const useManagerApprovals = (userId: string, role?: string) => {
     if (!userId) return;
     setLoading(true);
     try {
-      // ── Fetch leaves AND permissions in parallel ───────────────
-      const [leaveData, permissionData] = await Promise.all([
+      // ── Fetch leaves, permissions AND wfh in parallel ──────────
+      const [leaveData, permissionData, wfhData] = await Promise.all([
         leaveService.getPendingApprovals(userId),
         permissionService.getPendingPermissions(userId).catch(() => []),
+        wfhService.getPendingForApprover(userId).catch(() => []),
       ]);
 
-      // ── Map leave data (unchanged from live) ───────────────────
+      // ── Map leave data ─────────────────────────────────────────
       const rawLeaves = (leaveData || []).map((item: any) => ({
         ...item.leaveApplicationResponseDTO,
         attachments: item.attachments || [],
@@ -27,7 +29,7 @@ export const useManagerApprovals = (userId: string, role?: string) => {
         requestType: "LEAVE",
       }));
 
-      // ── Map permission data (new) ──────────────────────────────
+      // ── Map permission data ────────────────────────────────────
       const rawPermissions = (permissionData || []).map((item: any) => ({
         ...item,
         isPermission: true,
@@ -38,7 +40,16 @@ export const useManagerApprovals = (userId: string, role?: string) => {
         days: parseFloat((item.durationMinutes / 60).toFixed(1)),
       }));
 
-      // ── Resolve names for leaves (unchanged from live) ─────────
+      // ── Map WFH data ───────────────────────────────────────────
+      const rawWfh = (wfhData || []).map((item: any) => ({
+        ...item,
+        isWfh: true,
+        requestType: "WFH",
+        leaveTypeName: "WFH",
+        days: item.totalDays,
+      }));
+
+      // ── Resolve names for leaves ───────────────────────────────
       const formattedLeaves = await Promise.all(
         rawLeaves.map(async (req: any) => {
           const response = await employeeService.getNameByID(req.employeeId);
@@ -49,7 +60,7 @@ export const useManagerApprovals = (userId: string, role?: string) => {
         })
       );
 
-      // ── Resolve names for permissions (new) ───────────────────
+      // ── Resolve names for permissions ──────────────────────────
       const formattedPermissions = await Promise.all(
         rawPermissions.map(async (req: any) => {
           const response = await employeeService.getNameByID(req.employeeId);
@@ -60,8 +71,19 @@ export const useManagerApprovals = (userId: string, role?: string) => {
         })
       );
 
-      // ── Combine and sort (unchanged pattern) ───────────────────
-      const combined = [...formattedLeaves, ...formattedPermissions].sort(
+      // ── Resolve names for WFH ──────────────────────────────────
+      const formattedWfh = await Promise.all(
+        rawWfh.map(async (req: any) => {
+          const response = await employeeService.getNameByID(req.employeeId);
+          const nameString = typeof response === 'string'
+            ? response
+            : (response?.fullName || response?.empName || "Unknown Employee");
+          return { ...req, employeeName: nameString };
+        })
+      );
+
+      // ── Combine and sort ───────────────────────────────────────
+      const combined = [...formattedLeaves, ...formattedPermissions, ...formattedWfh].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
 
@@ -90,15 +112,23 @@ export const useManagerApprovals = (userId: string, role?: string) => {
     try {
       setLoading(true);
 
-      // ── Permission decision (new) ──────────────────────────────
-      if (type === 'PERMISSION') {
+      // ── WFH decision ───────────────────────────────────────────
+      if (type === 'WFH') {
+        if (status === 'APPROVED') {
+          await wfhService.approveWfh(requestId, userId, reason);
+        } else {
+          await wfhService.rejectWfh(requestId, userId, reason);
+        }
+      }
+      // ── Permission decision ────────────────────────────────────
+      else if (type === 'PERMISSION') {
         if (status === 'APPROVED') {
           await permissionService.approvePermission(requestId, userId, reason);
         } else {
           await permissionService.rejectPermission(requestId, userId, reason);
         }
       }
-      // ── Comp-Off decision (unchanged) ──────────────────────────
+      // ── Comp-Off decision ──────────────────────────────────────
       else if (type === 'COMP_OFF') {
         if (status === 'APPROVED') {
           await leaveService.approveCompOff(requestId);
@@ -106,7 +136,7 @@ export const useManagerApprovals = (userId: string, role?: string) => {
           await leaveService.rejectCompOff(requestId, reason);
         }
       }
-      // ── Leave decision (unchanged) ─────────────────────────────
+      // ── Leave decision ─────────────────────────────────────────
       else {
         const decisionRequest: LeaveDecisionRequest = {
           leaveId: requestId,
@@ -128,7 +158,6 @@ export const useManagerApprovals = (userId: string, role?: string) => {
     }
   };
 
-  // ── Unchanged from live ────────────────────────────────────────
   const handleCompOffApprove = async (compOffId: number) => {
     try {
       await leaveService.approveCompOff(compOffId);

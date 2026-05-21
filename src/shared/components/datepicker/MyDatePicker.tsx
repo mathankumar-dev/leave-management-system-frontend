@@ -8,10 +8,12 @@ interface DatePickerProps {
   selected: Date | null;
   onChange: (date: Date | null) => void;
   placeholder?: string;
+  placeholderText?: string; // alias — WfhRequestForm uses this
   label?: string;
   required?: boolean;
-  minDate?: Date; 
-  maxDate?: Date; 
+  minDate?: Date;
+  maxDate?: Date;
+  className?: string; // accepted but unused (wrapper is always w-full)
 }
 
 const CustomInput = forwardRef<HTMLButtonElement, { value?: string; onClick?: () => void; placeholder?: string }>(
@@ -33,12 +35,17 @@ const CustomInput = forwardRef<HTMLButtonElement, { value?: string; onClick?: ()
 const MyDatePicker: React.FC<DatePickerProps> = ({
   selected,
   onChange,
-  placeholder = "SELECT DATE",
+  placeholder,
+  placeholderText,
   label,
   required,
   minDate,
   maxDate,
+  className: _className, // accepted, not applied (component is always w-full)
 }) => {
+  // placeholderText takes priority if both are supplied; fallback to placeholder then default
+  const resolvedPlaceholder = placeholderText ?? placeholder ?? "SELECT DATE";
+
   return (
     <div className="flex flex-col gap-1 w-full">
       {label && (
@@ -51,9 +58,8 @@ const MyDatePicker: React.FC<DatePickerProps> = ({
         onChange={onChange}
         minDate={minDate}
         maxDate={maxDate}
-        customInput={<CustomInput placeholder={placeholder} />}
+        customInput={<CustomInput placeholder={resolvedPlaceholder} />}
         dateFormat="dd / MM / yyyy"
-        // portalId="datepicker-portal"
         showPopperArrow={false}
         popperPlacement="bottom-start"
         fixedHeight

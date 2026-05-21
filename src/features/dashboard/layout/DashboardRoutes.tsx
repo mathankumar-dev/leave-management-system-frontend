@@ -65,13 +65,14 @@ const DashboardRoutes = () => {
       <Route path="requests" element={<MyRequestsView />} />
       <Route path="profile" element={<EmployeeProfile />} />
       <Route path="request-center" element={<RequestCenter />} />
-
+      {/* <Route path="wfh" element={<MyWFHView />} /> */}
 
 
       {/* MANAGER */}
       <Route path="team" element={<TeamMembersView />} />
       <Route path="action-center" element={<PendingApprovalsView />} />
       <Route path="calendar" element={<TeamCalendarView />} />
+      {/* <Route path="wfh-approvals" element={<WFHApprovalsView />} /> */}
 
       {/* HR */}
       <Route path="employees" element={renderEmployees()} />

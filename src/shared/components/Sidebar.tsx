@@ -17,7 +17,7 @@ import {
   FaThLarge
 } from "react-icons/fa";
 import { HiUserGroup } from "react-icons/hi";
-import { HiUsers } from "react-icons/hi2";
+import {HiUsers } from "react-icons/hi2";
 import { MdPendingActions, MdVerifiedUser } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -66,8 +66,8 @@ function Sidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }: SidebarProp
     { name: "Request Center", path: "request-center", icon: <FaFileSignature />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "ADMIN", "CTO" , "COO"] },
     { name: "Notifications", path: "notifications", icon: <FaBell />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Flash News", path: "flash-news", icon: <FaNewspaper />, roles: ["ADMIN"] },
-    { name: "Policy Config", path: "policies",icon: <FaFileSignature />,roles: ["ADMIN"]},    { name: "Attendance Reports", path: "attendance-reports", icon: <FaCalendarCheck />, roles: ["MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
-
+    { name: "Policy Config", path: "policies",icon: <FaFileSignature />,roles: ["ADMIN"]},    
+    { name: "Attendance Reports", path: "attendance-reports", icon: <FaCalendarCheck />, roles: ["MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CFO", "CEO"] },
     { name: "Pay Slip", path: "payslip", icon: <FaMoneyBillWave />, roles: ["EMPLOYEE", "MANAGER", "TEAM_LEADER", "HR", "ADMIN", "COO", "CTO", "CEO"] },
   ];
 
