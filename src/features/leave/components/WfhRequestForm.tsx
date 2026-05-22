@@ -1,6 +1,5 @@
 import MyDatePicker from "@/shared/components/datepicker/MyDatePicker";
 import { useAuth } from "@/shared/auth/useAuth";
-import Badge from "@/shared/components/NameBadge";
 import React, { useEffect, useRef, useState } from "react";
 import {
   HiOutlineCheckCircle,
@@ -129,23 +128,6 @@ const WfhRequestForm: React.FC = () => {
     formData.endDateHalfDayType
   );
 
-  const renderApprovers = () => {
-    const approvers: { label: string; active: boolean }[] = [];
-    const role = user?.role?.toUpperCase();
-    if (role === "EMPLOYEE") {
-      approvers.push({ label: `TL: ${user?.name || "Assigning..."}`, active: true });
-      if (daysInSelection > 1)
-        approvers.push({ label: `Manager: ${user?.name || "Assigning..."}`, active: true });
-    }
-    if (role === "TEAM_LEADER")
-      approvers.push({ label: `Manager: ${user?.name || "Assigning..."}`, active: true });
-    if (role === "MANAGER" || role === "ADMIN")
-      approvers.push({ label: `HR: Final Approval`, active: true });
-
-    return approvers.map((app, i) => (
-      <Badge key={i} label={app.label} active={app.active} />
-    ));
-  };
 
   const handleStartDateChange = (date: Date | null) => {
     setFormData((prev) => ({

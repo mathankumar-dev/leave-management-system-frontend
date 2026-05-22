@@ -181,7 +181,7 @@ const viewDocument = async (path: string) => {
       { responseType: "blob" },
     );
     const fileURL = URL.createObjectURL(
-      new Blob([response.data], { type: response.headers["content-type"] }),
+      new Blob([response.data], { type: response.headers["content-type"] as string }),
     );
     window.open(fileURL);
   } catch (error) {

@@ -11,7 +11,7 @@ import { formatTimeAgo } from "@/shared/utils/formatTimeAgo";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaCalendarAlt, FaEdit, FaEllipsisV, FaInfoCircle, FaTimes, FaUserCheck } from "react-icons/fa";
-import { HiOutlineClock, HiOutlineHome, HiOutlinePaperClip } from "react-icons/hi2";
+import { HiOutlineClock, HiOutlinePaperClip } from "react-icons/hi2";
 
 const MyRequestsView: React.FC = () => {
   const { fetchMyLeaves } = useLeave();

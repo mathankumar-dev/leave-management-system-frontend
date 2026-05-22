@@ -22,7 +22,7 @@ export const useAuthenticatedImage = (path: string | null | undefined) => {
                 );
 
                 const blob = new Blob([response.data], {
-                    type: response.headers["content-type"] || 'image/jpeg',
+                    type: (response.headers["content-type"] as string) || 'image/jpeg',
                 });
                 
                 objectUrl = URL.createObjectURL(blob);
