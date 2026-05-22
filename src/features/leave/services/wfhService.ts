@@ -84,9 +84,9 @@ export const wfhService = {
     return response.data;
   },
 
-  // Edit (only PENDING, multipart to support optional new attachment)
+  // Edit / update a pending WFH request (multipart/form-data)
   editWfh: async (wfhId: number, data: FormData): Promise<WfhRecord> => {
-    const response = await api.put(`/wfh/${wfhId}/edit`, data, {
+    const response = await api.put(`/wfh/${wfhId}/update`, data, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data;
@@ -96,6 +96,14 @@ export const wfhService = {
   cancelWfh: async (wfhId: number, empId: string): Promise<WfhRecord> => {
     const response = await api.put(`/wfh/${wfhId}/cancel`, null, {
       params: { empId },
+    });
+    return response.data;
+  },
+
+  // Download / preview attachment — returns a Blob
+  downloadAttachment: async (wfhId: number): Promise<Blob> => {
+    const response = await api.get(`/wfh/${wfhId}/attachment`, {
+      responseType: "blob",
     });
     return response.data;
   },
