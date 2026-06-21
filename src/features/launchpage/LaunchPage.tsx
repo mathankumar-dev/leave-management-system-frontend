@@ -9,13 +9,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { FaChevronDown, FaSignOutAlt, FaUserCog } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { getPolicies, viewPolicy } from "@/features/dashboard/admin/services/policyService";
 
 const LaunchPage: React.FC = () => {
   const { user, contextLogout: logout } = useAuth();
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { imageUrl, isLoading: imageLoading } = useAuthenticatedImage(user?.passportPhotoPath);
-
+ const [policies, setPolicies] = useState<{ title: string; id: number }[]>([]);
   // Notification Hook & States
   const { fetchFlashNews } = useNotifications();
   const [flashNews, setFlashNews] = useState<FlashNews[]>([]);
@@ -109,12 +110,34 @@ const LaunchPage: React.FC = () => {
       path: `${basePath}/dashboard`,
     },
   ];
+useEffect(() => {
+  const loadPolicies = async () => {
+    try {
+      const data = await getPolicies();
 
-  const policies = [
-    { title: "Leave Policy 2026", link: "/leave-policy" },
-    { title: "Privacy Policy", link: "/privacy-policy" },
-    { title: "Terms of Service", link: "/terms-of-service" },
-  ];
+      // ✅ Group + keep latest version (highest id)
+      const grouped = new Map<string, any>();
+
+      data.forEach((p: any) => {
+        if (!grouped.has(p.name) || grouped.get(p.name).id < p.id) {
+          grouped.set(p.name, p);
+        }
+      });
+
+      // ✅ IMPORTANT: include file URL
+    const formatted = Array.from(grouped.values()).map((p: any) => ({
+  title: p.name,
+  id: p.id,   // ✅ use ID instead
+}));
+
+      setPolicies(formatted);
+    } catch (err) {
+      console.error("Failed to load policies", err);
+    }
+  };
+
+  loadPolicies();
+}, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-brand-bg text-slate-900 font-sans selection:bg-brand selection:text-white overflow-hidden relative">
@@ -231,16 +254,19 @@ const LaunchPage: React.FC = () => {
 
           <div className="bg-white/60 backdrop-blur-sm p-6 rounded-2xl border border-white shadow-sm">
             <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-400 uppercase text-[10px] tracking-widest">⚖️ Policy Center</h3>
-            <ul className="space-y-1">
-              {policies.map((policy, i) => (
-                <li key={i}>
-                  <button onClick={() => navigate(policy.link)} className="w-full flex items-center justify-between p-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-white hover:text-brand transition-all text-left group">
-                    <span>{policy.title}</span>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+<ul className="space-y-1">
+  {policies.map((policy, i) => (
+    <li key={i}>
+      <button
+        onClick={() => viewPolicy(policy.id)}  // ✅ simple & correct
+        className="w-full flex items-center justify-between p-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-white hover:text-brand transition-all text-left group"
+      >
+        <span>{policy.title}</span>
+        <span className="opacity-0 group-hover:opacity-100">→</span>
+      </button>
+    </li>
+  ))}
+</ul>
           </div>
 
           <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-48 flex flex-col overflow-hidden">

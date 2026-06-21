@@ -1,4 +1,4 @@
-import type { AttendanceExportRequest, AttendanceRecord, TeamAttendancePage, TeamCalendarResponse } from "@/features/attendance/types";
+import type { AdminAttendanceExportRequest, AttendanceExportRequest, AttendanceRecord, TeamAttendancePage, TeamCalendarResponse } from "@/features/attendance/types";
 import api from "@/services/apiClient";
 
 
@@ -55,7 +55,6 @@ export const attendanceService = {
         const response = await api.get(`/v1/attendance/team/${reportingId}`, {
             params: {
                 ...params,
-                // Ensure any default values or formatting happens here if needed
             }
         });
         return response.data;
@@ -68,7 +67,10 @@ export const attendanceService = {
             page?: number;
             size?: number;
         }
-    ): Promise<{ content: AttendanceRecord[], totalPages: number, totalElements: number }> => {
+    ): Promise<{
+        content: AttendanceRecord[], totalPages: number, totalElements: number, size: number,
+        number: number
+    }> => {
         const response = await api.get(`/v1/attendance/${empId}`, {
             params
         });
@@ -132,6 +134,15 @@ export const attendanceService = {
         const response = await api.post(`/v1/attendance/download/selection`, payload, {
             responseType: 'blob',
         });
+        handleDownload(response.data, `Attendance_Selection_${payload.fromDate || 'report'}.xlsx`);
+    },
+    downloadAllEmployeesAttendanceReport: async (payload: AdminAttendanceExportRequest) => {
+        const response = await api.get(`/v1/attendance/download/all`, {
+            // Wrap your payload in 'params' so it is sent as query string parameters (?fromDate=...)
+            params: payload,
+            responseType: 'blob',
+        });
+
         handleDownload(response.data, `Attendance_Selection_${payload.fromDate || 'report'}.xlsx`);
     },
 }

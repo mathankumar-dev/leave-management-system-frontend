@@ -3,11 +3,11 @@ import { AxiosError } from 'axios';
 import api from '../../../services/apiClient';
 
 export interface Employee {
-  id: string;
+  empId: string;
   name: string;
   email: string;
-  role: string;
-  managerId: number | null;
+  roleName: string;
+  reportingId: string | null;
   active: boolean;
   joiningDate: string;
   biometricStatus: string;
@@ -94,7 +94,7 @@ export const employeeService = {
   getAllEmployees: async (
     pageOrFilters: number | EmployeeFilters = 0,
     size = 10,
-  ): Promise<PaginatedResponse<EmployeeEntity>> => { // <--- Changed this
+  ): Promise<PaginatedResponse<EmployeeEntity>> => {
     try {
       const params = typeof pageOrFilters === 'number'
         ? { page: pageOrFilters, size }
@@ -109,7 +109,7 @@ export const employeeService = {
       throw handleError(err, 'getAllEmployees');
     }
   },
-  
+
 
   getTeamMembers: async (id: string): Promise<TeamMember[]> => {
     const res = await api.get(`/v1/dashboard/team-members/${id}`);

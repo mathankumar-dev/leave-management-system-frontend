@@ -13,7 +13,8 @@ import Loader from "@/shared/components/Loader";
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
-
+// import PolicyConfig from "@/features/dashboard/admin/pages/PolicyConfig";
+import FileViewer from "@/features/dashboard/admin/pages/FileViewer";
 
 
 const AppRoutes: React.FC = () => {
@@ -62,9 +63,11 @@ const AppRoutes: React.FC = () => {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/leave-policy" element={<LeavePolicies />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/file-viewer" element={<FileViewer />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+
   );
 };
 

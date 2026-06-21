@@ -4,15 +4,17 @@ import {
   HiChevronDoubleLeft, HiChevronDoubleRight,
   HiOutlineBriefcase,
   HiOutlineClock, HiOutlineHome,
-  HiOutlineMoon
+  HiOutlineMoon,
+  HiOutlineShieldCheck
 } from "react-icons/hi2";
 import { TbAccessPoint } from "react-icons/tb";
 
 // Import your form components
 import LeaveApplicationForm from "@/features/leave/components/LeaveApplicationForm";
 import ODRequestForm from "@/features/leave/components/ODRequestForm";
-
-type RequestType = "LEAVE" | "OD" | "WFH" | "MEETING" | "OVERTIME" | "ACCESS";
+import AccessRequestForm from "./AccessRequestForm";
+import PermissionRequestForm from "./PermissionRequestForm";
+type RequestType = "LEAVE" | "OD" | "WFH" | "MEETING" | "OVERTIME" | "ACCESS" | "PERMISSION";
 
 const RequestCenter = () => {
   const [activeTab, setActiveTab] = useState<RequestType>("LEAVE");
@@ -38,6 +40,7 @@ const RequestCenter = () => {
     { id: "ACCESS", label: "Access", icon: <TbAccessPoint size={18} />, description: "VPN / Bio" },
     { id: "WFH", label: "WFH", icon: <HiOutlineHome size={18} />, description: "Home" },
     { id: "OVERTIME", label: "Overtime", icon: <HiOutlineMoon size={18} />, description: "Extra Credit" },
+    { id: "PERMISSION", label: "Permission", icon: <HiOutlineShieldCheck size={18} />, description: "Short Leave" },
   ];
 
   return (
@@ -123,7 +126,8 @@ const RequestCenter = () => {
               <div className="p-4 md:p-8">
                 {activeTab === "LEAVE" && <LeaveApplicationForm />}
                 {activeTab === "OD" && <ODRequestForm />}
-                {/*{activeTab === "ACCESS" && <AccessRequestForm />} */}
+                {activeTab === "ACCESS" && <AccessRequestForm />}
+                {activeTab === "PERMISSION" && <PermissionRequestForm />}
 
                 {/* Status for building modules */}
                 {(activeTab === "WFH" || activeTab === "OVERTIME" || activeTab === "ACCESS" || activeTab === "OD") && (

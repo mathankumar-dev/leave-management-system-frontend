@@ -165,7 +165,7 @@ export const useEmployee = () => {
         setLoading(true);
         try {
             const response = await employeeService.getAllEmployees(filters);
-            return response; // This is now the object containing { content: [...], totalElements: 4, ... }
+            return response; 
         } catch (err: unknown) {
             setError("Failed to fetch");
             return null;
@@ -173,6 +173,7 @@ export const useEmployee = () => {
             setLoading(false);
         }
     }, [employeeService]);
+    
     const addUser = async (data: CreateUserRequest): Promise<void> => {
         try {
             const message = await employeeService.createUser(data);

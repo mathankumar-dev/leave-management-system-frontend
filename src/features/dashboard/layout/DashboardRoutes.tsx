@@ -28,7 +28,9 @@ import Progression from "@/features/skillset/Progression";
 import ManagerTeamSkills from "@/features/skillset/ManagerTeamSkills";
 import SkillsetHome from "@/features/skillset/SkillsetHome";
 import AttendanceReports from "@/features/attendance/pages/AttendanceReports";
-// import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
+import PolicyConfig from "../admin/pages/PolicyConfig";
+import { CFOEmployeesPage } from "@/features/payroll/pages/Cfoemployeepage";
+import { PayslipPage } from "@/features/payroll/pages/PayslipPage";
 
 const DashboardRoutes = () => {
   const { user } = useAuth();
@@ -40,6 +42,8 @@ const DashboardRoutes = () => {
         return <DashboardView />;
       case "ADMIN":
         return <DashboardView />;
+      case "CFO":
+        return <PayslipPage />;
       default:
         return <ManagerDashboardView />;
     }
@@ -53,6 +57,7 @@ const DashboardRoutes = () => {
   return (
     <Routes>
       {/* DASHBOARD */}
+      
       <Route path="dashboard" element={renderDashboard()} />
 
       {/* COMMON */}
@@ -77,13 +82,14 @@ const DashboardRoutes = () => {
       <Route path="onboarding" element={<OnboardingPendingPage />} />
       <Route path="flash-news" element={<FlashNewsForm />} />
       <Route path="attendance-reports" element={<AttendanceReports />} />
+      <Route path="policies" element={<PolicyConfig />} />
 
       {/* PAYROLL */}
       <Route path="payslip" element={<PayrollView />} />
       {/* ✅ SKILLSET */}
       <Route path="skillset" element={<SkillsetLayout />}>
         <Route path="home" element={<SkillsetHome />} />
-        <Route path="my-skills" element={<Myskills />} />
+        <Route path="my-skills" element={<Myskills />} />        
         <Route path="badges" element={<Badges />} />
         <Route path="progression" element={<Progression />} />
         <Route path="team-skills" element={<ManagerTeamSkills />} />
@@ -92,6 +98,7 @@ const DashboardRoutes = () => {
       </Route>
 
       {/*CFO*/}
+      <Route path="payroll" element={<CFOEmployeesPage />} />
       {/* <Route path="payroll" element={<PayslipPage />} /> */}
 
       {/* BIRTHDAY */}
